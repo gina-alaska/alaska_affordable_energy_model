@@ -35,6 +35,10 @@ O_and_M_cost = 10000.00 # $/mile/year
 project_life = 20 # years
 
 
+transmission_line_cost = {True:  500000, # road needed  -- $/mi
+                          False: 250000  # road not needed -- $/mi
+                         } 
+
 class Interties (object):
     """
     class for preforming the interties work
@@ -67,7 +71,10 @@ class Interties (object):
         """
         self.calc_transmission_loss()
         self.calc_kWh_transmitted()
-        self.calc_transmission_line_cost()
+        
+        road_needed = self.community_data["road_neede"]
+        self.calc_transmission_line_cost(transmission_line_cost[road_needed])
+        
         self.calc_loss_of_heat_recovered()
         self.calc_O_and_M()
         self.calc_communtiy_price_difference()
@@ -111,7 +118,7 @@ class Interties (object):
                                    (1+self.transmission_loss) * \
                                    (1+self.line_losses)
 
-    def calc_transmission_line_cost (self):
+    def calc_transmission_line_cost (self, cost_per_mile):
         """
         calculate cost for transmission line
 
@@ -121,22 +128,26 @@ class Interties (object):
         nan if not available
             "dist_to_nearest_comm" value needs to be accessible and a number or
         nan for "N/a" values
+            cost_per_mile, cost of transmission mile in dollars
         post:
             self.transmission_line_cost is a number($ value)
         """
         # $ -- there may be some optimization to happen here
         self.transmission_line_cost = self.community_data["intertie_cost"]
-        if self.community_data["intertie_cost_known"] == False and \
-           self.community_data["road_needed"] == True:
-            # where does 500000 come from(cost / mile) ?
-            self.transmission_line_cost = 500000* \
-                            self.community_data["dist_to_nearest_comm"]
-        elif self.community_data["intertie_cost_known"] == False and \
-           self.community_data["road_needed"] == False:
-            self.transmission_line_cost = 250000* \
-                            self.community_data["dist_to_nearest_comm"]
+        if self.community_data["intertie_cost_known"] == False:
+            self.transmission_line_cost = cost_per_mile * \
+                                    self.community_data["dist_to_nearest_comm"]
+        #~ if self.community_data["intertie_cost_known"] == False and \
+           #~ self.community_data["road_needed"] == True:
+            #~ # where does 500000 come from(cost / mile) ?
+            #~ self.transmission_line_cost = 500000* \
+                            #~ self.community_data["dist_to_nearest_comm"]
+        #~ elif self.community_data["intertie_cost_known"] == False and \
+           #~ self.community_data["road_needed"] == False:
+            #~ self.transmission_line_cost = 250000* \
+                            #~ self.community_data["dist_to_nearest_comm"]
 
-    def calc_loss_of_heat_recovered (self):
+    def calc_loss_of_heat_recovered (self, hr_percent = .15):
         """
         calculate loss of heat recovered
 
@@ -145,6 +156,7 @@ class Interties (object):
             "dist_to_nearest_comm" value needs to be accessible and a number or
         nan for "N/a" values
             "diesel_consumed" is a positive number of gallons
+            hr_precent is a decimal percent 
 
         post:
             self.loss_of_heat_recovered is a number(gallons)
@@ -155,8 +167,9 @@ class Interties (object):
         elif self.community_data["HR_installed"] == True and \
              self.community_data["HR_operational"] == True:
             # where does .15 come from
+            # it's an argument now 
             self.loss_of_heat_recovered = \
-                               self.community_data["diesel_consumed"] * .15
+                            self.community_data["diesel_consumed"] * hr_percent
 
     def calc_O_and_M (self):
         """
