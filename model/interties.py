@@ -10,12 +10,12 @@ import numpy as np
 from math import isnan
 
 
-#~ from annual_savings import AnnualSavings
-# for live testing ---
-import annual_savings
-reload(annual_savings)
-AnnualSavings = annual_savings.AnnualSavings
-# -------------------
+from annual_savings import AnnualSavings
+#~ # for live testing ---
+#~ import annual_savings
+#~ reload(annual_savings)
+#~ AnnualSavings = annual_savings.AnnualSavings
+#~ # -------------------
 from community_data import manley_data
 
 
