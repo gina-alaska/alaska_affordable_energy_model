@@ -42,16 +42,53 @@ POP_HF = {"Circulating/Gravity": 3.57835240238995,
            "Wash/HB": 22.3235825717145,
            }
 
-RES_NONPCE_eligible = 0.83 # $ --- From Community Data
+#~ RES_NONPCE_eligible = 0.83 # $ --- From Community Data
 
+# this data will need its own class/file/something somewhere else
+manley_data = {
+        "community": "Manley Hot Springs",
+        "HR_installed": True, # True == 'yes'/ False == 'no'
+        "HR_operational": True,
+        "dist_to_nearest_comm": 53, # miles
+        "cost_power_nearest_comm": 00.18, # $/kWh pre-PCE
+        "project_phase": "Recon", # orange is supposed to be linked from
+                                    #annother tab, but this olny shows up here
+        "road_needed": True, #road needed for for T&D
+        "intertie_cost_known": False,
+        "intertie_cost": float('nan'), # not available for here
+        "consumption/year": 384000, # kWh/year
+        "line_losses": .1210, # %
+        "resource_potential": "N/a",
+        "resource_certainty": "N/a",
+        "diesel_consumed": 40739, # gallons
+        "res_non-PCE_elec_cost": 00.83, # $/kWh
+        "HDD": 14593, # Degrees/day
+        "population": 89, # number people
+        "w&ww_system_type": "Haul", 
+        "w&ww_energy_use_known": False,
+        "w&ww_energy_use_electric": float("nan"), # kWh 
+        "w&ww_energy_use_hf": float("nan"), # Gallons
+        "w&ww_heat_recovery_used": False,
+        "w&ww_heat_recovery": float("nan"), # units?
+        "w&ww_audit_preformed": False,
+        "w&ww_audit_savings_elec": float("nan"), # kWh
+        "w&ww_audit_savings_hf": float("nan"), # gal
+        "w&ww_audit_cost": float("nan"), # $ -- make cost_from_audit
+        
+}
+
+heat_recovery_multiplier = {True:  0.5, 
+                            False: 1.0
+                           }
+
+w_ww_audit_cost = 10000
 
 class WaterWastewaterSystems (object):
     """
     this class mocks up the Eff(w & ww) tab in the spreed sheet
     """
     
-    def __init__ (self, hdd, population, system_type, 
-                  energy_use_known, heat_recovery, audit_preformed):
+    def __init__ (self, community_data):
         """ 
         Class initialiser 
         
@@ -65,12 +102,11 @@ class WaterWastewaterSystems (object):
         Post-conditions: 
             The class members are set to the initila values.
         """
-        self.hdd = hdd #degree(F or c?)/ day
-        self.pop = population # number of people
-        self.system_type = system_type 
-        self.energy_use_known = energy_use_known
-        self.heat_recovery = heat_recovery
-        self.audit_preformed = audit_preformed
+        self.cd = community_data
+        
+        self.hdd = self.cd["HDD"]
+        self.pop = self.cd["population"] 
+        self.system_type = self.cd["w&ww_system_type"] 
         
     def run (self):
         """
@@ -78,127 +114,104 @@ class WaterWastewaterSystems (object):
         pre-conditions:
             Class should have be set up properly, as described in __init__ 
         post-conditions:
-            All of the "estimates" will be numbers. Estimates are 
-        self.electricity, self.heating_fuel, self.savings_electricity, 
-        self.savings_heating_fuel, self.post_savings_electricity, and
-        self.post_savings_heating_fuel
+            All output values will be calculated and usable
         """
-        # change the 'yes'/'no' to booleans?
-        if self.energy_use_known == "yes":
-            self.set_actual_energy_consumption()
-        elif self.energy_use_known == "no":
-            self.estimate_heating_fuel_consumption()
-            self.estimate_electricty_consumption()
+        self.calc_electricity_consumption()
+        hr_mult = heat_recovery_multiplier[self.cd["w&ww_heat_recovery_used"]]
+        self.calc_heating_fuel_consumption(hr_mult)
         
-        if self.audit_preformed == "yes":
-            self.set_actual_energy_savings()
-        elif self.audit_preformed == "no":
-            self.estimate_electricty_savings()
-            self.estimate_heating_fuel_savings()
-            self.estimate_audit_cost()
+        self.calc_savings_electricity()
+        self.calc_savings_heating_feul()
+        self.calc_capital_costs()
     
         self.calc_post_savings_values()
-        
-
-    def set_actual_energy_consumption (self):
-        """ 
-        set the "pre" estimates to actual values
-        
-        pre-conditions:
-            None <- probably not true if this did something
-        post-conditions:
-            self.electricity and self.heading_fuel are numbers 
-        """
-        # actual values come from somewhere? if available
-        # numbers are manley #s for now
-        self.electricity = 6211 # kWh
-        self.heating_fuel = 628 # Gallons
-
-        
-    def estimate_heating_fuel_consumption (self):
-        """
-        estimate the the heating fuel consumption
-        
-        pre:
-            None
-        post:
-            self.heating fuel will be a number (Gallons HF)
-        """
-        heat_recovery_multiplier = 1.0
-        if self.heat_recovery == "yes":
-            heat_recovery_multiplier = 0.5
-        
-        
-        self.heating_fuel = (self.hdd * HDD_HF[self.system_type] + \
-                                self.pop * POP_HF[self.system_type]) * \
-                                heat_recovery_multiplier
     
-    def estimate_electricty_consumption (self):
+    def calc_electricity_consumption (self):
         """
-        estimate the the electricity consumption
+        calculate electric savings
         
         pre:
-            None
+            "w&ww_energy_use_electric" is a number
+            self.pop & self.hdd should be numbers
+            self.system_type should be a ww system type
+            "w&ww_energy_use_known" is a boolean
         post:
-            self.heating fuel will be a number (kWh)
+            self.electricity will be a number
         """
-        self.electricity = (self.hdd * HDD_KWH[self.system_type] + \
+        self.electricity = self.cd["w&ww_energy_use_electric"]
+        if not self.cd["w&ww_energy_use_known"]:
+            self.electricity = \
+                               (self.hdd * HDD_KWH[self.system_type] + \
                                 self.pop * POP_KWH[self.system_type])
-        return self.electricity
-    
-    def set_actual_energy_savings (self):
-        """ 
-        set the actual enegry savings. 
-        
-        pre-conditions:
-            None <- probably not true if this did something
-        post-conditions:
-            self.savings_electricity and self.savings_heading_fuel are numbers 
+                            
+    def calc_heating_fuel_consumption (self, hr_coeff):
         """
-        # actual values come from somewhere? if available
-        # numbers are manley #s for now
-        self.savings_electricity = 1553 #(kWh)
-        self.savings_heating_fuel = 220 #(gallons HF)
-        
-    def estimate_electricty_savings (self):
-        """
-        estimate electricity savings
+        calculate heating fuel savings
         
         pre:
-            self.electricity is a number
-        post: 
-            self.savings_electricity is a number (kWh)
-        """
-        self.savings_electricity = self.electricity * .25
-        
-    def estimate_heating_fuel_savings (self):
-        """
-        estimate heating fuel savings
-        
-        pre:
-            self.heating_fuel is a number
-        post: 
-            self.savings_heating_fuel is a number (Gallons HF)
-        """
-        self.savings_heating_fuel = self.heating_fuel * .35
-        
-    def set_actual_audit_cost (self):
-        """
-            if this is available it has to come from somewhere, but that is 
-        not clear
-        """
-        pass
-    
-    
-    def estimate_audit_cost (self):
-        """ 
-        estimate the aduit cost 
-        pre:
-            self.pop is an int 
+            "w&ww_energy_use_hf" is a number
+            self.pop & self.hdd should be numbers
+            self.system_type should be a ww system type
+            "w&ww_energy_use_known" is a boolean
+            hr_coeff should be a number (0 < hr_coeff <= 1)?
         post:
-            self.audit cost is a number ($ ammount)
+            self.heating_fuel will be a number
         """
-        self.audit_cost = 10000 + self.pop * 450 
+        self.heating_fuel = self.cd["w&ww_energy_use_hf"]
+        if not self.cd["w&ww_energy_use_known"]:
+            self.heating_fuel = (self.hdd * HDD_HF[self.system_type] + \
+                                 self.pop * POP_HF[self.system_type]) * \
+                                 hr_coeff 
+
+    def calc_savings_electricity (self, coeff = .25):
+        """
+        calculate possible electricity savings
+        
+        pre:
+            "w&ww_audit_savings_elec" is a number
+            "w&ww_audit_preformed" is a bool
+            self.electricity should be calculated 
+            coeff should be a number
+        post:
+            self.savings_electricity will be a number (kWh)
+        """
+        self.savings_electricity = self.cd["w&ww_audit_savings_elec"]
+        if not self.cd["w&ww_audit_preformed"]:
+            self.savings_electricity = self.electricity * coeff
+        
+    def calc_savings_heating_feul (self, coeff = .35):
+        """
+        calculate possible hf savings
+        
+        pre:
+            "w&ww_audit_savings_hf" is a number
+            "w&ww_audit_preformed" is a boolean
+            self.heating_fuel should be calculated 
+            coeff should be a number
+        post:
+            self.savings_heating_fuel will be a number (gal)
+        """
+        self.savings_heating_fuel = self.cd["w&ww_audit_savings_hf"]
+        if not self.cd["w&ww_audit_preformed"]:
+            self.savings_heating_fuel = self.heating_fuel * coeff
+            
+    def calc_capital_costs (self, cost_per_person = 450):
+        """
+        calculate the capital costs
+        
+        pre:
+            "w&ww_audit_cost" is a number
+            "w&ww_audit_preformed" is a boolean
+            cost_per_person is a dolar value per person > 0
+            self.pop > 0
+        post:
+            self.captial_costs will be a dollar value
+        """
+        self.capital_costs = self.cd["w&ww_audit_cost"]
+        if not self.cd["w&ww_audit_preformed"]:
+            self.capital_costs = float(w_ww_audit_cost) + \
+                                        self.pop * cost_per_person
+    
         
     def calc_post_savings_values (self):
         """
@@ -228,20 +241,26 @@ class WaterWastewaterSystems (object):
         print "kWH\t" + str(int(round(self.electricity))) + "\t\t" + \
               str(int(round(self.post_savings_electricity))) + "\t\t" + \
               str(int(round(self.savings_electricity)))
-        print "kWH\t" + str(int(round(self.heating_fuel))) + "\t\t" +\ 
+        print "kWH\t" + str(int(round(self.heating_fuel))) + "\t\t" +\
               str(int(round(self.post_savings_heating_fuel))) + "\t\t" +\
               str(int(round(self.savings_heating_fuel)))
+              
+        print ""
+        print "Capital Costs: $" + "{0:.2f}".format(round(self.capital_costs,2))
         
 def test ():
     """
     tests the class using the manley data.
     """
-    ww = WaterWastewaterSystems(14593, 89, "Haul", 'no', 'no', 'no')
+    ww = WaterWastewaterSystems(manley_data)
     # or
     #~ww = WaterWastewaterSystems(hdd=14593,population=89,system_type="Haul",
                            #~ energy_use_known='no',heat_recovery='no',
                            #~ audit_preformed='no')
     ww.run()
-    ww.print_savings_chart()
+    try:
+        ww.print_savings_chart()
+    except:
+        print "printing error occured"
     return ww # return the object for further testing
 
