@@ -6,20 +6,34 @@ created: 2015/09/15
     python version of interties tab. currently only the inputs section has
 been implemented
 """
+import numpy as np
 from math import isnan
+
+
+from annual_savings import AnnualSavings
+#~ # for live testing ---
+#~ import annual_savings
+#~ reload(annual_savings)
+#~ AnnualSavings = annual_savings.AnnualSavings
+#~ # -------------------
 from community_data import manley_data
+
+
 
 # AEA Assumptions. Also, should move somewhere
 loss_per_mile = .001 # Transmission line loss/mile (%)
 O_and_M_cost = 10000.00 # $/mile/year
 project_life = 20 # years
+start_year = 2016
 
+interest_rate = .05
+discount_rate = .03
 
 transmission_line_cost = {True:  500000, # road needed  -- $/mi
                           False: 250000  # road not needed -- $/mi
                          } 
 
-class Interties (object):
+class Interties (AnnualSavings):
     """
     class for preforming the interties work
     """
@@ -38,7 +52,38 @@ class Interties (object):
         # used in the NPV calculation so this is a relevant output
         self.current_consumption = self.community_data["consumption/year"]
         self.line_losses = self.community_data["line_losses"]
-        self.system_lifetime = project_life #?
+        self.set_project_life_details()
+    
+    def set_project_life_details (self):
+        """
+        set the details for the project life time(
+        pre:
+            start_year is an int represnting a year
+            projct life is the number(int >0) of years 
+        post:
+            self.start_year, and self.project_life are the input values
+        and self.end_year would be the year the project ends.
+        """
+        super(Interties, self).set_project_life_details(start_year, 
+                                                        project_life)
+
+
+    def calc_annual_electric_savings (self):
+        """
+        calculate the annual electric savings
+        """
+        self.annual_electric_savings = np.zeros(self.project_life)
+        # calc poposed
+        # calc base
+        # set self.electric_savings to proposed - base
+        
+    
+    def calc_annual_heating_savings (self):
+        """
+        calculate the annual heating savings 
+        """
+        self.annual_heating_savings = np.zeros(self.project_life)
+        # same as calc_electric_savings work flow but for heating
 
     def run (self):
         """
@@ -58,6 +103,17 @@ class Interties (object):
         self.calc_loss_of_heat_recovered()
         self.calc_O_and_M()
         self.calc_communtiy_price_difference()
+        
+        self.calc_capital_costs()
+        self.calc_annual_electric_savings()
+        self.calc_annual_heating_savings()
+        self.calc_annual_total_savings()
+        
+        self.calc_annual_costs(interest_rate)
+        self.calc_annual_benefit()
+        
+        self.calc_npv(discount_rate)
+        
 
     def calc_transmission_loss (self):
         """
@@ -112,20 +168,21 @@ class Interties (object):
         post:
             self.transmission_line_cost is a number($ value)
         """
-        # $ -- there may be some optimization to happen here
         self.transmission_line_cost = self.community_data["intertie_cost"]
         if self.community_data["intertie_cost_known"] == False:
             self.transmission_line_cost = cost_per_mile * \
                                     self.community_data["dist_to_nearest_comm"]
-        #~ if self.community_data["intertie_cost_known"] == False and \
-           #~ self.community_data["road_needed"] == True:
-            #~ # where does 500000 come from(cost / mile) ?
-            #~ self.transmission_line_cost = 500000* \
-                            #~ self.community_data["dist_to_nearest_comm"]
-        #~ elif self.community_data["intertie_cost_known"] == False and \
-           #~ self.community_data["road_needed"] == False:
-            #~ self.transmission_line_cost = 250000* \
-                            #~ self.community_data["dist_to_nearest_comm"]
+
+    def calc_capital_costs (self):
+        """
+        set the capital costs
+        
+        pre:
+            self.calc_transmission_line_cost needs to have been called
+        post:
+            self.capital_costs is the cost of the transmission line
+        """
+        self.capital_costs = self.transmission_line_cost
 
     def calc_loss_of_heat_recovered (self, hr_percent = .15):
         """
@@ -214,7 +271,7 @@ class Interties (object):
         text += "O&M                                     : " + \
                 "$ " + str(int(round(self.O_and_M))) + "/year\n"
         text += "System Lifetime                         : " + \
-                str(self.system_lifetime) + " years\n"
+                str(self.project_life) + " years\n"
         text += "Difference in Price between communities : " + \
                 "$ " + str(round(self.communtiy_price_difference,2)) + "\n"
         print text
@@ -232,5 +289,7 @@ def test ():
     it = Interties(manley_data)
     it.run()
     it.print_proposed_sytstem_analysis()
+    print ""
+    print "NPV net benefit: " + str(it.npv)
     return it
 
