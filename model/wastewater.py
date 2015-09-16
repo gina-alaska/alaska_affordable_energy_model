@@ -7,6 +7,9 @@ created: 2015/09/09
 
     python mock-up of eff(W & WW) tab. 
 """
+import numpy as np
+
+from annual_savings import AnnualSavings
 from community_data import manley_data
 ## Wastewater assumptions
 
@@ -48,8 +51,14 @@ heat_recovery_multiplier = {True:  0.5,
                            }
 
 w_ww_audit_cost = 10000
+project_life = 20 # years
+start_year = 2016
 
-class WaterWastewaterSystems (object):
+interest_rate = .05
+discount_rate = .03
+
+
+class WaterWastewaterSystems (AnnualSavings):
     """
     this class mocks up the Eff(w & ww) tab in the spreed sheet
     """
@@ -74,6 +83,23 @@ class WaterWastewaterSystems (object):
         self.pop = self.cd["population"] 
         self.system_type = self.cd["w&ww_system_type"] 
         
+    def calc_annual_electric_savings (self):
+        """
+        calculate the annual electric savings
+        """
+        self.annual_electric_savings = np.zeros(self.project_life)
+        # calc poposed
+        # calc base
+        # set self.electric_savings to proposed - base
+        
+    
+    def calc_annual_heating_savings (self):
+        """
+        calculate the annual heating savings 
+        """
+        self.annual_heating_savings = np.zeros(self.project_life)
+        # same as calc_electric_savings work flow but for heating
+        
     def run (self):
         """
         runs the model for the inputs section of the wastewater tab
@@ -82,6 +108,8 @@ class WaterWastewaterSystems (object):
         post-conditions:
             All output values will be calculated and usable
         """
+        self.set_project_life_details(start_year ,project_life)
+        
         self.calc_electricity_consumption()
         hr_mult = heat_recovery_multiplier[self.cd["w&ww_heat_recovery_used"]]
         self.calc_heating_fuel_consumption(hr_mult)
@@ -91,6 +119,16 @@ class WaterWastewaterSystems (object):
         self.calc_capital_costs()
     
         self.calc_post_savings_values()
+        
+        #~ self.calc_capital_costs()
+        self.calc_annual_electric_savings()
+        self.calc_annual_heating_savings()
+        self.calc_annual_total_savings()
+        
+        self.calc_annual_costs(interest_rate)
+        self.calc_annual_benefit()
+        
+        self.calc_npv(discount_rate)
     
     def calc_electricity_consumption (self):
         """
