@@ -10,12 +10,12 @@ import numpy as np
 from math import isnan
 
 
-from annual_savings import AnnualSavings
-#~ # for live testing ---
-#~ import annual_savings
-#~ reload(annual_savings)
-#~ AnnualSavings = annual_savings.AnnualSavings
-#~ # -------------------
+#~ from annual_savings import AnnualSavings
+# for live testing ---
+import annual_savings
+reload(annual_savings)
+AnnualSavings = annual_savings.AnnualSavings
+# -------------------
 from community_data import manley_data
 
 
@@ -52,20 +52,7 @@ class Interties (AnnualSavings):
         # used in the NPV calculation so this is a relevant output
         self.current_consumption = self.community_data["consumption/year"]
         self.line_losses = self.community_data["line_losses"]
-        self.set_project_life_details()
-    
-    def set_project_life_details (self):
-        """
-        set the details for the project life time(
-        pre:
-            start_year is an int represnting a year
-            projct life is the number(int >0) of years 
-        post:
-            self.start_year, and self.project_life are the input values
-        and self.end_year would be the year the project ends.
-        """
-        super(Interties, self).set_project_life_details(start_year, 
-                                                        project_life)
+        
 
 
     def calc_annual_electric_savings (self):
@@ -94,6 +81,8 @@ class Interties (AnnualSavings):
         post:
             All values will be calculated and usable
         """
+        self.set_project_life_details(start_year ,project_life)
+        
         self.calc_transmission_loss()
         self.calc_kWh_transmitted()
         

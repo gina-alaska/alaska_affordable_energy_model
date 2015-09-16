@@ -67,19 +67,8 @@ class AnnualSavings (object):
             self.npv is a dollar value
         """
         self.npv = np.npv(rate, self.annual_benefit)
+        
     
-    @abstractmethod
-    def calc_capital_costs (self):
-        """
-        abstract function 
-        should be implemented by child class to calculate self.capital_costs
-        (the cost of the project) a dollar value
-        """
-        raise NotImplementedError, "should be implemented by child class to" +\
-        " calculate self.capital_costs(the cost of the project) a dollar value"
-    
-    # is there a better way to do this? not abstract?
-    @abstractmethod
     def set_project_life_details(self, start_year, project_life):
         """
         set the details for the project life time(
@@ -93,6 +82,17 @@ class AnnualSavings (object):
         self.start_year = start_year
         self.project_life = project_life
         self.end_year = self.start_year + self.project_life
+    
+    @abstractmethod
+    def calc_capital_costs (self):
+        """
+        abstract function 
+        should be implemented by child class to calculate self.capital_costs
+        (the cost of the project) a dollar value
+        """
+        raise NotImplementedError, "should be implemented by child class to" +\
+        " calculate self.capital_costs(the cost of the project) a dollar value"
+
         
     @abstractmethod
     def calc_annual_electric_savings (self):
