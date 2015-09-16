@@ -7,27 +7,7 @@ created: 2015/09/15
 been implemented
 """
 from math import isnan
-
-# this data will need its own class/file/something somewhere else
-manley_data = {
-        "community": "Manley Hot Springs",
-        "HR_installed": True, # True == 'yes'/ False == 'no'
-        "HR_operational": True,
-        "dist_to_nearest_comm": 53, # miles
-        "cost_power_nearest_comm": 00.18, # $/kWh pre-PCE
-        "project_phase": "Recon", # orange is supposed to be linked from
-                                    #annother tab, but this olny shows up here
-        "road_needed": True, #road needed for for T&D
-        "intertie_cost_known": False,
-        "intertie_cost": float('nan'), # not available for here
-        "consumption/year": 384000, # kWh/year
-        "line_losses": .1210, # %
-        "resource_potential": "N/a",
-        "resource_certainty": "N/a",
-        "diesel_consumed": 40739, # gallons
-        "res_non-PCE_elec_cost": 00.83, # $/kWh
-}
-
+from community_data import manley_data
 
 # AEA Assumptions. Also, should move somewhere
 loss_per_mile = .001 # Transmission line loss/mile (%)
@@ -72,7 +52,7 @@ class Interties (object):
         self.calc_transmission_loss()
         self.calc_kWh_transmitted()
         
-        road_needed = self.community_data["road_neede"]
+        road_needed = self.community_data["road_needed"]
         self.calc_transmission_line_cost(transmission_line_cost[road_needed])
         
         self.calc_loss_of_heat_recovered()
