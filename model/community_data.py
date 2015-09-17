@@ -13,7 +13,7 @@ manley_data = {
         "HR_installed": True, # True == 'yes'/ False == 'no'
         "HR_operational": True,
         "dist_to_nearest_comm": 53, # miles
-        "cost_power_nearest_comm": 00.18, # $/kWh pre-PCE
+        "cost_power_nearest_comm": 00.1788, # $/kWh pre-PCE
         "project_phase": "Recon", # orange is supposed to be linked from
                                     #annother tab, but this olny shows up here
         "road_needed": True, #road needed for for T&D
