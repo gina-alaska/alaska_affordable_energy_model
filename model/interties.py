@@ -10,21 +10,32 @@ import numpy as np
 from math import isnan
 
 
-from annual_savings import AnnualSavings
-#~ # for live testing ---
-#~ import annual_savings
-#~ reload(annual_savings)
-#~ AnnualSavings = annual_savings.AnnualSavings
-#~ # -------------------
+#~ from annual_savings import AnnualSavings
+# for live testing ---
+import annual_savings
+reload(annual_savings)
+AnnualSavings = annual_savings.AnnualSavings
+# -------------------
 from community_data import manley_data
 
 
-
+# TODO: move --------------------------------------------
 # AEA Assumptions. Also, should move somewhere
 loss_per_mile = .001 # Transmission line loss/mile (%)
 O_and_M_cost = 10000.00 # $/mile/year
 project_life = 20 # years
 start_year = 2016
+
+manley_slope = 1.475
+manley_intercept = 0.548
+manley_2013_price = 4.03
+
+
+fuel_repairs = 500  # $/year
+fuel_OM = 1000 # $/year
+diesel_generator_OM = .02 # $/kWh
+
+heating_fuel_premium = 0.45 # $
 
 interest_rate = .05
 discount_rate = .03
@@ -32,6 +43,8 @@ discount_rate = .03
 transmission_line_cost = {True:  500000, # road needed  -- $/mi
                           False: 250000  # road not needed -- $/mi
                          } 
+# ----------------------------------------------------------
+                        
 
 class Interties (AnnualSavings):
     """
@@ -53,24 +66,73 @@ class Interties (AnnualSavings):
         self.current_consumption = self.community_data["consumption/year"]
         self.line_losses = self.community_data["line_losses"]
         
-
-
     def calc_annual_electric_savings (self):
         """
         calculate the annual electric savings
+        pre:
+             TODO: write this 
+        post:
+            self.annual_electric_savings is an np.array of $/year values
         """
-        self.annual_electric_savings = np.zeros(self.project_life)
-        # calc poposed
-        # calc base
-        # set self.electric_savings to proposed - base
-        
-    
+        #~ self.annual_electric_savings = np.zeros(self.project_life)
+        self.calc_proposed_electric_savings()
+        self.calc_base_electric_savings()
+        self.annual_electric_savings = self.base_electric_savings - \
+                                       self.proposed_electric_savings
+
+    #TODO: fix calculation as spread sheet is updated
+    def calc_proposed_electric_savings (self):
+        """
+        calcualte the savings for the proposed electric savings
+        pre:
+            TODO: write this 
+        post:
+           self.proposed_electric_savings is an np.array of $/year values 
+        """
+        self.proposed_electric_savings = np.zeros(self.project_life) + \
+                                               self.O_and_M + self.O_and_M + \
+        (self.community_data["cost_power_nearest_comm"] * self.kWh_transmitted)
+
+    #TODO: fix calculation as spread sheet is updated    
+    def calc_base_electric_savings (self, generator_repairs = 1500):
+        """
+        calcualte the savings for the proposed electric savings
+        pre:
+            TODO: write this 
+        post:
+           self.base_electric_savings is an np.array of $/year values 
+        """
+        self.base_electric_savings = np.zeros(self.project_life) + \
+                        generator_repairs + \
+                        self.community_data["diesel_consumed"] + \
+                        (diesel_generator_OM * self.kWh_transmitted) + \
+                        (self.diesel_prices * \
+                        self.community_data["diesel_consumed"])
+            
     def calc_annual_heating_savings (self):
         """
-        calculate the annual heating savings 
+        calculate the annual heating savings
+        pre:
+             TODO: write this 
+        post:
+            self.annual_electric_savings is an np.array of $/year values
         """
-        self.annual_heating_savings = np.zeros(self.project_life)
-        # same as calc_electric_savings work flow but for heating
+        #~ self.calc_proposed_heating_savings() # NONE HERE
+        self.calc_base_heating_savings()
+        self.annual_heating_savings = self.base_heating_savings 
+
+    #TODO: fix calculation as spread sheet is updated  
+    def calc_base_heating_savings (self):
+        """
+        calcualte the savings for the proposed electric savings
+        pre:
+            TODO: write this 
+        post:
+           self.base_electric_savings is an np.array of $/year values 
+        """
+        fuel_cost = self.diesel_prices + heating_fuel_premium
+        self.base_heating_savings = (-self.loss_of_heat_recovered * fuel_cost)+\
+                                    + fuel_repairs + fuel_OM
 
     def run (self):
         """
@@ -94,6 +156,9 @@ class Interties (AnnualSavings):
         self.calc_communtiy_price_difference()
         
         self.calc_capital_costs()
+        
+        self.get_diesel_prices(manley_slope, manley_intercept, 
+                                                            manley_2013_price)
         self.calc_annual_electric_savings()
         self.calc_annual_heating_savings()
         self.calc_annual_total_savings()

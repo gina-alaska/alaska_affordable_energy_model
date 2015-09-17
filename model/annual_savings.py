@@ -44,7 +44,7 @@ class AnnualSavings (object):
         indicating the cost of the project per year.
         """
         rate = np.zeros(self.project_life) + rate
-        self.annual_costs = np.pmt(rate, self.project_life, self.capital_costs)
+        self.annual_costs = -np.pmt(rate, self.project_life, self.capital_costs)
     
     def calc_annual_benefit (self):
         """
@@ -82,7 +82,7 @@ class AnnualSavings (object):
         and self.end_year would be the year the project ends.
         """
         self.start_year = start_year
-        self.project_life = project_life
+        self.project_life = project_life + 1
         self.end_year = self.start_year + self.project_life
         
     def get_diesel_prices (self, slope, intercept, base_price, urban = False):
