@@ -9,6 +9,8 @@ each of the spread sheet tabs.
 import numpy as np
 from abc import ABCMeta, abstractmethod
 
+from diesel_prices import DieselProjections
+
 class AnnualSavings (object):
     """
         Abstract base class to use as base class for all model components 
@@ -69,7 +71,7 @@ class AnnualSavings (object):
         self.npv = np.npv(rate, self.annual_benefit)
         
     
-    def set_project_life_details(self, start_year, project_life):
+    def set_project_life_details (self, start_year, project_life):
         """
         set the details for the project life time(
         pre:
@@ -82,6 +84,15 @@ class AnnualSavings (object):
         self.start_year = start_year
         self.project_life = project_life
         self.end_year = self.start_year + self.project_life
+        
+    def get_diesel_prices (self, slope, intercept, base_price, urban = False):
+        """
+        """
+        prices = DieselProjections(slope, intercept, 
+                                                base_price, 2013)
+        prices.calc_projected_prices(urban)
+        self.diesel_prices = prices.get_projected_prices(self.start_year,
+                                                         self.end_year)
     
     @abstractmethod
     def calc_capital_costs (self):
