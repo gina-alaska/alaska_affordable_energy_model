@@ -42,6 +42,9 @@ manley_data = {
         "it_resource_potential": "N/a",
         "it_resource_certainty": "N/a",
 
+        
+        "w&ww_lifetime" : 20, # years
+        "w&ww_start_year" : 2016, # a year 
         "w&ww_system_type": "Haul", 
         "w&ww_energy_use_known": False,
         "w&ww_energy_use_electric": float("nan"), # kWh 

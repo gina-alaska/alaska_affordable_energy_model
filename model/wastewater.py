@@ -11,51 +11,7 @@ import numpy as np
 
 from annual_savings import AnnualSavings
 from community_data import manley_data
-## Wastewater assumptions
-
-## heating degree days - kWh?
-HDD_KWH = {"Circulating/Gravity": 3.93236229561503,
-           "Circulating/Vac": 11.4132439375221,
-           "Haul": 0,
-           "Pressure/Gravity": -0.848162217309015,
-           "Wash/HB": -0.528728194855285,
-           }
-
-## heating degree days - Gallons HF?
-HDD_HF = {"Circulating/Gravity": 0.544867662390884,
-           "Circulating/Vac": -0.297715988257898,
-           "Haul": 0,
-           "Pressure/Gravity": 2.2408614639956,
-           "Wash/HB": 0.17155240756494,
-           }
-
-## Population - kWh?
-POP_KWH = {"Circulating/Gravity": 54.4093002543652,
-           "Circulating/Vac": 161.481419074818,
-           "Haul": 69.7824047085659,
-           "Pressure/Gravity": 263.448648548957,
-           "Wash/HB": 144.393961746201,
-           }
-           
-## Population - Gallons HF?
-POP_HF = {"Circulating/Gravity": 3.57835240238995,
-           "Circulating/Vac": 23.8252508422151,
-           "Haul": 7.06151797216891,
-           "Pressure/Gravity": -78.7469560579852,
-           "Wash/HB": 22.3235825717145,
-           }
-
-
-heat_recovery_multiplier = {True:  0.5, 
-                            False: 1.0
-                           }
-
-w_ww_audit_cost = 10000
-project_life = 20 # years
-start_year = 2016
-
-interest_rate = .05
-discount_rate = .03
+import aea_assumptions as AEAA
 
 
 class WaterWastewaterSystems (AnnualSavings):
@@ -108,11 +64,12 @@ class WaterWastewaterSystems (AnnualSavings):
         post-conditions:
             All output values will be calculated and usable
         """
-        self.set_project_life_details(start_year ,project_life)
+        self.set_project_life_details(self.cd["w&ww_start_year"],
+                                      self.cd["w&ww_lifetime"])
         
         self.calc_electricity_consumption()
-        hr_mult = heat_recovery_multiplier[self.cd["w&ww_heat_recovery_used"]]
-        self.calc_heating_fuel_consumption(hr_mult)
+        hrm = AEAA.heat_recovery_multiplier[self.cd["w&ww_heat_recovery_used"]]
+        self.calc_heating_fuel_consumption(hrm)
         
         self.calc_savings_electricity()
         self.calc_savings_heating_feul()
@@ -120,15 +77,14 @@ class WaterWastewaterSystems (AnnualSavings):
     
         self.calc_post_savings_values()
         
-        #~ self.calc_capital_costs()
         self.calc_annual_electric_savings()
         self.calc_annual_heating_savings()
         self.calc_annual_total_savings()
         
-        self.calc_annual_costs(interest_rate)
+        self.calc_annual_costs(AEAA.interest_rate)
         self.calc_annual_benefit()
         
-        self.calc_npv(discount_rate)
+        self.calc_npv(AEAA.discount_rate)
     
     def calc_electricity_consumption (self):
         """
@@ -145,8 +101,8 @@ class WaterWastewaterSystems (AnnualSavings):
         self.electricity = self.cd["w&ww_energy_use_electric"]
         if not self.cd["w&ww_energy_use_known"]:
             self.electricity = \
-                               (self.hdd * HDD_KWH[self.system_type] + \
-                                self.pop * POP_KWH[self.system_type])
+                               (self.hdd * AEAA.HDD_KWH[self.system_type] + \
+                                self.pop * AEAA.POP_KWH[self.system_type])
                             
     def calc_heating_fuel_consumption (self, hr_coeff):
         """
@@ -163,8 +119,8 @@ class WaterWastewaterSystems (AnnualSavings):
         """
         self.heating_fuel = self.cd["w&ww_energy_use_hf"]
         if not self.cd["w&ww_energy_use_known"]:
-            self.heating_fuel = (self.hdd * HDD_HF[self.system_type] + \
-                                 self.pop * POP_HF[self.system_type]) * \
+            self.heating_fuel = (self.hdd * AEAA.HDD_HF[self.system_type] + \
+                                 self.pop * AEAA.POP_HF[self.system_type]) * \
                                  hr_coeff 
 
     def calc_savings_electricity (self, coeff = .25):
@@ -213,7 +169,7 @@ class WaterWastewaterSystems (AnnualSavings):
         """
         self.capital_costs = self.cd["w&ww_audit_cost"]
         if not self.cd["w&ww_audit_preformed"]:
-            self.capital_costs = float(w_ww_audit_cost) + \
+            self.capital_costs = float(AEAA.w_ww_audit_cost) + \
                                         self.pop * cost_per_person
     
         
@@ -257,14 +213,7 @@ def test ():
     tests the class using the manley data.
     """
     ww = WaterWastewaterSystems(manley_data)
-    # or
-    #~ww = WaterWastewaterSystems(hdd=14593,population=89,system_type="Haul",
-                           #~ energy_use_known='no',heat_recovery='no',
-                           #~ audit_preformed='no')
     ww.run()
-    try:
-        ww.print_savings_chart()
-    except:
-        print "printing error occured"
+    ww.print_savings_chart()
     return ww # return the object for further testing
 

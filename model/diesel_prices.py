@@ -50,7 +50,6 @@ manley_price_per_gal = np.array(manley_price_per_gal)
 
 
 
-gallons_per_barrel = 42 #gal/barrel - from Diesel fuel price tab 
 
 class DieselProjections (object):
     """ 

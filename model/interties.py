@@ -18,29 +18,9 @@ AnnualSavings = annual_savings.AnnualSavings
 # -------------------
 from community_data import manley_data
 from forecast import Forecast
+import aea_assumptions as AEAA
 
 
-# TODO: move --------------------------------------------
-# AEA Assumptions. Also, should move somewhere
-loss_per_mile = .001 # Transmission line loss/mile (%)
-O_and_M_cost = 10000.00 # $/mile/year
-project_life = 20 # years
-start_year = 2016
-
-fuel_repairs = 500  # $/year
-fuel_OM = 1000 # $/year
-diesel_generator_OM = 84181 # $/yr
-diesel_generation_eff = 10.802351555 # kWh/gal
-
-heating_fuel_premium = 0.45 # $
-
-interest_rate = .05
-discount_rate = .03
-
-transmission_line_cost = {True:  500000, # road needed  -- $/mi
-                          False: 250000  # road not needed -- $/mi
-                         } 
-# ----------------------------------------------------------
                         
 
 class Interties (AnnualSavings):
@@ -57,11 +37,11 @@ class Interties (AnnualSavings):
         post:
             the model can be run
         """
-        self.community_data = community_data
+        self.cd = community_data
 
         # used in the NPV calculation so this is a relevant output
-        self.current_consumption = self.community_data["consumption/year"]
-        self.line_losses = self.community_data["line_losses"]
+        self.current_consumption = self.cd["consumption/year"]
+        self.line_losses = self.cd["line_losses"]
         
     def calc_annual_electric_savings (self):
         """
@@ -88,7 +68,7 @@ class Interties (AnnualSavings):
         """
         self.proposed_electric_savings = np.zeros(self.project_life) 
         elec_gen = self.ff_gen_displaced/(1.0 - self.transmission_loss) # kWh/yr
-        price = self.community_data["cost_power_nearest_comm"] # $/kWh
+        price = self.cd["cost_power_nearest_comm"] # $/kWh
         # += to assure the array is the right length
         # $/year
         self.proposed_electric_savings += (elec_gen * price) + self.O_and_M 
@@ -103,13 +83,13 @@ class Interties (AnnualSavings):
            self.base_electric_savings is an np.array of $/year values 
         """
         self.base_electric_savings = np.zeros(self.project_life)
-        fuel_use = self.ff_gen_displaced / diesel_generation_eff # gal/yr
+        fuel_use = self.ff_gen_displaced / AEAA.diesel_generation_eff # gal/yr
         fuel_cost = fuel_use * self.diesel_prices # $/yr
         
         # += to assure the array is the right length
         # $/yr + $/yr + gal/yr - gal/yr -> ($ + gal - gal)/yr -> $/yr -- WHAT?
         # i'm doing this instead $/yr + $/yr -> $/yr
-        self.base_electric_savings += (fuel_cost + diesel_generator_OM)
+        self.base_electric_savings += (fuel_cost + AEAA.diesel_generator_OM)
         
             
     def calc_annual_heating_savings (self):
@@ -134,10 +114,11 @@ class Interties (AnnualSavings):
            self.base_electric_savings is an np.array of $/year values 
         """
         self.base_heating_savings = np.zeros(self.project_life)
-        fuel_cost = self.diesel_prices + heating_fuel_premium # $/gal
+        fuel_cost = self.diesel_prices + AEAA.heating_fuel_premium # $/gal
         fuel_cost = fuel_cost * (-self.loss_of_heat_recovered) # $/yr
         # += to assure the array is the right length
-        self.base_heating_savings += fuel_cost + fuel_repairs + fuel_OM # $/yr
+        self.base_heating_savings += fuel_cost + AEAA.fuel_repairs + \
+                                     AEAA.fuel_OM # $/yr
 
 
     def run (self):
@@ -149,13 +130,15 @@ class Interties (AnnualSavings):
         post:
             All values will be calculated and usable
         """
-        self.set_project_life_details(start_year ,project_life)
+        self.set_project_life_details(self.cd["it_start_year"],
+                                      self.cd["it_lifetime"])
         
         self.calc_transmission_loss()
         self.calc_kWh_transmitted()
         
-        it_road_needed = self.community_data["it_road_needed"]
-        self.calc_transmission_line_cost(transmission_line_cost[it_road_needed])
+        it_road_needed = self.cd["it_road_needed"]
+        tlc = AEAA.transmission_line_cost[it_road_needed]
+        self.calc_transmission_line_cost(tlc)
         
         self.calc_loss_of_heat_recovered()
         self.calc_O_and_M()
@@ -172,10 +155,10 @@ class Interties (AnnualSavings):
         self.calc_annual_heating_savings()
         self.calc_annual_total_savings()
         
-        self.calc_annual_costs(interest_rate)
+        self.calc_annual_costs(AEAA.interest_rate)
         self.calc_annual_benefit()
         
-        self.calc_npv(discount_rate)
+        self.calc_npv(AEAA.discount_rate)
         
 
     def calc_transmission_loss (self):
@@ -191,9 +174,9 @@ class Interties (AnnualSavings):
         """
         # %/year
         self.transmission_loss = 0 # Annual Transmission Loss Percentage
-        if isnan(self.community_data["dist_to_nearest_comm"]) == False:
+        if isnan(self.cd["dist_to_nearest_comm"]) == False:
             self.transmission_loss = 1.0 - \
-            ((1 - loss_per_mile) ** self.community_data["dist_to_nearest_comm"])
+            ((1 - AEAA.loss_per_mile) ** self.cd["dist_to_nearest_comm"])
         #~ self.transmission_loss = round(self.transmission_loss, 7)
 
     def calc_kWh_transmitted (self):
@@ -211,8 +194,8 @@ class Interties (AnnualSavings):
         """
         # kWh
         self.kWh_transmitted = 0
-        if self.community_data["it_resource_potential"].lower() != "low" and \
-           isnan(self.community_data["dist_to_nearest_comm"]) == False:
+        if self.cd["it_resource_potential"].lower() != "low" and \
+           isnan(self.cd["dist_to_nearest_comm"]) == False:
             self.kWh_transmitted = self.current_consumption * \
                                    (1+self.transmission_loss) * \
                                    (1+self.line_losses)
@@ -231,10 +214,10 @@ class Interties (AnnualSavings):
         post:
             self.transmission_line_cost is a number($ value)
         """
-        self.transmission_line_cost = self.community_data["it_cost"]
-        if self.community_data["it_cost_known"] == False:
+        self.transmission_line_cost = self.cd["it_cost"]
+        if self.cd["it_cost_known"] == False:
             self.transmission_line_cost = cost_per_mile * \
-                                    self.community_data["dist_to_nearest_comm"]
+                                    self.cd["dist_to_nearest_comm"]
 
     def calc_capital_costs (self):
         """
@@ -262,14 +245,14 @@ class Interties (AnnualSavings):
             self.loss_of_heat_recovered is a number(gallons)
         """
         self.loss_of_heat_recovered = 0         # gal
-        if isnan(self.community_data["dist_to_nearest_comm"]):
+        if isnan(self.cd["dist_to_nearest_comm"]):
             self.loss_of_heat_recovered = float('nan')
-        elif self.community_data["it_hr_installed"] == True and \
-             self.community_data["it_hr_operational"] == True:
+        elif self.cd["it_hr_installed"] == True and \
+             self.cd["it_hr_operational"] == True:
             # where does .15 come from
             # it's an argument now 
             self.loss_of_heat_recovered = \
-                            self.community_data["diesel_consumed"] * hr_percent
+                            self.cd["diesel_consumed"] * hr_percent
 
     def calc_O_and_M (self):
         """
@@ -284,9 +267,9 @@ class Interties (AnnualSavings):
             self.O_and_M is a number(gallons/year)
         """
         self.O_and_M = float('nan')
-        if isnan(self.community_data["dist_to_nearest_comm"]) == False:
-            self.O_and_M = O_and_M_cost * \
-                            self.community_data["dist_to_nearest_comm"]
+        if isnan(self.cd["dist_to_nearest_comm"]) == False:
+            self.O_and_M = AEAA.O_and_M_cost * \
+                            self.cd["dist_to_nearest_comm"]
 
     def calc_communtiy_price_difference (self):
         """
@@ -304,10 +287,10 @@ class Interties (AnnualSavings):
             not available
         """
         self.communtiy_price_difference = float('nan')
-        if isnan(self.community_data["dist_to_nearest_comm"]) == False:
+        if isnan(self.cd["dist_to_nearest_comm"]) == False:
             self.communtiy_price_difference = \
-                            self.community_data["res_non-PCE_elec_cost"] -\
-                            self.community_data["cost_power_nearest_comm"]
+                            self.cd["res_non-PCE_elec_cost"] -\
+                            self.cd["cost_power_nearest_comm"]
 
     def print_proposed_sytstem_analysis (self):
         """
