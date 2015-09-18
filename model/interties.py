@@ -157,8 +157,7 @@ class Interties (AnnualSavings):
         
         self.calc_capital_costs()
         
-        self.get_diesel_prices(manley_slope, manley_intercept, 
-                                                            manley_2013_price)
+        self.get_diesel_prices()
         self.calc_annual_electric_savings()
         self.calc_annual_heating_savings()
         self.calc_annual_total_savings()

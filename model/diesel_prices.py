@@ -6,83 +6,69 @@ created 2015/09/17
     for calculating diesel price projections 
 """
 import numpy as np
+#  TODO: this needs to be made not static
 
 
-# price per barrel projections 2013 - 2075
-# TODO: import from source 
-price_per_barrel = [103.35,97.3619959996,93.9353836392,90.4595627757,
-                    89.3641723069,89.5034893086,90.7826131871,92.2338130483,
-                    93.9332662162,95.6567950886,97.5098229738,99.184694254,
-                    100.6745135781,101.8035021479,103.3944705795,104.5588989267,
-                    105.8184503032,106.7733064245,108.2029534557,109.8851625292,
-                    111.5104657561,113.0114485397,114.5002261173,115.8513077399,
-                    117.4690335807,118.9695309514,121.0899407041,123.4857347068,
-                    124.2092839336,124.9370727067,125.669125867,126.4054684014,
-                    127.1461254428,127.8911222716,128.6404843162,129.394237154,
-                    130.1524065123,130.9150182692,131.6820984544,132.45367325,
-                    133.2297689917,134.0104121694,134.7956294282,135.5854475694,
-                    136.3798935512,137.17899449,137.9827776609,138.7912704987,
-                    139.6045005993,140.42249572,141.2452837809,142.0728928655,
-                    142.9053512222,143.7426872645,144.5849295727,145.4321068944,
-                    146.2842481457,147.1413824122,148.0035389498,148.8707471858,
-                    149.7430367201,150.6204373259,151.5029789509] 
-price_per_barrel = np.array(price_per_barrel)
-
-
-# CO2-equivalent allowance cost 2013 - 2075
-# TODO: import from source 
-co2_allowance_cost = [0.4105414619,0.4228577058,0.435543437,0.4486097401,
-                      0.4620680323,0.4759300732,0.4902079754,0.5049142147,
-                      0.5200616411,0.5356634904,0.5517333951,0.5682853969,
-                      0.5853339589,0.6028939776,0.6209807969,0.6396102209,
-                      0.6587985275,0.6785624833,0.6989193578,0.7198869385,
-                      0.7414835467,0.7637280531,0.7866398947,0.8102390915,
-                      0.8345462643,0.8595826522,0.8853701318,0.9119312357,
-                      0.9392891728,0.967467848,0.9964918834,1.0263866399,
-                      1.0571782391,1.0888935863,1.1215603939,1.1552072057,
-                      1.1898634219,1.2255593245,1.2623261043,1.3001958874,
-                      1.339201764,1.3793778169,1.4207591514,1.463381926,
-                      1.5072833838,1.5525018853,1.5990769418,1.6470492501,
-                      1.6964607276,1.7473545494,1.7997751859,1.8537684415,
-                      1.9093814947,1.9666629396,2.0256628277,2.0864327126,
-                      2.149025694,2.2134964648,2.2799013587,2.3482983995,
-                      2.4187473515,2.491309772,2.5660490652
-]
+co2_allowance_cost = [0.4731808371,0.4873762622,0.5019975501,0.5170574766,
+                      0.5325692009,0.5485462769,0.5650026652,0.5819527452,
+                      0.5994113275,0.6173936674,0.6359154774,0.6549929417,
+                      0.67464273,0.6948820119,0.7157284722,0.7372003264,
+                      0.7593163362,0.7820958262,0.805558701,0.8297254621,
+                      0.8546172259,0.8802557427,0.906663415,0.9338633174,
+                      0.961879217,0.9907355935,1.0204576613,1.0510713911,
+                      1.0826035328,1.1150816388,1.148534088,1.1829901106,
+                      1.218479814,1.2550342084,1.2926852346,1.3314657917,
+                      1.3714097654,1.4125520584,1.4549286201,1.4985764787,
+                      1.5435337731,1.5898397863,1.6375349799,1.6866610293,
+                      1.7372608601,1.789378686,1.8430600465,1.8983518479,
+                      1.9553024034,2.0139614755,2.0743803197,2.1366117293,
+                      2.2007100812,2.2667313836,2.3347333251,2.4047753249,
+                      2.4769185846,2.5512261422,2.6277629265,2.7065958142,
+                      2.7877936887,2.7877936887]
 co2_allowance_cost = np.array(co2_allowance_cost)
 
-# constants 
-# TODO: move to assumptions/constants file
+
+manley_price_per_gal = [2.6551872278,3.1224832059,3.2868240967,3.2988439943,
+                        3.3548353302,3.4111187308,3.4873851625,3.5691384113,
+                        3.6538119975,3.7402810267,3.8271557775,3.9197045121,
+                        4.0145168849,4.1116492907,4.2111592179,4.3131053947,
+                        4.4175486539,4.5245507326,4.6340259638,4.7416270426,
+                        4.8548324203,4.971160883,5.0852484008,5.207910448,
+                        5.3402464275,5.4636003299,5.4636003299,5.4636003299,
+                        5.4636003299,5.4636003299,5.4636003299,5.4636003299,
+                        5.4636003299,5.4636003299,5.4636003299,5.4636003299,
+                        5.4636003299,5.4636003299,5.4636003299,5.4636003299,
+                        5.4636003299,5.4636003299,5.4636003299,5.4636003299,
+                        5.4636003299,5.4636003299,5.4636003299,5.4636003299,
+                        5.4636003299,5.4636003299,5.4636003299,5.4636003299,
+                        5.4636003299,5.4636003299,5.4636003299,5.4636003299,
+                        5.4636003299,5.4636003299,5.4636003299,5.4636003299,
+                        5.4636003299,5.4636003299]
+manley_price_per_gal = np.array(manley_price_per_gal)
+
+
+
+
 gallons_per_barrel = 42 #gal/barrel - from Diesel fuel price tab 
 
-
-# TODO: rework class interface, the intercept, slope and base_price
-#       all come from the evaluation model
 class DieselProjections (object):
     """ 
     This class Projects diesel fuel prices
     """
     
-    def __init__ (self, slope, intercept, base_price, 
-                                    start_year, urban = False):
+    def __init__ (self, start_year):
         """
         create the projected values
         Pre:
-            this will all change, but for now slope and intercerpt should 
-        be numbers. 
-            Base_price should be a dollar value(float) in (price/gal) for the
-        first year of the projection. 
             start_year is the first year of the projection
-            urban is a ture if it is an urban community/ false other wise
         Post:
             self.projected_prices will contain the projected prices 
         """
-        self.slope = slope
-        self.intercept = intercept
-        self.base_price = base_price
         self.start_year = start_year
-        self.calc_projected_prices(urban)
+        self.calc_projected_prices()
 
-    def calc_projected_prices (self, urban = False):
+    # TODO: calculate correctly 
+    def calc_projected_prices (self):
         """
         calculate the projected prices
         
@@ -95,14 +81,7 @@ class DieselProjections (object):
         post:
             self.projected_prices will contain the projected prices 
         """
-        price_per_gallon = price_per_barrel/gallons_per_barrel 
-        if not urban:
-            price_per_gallon = np.roll(price_per_gallon,1)
-            
-        self.projected_prices = (self.slope * price_per_gallon) + \
-                                self.intercept + co2_allowance_cost
-        self.projected_prices[0] = self.base_price
-
+        self.projected_prices = manley_price_per_gal
         
     def get_projected_prices (self, start_year, end_year):
         """
@@ -117,12 +96,7 @@ class DieselProjections (object):
                                      end_year-self.start_year]
 
 
-# manley test data
-# TODO: Does this fold into community_data.py
-manley_slope = 1.475
-manley_intercept = 0.548
-manley_2013_price = 4.03
-start_year = 2013
+start_year = 2015
 
 def test ():
     """
@@ -130,8 +104,7 @@ def test ():
     pre: none
     post: retuns the object for further testing
     """
-    pp = DieselProjections(manley_slope,manley_intercept, manley_2013_price,
-                                                                    start_year)
+    pp = DieselProjections(start_year)
     return pp
 
     

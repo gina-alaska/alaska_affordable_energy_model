@@ -85,12 +85,10 @@ class AnnualSavings (object):
         self.project_life = project_life + 1
         self.end_year = self.start_year + self.project_life
         
-    def get_diesel_prices (self, slope, intercept, base_price, urban = False):
+    def get_diesel_prices (self):
         """
         """
-        prices = DieselProjections(slope, intercept, 
-                                                base_price, 2013)
-        prices.calc_projected_prices(urban)
+        prices = DieselProjections(2015)
         self.diesel_prices = prices.get_projected_prices(self.start_year,
                                                          self.end_year)
     
