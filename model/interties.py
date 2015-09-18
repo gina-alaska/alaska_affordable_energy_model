@@ -27,11 +27,6 @@ O_and_M_cost = 10000.00 # $/mile/year
 project_life = 20 # years
 start_year = 2016
 
-manley_slope = 1.475
-manley_intercept = 0.548
-manley_2013_price = 4.03
-
-
 fuel_repairs = 500  # $/year
 fuel_OM = 1000 # $/year
 diesel_generator_OM = 84181 # $/yr
@@ -159,8 +154,8 @@ class Interties (AnnualSavings):
         self.calc_transmission_loss()
         self.calc_kWh_transmitted()
         
-        road_needed = self.community_data["road_needed"]
-        self.calc_transmission_line_cost(transmission_line_cost[road_needed])
+        it_road_needed = self.community_data["it_road_needed"]
+        self.calc_transmission_line_cost(transmission_line_cost[it_road_needed])
         
         self.calc_loss_of_heat_recovered()
         self.calc_O_and_M()
@@ -206,7 +201,7 @@ class Interties (AnnualSavings):
         calculate kWh transmitted over intertie
 
         pre:
-            "resource_potential" value needs to be accessible and a string
+            "it_resource_potential" value needs to be accessible and a string
             "dist_to_nearest_comm" value needs to be accessible and a number or
         nan for "N/a" values
             self.current_consumption is a number
@@ -216,7 +211,7 @@ class Interties (AnnualSavings):
         """
         # kWh
         self.kWh_transmitted = 0
-        if self.community_data["resource_potential"].lower() != "low" and \
+        if self.community_data["it_resource_potential"].lower() != "low" and \
            isnan(self.community_data["dist_to_nearest_comm"]) == False:
             self.kWh_transmitted = self.current_consumption * \
                                    (1+self.transmission_loss) * \
@@ -227,8 +222,8 @@ class Interties (AnnualSavings):
         calculate cost for transmission line
 
         pre:
-            "intertie_cost_known" and "road_needed" are booleans
-            "intertie_cost" value needs to be accessible and a number or
+            "it_cost_known" and "it_road_needed" are booleans
+            "it_cost" value needs to be accessible and a number or
         nan if not available
             "dist_to_nearest_comm" value needs to be accessible and a number or
         nan for "N/a" values
@@ -236,8 +231,8 @@ class Interties (AnnualSavings):
         post:
             self.transmission_line_cost is a number($ value)
         """
-        self.transmission_line_cost = self.community_data["intertie_cost"]
-        if self.community_data["intertie_cost_known"] == False:
+        self.transmission_line_cost = self.community_data["it_cost"]
+        if self.community_data["it_cost_known"] == False:
             self.transmission_line_cost = cost_per_mile * \
                                     self.community_data["dist_to_nearest_comm"]
 
@@ -257,7 +252,7 @@ class Interties (AnnualSavings):
         calculate loss of heat recovered
 
         pre:
-            "HR_installed" and "HR_operational" are booleans
+            "it_hr_installed" and "it_hr_operational" are booleans
             "dist_to_nearest_comm" value needs to be accessible and a number or
         nan for "N/a" values
             "diesel_consumed" is a positive number of gallons
@@ -269,8 +264,8 @@ class Interties (AnnualSavings):
         self.loss_of_heat_recovered = 0         # gal
         if isnan(self.community_data["dist_to_nearest_comm"]):
             self.loss_of_heat_recovered = float('nan')
-        elif self.community_data["HR_installed"] == True and \
-             self.community_data["HR_operational"] == True:
+        elif self.community_data["it_hr_installed"] == True and \
+             self.community_data["it_hr_operational"] == True:
             # where does .15 come from
             # it's an argument now 
             self.loss_of_heat_recovered = \
