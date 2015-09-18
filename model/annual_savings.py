@@ -44,7 +44,9 @@ class AnnualSavings (object):
         indicating the cost of the project per year.
         """
         rate = np.zeros(self.project_life) + rate
-        self.annual_costs = -np.pmt(rate, self.project_life, self.capital_costs)
+        
+        self.annual_costs = -np.pmt(rate, self.project_life-1
+                                                    , self.capital_costs)
     
     def calc_annual_benefit (self):
         """
@@ -68,7 +70,7 @@ class AnnualSavings (object):
         post:
             self.npv is a dollar value
         """
-        self.npv = np.npv(rate, self.annual_benefit)
+        self.npv = np.npv(rate, np.append([0,0,0],self.annual_benefit))
         
     
     def set_project_life_details (self, start_year, project_life):

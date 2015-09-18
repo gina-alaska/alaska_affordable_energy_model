@@ -17,6 +17,7 @@ reload(annual_savings)
 AnnualSavings = annual_savings.AnnualSavings
 # -------------------
 from community_data import manley_data
+from forecast import Forecast
 
 
 # TODO: move --------------------------------------------
@@ -33,7 +34,8 @@ manley_2013_price = 4.03
 
 fuel_repairs = 500  # $/year
 fuel_OM = 1000 # $/year
-diesel_generator_OM = .02 # $/kWh
+diesel_generator_OM = 84181 # $/yr
+diesel_generation_eff = 10.802351555 # kWh/gal
 
 heating_fuel_premium = 0.45 # $
 
@@ -89,9 +91,12 @@ class Interties (AnnualSavings):
         post:
            self.proposed_electric_savings is an np.array of $/year values 
         """
-        self.proposed_electric_savings = np.zeros(self.project_life) + \
-                                               self.O_and_M + self.O_and_M + \
-        (self.community_data["cost_power_nearest_comm"] * self.kWh_transmitted)
+        self.proposed_electric_savings = np.zeros(self.project_life) 
+        elec_gen = self.ff_gen_displaced/(1.0 - self.transmission_loss) # kWh/yr
+        price = self.community_data["cost_power_nearest_comm"] # $/kWh
+        # += to assure the array is the right length
+        # $/year
+        self.proposed_electric_savings += (elec_gen * price) + self.O_and_M 
 
     #TODO: fix calculation as spread sheet is updated    
     def calc_base_electric_savings (self, generator_repairs = 1500):
@@ -102,12 +107,15 @@ class Interties (AnnualSavings):
         post:
            self.base_electric_savings is an np.array of $/year values 
         """
-        self.base_electric_savings = np.zeros(self.project_life) + \
-                        generator_repairs + \
-                        self.community_data["diesel_consumed"] + \
-                        (diesel_generator_OM * self.kWh_transmitted) + \
-                        (self.diesel_prices * \
-                        self.community_data["diesel_consumed"])
+        self.base_electric_savings = np.zeros(self.project_life)
+        fuel_use = self.ff_gen_displaced / diesel_generation_eff # gal/yr
+        fuel_cost = fuel_use * self.diesel_prices # $/yr
+        
+        # += to assure the array is the right length
+        # $/yr + $/yr + gal/yr - gal/yr -> ($ + gal - gal)/yr -> $/yr -- WHAT?
+        # i'm doing this instead $/yr + $/yr -> $/yr
+        self.base_electric_savings += (fuel_cost + diesel_generator_OM)
+        
             
     def calc_annual_heating_savings (self):
         """
@@ -130,9 +138,12 @@ class Interties (AnnualSavings):
         post:
            self.base_electric_savings is an np.array of $/year values 
         """
-        fuel_cost = self.diesel_prices + heating_fuel_premium
-        self.base_heating_savings = (-self.loss_of_heat_recovered * fuel_cost)+\
-                                    + fuel_repairs + fuel_OM
+        self.base_heating_savings = np.zeros(self.project_life)
+        fuel_cost = self.diesel_prices + heating_fuel_premium # $/gal
+        fuel_cost = fuel_cost * (-self.loss_of_heat_recovered) # $/yr
+        # += to assure the array is the right length
+        self.base_heating_savings += fuel_cost + fuel_repairs + fuel_OM # $/yr
+
 
     def run (self):
         """
@@ -158,6 +169,10 @@ class Interties (AnnualSavings):
         self.calc_capital_costs()
         
         self.get_diesel_prices()
+        self.ff_gen_displaced = \
+            Forecast(2015).get_fossil_fuel_generation_displaced(self.start_year,
+                                                                self.end_year)
+        
         self.calc_annual_electric_savings()
         self.calc_annual_heating_savings()
         self.calc_annual_total_savings()

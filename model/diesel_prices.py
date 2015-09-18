@@ -6,7 +6,8 @@ created 2015/09/17
     for calculating diesel price projections 
 """
 import numpy as np
-#  TODO: this needs to be made not static
+#  TODO: this(the whole class/ way projected prices is caclulated)
+#        needs to be made not static
 
 
 co2_allowance_cost = [0.4731808371,0.4873762622,0.5019975501,0.5170574766,
