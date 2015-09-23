@@ -10,8 +10,17 @@ created: 2015/09/09
 import numpy as np
 
 from annual_savings import AnnualSavings
+#~ # for live testing ---
+#~ import annual_savings
+#~ reload(annual_savings)
+#~ AnnualSavings = annual_savings.AnnualSavings
+#---------------------
 from community_data import manley_data
+#~ import community_data
+#~ reload(community_data)
+#~ manley_data = community_data.manley_data
 import aea_assumptions as AEAA
+#~ reload(AEAA)
 
 
 class WaterWastewaterSystems (AnnualSavings):
@@ -42,19 +51,82 @@ class WaterWastewaterSystems (AnnualSavings):
     def calc_annual_electric_savings (self):
         """
         calculate the annual electric savings
+        pre:
+             TODO: write this 
+        post:
+            self.annual_electric_savings is an np.array of $/year values
         """
-        self.annual_electric_savings = np.zeros(self.project_life)
-        # calc poposed
-        # calc base
-        # set self.electric_savings to proposed - base
+        self.calc_base_electric_savings()
+        self.annual_electric_savings = self.base_electric_savings
         
+    def calc_proposed_electric_savings (self):
+        """
+        calcualte the savings for the proposed electric savings
+        pre:
+            TODO: write this 
+        post:
+           self.proposed_electric_savings is an np.array of $/year values 
+        """
+        pass
+    
+    def calc_base_electric_savings (self):
+        """
+        calcualte the savings for the base electric savings
+        pre:
+            TODO: write this 
+        post:
+           self.base_electric_savings is an np.array of $/year values 
+        """
+        self.base_electric_savings = np.zeros(self.project_life)
+        # kWh/yr*$/kWh
+        cost = self.savings_electricity * self.cd["res_non-PCE_elec_cost"]
+        self.base_electric_savings += cost #$/yr
+    
     
     def calc_annual_heating_savings (self):
         """
         calculate the annual heating savings 
+        pre:
+             TODO: write this 
+        post:
+            self.annual_heating_savings is an np.array of $/year values
         """
-        self.annual_heating_savings = np.zeros(self.project_life)
-        # same as calc_electric_savings work flow but for heating
+        self.calc_proposed_heating_savings()
+        self.calc_base_heating_savings()
+        
+        # $ / yr
+        self.annual_heating_savings = self.base_heating_savings - \
+                                            self.proposed_heating_savings
+        
+    def calc_proposed_heating_savings (self):
+        """
+        calcualte the savings for the proposed heating savings
+        pre:
+            TODO: write this 
+        post:
+           self.proposed_heating_savings is an np.array of $/year values 
+        """
+        self.proposed_heating_savings = np.zeros(self.project_life)
+        fuel_cost = self.diesel_prices + AEAA.heating_fuel_premium# $/gal
+        #~ print fuel_cost
+        # are there ever o&m costs
+        # $/gal * gal/yr = $/year 
+        self.proposed_heating_savings += self.post_savings_heating_fuel * \
+                                                                    fuel_cost
+        
+    
+    def calc_base_heating_savings (self):
+        """
+        calcualte the savings for the base heating savings
+        pre:
+            TODO: write this 
+        post:
+           self.base_heating_savings is an np.array of $/year values 
+        """
+        self.base_heating_savings = np.zeros(self.project_life)
+        fuel_cost = self.diesel_prices + AEAA.heating_fuel_premium #$/gal
+        # $/gal * gal/yr = $/year 
+        self.base_heating_savings += self.heating_fuel * fuel_cost #$/yr
         
     def run (self):
         """
@@ -77,14 +149,16 @@ class WaterWastewaterSystems (AnnualSavings):
     
         self.calc_post_savings_values()
         
+        
+        self.get_diesel_prices()
         self.calc_annual_electric_savings()
         self.calc_annual_heating_savings()
         self.calc_annual_total_savings()
         
         self.calc_annual_costs(AEAA.interest_rate)
-        self.calc_annual_benefit()
+        self.calc_annual_net_benefit()
         
-        self.calc_npv(AEAA.discount_rate)
+        self.calc_npv(AEAA.discount_rate, 2014)
     
     def calc_electricity_consumption (self):
         """
@@ -168,6 +242,8 @@ class WaterWastewaterSystems (AnnualSavings):
             self.captial_costs will be a dollar value
         """
         self.capital_costs = self.cd["w&ww_audit_cost"]
+        cost_per_person = AEAA.ww_baseline_retrofit_cost * \
+                                AEAA.construction_mulitpliers[self.cd["region"]]
         if not self.cd["w&ww_audit_preformed"]:
             self.capital_costs = float(AEAA.w_ww_audit_cost) + \
                                         self.pop * cost_per_person
@@ -207,6 +283,7 @@ class WaterWastewaterSystems (AnnualSavings):
               
         print ""
         print "Capital Costs: $" + "{0:.2f}".format(round(self.capital_costs,2))
+       
         
 def test ():
     """
@@ -215,5 +292,10 @@ def test ():
     ww = WaterWastewaterSystems(manley_data)
     ww.run()
     ww.print_savings_chart()
+    print ""
+    print round(ww.benefit_npv,0)
+    print round(ww.cost_npv,0)
+    print round(ww.benefit_cost_ratio ,2)
+    print round(ww.net_npv,0)
     return ww # return the object for further testing
 

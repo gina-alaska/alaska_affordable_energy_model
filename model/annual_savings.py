@@ -45,32 +45,41 @@ class AnnualSavings (object):
         """
         rate = np.zeros(self.project_life) + rate
         
-        self.annual_costs = -np.pmt(rate, self.project_life-1
+        self.annual_costs = -np.pmt(rate, self.project_life
                                                     , self.capital_costs)
     
-    def calc_annual_benefit (self):
+    def calc_annual_net_benefit (self):
         """
         calculate the yearly benefit of the project
         pre:
             annual_total_savings and annual_costs are arrays of the same length
         (project life) consisting of dollar values 
         post:
-            annual_benefit is an array of the annual monetary benefit over 
+            annual_net_benefit is an array of the annual monetary benefit over 
         projects life time
         """
-        self.annual_benefit = self.annual_total_savings - self.annual_costs
+        self.annual_net_benefit = self.annual_total_savings - self.annual_costs
         
-    def calc_npv (self, rate):
+    def calc_npv (self, rate, current_year):
         """
         clacualte the NPV net benfit
         pre:
             rate: should be the savings rate 
-            self.annual_benefit is  an array of the annual monetary benefit over 
+            self.annual_net_benefit is  an array of the annual monetary benefit over 
         projects life time
         post:
-            self.npv is a dollar value
+            self.net_npv, self.benefit_npv, slef.cost_npv is a dollar value
+            self.benefit_cost_ratio is a ratio 
         """
-        self.npv = np.npv(rate, np.append([0,0,0],self.annual_benefit))
+        # number of arrays as zero ($ value) until project start
+        yts = np.zeros((self.start_year - current_year)+1)
+        #~ print yts
+        
+        self.benefit_npv = np.npv(rate, 
+                                    np.append(yts, self.annual_total_savings))
+        self.cost_npv = np.npv(rate, np.append(yts, self.annual_costs))
+        self.benefit_cost_ratio = self.benefit_npv/self.cost_npv 
+        self.net_npv = np.npv(rate, np.append(yts, self.annual_net_benefit))
         
     
     def set_project_life_details (self, start_year, project_life):
@@ -84,7 +93,7 @@ class AnnualSavings (object):
         and self.end_year would be the year the project ends.
         """
         self.start_year = start_year
-        self.project_life = project_life + 1
+        self.project_life = project_life 
         self.end_year = self.start_year + self.project_life
         
     def get_diesel_prices (self):

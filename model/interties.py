@@ -76,7 +76,7 @@ class Interties (AnnualSavings):
     #TODO: fix calculation as spread sheet is updated    
     def calc_base_electric_savings (self, generator_repairs = 1500):
         """
-        calcualte the savings for the proposed electric savings
+        calcualte the savings for the base electric savings
         pre:
             TODO: write this 
         post:
@@ -107,11 +107,11 @@ class Interties (AnnualSavings):
     #TODO: fix calculation as spread sheet is updated  
     def calc_base_heating_savings (self):
         """
-        calcualte the savings for the proposed electric savings
+        calculate the savings for the base heating savings
         pre:
             TODO: write this 
         post:
-           self.base_electric_savings is an np.array of $/year values 
+           self.base_heating_savings is an np.array of $/year values 
         """
         self.base_heating_savings = np.zeros(self.project_life)
         fuel_cost = self.diesel_prices + AEAA.heating_fuel_premium # $/gal
@@ -156,9 +156,9 @@ class Interties (AnnualSavings):
         self.calc_annual_total_savings()
         
         self.calc_annual_costs(AEAA.interest_rate)
-        self.calc_annual_benefit()
+        self.calc_annual_net_benefit()
         
-        self.calc_npv(AEAA.discount_rate)
+        self.calc_npv(AEAA.discount_rate, 2014)
         
 
     def calc_transmission_loss (self):
@@ -336,6 +336,9 @@ def test ():
     it.run()
     it.print_proposed_sytstem_analysis()
     print ""
-    print "NPV net benefit: " + str(it.npv)
+    print round(it.benefit_npv,0)
+    print round(it.cost_npv,0)
+    print round(it.benefit_cost_ratio ,2)
+    print round(it.net_npv,0)
     return it
 
