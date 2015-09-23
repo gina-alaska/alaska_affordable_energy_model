@@ -62,6 +62,24 @@ POP_HF = {"Circulating/Gravity": 3.57835240238995,
            "Pressure/Gravity": -78.7469560579852,
            "Wash/HB": 22.3235825717145,
            }
+           
+ww_baseline_retrofit_cost = 360 # capex/person ($)
+
+# per region based on department of ED estimates 
+# were percents now decimals
+construction_mulitpliers = { "Aleutians": 1.4, 
+                             "Bering Straits": 1.8,
+                             "Bristol Bay": 1.25,
+                             "Copper River/Chugach":1.1,
+                             "Kodiak":1.18,
+                             "Lower Yukon-Kuskokwim":1.6,
+                             "North Slope":1.8,
+                             "Northwest Arctic":1.7,
+                             "Southeast": 1.15,
+                             "Yukon-Koyukuk/Upper Tanana":1.4,
+                            }
+                            
+                             
 
 
 heat_recovery_multiplier = {True:  0.5, 
