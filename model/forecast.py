@@ -29,22 +29,38 @@ class Forecast (object):
     """ Class doc """
     
     def __init__ (self, community_data):
-        """ Class initialiser """
+        """
+        pre:
+            self.cd is a community_data instance. 
+        post:
+            self.start_year < self.end_year are years(ints) 
+            self.cd is a community_data instance. 
+        """
         self.cd = community_data
         self.start_year = self.cd["fc_start_year"]
         self.end_year = self.cd["fc_end_year"]
-        self.ff_gen_displaced = fossil_fuel_gen_displaced
+        #~ self.ff_gen_displaced = fossil_fuel_gen_displaced
         
     def get_fossil_fuel_generation_displaced (self, start, end):
         """
+        TODO: this function will probably go away
         """
         self.forecast_consumption()
         print len(np.array(self.consumption))
         return np.array(self.consumption)
         #~ return self.ff_gen_displaced[start-self.start_year:end-self.start_year]
     
-    def get_trend (self, key, error=1.101):
-        """ Function doc """
+    def get_trend (self, key ):
+        """
+        pre:
+            key should be a string{'years'|'population'|'community'|
+                                   'residential','gov',commercial'|
+                                   'unbilled'|'total'}
+            'fc_electricity_used' should contain the kWh used for each key type
+            except 'total'
+        post:
+            a trend rate is returned 
+        """
         try:
             e = self.trends[key]
             #~ return self.trends[key]
@@ -64,13 +80,18 @@ class Forecast (object):
         x = range(len(y))
         
         def f (x,m,b):
-            """ Function doc """
+            """ this is the functin for curve fit"""
             return b*(m**x)
-        self.trends[key] = curve_fit(f,np.array(x)*error,y)[0][0]
+        self.trends[key] = curve_fit(f,np.array(x)*1.101,y)[0][0]
         return self.trends[key]
 
     def calc_electricity_totals (self):
-        """ Function doc """
+        """ 
+        pre:
+            'fc_electricity_used' should contain the kWh used for each key type
+        post:
+            self.electricty_totals is a array of yearly values of total kWh used
+        """
         kWh = self.cd['fc_electricity_used']
         self.electricty_totals = np.nansum([kWh['residential'],
                                             kWh['community'],
@@ -80,7 +101,13 @@ class Forecast (object):
                                             ],0)
     
     def forecast_population (self):
-        """ Function doc """
+        """
+        pre:
+            tbd.
+        post:
+            self.population is a array of estimated populations for each 
+        year between start and end
+        """
         trend = self.get_trend('population')
         self.population = []
         pop_pre = self.cd['fc_electricity_used']['population'][-3] # TD: update
@@ -90,7 +117,13 @@ class Forecast (object):
             self.population.append(pop)
             
     def forecast_consumption (self):
-        """ Function doc """
+        """
+        pre:
+            tbd.
+        post:
+            self.consumption is a array of estimated kWh consumption for each 
+        year between start and end
+        """
         trend = self.get_trend('total')
         self.consumption = []
         pre = self.electricty_totals[-2]*2 # TD: update
@@ -100,18 +133,27 @@ class Forecast (object):
             self.consumption.append(cur)
             
     def forecast_generation (self):
-        """ Function doc """
+        """
+        pre:
+            tbd.
+            self.consumption should be a float array of kWh/yr values
+        post:
+            self.generation is a array of estimated kWh generation for each 
+        year between start and end
+        """
         self.generation = np.array(self.consumption)/\
                                 (1.0-self.cd['line_losses'])
         self.generation = np.round(self.generation,-3) # round to nears thousand
         
     def forecast_average_kW (self):
-        """ Function doc """
+        """
+        ???
+        """
         self.average_kW = (np.array(self.consumption)/ 8760.0)\
                                          /(1-self.cd['line_losses']) 
         #~ self.average_kW = np.round(self.generation,-3) # round to nears thousand
 
-def test (start_year = 2015):
+def test ():
     """ Function doc """
     fc = Forecast(manley_data)
     return fc
