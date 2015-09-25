@@ -6,6 +6,13 @@ created: 2015/09/18
     mock up of for cast tab
 """
 import numpy as np
+#~ from community_data import manley_data
+import community_data
+reload(community_data)
+manley_data = community_data.manley_data
+
+from scipy.optimize import curve_fit
+
 # TODO: this is for manley, but I'm not sure where it comes from
 fossil_fuel_gen_displaced = [395674.849879193,418138.515848389,441877.512531502,
                              466964.244336258,493475.226289067,521491.317407356,
@@ -21,18 +28,90 @@ fossil_fuel_gen_displaced = np.array(fossil_fuel_gen_displaced)
 class Forecast (object):
     """ Class doc """
     
-    def __init__ (self, start_year):
+    def __init__ (self, community_data):
         """ Class initialiser """
-        self.start_year = start_year
+        self.cd = community_data
+        self.start_year = self.cd["fc_start_year"]
+        self.end_year = self.cd["fc_end_year"]
         self.ff_gen_displaced = fossil_fuel_gen_displaced
         
     def get_fossil_fuel_generation_displaced (self, start, end):
         """
         """
-        return self.ff_gen_displaced[start-self.start_year:end-self.start_year]
+        self.forecast_consumption()
+        print len(np.array(self.consumption))
+        return np.array(self.consumption)
+        #~ return self.ff_gen_displaced[start-self.start_year:end-self.start_year]
+    
+    def get_trend (self, key, error=1.101):
+        """ Function doc """
+        try:
+            e = self.trends[key]
+            #~ return self.trends[key]
+        except AttributeError:
+            self.trends = {} 
+        except KeyError:
+            pass
+        
+        try:
+            y = self.cd['fc_electricity_used'][key]
+        except KeyError as e:
+            if key != "total":
+                raise
+            self.calc_electricity_totals()
+            y = self.electricty_totals #kWh
+        y = y[:-2] # TODO: Replace when model is updated
+        x = range(len(y))
+        
+        def f (x,m,b):
+            """ Function doc """
+            return b*(m**x)
+        self.trends[key] = curve_fit(f,np.array(x)*error,y)[0][0]
+        return self.trends[key]
 
+    def calc_electricity_totals (self):
+        """ Function doc """
+        kWh = self.cd['fc_electricity_used']
+        self.electricty_totals = np.nansum([kWh['residential'],
+                                            kWh['community'],
+                                            kWh['commercial'],
+                                            kWh['gov'],
+                                            kWh['unbilled']
+                                            ],0)
+    
+    def forecast_population (self):
+        """ Function doc """
+        trend = self.get_trend('population')
+        self.population = []
+        pop_pre = self.cd['fc_electricity_used']['population'][-3] # TD: update
+        for year in range(self.start_year,self.end_year+1):
+            pop = trend*pop_pre
+            pop_pre = pop
+            self.population.append(pop)
+            
+    def forecast_consumption (self):
+        """ Function doc """
+        trend = self.get_trend('total')
+        self.consumption = []
+        pre = self.electricty_totals[-2]*2 # TD: update
+        for year in range(self.start_year,self.end_year+1):
+            cur = trend*pre
+            pre = cur
+            self.consumption.append(cur)
+            
+    def forecast_generation (self):
+        """ Function doc """
+        self.generation = np.array(self.consumption)/\
+                                (1.0-self.cd['line_losses'])
+        self.generation = np.round(self.generation,-3) # round to nears thousand
+        
+    def forecast_average_kW (self):
+        """ Function doc """
+        self.average_kW = (np.array(self.consumption)/ 8760.0)\
+                                         /(1-self.cd['line_losses']) 
+        #~ self.average_kW = np.round(self.generation,-3) # round to nears thousand
 
 def test (start_year = 2015):
     """ Function doc """
-    fc = Forecast(start_year)
+    fc = Forecast(manley_data)
     return fc

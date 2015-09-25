@@ -9,6 +9,40 @@ is here for testing
 
 ## w&ww - water and wastewater
 ## it - intertie
+## fc - forecast
+## com - community buildings 
+
+NAN = float('nan')
+
+electricty_actuals = {
+    "years":
+        [2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014],
+    "population": # 
+        [71,  75,  76,  82,  76,  81,  85,  89,  94,  116, NAN, NAN],
+    "residential":
+        [124943,125867,121817,115990,112628,110554,
+        110465,124966,164364,209675,93291,NAN],
+    "community":
+        [107254,104899,98198,95902,92973,109814,
+        142871,153216,168710,185798,79853,NAN],
+    "commercial":
+        [3096,5057,5129,5230,4331,5154,4634,8225,4440,5857,3226,NAN],
+    "gov":
+        [8728,9537,15184,13327,13429,17798,16949,14619,12047,18938,10839,NAN],
+    "unbilled":
+        [NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN]
+        }
+
+
+bulidings_by_type = {
+                    "education":3,
+                    "health care":0,
+                    "office":1,
+                    "other":3,
+                    "public_assembly":1,
+                    "public_order":0,
+                    "warehouse":1,
+                    }
 
 
 # True == 'yes'/ False == 'no'
@@ -17,11 +51,12 @@ manley_data = {
         "region": "Yukon-Koyukuk/Upper Tanana",
         "population": 89, # number people
         "HDD": 14593, # Degrees/day
-        
+
         
         "generation_total": 440077.00, # kWh/yr 
         "consumption/year": 384000, # kWh/year TODO: probably has a better name
         "diesel_consumed": 40739, # gallons
+        
         
         "dist_to_nearest_comm": 53, # miles
         "cost_power_nearest_comm": 00.1788, # $/kWh pre-PCE
@@ -29,6 +64,10 @@ manley_data = {
         "res_non-PCE_elec_cost": 00.83, # $/kWh
         
         "line_losses": .1210, # %  # or is this an assumption
+            
+        "fc_start_year":2015,
+        "fc_end_year":2035,
+        "fc_electricity_used":electricty_actuals,
             
         "it_lifetime" : 20, # years
         "it_start_year" : 2016, # a year 
@@ -41,7 +80,11 @@ manley_data = {
         "it_cost": float('nan'), # not available for here
         "it_resource_potential": "N/a",
         "it_resource_certainty": "N/a",
-
+        
+        "com_buildings":buildings_by_type,
+        
+        
+        
         
         "w&ww_lifetime" : 15, # years
         "w&ww_start_year" : 2015, # a year 
@@ -57,6 +100,11 @@ manley_data = {
         "w&ww_audit_cost": float("nan"), # $ -- make cost_from_audit
         
 }
+
+
+
+
+
 
 # TODO: i'think this should be written last
 class CommunityData (object):

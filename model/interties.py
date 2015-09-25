@@ -148,8 +148,9 @@ class Interties (AnnualSavings):
         
         self.get_diesel_prices()
         self.ff_gen_displaced = \
-            Forecast(2015).get_fossil_fuel_generation_displaced(self.start_year,
+        Forecast(self.cd).get_fossil_fuel_generation_displaced(self.start_year,
                                                                 self.end_year)
+        self.ff_gen_displaced = self.ff_gen_displaced[:-1]
         
         self.calc_annual_electric_savings()
         self.calc_annual_heating_savings()
