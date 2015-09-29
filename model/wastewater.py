@@ -33,14 +33,10 @@ class WaterWastewaterSystems (AnnualSavings):
         Class initialiser 
         
         pre-conditions:
-            hdd(int) is the number of heating degree days. Population(int) is 
-        the population of the town. system_type(string) is one of the system 
-        types used as keys to the assumption libraries. 
-        energy_use_known, heat_recovery, audit_preformed(string) are set 
-        to 'yes' or 'no'
+            
         
         Post-conditions: 
-            The class members are set to the initila values.
+            The class members are set to the initial values.
         """
         self.cd = community_data
         

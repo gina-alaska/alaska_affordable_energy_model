@@ -150,7 +150,7 @@ class Interties (AnnualSavings):
         self.ff_gen_displaced = \
         Forecast(self.cd).get_fossil_fuel_generation_displaced(self.start_year,
                                                                 self.end_year)
-        self.ff_gen_displaced = self.ff_gen_displaced[:-1]
+        self.ff_gen_displaced = self.ff_gen_displaced[:-1] # TODO: this needs be checked 
         
         self.calc_annual_electric_savings()
         self.calc_annual_heating_savings()
