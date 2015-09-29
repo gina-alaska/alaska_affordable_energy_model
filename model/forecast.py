@@ -115,7 +115,9 @@ class Forecast (object):
             pop = trend*pop_pre
             pop_pre = pop
             self.population.append(pop)
-            
+        self.population = np.array(self.population)
+        
+        
     def forecast_consumption (self):
         """
         pre:
@@ -124,13 +126,13 @@ class Forecast (object):
             self.consumption is a array of estimated kWh consumption for each 
         year between start and end
         """
-        trend = self.get_trend('total')
-        self.consumption = []
-        pre = self.electricty_totals[-2]*2 # TD: update
-        for year in range(self.start_year,self.end_year+1):
-            cur = trend*pre
-            pre = cur
-            self.consumption.append(cur)
+        #~ trend = self.get_trend('total')
+        #~ self.consumption = np.zeros(len(self.population))
+        base_con = self.electricty_totals[-2]*2 # TD: update
+        base_pop = self.cd['fc_electricity_used']['population'][-3]
+        self.consumption = base_con * self.population/ base_pop
+        
+        
             
     def forecast_generation (self):
         """
@@ -156,4 +158,9 @@ class Forecast (object):
 def test ():
     """ Function doc """
     fc = Forecast(manley_data)
+    fc.calc_electricity_totals()
+    fc.forecast_population()
+    fc.forecast_consumption()
+    fc.forecast_generation()
+    fc.forecast_average_kW()
     return fc
