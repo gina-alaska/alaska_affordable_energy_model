@@ -90,6 +90,38 @@ w_ww_audit_cost = 10000
 
 
 
+#~ 14356.0653747073
+#~ 
+#~ 
+#~ 
+#~ 3195
+
+
+
+
+
+
+
+
+
+## own file? 
+com_estimated_enegery_use = {
+"kWh/sf/yr<300":
+    {"education":2.0686402976, "health care":3.9937030563, "office":2.9619198286, "other":2.8562067795, 
+    "public_assembly":2.6686973586, "public_order":6.1944656937, "warehouse":5.15258984672822, "unknown":3.6994604087},
+"gal/sf/yr<300":
+    {"education":.90, "health care":.70, "office":.70, "other":0.422614765874726, 
+    "public_assembly":.50, "public_order":.50, "warehouse":1.00, "unknown":0.6746592523
+},
+"est.sf<300":
+    {"education":14356.0653747073, "health care":2377.5763888889, "office":1894.0630952381, "other":2557.8465658257, 
+"public_assembly":3195, "public_order":2409.2584022039, "warehouse":6279.4886363636, "unknown":1500},
+
+}
+
+
+com_average_refit_cost = 7.00 # $/sf 
+com_cohort_savings_multiplier = .26
 
 # TODO: do the classy part later
 class AEAAssumptions (object):

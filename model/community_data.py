@@ -34,7 +34,7 @@ electricty_actuals = {
         }
 
 
-bulidings_by_type = {
+buildings_by_type = {
                     "education":3,
                     "health care":0,
                     "office":1,
@@ -42,8 +42,19 @@ bulidings_by_type = {
                     "public_assembly":1,
                     "public_order":0,
                     "warehouse":1,
+                    "unknown":10,
                     }
-
+#NAN unknown estimate should be used instead
+sqft_by_type = {
+        "education":11523,
+        "health care":NAN,
+        "office":820,
+        "other":4500,
+        "public_assembly":1200,
+        "public_order":NAN,
+        "warehouse":NAN,
+        "unknown":NAN,
+}
 
 # True == 'yes'/ False == 'no'
 manley_data = {
@@ -62,6 +73,7 @@ manley_data = {
         "cost_power_nearest_comm": 00.1788, # $/kWh pre-PCE
         
         "res_non-PCE_elec_cost": 00.83, # $/kWh
+        "elec_non-fuel_cost": 0.4024526823, # TODO: should be calculated
         
         "line_losses": .1210, # %  # or is this an assumption
             
@@ -81,8 +93,11 @@ manley_data = {
         "it_resource_potential": "N/a",
         "it_resource_certainty": "N/a",
         
-        "com_buildings":buildings_by_type,
-        
+        "com_lifetime": 10,
+        "com_start_year":2015,
+        "com_buildings":buildings_by_type, #
+        "com_unknown_buildings":10,
+        "com_sqft_to_retofit": sqft_by_type, # 
         
         
         
