@@ -21,7 +21,10 @@ from community_data import manley_data
 #~ manley_data = community_data.manley_data
 import aea_assumptions as AEAA
 #~ reload(AEAA)
-
+#~ from forecast import Forecast
+import forecast
+reload(forecast)
+Forecast = forecast.Forecast
 
 class WaterWastewaterSystems (AnnualSavings):
     """
@@ -43,6 +46,7 @@ class WaterWastewaterSystems (AnnualSavings):
         self.hdd = self.cd["HDD"]
         self.pop = self.cd["population"] 
         self.system_type = self.cd["w&ww_system_type"] 
+        self.forecast = Forecast(self.cd)
         
     def calc_annual_electric_savings (self):
         """
@@ -173,6 +177,11 @@ class WaterWastewaterSystems (AnnualSavings):
             self.electricity = \
                                (self.hdd * AEAA.HDD_KWH[self.system_type] + \
                                 self.pop * AEAA.POP_KWH[self.system_type])
+            # update for 9/28 spread sheet 
+            # forcast needs an update to get a range of years 
+            self.forecast.forecast_population()
+            self.electricity += (self.forecast.population[1:16] - \
+                                 self.pop)*AEAA.POP_KWH[self.system_type]
                             
     def calc_heating_fuel_consumption (self, hr_coeff):
         """
@@ -192,6 +201,11 @@ class WaterWastewaterSystems (AnnualSavings):
             self.heating_fuel = (self.hdd * AEAA.HDD_HF[self.system_type] + \
                                  self.pop * AEAA.POP_HF[self.system_type]) * \
                                  hr_coeff 
+            # update for 9/28 spread sheet 
+            # forcast needs an update to get a range of years 
+            pop_fc = self.forecast.get_population(self.start_year,self.end_year)
+            self.heating_fuel += (pop_fc - self.pop) * \
+                                 AEAA.POP_HF[self.system_type]
 
     def calc_savings_electricity (self, coeff = .25):
         """
@@ -270,7 +284,7 @@ class WaterWastewaterSystems (AnnualSavings):
             the "estimates" should be numbers calling self.run() will do this
         """
         print "\tEst. Pre\tEst. Post\tEst. Savings"
-        print "kWH\t" + str(int(round(self.electricity))) + "\t\t" + \
+        print "kWH\t" + str(int(round(self.electricity_init))) + "\t\t" + \
               str(int(round(self.post_savings_electricity))) + "\t\t" + \
               str(int(round(self.savings_electricity)))
         print "kWH\t" + str(int(round(self.heating_fuel))) + "\t\t" +\
@@ -287,7 +301,7 @@ def test ():
     """
     ww = WaterWastewaterSystems(manley_data)
     ww.run()
-    ww.print_savings_chart()
+    #~ ww.print_savings_chart()
     print ""
     print round(ww.benefit_npv,0)
     print round(ww.cost_npv,0)
