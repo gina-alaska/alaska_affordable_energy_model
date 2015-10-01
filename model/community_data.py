@@ -42,7 +42,7 @@ buildings_by_type = {
                     "public_assembly":1,
                     "public_order":0,
                     "warehouse":1,
-                    "unknown":10,
+                    "unknown":8,
                     }
 #NAN unknown estimate should be used instead
 sqft_by_type = {
@@ -58,11 +58,13 @@ sqft_by_type = {
 
 
 res_data = read_csv("res_data.csv",index_col=0,header=2).T["Manley Hot Springs"]
+com_ben_data = read_csv("com_benchmark_data.csv",index_col=0,header=1).T["Manley Hot Springs"].T
 
 # True == 'yes'/ False == 'no'
 manley_data = {
         "community": "Manley Hot Springs",
         "region": "Yukon-Koyukuk/Upper Tanana",
+        "current_year": 2014, #year to base npv calculations on
         "population": 89, # number people in 2010
         "HDD": 14593, # Degrees/day
         "households": 41, # houses occupied in 2010
@@ -101,7 +103,7 @@ manley_data = {
         "com_buildings":buildings_by_type, #
         "com_unknown_buildings":10,
         "com_sqft_to_retofit": sqft_by_type, # 
-        
+        "com_benchmark_data": com_ben_data,
         
         
         "w&ww_lifetime" : 15, # years
