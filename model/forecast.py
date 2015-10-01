@@ -88,13 +88,48 @@ class Forecast (object):
                                             kWh['unbilled']
                                             ],0)
     
-    def get_population (self, start, end):
-        """ Function doc """
+    def get_population (self, start, end = None):
+        """
+        get population values from the population forecast. 
+        
+        pre:
+            start is a year where start >= self.start_year
+            end(if provided) is a year where start <= end < self.end_year
+        post:
+            returns a float or list of floats
+        """
+        get_pop = self.get_pop_range
+        if end is None:
+            get_pop = self.get_pop_val
         try:
-            return self.population[start-self.start_year:end-self.start_year]
+            return get_pop(start,end)
         except AttributeError:
             self.forecast_population()
+        return get_pop(start,end)
+    
+    def get_pop_range (self, start, end):
+        """
+        get population list from the population forecast. 
+        
+        pre:
+            start is a year where start >= self.start_year
+            end is a year where start <= end < self.end_year
+        post:
+            returns a list of floats
+        """
         return self.population[start-self.start_year:end-self.start_year]
+    
+    def get_pop_val (self, start, end):
+        """
+        get population values from the population forecast. 
+        
+        pre:
+            start is a year where start >= self.start_year
+            end is not used, but is here for consistency with get_pop_range
+        post:
+            returns a float 
+        """
+        return self.population[start-self.start_year]
     
     def forecast_population (self):
         """
