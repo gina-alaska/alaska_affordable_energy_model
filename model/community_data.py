@@ -6,7 +6,7 @@ created: 2015/09/16
     a place holder for an eventual community data module. the manley_data
 is here for testing
 """
-
+from pandas import read_csv
 ## w&ww - water and wastewater
 ## it - intertie
 ## fc - forecast
@@ -56,14 +56,17 @@ sqft_by_type = {
         "unknown":NAN,
 }
 
+
+res_data = read_csv("res_data.csv",index_col=0,header=2).T["Manley Hot Springs"]
+
 # True == 'yes'/ False == 'no'
 manley_data = {
         "community": "Manley Hot Springs",
         "region": "Yukon-Koyukuk/Upper Tanana",
-        "population": 89, # number people
+        "population": 89, # number people in 2010
         "HDD": 14593, # Degrees/day
-
-        
+        "households": 41, # houses occupied in 2010
+         
         "generation_total": 440077.00, # kWh/yr 
         "consumption/year": 384000, # kWh/year TODO: probably has a better name
         "diesel_consumed": 40739, # gallons
@@ -77,8 +80,8 @@ manley_data = {
         
         "line_losses": .1210, # %  # or is this an assumption
             
-        "fc_start_year":2015,
-        "fc_end_year":2035,
+        "fc_start_year":2014,
+        "fc_end_year":2040,
         "fc_electricity_used":electricty_actuals,
             
         "it_lifetime" : 20, # years
@@ -114,6 +117,8 @@ manley_data = {
         "w&ww_audit_savings_hf": float("nan"), # gal
         "w&ww_audit_cost": float("nan"), # $ -- make cost_from_audit
         
+        "res_model_data": res_data,
+
 }
 
 
