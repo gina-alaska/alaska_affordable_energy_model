@@ -13,18 +13,6 @@ manley_data = community_data.manley_data
 
 from scipy.optimize import curve_fit
 
-# TODO: this is for manley, but I'm not sure where it comes from
-fossil_fuel_gen_displaced = [395674.849879193,418138.515848389,441877.512531502,
-                             466964.244336258,493475.226289067,521491.317407356,
-                             551097.967321171,582385.476896231,615449.273653346,
-                             650390.202824239,687314.83493149,726335.790830729,
-                             767572.085206463,811149.489569216,857200.915861106,
-                             905866.821839895,957295.639477916,1011644.22768251,
-                             1069078.3507188,1129773.18379393,1193913.84734495,
-                             0.0,0.0,0.0] # extra zeros 
-fossil_fuel_gen_displaced = np.array(fossil_fuel_gen_displaced)
-
-
 class Forecast (object):
     """ Class doc """
     
@@ -45,10 +33,10 @@ class Forecast (object):
         """
         TODO: this function will probably go away
         """
+        self.forecast_population()
         self.forecast_consumption()
-        print len(np.array(self.consumption))
+        #~ print len(np.array(self.consumption))
         return np.array(self.consumption)
-        #~ return self.ff_gen_displaced[start-self.start_year:end-self.start_year]
     
     def get_trend (self, key ):
         """
@@ -63,7 +51,7 @@ class Forecast (object):
         """
         try:
             e = self.trends[key]
-            #~ return self.trends[key]
+            return e
         except AttributeError:
             self.trends = {} 
         except KeyError:
@@ -75,7 +63,7 @@ class Forecast (object):
             if key != "total":
                 raise
             self.calc_electricity_totals()
-            y = self.electricty_totals #kWh
+            y = self.electricity_totals #kWh
         y = y[:-2] # TODO: Replace when model is updated
         x = range(len(y))
         
@@ -93,12 +81,20 @@ class Forecast (object):
             self.electricty_totals is a array of yearly values of total kWh used
         """
         kWh = self.cd['fc_electricity_used']
-        self.electricty_totals = np.nansum([kWh['residential'],
+        self.electricity_totals = np.nansum([kWh['residential'],
                                             kWh['community'],
                                             kWh['commercial'],
                                             kWh['gov'],
                                             kWh['unbilled']
                                             ],0)
+    
+    def get_population (self, start, end):
+        """ Function doc """
+        try:
+            return self.population[start-self.start_year:end-self.start_year]
+        except AttributeError:
+            self.forecast_population()
+        return self.population[start-self.start_year:end-self.start_year]
     
     def forecast_population (self):
         """
@@ -128,7 +124,8 @@ class Forecast (object):
         """
         #~ trend = self.get_trend('total')
         #~ self.consumption = np.zeros(len(self.population))
-        base_con = self.electricty_totals[-2]*2 # TD: update
+        self.calc_electricity_totals()
+        base_con = self.electricity_totals[-2]*2 # TD: update
         base_pop = self.cd['fc_electricity_used']['population'][-3]
         self.consumption = base_con * self.population/ base_pop
         
@@ -154,6 +151,16 @@ class Forecast (object):
         self.average_kW = (np.array(self.consumption)/ 8760.0)\
                                          /(1-self.cd['line_losses']) 
         #~ self.average_kW = np.round(self.generation,-3) # round to nears thousand
+        
+    def forecast_households (self):
+        """
+        forcast # of houselholds
+        """
+        peps_per_house = float(self.cd["population"]) / self.cd["households"]
+        #~ print peps_per_house
+        self.households = np.round(self.population / peps_per_house, 0)
+        
+        
 
 def test ():
     """ Function doc """
@@ -163,4 +170,5 @@ def test ():
     fc.forecast_consumption()
     fc.forecast_generation()
     fc.forecast_average_kW()
+    fc.forecast_households()
     return fc
