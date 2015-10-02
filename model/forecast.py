@@ -174,9 +174,9 @@ class Forecast (object):
         post:
             returns a float or list of floats
         """
-        get_pop = self.get_pop_range
+        get_pop = self.get_con_range
         if end is None:
-            get_pop = self.get_pop_val
+            get_pop = self.get_con_val
         try:
             return get_pop(start,end)
         except AttributeError:
@@ -238,6 +238,50 @@ class Forecast (object):
         #~ print peps_per_house
         self.households = np.round(self.population / peps_per_house, 0)
         
+    def get_households (self, start, end = None):
+        """
+        get households values from the households forecast. 
+        
+        pre:
+            start is a year where start >= self.start_year
+            end(if provided) is a year where start <= end < self.end_year
+        post:
+            returns a float or list of floats
+        """
+        get_pop = self.get_hh_range
+        if end is None:
+            get_pop = self.get_hh_val
+        try:
+            return get_pop(start,end)
+        except AttributeError:
+            self.forecast_population()
+            self.forecast_households()
+            
+        return get_pop(start,end)
+    
+    def get_hh_range (self, start, end):
+        """
+        get households list from the households forecast. 
+        
+        pre:
+            start is a year where start >= self.start_year
+            end is a year where start <= end < self.end_year
+        post:
+            returns a list of floats
+        """
+        return self.households[start-self.start_year:end-self.start_year]
+    
+    def get_hh_val (self, start, end):
+        """
+        get households values from the households forecast. 
+        
+        pre:
+            start is a year where start >= self.start_year
+            end is not used, but is here for consistency with get_pop_range
+        post:
+            returns a float 
+        """
+        return self.households[start-self.start_year]
         
 
 def test ():

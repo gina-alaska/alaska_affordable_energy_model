@@ -100,7 +100,7 @@ w_ww_audit_cost = 10000
 
 
 
-
+res_average_refit_cost = 11000 # $
 
 
 

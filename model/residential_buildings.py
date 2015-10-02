@@ -14,10 +14,7 @@ from annual_savings import AnnualSavings
 #~ reload(annual_savings)
 #~ AnnualSavings = annual_savings.AnnualSavings
 #---------------------
-#~ from community_data import manley_data
-import community_data
-reload(community_data)
-manley_data = community_data.manley_data
+from community_data import CommunityData
 import aea_assumptions as AEAA
 reload(AEAA)
 from forecast import Forecast
@@ -39,8 +36,10 @@ class ResidentialBuildings(AnnualSavings):
         """
         self.cd = community_data
         self.forecast = Forecast(self.cd)
-        self.set_project_life_details(self.cd["com_start_year"],
-                                      self.cd["com_lifetime"])
+        self.refit_cost_rate = AEAA.res_average_refit_cost * \
+                            AEAA.construction_mulitpliers[self.cd["region"]]
+        self.set_project_life_details(self.cd["res_start_year"],
+                                      self.cd["res_lifetime"])
     
     def run (self):
         """ 
@@ -58,6 +57,8 @@ class ResidentialBuildings(AnnualSavings):
         self.calc_init_HH()
         self.calc_opportunity_values()
         self.calc_init_HF_use()
+        
+        self.calc_capital_costs()
     
     def calc_init_HH (self):
         """ Function doc """
@@ -75,7 +76,7 @@ class ResidentialBuildings(AnnualSavings):
         ## cell L15 = K15*S8*(P8*O8-6000*0.00341)/0.138
         ## gal = #HH*(%)*((MMBtu/sqft)*sqft-(#*#))/# 
         ## gal = #*(MMBtu - (#*#))/#  ???
-        self.opportunity_savings = self.opportunity_HH * \
+        self.init_hf_savings = self.opportunity_HH * \
                                    rd["post_avg_EUI_reduction"] * \
                                    (rd["pre_avg_EUI"] * rd["pre_avg_area"] -\
                                     6000*0.00341) / 0.138 # numbers ??
@@ -96,12 +97,17 @@ class ResidentialBuildings(AnnualSavings):
                         self.init_HH*6000*0.00341) / 0.138
         
     
-    
+    def calc_baseline_HF_consumption (self):
+        rd = self.cd["res_model_data"]
+        self.baseline_HF_consumption = self.init_HF_use + \
+        ((self.forecast.get_households(self.start_year,self.end_year)-\
+        self.init_HH)*rd['pre_avg_area']*rd['pre_avg_EUI']/.138)
+
     
     
     def calc_capital_costs (self):
         """ Function doc """
-        pass
+        self.captial_costs = self.opportunity_HH * self.refit_cost_rate
         
     def calc_annual_electric_savings (self):
         """ Function doc """
@@ -116,6 +122,7 @@ def test ():
     """
     tests the class using the manley data.
     """
+    manley_data = CommunityData("community_data_template.csv","Manley Hot Springs")
     t = ResidentialBuildings(manley_data)
     t.run()
     return t 
