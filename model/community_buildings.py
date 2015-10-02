@@ -85,12 +85,12 @@ class CommunityBuildings (AnnualSavings):
         """
         self.calc_refit_values()
         
-        self.pre_retrofit_HF_use = np.zeros(self.project_life) + /
-                                                    self.refit_pre_HF    
+        self.pre_retrofit_HF_use = np.zeros(self.project_life) + \
+                                                    self.refit_pre_HF_total  
         self.calc_post_refit_use()
 
-        self.post_retrofit_HF_use = np.zeros(self.project_life) + /
-                                                    self.refit_post_HF    
+        self.post_retrofit_HF_use = np.zeros(self.project_life) + \
+                                                    self.refit_post_HF_total   
         
         self.get_diesel_prices()
         
