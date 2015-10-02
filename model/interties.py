@@ -40,7 +40,7 @@ class Interties (AnnualSavings):
         self.cd = community_data
 
         # used in the NPV calculation so this is a relevant output
-        self.current_consumption = self.cd["consumption/year"]
+        self.current_consumption = self.cd["consumption_kWh"]
         self.line_losses = self.cd["line_losses"]
         
     def calc_annual_electric_savings (self):
@@ -239,7 +239,7 @@ class Interties (AnnualSavings):
             "it_hr_installed" and "it_hr_operational" are booleans
             "dist_to_nearest_comm" value needs to be accessible and a number or
         nan for "N/a" values
-            "diesel_consumed" is a positive number of gallons
+            "consumption_HF" is a positive number of gallons
             hr_precent is a decimal percent 
 
         post:
@@ -253,7 +253,7 @@ class Interties (AnnualSavings):
             # where does .15 come from
             # it's an argument now 
             self.loss_of_heat_recovered = \
-                            self.cd["diesel_consumed"] * hr_percent
+                            self.cd["consumption_HF"] * hr_percent
 
     def calc_O_and_M (self):
         """

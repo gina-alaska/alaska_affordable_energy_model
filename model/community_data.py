@@ -69,9 +69,9 @@ manley_data = {
         "HDD": 14593, # Degrees/day
         "households": 41, # houses occupied in 2010
          
-        "generation_total": 440077.00, # kWh/yr 
-        "consumption/year": 384000, # kWh/year TODO: probably has a better name
-        "diesel_consumed": 40739, # gallons
+        "generation": 440077.00, # kWh/yr 
+        "consumption_kWh": 384000, # kWh/year TODO: probably has a better name
+        "consumption_HF": 40739, # gallons
         
         
         "dist_to_nearest_comm": 53, # miles
@@ -101,7 +101,7 @@ manley_data = {
         "com_lifetime": 10,
         "com_start_year":2015,
         "com_buildings":buildings_by_type, #
-        "com_unknown_buildings":10,
+        "com_unknown_buildings":8,
         "com_sqft_to_retofit": sqft_by_type, # 
         "com_benchmark_data": com_ben_data,
         
