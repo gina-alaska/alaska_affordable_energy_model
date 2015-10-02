@@ -164,7 +164,50 @@ class Forecast (object):
         base_pop = self.cd['fc_electricity_used']['population'][-3]
         self.consumption = base_con * self.population/ base_pop
         
+    def get_consumption (self, start, end = None):
+        """
+        get consumption values from the consumption forecast. 
         
+        pre:
+            start is a year where start >= self.start_year
+            end(if provided) is a year where start <= end < self.end_year
+        post:
+            returns a float or list of floats
+        """
+        get_pop = self.get_pop_range
+        if end is None:
+            get_pop = self.get_pop_val
+        try:
+            return get_pop(start,end)
+        except AttributeError:
+            self.forecast_population()
+            self.forecast_consumption()
+            
+        return get_pop(start,end)
+    
+    def get_con_range (self, start, end):
+        """
+        get consumption list from the consumption forecast. 
+        
+        pre:
+            start is a year where start >= self.start_year
+            end is a year where start <= end < self.end_year
+        post:
+            returns a list of floats
+        """
+        return self.consumption[start-self.start_year:end-self.start_year]
+    
+    def get_con_val (self, start, end):
+        """
+        get consumption values from the consumption forecast. 
+        
+        pre:
+            start is a year where start >= self.start_year
+            end is not used, but is here for consistency with get_pop_range
+        post:
+            returns a float 
+        """
+        return self.consumption[start-self.start_year]
             
     def forecast_generation (self):
         """

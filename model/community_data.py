@@ -14,6 +14,7 @@ from pandas import read_csv
 
 NAN = float('nan')
 
+# subject to change with the new population forecast 
 electricty_actuals = {
     "years":
         [2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014],
@@ -132,13 +133,28 @@ manley_data = {
 class CommunityData (object):
     """ Class doc """
     
-    def __init__ (self):
+    def __init__ (self, inFile, community):
         """ Class initialiser """
-        pass
+        self.inputs = read_csv(inFile,index_col=0,comment='#').T[community]
+        self.static = {}
+        self.static['res_model_data'] = read_csv("res_data.csv",index_col=0,header=2).T[community]
+        self.static["com_benchmark_data"] = read_csv("com_benchmark_data.csv",index_col=0,header=1).T[community].T
+        self.static["fc_electricity_used"] = electricty_actuals
+        self.static["com_buildings"]  = buildings_by_type #
+        self.static["com_sqft_to_retofit"] = sqft_by_type 
+        self.static["com_benchmark_data"] = com_ben_data
         
-    def __getitem__ (self):
+        
+    def __getitem__ (self, key):
         """ Function doc """
-        pass
+        try:
+            return self.static[key]
+        except KeyError:
+            pass
+        try:
+            return self.inputs[key]
+        except KeyError:
+            print "key error"
 
     def __setitem__ (self):
         """ Function doc """

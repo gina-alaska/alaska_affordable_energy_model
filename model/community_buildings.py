@@ -43,10 +43,10 @@ from annual_savings import AnnualSavings
 #~ reload(annual_savings)
 #~ AnnualSavings = annual_savings.AnnualSavings
 #---------------------
-#~ from community_data import manley_data
+#~ from community_data import CommunityData
 import community_data
 reload(community_data)
-manley_data = community_data.manley_data
+CommunityData = community_data.CommunityData
 import aea_assumptions as AEAA
 reload(AEAA)
 
@@ -336,6 +336,7 @@ def test ():
     """
     tests the class using the manley data.
     """
+    manley_data = CommunityData("community_data_template.csv","Manley Hot Springs")
     cb = CommunityBuildings(manley_data)
     cb.run()
     print "total sq. ft to retrofit: " + str(round(cb.refit_sqft_total,0))

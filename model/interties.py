@@ -16,7 +16,10 @@ import annual_savings
 reload(annual_savings)
 AnnualSavings = annual_savings.AnnualSavings
 # -------------------
-from community_data import manley_data
+from community_data import CommunityData
+#~ import community_data
+#~ reload(community_data)
+#~ CommunityData = community_data.CommunityData
 from forecast import Forecast
 import aea_assumptions as AEAA
 
@@ -71,7 +74,11 @@ class Interties (AnnualSavings):
         price = self.cd["cost_power_nearest_comm"] # $/kWh
         # += to assure the array is the right length
         # $/year
-        self.proposed_electric_savings += (elec_gen * price) + self.O_and_M 
+        print self.proposed_electric_savings
+        print elec_gen
+        print price
+        self.proposed_electric_savings += (elec_gen * price) + self.O_and_M
+        
 
     #TODO: fix calculation as spread sheet is updated    
     def calc_base_electric_savings (self, generator_repairs = 1500):
@@ -148,9 +155,8 @@ class Interties (AnnualSavings):
         
         self.get_diesel_prices()
         self.ff_gen_displaced = \
-        Forecast(self.cd).get_fossil_fuel_generation_displaced(self.start_year,
-                                                                self.end_year)
-        self.ff_gen_displaced = self.ff_gen_displaced[:-1] # TODO: this needs be checked 
+        Forecast(self.cd).get_consumption(self.start_year,self.end_year)
+        self.ff_gen_displaced = self.ff_gen_displaced # TODO: this needs be checked 
         
         self.calc_annual_electric_savings()
         self.calc_annual_heating_savings()
@@ -195,6 +201,7 @@ class Interties (AnnualSavings):
         """
         # kWh
         self.kWh_transmitted = 0
+        print self.cd["it_resource_potential"]
         if self.cd["it_resource_potential"].lower() != "low" and \
            isnan(self.cd["dist_to_nearest_comm"]) == False:
             self.kWh_transmitted = self.current_consumption * \
@@ -333,6 +340,7 @@ def test ():
     post:
         returns an Interties object for further testing
     """
+    manley_data = CommunityData("community_data_template.csv","Manley Hot Springs")
     it = Interties(manley_data)
     it.run()
     it.print_proposed_sytstem_analysis()

@@ -24,17 +24,37 @@ from forecast import Forecast
 
 
 class ResidentialBuildings(AnnualSavings):
-    """ Class doc """
+    """
+    for forecasting residential building consumption/savings   
+    """
     
     def __init__ (self, community_data):
-        """ Class initialiser """
+        """
+        Class initialiser
+
+        pre:
+            community_data is a CommunityData object
+        post:
+            the model can be run
+        """
         self.cd = community_data
         self.forecast = Forecast(self.cd)
         self.set_project_life_details(self.cd["com_start_year"],
                                       self.cd["com_lifetime"])
     
     def run (self):
-        """ Function doc """
+        """ 
+        
+        run the forecast model
+        
+        pre:
+            AEAA should provide interest and discount rates as floats 0<rate<=1
+            self.cd should be a community data object 
+        post:
+            TODO: define output values. 
+            the model is run and the output values are available
+        
+        """
         self.calc_init_HH()
         self.calc_opportunity_values()
         self.calc_init_HF_use()
@@ -75,6 +95,10 @@ class ResidentialBuildings(AnnualSavings):
                     self.opportunity_HH*rd["pre_avg_area"]*rd["pre_avg_EUI"] - \
                         self.init_HH*6000*0.00341) / 0.138
         
+    
+    
+    
+    
     def calc_capital_costs (self):
         """ Function doc """
         pass
