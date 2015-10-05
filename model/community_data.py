@@ -59,7 +59,8 @@ sqft_by_type = {
 
 
 res_data = read_csv("res_data.csv",index_col=0,header=2).T["Manley Hot Springs"]
-com_ben_data = read_csv("com_benchmark_data.csv",index_col=0,header=1).T["Manley Hot Springs"].T
+com_ben_data = read_csv("com_benchmark_data.csv",index_col=0,
+                                        header=1).T["Manley Hot Springs"].T
 
 # True == 'yes'/ False == 'no'
 manley_data = {
@@ -137,8 +138,10 @@ class CommunityData (object):
         """ Class initialiser """
         self.inputs = read_csv(inFile,index_col=0,comment='#').T[community]
         self.static = {}
-        self.static['res_model_data'] = read_csv("res_data.csv",index_col=0,header=2).T[community]
-        self.static["com_benchmark_data"] = read_csv("com_benchmark_data.csv",index_col=0,header=1).T[community].T
+        self.static['res_model_data'] = read_csv("res_data.csv",index_col=0,
+                                                         header=2).T[community]
+        self.static["com_benchmark_data"] = read_csv("com_benchmark_data.csv",
+                                           index_col=0,header=1).T[community].T
         self.static["fc_electricity_used"] = electricty_actuals
         self.static["com_buildings"]  = buildings_by_type #
         self.static["com_sqft_to_retofit"] = sqft_by_type 

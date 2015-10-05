@@ -228,7 +228,6 @@ class Forecast (object):
         """
         self.average_kW = (np.array(self.consumption)/ 8760.0)\
                                          /(1-self.cd['line_losses']) 
-        #~ self.average_kW = np.round(self.generation,-3) # round to nears thousand
         
     def forecast_households (self):
         """

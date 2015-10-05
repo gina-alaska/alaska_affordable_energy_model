@@ -299,7 +299,8 @@ def test ():
     """
     tests the class using the manley data.
     """
-    manley_data = CommunityData("community_data_template.csv","Manley Hot Springs")
+    manley_data = CommunityData("community_data_template.csv",
+                                "Manley Hot Springs")
     ww = WaterWastewaterSystems(manley_data)
     ww.run()
     #~ ww.print_savings_chart()

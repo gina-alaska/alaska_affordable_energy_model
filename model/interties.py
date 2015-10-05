@@ -156,7 +156,8 @@ class Interties (AnnualSavings):
         self.get_diesel_prices()
         self.ff_gen_displaced = \
         Forecast(self.cd).get_consumption(self.start_year,self.end_year)
-        self.ff_gen_displaced = self.ff_gen_displaced # TODO: this needs be checked 
+        # TODO: this needs be checked 
+        self.ff_gen_displaced = self.ff_gen_displaced 
         
         self.calc_annual_electric_savings()
         self.calc_annual_heating_savings()
@@ -340,7 +341,8 @@ def test ():
     post:
         returns an Interties object for further testing
     """
-    manley_data = CommunityData("community_data_template.csv","Manley Hot Springs")
+    manley_data = CommunityData("community_data_template.csv",
+                                "Manley Hot Springs")
     it = Interties(manley_data)
     it.run()
     it.print_proposed_sytstem_analysis()

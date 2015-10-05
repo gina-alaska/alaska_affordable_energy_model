@@ -25,7 +25,7 @@ class ResidentialBuildings(AnnualSavings):
     for forecasting residential building consumption/savings   
     """
     
-    def __init__ (self, community_data):
+    def __init__ (self, community_data, forecast):
         """
         Class initialiser
 
@@ -35,7 +35,7 @@ class ResidentialBuildings(AnnualSavings):
             the model can be run
         """
         self.cd = community_data
-        self.forecast = Forecast(self.cd)
+        self.forecast = forecast
         self.refit_cost_rate = AEAA.res_average_refit_cost * \
                             AEAA.construction_mulitpliers[self.cd["region"]]
         self.set_project_life_details(self.cd["res_start_year"],
@@ -255,7 +255,10 @@ def test ():
     """
     tests the class using the manley data.
     """
-    manley_data = CommunityData("community_data_template.csv","Manley Hot Springs")
-    t = ResidentialBuildings(manley_data)
+    manley_data = CommunityData("community_data_template.csv",
+                                "Manley Hot Springs")
+    
+    fc = Forecast(manley_data)
+    t = ResidentialBuildings(manley_data,fc)
     t.run()
-    return t 
+    return t,fc
