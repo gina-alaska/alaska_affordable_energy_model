@@ -281,6 +281,39 @@ class Forecast (object):
             returns a float 
         """
         return self.households[start-self.start_year]
+    
+    def set_res_HF_fuel_forecast (self, fc, start_year):
+        """
+        set the residential HF consumption forecast
+        
+        pre: 
+        """
+        start_pad = np.zeros(start_year - self.start_year)
+        end_pad = np.zeros(self.end_year - (start_year + len(fc))) + fc[-1]
+        self.res_HF = np.append(np.append(start_pad, fc), end_pad)
+    
+    def set_com_HF_fuel_forecast (self, fc, start_year):
+        """
+        set the residential HF consumption forecast
+        
+        pre: 
+        """
+        start_pad = np.zeros(start_year - self.start_year)
+        end_pad = np.zeros(self.end_year - (start_year + len(fc))) + fc[-1]
+        self.com_HF = np.append(np.append(start_pad, fc), end_pad)
+        
+    def set_www_HF_fuel_forecast (self, fc, start_year):
+        """
+        set the residential HF consumption forecast
+        
+        pre: 
+        """
+        start_pad = np.zeros(start_year - self.start_year)
+        end_pad = np.zeros(self.end_year - (start_year + len(fc))) + fc[-1]
+        self.www_HF = np.append(np.append(start_pad, fc), end_pad)
+        
+    def calc_total_HF_forecast(self):
+        self.total_HF = self.res_HF + self.com_HF + self.www_HF
         
 
 def test ():

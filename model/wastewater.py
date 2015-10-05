@@ -31,7 +31,7 @@ class WaterWastewaterSystems (AnnualSavings):
     this class mocks up the Eff(w & ww) tab in the spreed sheet
     """
     
-    def __init__ (self, community_data):
+    def __init__ (self, community_data, forecast):
         """ 
         Class initialiser 
         
@@ -46,7 +46,7 @@ class WaterWastewaterSystems (AnnualSavings):
         self.hdd = self.cd["HDD"]
         self.pop = self.cd["population"] 
         self.system_type = self.cd["w&ww_system_type"] 
-        self.forecast = Forecast(self.cd)
+        self.forecast = forecast
         
     def calc_annual_electric_savings (self):
         """
@@ -148,6 +148,8 @@ class WaterWastewaterSystems (AnnualSavings):
         self.calc_capital_costs()
     
         self.calc_post_savings_values()
+        self.forecast.set_www_HF_fuel_forecast(self.heating_fuel, 
+                                               self.start_year)
         
         
         self.get_diesel_prices()
@@ -301,7 +303,8 @@ def test ():
     """
     manley_data = CommunityData("community_data_template.csv",
                                 "Manley Hot Springs")
-    ww = WaterWastewaterSystems(manley_data)
+    fc = Forecast(manley_data)
+    ww = WaterWastewaterSystems(manley_data, fc)
     ww.run()
     #~ ww.print_savings_chart()
     print ""
@@ -309,5 +312,5 @@ def test ():
     print round(ww.cost_npv,0)
     print round(ww.benefit_cost_ratio ,2)
     print round(ww.net_npv,0)
-    return ww # return the object for further testing
+    return ww, fc # return the object for further testing
 

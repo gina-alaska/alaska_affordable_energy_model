@@ -49,6 +49,7 @@ reload(community_data)
 CommunityData = community_data.CommunityData
 import aea_assumptions as AEAA
 reload(AEAA)
+from forecast import Forecast
 
 
 class CommunityBuildings (AnnualSavings):
@@ -56,7 +57,7 @@ class CommunityBuildings (AnnualSavings):
     for forecasting community building consumption/savings  
     """
     
-    def __init__ (self, community_data):
+    def __init__ (self, community_data, forecast):
         """
         Class initialiser
 
@@ -66,7 +67,7 @@ class CommunityBuildings (AnnualSavings):
             the model can be run
         """
         self.cd = community_data
-        # $/sf
+        self.forecast = forecast
         self.refit_cost_rate = AEAA.com_average_refit_cost * \
                             AEAA.construction_mulitpliers[self.cd["region"]]
         self.set_project_life_details(self.cd["com_start_year"],
@@ -86,12 +87,16 @@ class CommunityBuildings (AnnualSavings):
         self.calc_refit_values()
         
         self.pre_retrofit_HF_use = np.zeros(self.project_life) + \
-                                                    self.refit_pre_HF_total  
+                                                    self.refit_pre_HF_total 
+                                                    
+        self
         self.calc_post_refit_use()
 
         self.post_retrofit_HF_use = np.zeros(self.project_life) + \
                                                     self.refit_post_HF_total   
         
+        self.forecast.set_com_HF_fuel_forecast(self.post_retrofit_HF_use, 
+                                                self.start_year)
         self.get_diesel_prices()
         
         self.calc_capital_costs()
@@ -338,7 +343,8 @@ def test ():
     """
     manley_data = CommunityData("community_data_template.csv",
                                 "Manley Hot Springs")
-    cb = CommunityBuildings(manley_data)
+    fc = Forecast(manley_data)
+    cb = CommunityBuildings(manley_data, fc)
     cb.run()
     print "total sq. ft to retrofit: " + str(round(cb.refit_sqft_total,0))
     print "kWh/yr pre: " + str(round(cb.refit_pre_kWh_total,0))
@@ -348,4 +354,4 @@ def test ():
     print "kWh/yr post: " + str(round(cb.refit_post_kWh_total,0))
     print "HF/yr post: " + str(round(cb.refit_post_HF_total,0))
     print "retro fit cost: " + str(round(cb.refit_cost_total,2))
-    return cb # return the object for further testing
+    return cb,fc # return the object for further testing

@@ -62,6 +62,8 @@ class ResidentialBuildings(AnnualSavings):
         self.get_diesel_prices()
         
         self.calc_baseline_HF_consumption()
+        self.forecast.set_res_HF_fuel_forecast(self.baseline_HF_consumption,
+                                                self.start_year)
         self.calc_refit_HF_consumption()
         
         self.calc_baseline_HF_cost()
