@@ -6,10 +6,8 @@ created: 2015/09/18
     mock up of for cast tab
 """
 import numpy as np
-#~ from community_data import manley_data
-import community_data
-reload(community_data)
-manley_data = community_data.manley_data
+from community_data import CommunityData
+
 
 from scipy.optimize import curve_fit
 
@@ -222,6 +220,51 @@ class Forecast (object):
                                 (1.0-self.cd['line_losses'])
         self.generation = np.round(self.generation,-3) # round to nears thousand
         
+    def get_generation (self, start, end = None):
+        """
+        get population values from the population forecast. 
+        
+        pre:
+            start is a year where start >= self.start_year
+            end(if provided) is a year where start <= end < self.end_year
+        post:
+            returns a float or list of floats
+        """
+        get_gen = self.get_gen_range
+        if end is None:
+            get_gen = self.get_gen_val
+        try:
+            return get_gen(start,end)
+        except AttributeError:
+            self.forecast_population()
+            self.forecast_consumption()
+            self.forecast_generation()
+        return get_gen(start,end)
+    
+    def get_gen_range (self, start, end):
+        """
+        get generation list from the generation forecast. 
+        
+        pre:
+            start is a year where start >= self.start_year
+            end is a year where start <= end < self.end_year
+        post:
+            returns a list of floats
+        """
+        return self.generation[start-self.start_year:end-self.start_year]
+    
+    def get_gen_val (self, start, end):
+        """
+        get generation values from the generation forecast. 
+        
+        pre:
+            start is a year where start >= self.start_year
+            end is not used, but is here for consistency with get_pop_range
+        post:
+            returns a float 
+        """
+        return self.generation[start-self.start_year]
+        
     def forecast_average_kW (self):
         """
         ???
@@ -289,7 +332,7 @@ class Forecast (object):
         pre: 
         """
         start_pad = np.zeros(start_year - self.start_year)
-        end_pad = np.zeros(self.end_year - (start_year + len(fc))) + fc[-1]
+        end_pad = np.zeros(self.end_year - (start_year + len(fc))+1) + fc[-1]
         self.res_HF = np.append(np.append(start_pad, fc), end_pad)
     
     def set_com_HF_fuel_forecast (self, fc, start_year):
@@ -299,7 +342,7 @@ class Forecast (object):
         pre: 
         """
         start_pad = np.zeros(start_year - self.start_year)
-        end_pad = np.zeros(self.end_year - (start_year + len(fc))) + fc[-1]
+        end_pad = np.zeros(self.end_year - (start_year + len(fc))+1) + fc[-1]
         self.com_HF = np.append(np.append(start_pad, fc), end_pad)
         
     def set_www_HF_fuel_forecast (self, fc, start_year):
@@ -309,7 +352,7 @@ class Forecast (object):
         pre: 
         """
         start_pad = np.zeros(start_year - self.start_year)
-        end_pad = np.zeros(self.end_year - (start_year + len(fc))) + fc[-1]
+        end_pad = np.zeros(self.end_year - (start_year + len(fc) )+1) + fc[-1]
         self.www_HF = np.append(np.append(start_pad, fc), end_pad)
         
     def calc_total_HF_forecast(self):
@@ -318,6 +361,8 @@ class Forecast (object):
 
 def test ():
     """ Function doc """
+    manley_data = CommunityData("community_data_template.csv",
+                                "Manley Hot Springs")
     fc = Forecast(manley_data)
     fc.calc_electricity_totals()
     fc.forecast_population()

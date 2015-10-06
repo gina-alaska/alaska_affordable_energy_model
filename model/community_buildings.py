@@ -38,17 +38,8 @@ import numpy as np
 from math import isnan
 
 from annual_savings import AnnualSavings
-#~ # for live testing ---
-#~ import annual_savings
-#~ reload(annual_savings)
-#~ AnnualSavings = annual_savings.AnnualSavings
-#---------------------
-#~ from community_data import CommunityData
-import community_data
-reload(community_data)
-CommunityData = community_data.CommunityData
+from community_data import CommunityData
 import aea_assumptions as AEAA
-reload(AEAA)
 from forecast import Forecast
 
 

@@ -10,20 +10,9 @@ created: 2015/09/09
 import numpy as np
 
 from annual_savings import AnnualSavings
-#~ # for live testing ---
-#~ import annual_savings
-#~ reload(annual_savings)
-#~ AnnualSavings = annual_savings.AnnualSavings
-#---------------------
 from community_data import CommunityData
-#~ import community_data
-#~ reload(community_data)
-#~ CommunityData = community_data.CommunityData
 import aea_assumptions as AEAA
-#~ reload(AEAA)
-#~ from forecast import Forecast
 import forecast
-reload(forecast)
 Forecast = forecast.Forecast
 
 class WaterWastewaterSystems (AnnualSavings):
