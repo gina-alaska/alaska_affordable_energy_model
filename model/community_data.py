@@ -121,6 +121,8 @@ manley_data = {
         "w&ww_audit_savings_hf": float("nan"), # gal
         "w&ww_audit_cost": float("nan"), # $ -- make cost_from_audit
         
+        "res_start_year": 2015,
+        "res_lifetime": 15
         "res_model_data": res_data,
 
 }
