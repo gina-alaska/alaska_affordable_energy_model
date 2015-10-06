@@ -67,6 +67,7 @@ Type "help", "copyright", "credits" or "license" for more information.
 
 -- the individual component test don't take any arguments and return the model
 -- components used
+    
     >>> import wastewater
     >>> ww, fc = wastewater.test()
 
@@ -88,6 +89,7 @@ Type "help", "copyright", "credits" or "license" for more information.
 -- the test in driver take the community name as an input, There is only
 -- data for manley right now. A pandas DataFrame(just a mock of the table in the forecast tab) 
 -- is returned along with the model components as a tuple 
+    
     >>> df, model_componets = driver.test("Manley Hot Springs")
 
 
