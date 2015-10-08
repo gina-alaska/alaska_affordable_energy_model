@@ -58,26 +58,26 @@ info on those here: http://www.scipy.org/
     
 
 # python examples:
--- from the model/ directory 
+from the model/ directory 
 
-$ python
-Python 2.7.9 (default, Apr  2 2015, 15:33:21) 
-[GCC 4.9.2] on linux2
-Type "help", "copyright", "credits" or "license" for more information.
+    $ python
+    Python 2.7.9 (default, Apr  2 2015, 15:33:21) 
+    [GCC 4.9.2] on linux2
+    Type "help", "copyright", "credits" or "license" for more information.
 
--- the individual component test don't take any arguments and return the model
--- components used
-'>>> import wastewater
-'>>> ww, fc = wastewater.test()
+the individual component test don't take any arguments and return the model components used
+    
+    >>> import wastewater
+    >>> ww, fc = wastewater.test()
 
-47797.0
-61254.0
-0.78
--13457.0
-'>>> ww.benefit_cost_ratio 
-0.78031511335568371
-'>>> fc.www_HF
-array([    0.        ,   891.21513076,   929.59932095,   969.63669902,
+    47797.0
+    61254.0     
+    0.78
+    13457.0
+    >>> ww.benefit_cost_ratio 
+    0.78031511335568371
+    >>> fc.www_HF
+    array([    0.        ,   891.21513076,   929.59932095,   969.63669902,
         1011.39846696,  1054.95889336,  1100.39544556,  1147.78892734,
         1197.2236227 ,  1248.78744567,  1302.57209673,  1358.67322582,
         1417.1906025 ,  1478.22829334,  1541.89484701,  1608.30348732,
@@ -85,10 +85,11 @@ array([    0.        ,   891.21513076,   929.59932095,   969.63669902,
         1608.30348732,  1608.30348732,  1608.30348732,  1608.30348732,
         1608.30348732,  1608.30348732,  1608.30348732])
         
--- the test in driver take the community name as an input, There is only
--- data for manley right now. A pandas DataFrame(just a mock of the table in the forecast tab) 
--- is returned along with the model components as a tuple 
-'>>> df, model_componets = driver.test("Manley Hot Springs")
+        
+
+the test in driver take the community name as an input, There is only data for manley right now. A pandas DataFrame(just a mock of the table in the forecast tab) is returned along with the model components as a tuple 
+    
+    >>> df, model_componets = driver.test("Manley Hot Springs")
 
 
 
