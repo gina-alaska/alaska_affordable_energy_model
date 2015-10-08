@@ -5,6 +5,7 @@ created: 2015/09/18
 
     assumptions by the AEA
 """
+from pandas import read_csv
 
 loss_per_mile = .001 # Transmission line loss/mile (%)
 O_and_M_cost = 10000.00 # $/mile/year
@@ -101,6 +102,10 @@ w_ww_audit_cost = 10000
 
 
 res_average_refit_cost = 11000 # $
+
+
+com_building_estimates = read_csv("com_building_estimates.csv",
+                         index_col = 0, header=1, comment = '#').T
 
 
 

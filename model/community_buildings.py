@@ -63,6 +63,9 @@ class CommunityBuildings (AnnualSavings):
                             AEAA.construction_mulitpliers[self.cd["region"]]
         self.set_project_life_details(self.cd["com_start_year"],
                                       self.cd["com_lifetime"])
+                                      
+        self.additional_buildings = self.cd["com_num_buildings"] - \
+np.sum(self.cd['com_benchmark_data'][['Number Of Building Type']].values) - 2
         
     def run (self):
         """
@@ -76,17 +79,15 @@ class CommunityBuildings (AnnualSavings):
             the model is run and the output values are available
         """
         self.calc_refit_values()
-        
         self.pre_retrofit_HF_use = np.zeros(self.project_life) + \
                                                     self.refit_pre_HF_total 
                                                     
-        self
+        
         self.calc_post_refit_use()
-
         self.post_retrofit_HF_use = np.zeros(self.project_life) + \
                                                     self.refit_post_HF_total   
         
-        self.forecast.set_com_HF_fuel_forecast(self.post_retrofit_HF_use, 
+        self.forecast.set_com_HF_fuel_forecast(self.pre_retrofit_HF_use, 
                                                 self.start_year)
         self.get_diesel_prices()
         
@@ -123,54 +124,44 @@ class CommunityBuildings (AnnualSavings):
         calc refit square feet 
           
         pre:
-            AEAA.estimated energy use is a thing? TODO: Define this.
             self.cd should be a community data object 
         
         post:
-            refit square feet is calculated by and stored by building type as 
-        the key in self.refit_sqft, and totaled in refit_sqft_total
+          self.refit_sqft_total, self.benchmark_sqft, self.additional_sqft are
+        floating-point square feet values 
         """
-        num_buildings = self.cd['com_buildings']
-        sqft_act = self.cd["com_sqft_to_retofit"]
-        sqft_est = AEAA.com_estimated_enegery_use["est.sf<300"]
+        self.benchmark_sqft = \
+            np.sum(self.cd['com_benchmark_data'][['Total Square Feet']].values) 
+        pop = self.cd['population']  
+        if pop < 300:
+            key = "Average sf<300"
+        elif pop < 1200:
+            key = "Average sf>300,<1200"
+        else: 
+            key = "Average sf>1200"
         
-        total = 0 
-        self.refit_sqft = {}
-        for key in sqft_act.keys():
-            value = sqft_act[key]
-            if isnan(value):
-                value = sqft_est[key] * num_buildings[key]
-            self.refit_sqft[key] = value
-            total += value
         
-        self.refit_sqft_total = total
-        try:
-            # multiple building types 
-            self.refit_sqft_total += \
-                    np.sum(self.cd['com_benchmark_data']['sqft'].values) 
-        except AttributeError:
-            # single building type
-            self.refit_sqft_total += self.cd['com_benchmark_data']['sqft']
-
+        self.additional_sqft = self.additional_buildings * \
+                               AEAA.com_building_estimates['Other'][key]
+        self.refit_sqft_total = self.additional_sqft + self.benchmark_sqft
+        
 
     def calc_refit_cost (self):
         """ 
         calc refit cost 
           
         pre:
-            self.refit_sqft need to be building library of numbers. 
-                (call calc_refit_sqft to do this)
+            self.additional_sqft should be a float in square feet
         
         post:
-            refit square feet is calculated by and stored by building type as 
-        the key in self.refit_cost, and a total in refit_cost_total
+            self.refit_cost_total, self.benchmark_cost, self.additional_cost are
+        floating-point dollar values 
         """
-        total = 0 
-        self.refit_cost = {}
-        for key in self.refit_sqft:
-            self.refit_cost[key] = self.refit_cost_rate * self.refit_sqft[key]
-            #~ total += self.refit_cost[key]
-        self.refit_cost_total = self.refit_sqft_total * self.refit_cost_rate
+        self.benchmark_cost = \
+            np.sum(self.cd['com_benchmark_data']\
+                        [['Cohort Implementation Cost']].values) 
+        self.additional_cost = self.additional_sqft * self.refit_cost_rate
+        self.refit_cost_total = self.benchmark_cost + self.additional_cost
         
     def calc_refit_pre_HF (self):
         """ 
@@ -179,28 +170,27 @@ class CommunityBuildings (AnnualSavings):
         pre:
             tbd
         post: 
-            refit_pre_HF_total is the total number of HF used before a 
-        refit(float)
+            self.refit_pre_hf_total, self.benchmark_hf, self.additional_hf are
+        floating-point HF values
         """
-        hf_sqft_yr = AEAA.com_estimated_enegery_use["gal/sf/yr<300"]
-        total = 0 
-        #gal/yr
-        self.refit_pre_HF = {}
-        for key in self.refit_sqft:
-            #gal/yr
-            self.refit_pre_HF[key] = self.refit_sqft[key]*hf_sqft_yr[key]
-            total += self.refit_pre_HF[key]
-        self.refit_pre_HF_total = total #gal/yr
-        try:
+        pop = self.cd['population']  
+        if pop < 300:
+            key = "Av Gal/sf<300"
+        elif pop < 1200:
+            key = "Av Gal/sf>300,<1200"
+        else: 
+            key = "Av Gal/sf>1200"
+        
+        hf_sqft_yr = AEAA.com_building_estimates['Other'][key]
+
+        
+        self.benchmark_HF = \
+            np.sum(self.cd['com_benchmark_data'][['Current Fuel Oil']].values) 
+
+        self.additional_HF = self.additional_sqft * hf_sqft_yr
+        
             # multiple building types 
-            self.refit_pre_HF_total +=\
-                np.sum(self.cd['com_benchmark_data']['fuel_oil_1'].values) + \
-                np.sum(self.cd['com_benchmark_data']['fuel_oil_2'].values) 
-        except AttributeError:
-            # single building type
-            self.refit_pre_HF_total += \
-                                self.cd['com_benchmark_data']['fuel_oil_1'] + \
-                                self.cd['com_benchmark_data']['fuel_oil_2']
+        self.refit_pre_HF_total = self.benchmark_HF + self.additional_HF
 
                 
         
@@ -211,26 +201,27 @@ class CommunityBuildings (AnnualSavings):
         pre:
             tbd
         post: 
-            refit_pre_kWh_total is the total number of kWh used before a 
-        refit(float)
+            self.refit_pre_kWh_total, self.benchmark_kWh, 
+        self.additional_kWh are floating-point kWh values
         """
-        kWh_sqft_yr = AEAA.com_estimated_enegery_use["kWh/sf/yr<300"]
-        total = 0 
-        #kWh/yr
-        self.refit_pre_kWh = {}
-        for key in self.refit_sqft:
-            #kWh/yr
-            self.refit_pre_kWh[key]=self.refit_sqft[key]*kWh_sqft_yr[key]
-            total += self.refit_pre_kWh[key]
-        self.refit_pre_kWh_total = total #kWh/yr
-        try:
+        pop = self.cd['population']  
+        if pop < 300:
+            key = "Avg kWh/sf<300"
+        elif pop < 1200:
+            key = "Avg kWh/sf>300,<1200"
+        else: 
+            key = "Avg kWh/sf>1200"
+        
+        kWh_sqft_yr = AEAA.com_building_estimates['Other'][key]
+
+        
+        self.benchmark_kWh = \
+            np.sum(self.cd['com_benchmark_data'][['Current Electric']].values) 
+        
+        self.additional_kWh = self.additional_sqft * kWh_sqft_yr
+        
             # multiple building types 
-            self.refit_pre_kWh_total += \
-                    np.sum(self.cd['com_benchmark_data']['electric'].values) 
-        except AttributeError:
-            # single building type
-            self.refit_pre_kWh_total += \
-                                self.cd['com_benchmark_data']['electric']
+        self.refit_pre_kWh_total = self.benchmark_kWh + self.additional_kWh
     
     def calc_refit_savings_HF (self):
         """ 
@@ -239,17 +230,16 @@ class CommunityBuildings (AnnualSavings):
         pre:
             tbd
         post: 
-            refit_savings_HF_total is the total number of Hf saved by
-        refit(float)
+            self.refit_savings_HF, self.benchmark_savings_HF,
+        self.additional_savings_HF, are floating-point HF values
         """
-        total = 0 
-        self.refit_savings_HF = {}
-        for key in self.refit_pre_HF:
-            self.refit_savings_HF[key] = self.refit_pre_HF[key] * \
-                                    AEAA.com_cohort_savings_multiplier
-            #~ total += self.refit_savings_HF[key]
-        self.refit_savings_HF_total = self.refit_pre_HF_total *\
-                                    AEAA.com_cohort_savings_multiplier
+        self.benchmark_savings_HF = \
+                np.sum(self.cd['com_benchmark_data']["Current Fuel Oil"] -\
+                    self.cd['com_benchmark_data']["Post-Retrofit Fuel Oil"])
+        self.additional_savings_HF = self.additional_HF * \
+                                 AEAA.com_cohort_savings_multiplier
+        self.refit_savings_HF_total = self.benchmark_savings_HF +\
+                                      self.additional_savings_HF
         
     def calc_refit_savings_kWh (self):
         """ 
@@ -258,17 +248,16 @@ class CommunityBuildings (AnnualSavings):
         pre:
             tbd
         post: 
-            refit_savings_kWh_total is the total number of kWh saved by
-        refit(float)
+            self.refit_savings_kWh, self.benchmark_savings_kWh,
+        self.additional_savings_kWh, are floating-point kWh values
         """
-        total = 0 
-        self.refit_savings_kWh = {}
-        for key in self.refit_pre_kWh:
-            self.refit_savings_kWh[key] = self.refit_pre_kWh[key] * \
-                                    AEAA.com_cohort_savings_multiplier
-            #~ total += self.refit_savings_kWh[key]
-        self.refit_savings_kWh_total = self.refit_pre_kWh_total *\
-                                    AEAA.com_cohort_savings_multiplier
+        self.benchmark_savings_kWh = \
+                np.sum(self.cd['com_benchmark_data']["Current Electric"] -\
+                    self.cd['com_benchmark_data']["Post-Retrofit Electric"])
+        self.additional_savings_kWh = self.additional_kWh * \
+                                 AEAA.com_cohort_savings_multiplier
+        self.refit_savings_kWh_total = self.benchmark_savings_kWh +\
+                                      self.additional_savings_kWh
         
     def calc_post_refit_use (self):
         """ 

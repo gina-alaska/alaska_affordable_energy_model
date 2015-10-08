@@ -60,7 +60,13 @@ sqft_by_type = {
 
 res_data = read_csv("res_data.csv",index_col=0,header=2).T["Manley Hot Springs"]
 com_ben_data = read_csv("com_benchmark_data.csv",index_col=0,
-                                        header=1).T["Manley Hot Springs"].T
+                                        header=0,
+                                    comment = '#').T["Manley Hot Springs"].T
+                                    
+com_num_buildings = read_csv("com_num_buildings.csv",
+                                    index_col = 0, header=1, comment = '#').T["Manley Hot Springs"]
+
+
 
 # True == 'yes'/ False == 'no'
 manley_data = {
@@ -102,10 +108,14 @@ manley_data = {
         
         "com_lifetime": 10,
         "com_start_year":2015,
+        "com_benchmark_data": com_ben_data,
+        "com_num_buildings": com_num_buildings, 
+        
+        
         "com_buildings":buildings_by_type, #
         "com_unknown_buildings":8,
         "com_sqft_to_retofit": sqft_by_type, # 
-        "com_benchmark_data": com_ben_data,
+        
         
         
         "w&ww_lifetime" : 15, # years
@@ -122,7 +132,7 @@ manley_data = {
         "w&ww_audit_cost": float("nan"), # $ -- make cost_from_audit
         
         "res_start_year": 2015,
-        "res_lifetime": 15
+        "res_lifetime": 15,
         "res_model_data": res_data,
 
 }
@@ -143,11 +153,13 @@ class CommunityData (object):
         self.static['res_model_data'] = read_csv("res_data.csv",index_col=0,
                                                          header=2).T[community]
         self.static["com_benchmark_data"] = read_csv("com_benchmark_data.csv",
-                                           index_col=0,header=1).T[community].T
+                                           index_col=0,header=1, 
+                                           comment = '#').T[community].T
         self.static["fc_electricity_used"] = electricty_actuals
         self.static["com_buildings"]  = buildings_by_type #
         self.static["com_sqft_to_retofit"] = sqft_by_type 
         self.static["com_benchmark_data"] = com_ben_data
+        self.static["com_num_buildings"]= com_num_buildings
         
         
     def __getitem__ (self, key):
@@ -158,9 +170,9 @@ class CommunityData (object):
             pass
         try:
             return self.inputs[key]
-        except KeyError:
-            print "key error"
-
+        except KeyError, e:
+            print e
+            raise e
     def __setitem__ (self):
         """ Function doc """
         pass
