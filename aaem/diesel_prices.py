@@ -8,7 +8,7 @@ created 2015/09/17
 import numpy as np
 #  TODO: this(the whole class/ way projected prices is caclulated)
 #        needs to be made not static
-
+from pandas import read_csv
 
 co2_allowance_cost = [0.4731808371,0.4873762622,0.5019975501,0.5170574766,
                       0.5325692009,0.5485462769,0.5650026652,0.5819527452,
@@ -56,7 +56,7 @@ class DieselProjections (object):
     This class Projects diesel fuel prices
     """
     
-    def __init__ (self, start_year):
+    def __init__ (self, start_year, community):
         """
         create the projected values
         Pre:
@@ -81,7 +81,9 @@ class DieselProjections (object):
         post:
             self.projected_prices will contain the projected prices 
         """
-        self.projected_prices = manley_price_per_gal
+        df = read_csv("../data/diesel_fuel_prices.csv", 
+                        index_col=3, comment="#", header=1)
+        self.projected_prices = df.T["Manley Hot Springs"][3:].values
         
     def get_projected_prices (self, start_year, end_year):
         """
@@ -104,7 +106,7 @@ def test ():
     pre: none
     post: retuns the object for further testing
     """
-    pp = DieselProjections(start_year)
+    pp = DieselProjections(start_year, "Manley Hot Springs")
     return pp
 
     

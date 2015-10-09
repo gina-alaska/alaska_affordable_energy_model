@@ -99,7 +99,7 @@ class AnnualSavings (object):
     def get_diesel_prices (self):
         """
         """
-        prices = DieselProjections(2015)
+        prices = DieselProjections(2015, self.cd["community"])
         self.diesel_prices = prices.get_projected_prices(self.start_year,
                                                          self.end_year)
     

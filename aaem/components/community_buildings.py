@@ -80,7 +80,7 @@ np.sum(self.cd['com_benchmark_data'][['Number Of Building Type']].values) - 2
             the model is run and the output values are available
         """
         self.calc_refit_values()
-        print self.refit_pre_HF_total
+        #~ print self.refit_pre_HF_total
         self.pre_retrofit_HF_use = np.zeros(self.project_life) + \
                                                     self.refit_pre_HF_total 
                                                     
