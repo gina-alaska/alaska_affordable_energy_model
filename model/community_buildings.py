@@ -66,6 +66,7 @@ class CommunityBuildings (AnnualSavings):
                                       
         self.additional_buildings = self.cd["com_num_buildings"] - \
 np.sum(self.cd['com_benchmark_data'][['Number Of Building Type']].values) - 2
+        self.additional_buildings = self.additional_buildings.values[0]
         
     def run (self):
         """
@@ -79,6 +80,7 @@ np.sum(self.cd['com_benchmark_data'][['Number Of Building Type']].values) - 2
             the model is run and the output values are available
         """
         self.calc_refit_values()
+        print self.refit_pre_HF_total
         self.pre_retrofit_HF_use = np.zeros(self.project_life) + \
                                                     self.refit_pre_HF_total 
                                                     
@@ -140,9 +142,11 @@ np.sum(self.cd['com_benchmark_data'][['Number Of Building Type']].values) - 2
         else: 
             key = "Average sf>1200"
         
-        
+        #~ print self.additional_buildings , \
+                               #~ AEAA.com_building_estimates['Other'][key]
         self.additional_sqft = self.additional_buildings * \
                                AEAA.com_building_estimates['Other'][key]
+        #~ print self.additional_sqft, self.benchmark_sqft
         self.refit_sqft_total = self.additional_sqft + self.benchmark_sqft
         
 
@@ -187,9 +191,11 @@ np.sum(self.cd['com_benchmark_data'][['Number Of Building Type']].values) - 2
         self.benchmark_HF = \
             np.sum(self.cd['com_benchmark_data'][['Current Fuel Oil']].values) 
 
+      
         self.additional_HF = self.additional_sqft * hf_sqft_yr
         
             # multiple building types 
+
         self.refit_pre_HF_total = self.benchmark_HF + self.additional_HF
 
                 
@@ -321,7 +327,7 @@ def test ():
     """
     tests the class using the manley data.
     """
-    manley_data = CommunityData("community_data_template.csv",
+    manley_data = CommunityData("../data/community_data_template.csv",
                                 "Manley Hot Springs")
     fc = Forecast(manley_data)
     cb = CommunityBuildings(manley_data, fc)

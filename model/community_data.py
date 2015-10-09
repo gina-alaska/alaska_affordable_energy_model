@@ -7,6 +7,8 @@ created: 2015/09/16
 is here for testing
 """
 from pandas import read_csv
+import os.path
+
 ## w&ww - water and wastewater
 ## it - intertie
 ## fc - forecast
@@ -56,14 +58,15 @@ sqft_by_type = {
         "warehouse":NAN,
         "unknown":NAN,
 }
-
-
-res_data = read_csv("res_data.csv",index_col=0,header=2).T["Manley Hot Springs"]
-com_ben_data = read_csv("com_benchmark_data.csv",index_col=0,
+PATH = os.path.join
+aea_aaem_root = os.path.dirname(os.getcwd())
+data_dir = os.path.join(aea_aaem_root, "data")
+res_data = read_csv(PATH(data_dir,"res_data.csv"),index_col=0,header=2).T["Manley Hot Springs"]
+com_ben_data = read_csv(PATH(data_dir,"com_benchmark_data.csv"),index_col=0,
                                         header=0,
                                     comment = '#').T["Manley Hot Springs"].T
                                     
-com_num_buildings = read_csv("com_num_buildings.csv",
+com_num_buildings = read_csv(PATH(data_dir,"com_num_buildings.csv"),
                                     index_col = 0, header=1, comment = '#').T["Manley Hot Springs"]
 
 
@@ -150,9 +153,9 @@ class CommunityData (object):
         """ Class initialiser """
         self.inputs = read_csv(inFile,index_col=0,comment='#').T[community]
         self.static = {}
-        self.static['res_model_data'] = read_csv("res_data.csv",index_col=0,
+        self.static['res_model_data'] = read_csv(PATH(data_dir,"res_data.csv"),index_col=0,
                                                          header=2).T[community]
-        self.static["com_benchmark_data"] = read_csv("com_benchmark_data.csv",
+        self.static["com_benchmark_data"] = read_csv(PATH(data_dir,"com_benchmark_data.csv"),
                                            index_col=0,header=1, 
                                            comment = '#').T[community].T
         self.static["fc_electricity_used"] = electricty_actuals

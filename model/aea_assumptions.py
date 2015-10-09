@@ -5,6 +5,7 @@ created: 2015/09/18
 
     assumptions by the AEA
 """
+import os.path
 from pandas import read_csv
 
 loss_per_mile = .001 # Transmission line loss/mile (%)
@@ -102,9 +103,10 @@ w_ww_audit_cost = 10000
 
 
 res_average_refit_cost = 11000 # $
-
-
-com_building_estimates = read_csv("com_building_estimates.csv",
+PATH = os.path.join
+aea_aaem_root = os.path.dirname(os.getcwd())
+data_dir = PATH(aea_aaem_root, 'data')
+com_building_estimates = read_csv(PATH(data_dir, "com_building_estimates.csv"),
                          index_col = 0, header=1, comment = '#').T
 
 

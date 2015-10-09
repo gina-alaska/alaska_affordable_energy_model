@@ -13,7 +13,7 @@ import numpy as np
 
 
 
-def test (community, com_data_file = "community_data_template.csv"):
+def test (community, com_data_file = "../data/community_data_template.csv"):
     """ Function doc """
     cd = CommunityData(com_data_file, community)
     

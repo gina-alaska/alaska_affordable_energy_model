@@ -341,7 +341,7 @@ def test ():
     post:
         returns an Interties object for further testing
     """
-    manley_data = CommunityData("community_data_template.csv",
+    manley_data = CommunityData("../data/community_data_template.csv",
                                 "Manley Hot Springs")
     it = Interties(manley_data)
     it.run()

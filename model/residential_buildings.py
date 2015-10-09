@@ -251,7 +251,7 @@ def test ():
     """
     tests the class using the manley data.
     """
-    manley_data = CommunityData("community_data_template.csv",
+    manley_data = CommunityData("../data/community_data_template.csv",
                                 "Manley Hot Springs")
     
     fc = Forecast(manley_data)
