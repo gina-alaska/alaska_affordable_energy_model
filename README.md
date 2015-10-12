@@ -4,17 +4,18 @@ Alaska Energy Authority - Alaska Affordable Energy Model
 
 # extra python libraries used:
 numpy, scipy, pandas
+
 info on those here: http://www.scipy.org/
 
-# python files:
+# model files:
     aea_assumptions.py 
         a place for the assumptions the Alaska energy association(administration?)(AEA) has made
     
-    annual_savings.py
+    components/annual_savings.py
         Contains base class for each of the model components(tabs in the spreadsheet 
     on basecamp) that have a financial forecasting section. 
     
-    community_buildigns.py
+    components/community_buildigns.py
         python version of the eff(com) tab.
     
     community_data.py 
@@ -31,34 +32,21 @@ info on those here: http://www.scipy.org/
         Python version of forecast tab. The object defined here is passed
     as input to model components that use/update its members
     
-    interties.py
+    components/interties.py
         Python version of interties tab.
         
-    residential_buildings.py
+    components/residential_buildings.py
          python version of the eff(res) tab.
          
-    wastewater.py
+    components/wastewater.py
         python version of the eff(w&ww) tab.
-        
-    com_benchmark_data.csv
-        data on commercial buildings pulled from spread sheet. This file is 
-    read in community_data.py
-    
-    comunity_data_template.csv
-        prototype template of the data needed for the CommunityData class in
-    community_data.py. I think the plan is for this information to eventually 
-    come for a database with a name I cannot recall.  
     
     README 
         this file
-        
-    res_data.csv
-        data on residential buildings pulled from spread sheet. This file is 
-    read in community_data.py
     
 
 # python examples:
-from the model/ directory 
+from the aaem/ directory 
 
     $ python
     Python 2.7.9 (default, Apr  2 2015, 15:33:21) 
@@ -67,11 +55,11 @@ from the model/ directory
 
 the individual component test don't take any arguments and return the model components used
     
-    >>> import wastewater
+    >>> import components.wastewater as wastewater
     >>> ww, fc = wastewater.test()
 
     47797.0
-    61254.0     
+    61254.0
     0.78
     13457.0
     >>> ww.benefit_cost_ratio 
@@ -90,7 +78,6 @@ the individual component test don't take any arguments and return the model comp
 the test in driver take the community name as an input, There is only data for manley right now. A pandas DataFrame(just a mock of the table in the forecast tab) is returned along with the model components as a tuple 
     
     >>> df, model_componets = driver.test("Manley Hot Springs")
-
 
 
 
