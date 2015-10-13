@@ -1,6 +1,6 @@
 # alaska_affordable_energy_model
-Alaska Energy Authority - Alaska Affordable Energy Model 
-
+Alaska Energy Authority - Alaska Affordable Energy Model
+Created by University of Alaska Fairbanks/GINA
 
 # extra python libraries used:
 numpy, scipy, pandas
@@ -8,53 +8,53 @@ numpy, scipy, pandas
 info on those here: http://www.scipy.org/
 
 # model files:
-    aea_assumptions.py 
+    aea_assumptions.py
         a place for the assumptions the Alaska energy association(administration?)(AEA) has made
-    
+
     components/annual_savings.py
-        Contains base class for each of the model components(tabs in the spreadsheet 
-    on basecamp) that have a financial forecasting section. 
-    
+        Contains base class for each of the model components(tabs in the spreadsheet
+    on basecamp) that have a financial forecasting section.
+
     components/community_buildigns.py
         python version of the eff(com) tab.
-    
-    community_data.py 
-        python version of community data tab. This is the inputs for the model, 
+
+    community_data.py
+        python version of community data tab. This is the inputs for the model,
     currently loaded from a .csv file
-    
+
     diesel_prices.py
         python version of Diesel Fuel Prices tab.
-        
+
     driver.py
-        contains a function to test the model components together. 
-    
+        contains a function to test the model components together.
+
     forecast.py
         Python version of forecast tab. The object defined here is passed
     as input to model components that use/update its members
-    
+
     components/interties.py
         Python version of interties tab.
-        
+
     components/residential_buildings.py
          python version of the eff(res) tab.
-         
+
     components/wastewater.py
         python version of the eff(w&ww) tab.
-    
-    README 
+
+    README
         this file
-    
+
 
 # python examples:
-from the aaem/ directory 
+from the aaem/ directory
 
     $ python
-    Python 2.7.9 (default, Apr  2 2015, 15:33:21) 
+    Python 2.7.9 (default, Apr  2 2015, 15:33:21)
     [GCC 4.9.2] on linux2
     Type "help", "copyright", "credits" or "license" for more information.
 
 the individual component test don't take any arguments and return the model components used
-    
+
     >>> import components.wastewater as wastewater
     >>> ww, fc = wastewater.test()
 
@@ -62,7 +62,7 @@ the individual component test don't take any arguments and return the model comp
     61254.0
     0.78
     13457.0
-    >>> ww.benefit_cost_ratio 
+    >>> ww.benefit_cost_ratio
     0.78031511335568371
     >>> fc.www_HF
     array([    0.        ,   891.21513076,   929.59932095,   969.63669902,
@@ -72,12 +72,9 @@ the individual component test don't take any arguments and return the model comp
         1608.30348732,  1608.30348732,  1608.30348732,  1608.30348732,
         1608.30348732,  1608.30348732,  1608.30348732,  1608.30348732,
         1608.30348732,  1608.30348732,  1608.30348732])
-        
-        
 
-the test in driver take the community name as an input, There is only data for manley right now. A pandas DataFrame(just a mock of the table in the forecast tab) is returned along with the model components as a tuple 
-    
+
+
+the test in driver take the community name as an input, There is only data for manley right now. A pandas DataFrame(just a mock of the table in the forecast tab) is returned along with the model components as a tuple
+
     >>> df, model_componets = driver.test("Manley Hot Springs")
-
-
-
