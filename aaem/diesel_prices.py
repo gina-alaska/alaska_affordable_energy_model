@@ -83,7 +83,8 @@ class DieselProjections (object):
         """
         df = read_csv("../data/diesel_fuel_prices.csv", 
                         index_col=3, comment="#", header=1)
-        self.projected_prices = df.T["Manley Hot Springs"][3:].values
+        self.projected_prices = np.array(df.T["Manley Hot Springs"][3:].values, 
+                                                            dtype = np.float64)
         
     def get_projected_prices (self, start_year, end_year):
         """
