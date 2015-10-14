@@ -1,0 +1,35 @@
+community:
+  consumption HF: 40739.0
+  consumption kWh: 384000.0
+  current year: 2014
+  discount rate: 0.03
+  generation: 440077.0
+  interest rate: 0.05
+  line losses: 0.121
+  name: Manley Hot Springs
+  res non-PCE elec cost: 0.83
+community buildings:
+  lifetime: 10
+  start year: 2015
+forecast:
+  end year: 2040
+  start year: 2015
+interties:
+  cost: ABSOLUTE DEFAULT
+  cost known: false
+  hr installed: true
+  hr operational: true
+  lifetime: 20
+  phase: Recon
+  resource certainty: OVERIDE FROM CLIENT
+  resource potential: ABSOLUTE DEFAULT
+  road needed: true
+  start year: 2016
+residential buildings:
+  lifetime: 15
+  start year: 2015
+water wastewater:
+  energy use known: false
+  lifetime: 15
+  start year: DEFAULT FROM CLIENT
+  system type: Haul

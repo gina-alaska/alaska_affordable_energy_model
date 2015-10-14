@@ -1,0 +1,42 @@
+community: 
+  name: ABSOLUTE DEFAULT NAME # community name <string>
+  current year: ABSOLUTE DEFAULT  #year to base npv calculations on <int>
+  interest rate: ABSOLUTE DEFAULT # rate as decimal <float> (ex. .05) 
+  discount rate: ABSOLUTE DEFAULT # rate as decimal <float> (ex. .03)
+   
+  #do these come from community profiles?
+  generation: ABSOLUTE DEFAULT # kWh generated/yr  <float> 123456.00
+  consumption kWh: ABSOLUTE DEFAULT # kWh consumed/year <float> 12345.00
+  consumption HF: ABSOLUTE DEFAULT # gallons HF consumed/year <float> 12345.00
+  res non-PCE elec cost: ABSOLUTE DEFAULT # $cost/kWh <float> .83
+  line losses: ABSOLUTE DEFAULT #rate as decimal <float> (ex. .1210)
+
+forecast:
+  start year: ABSOLUTE DEFAULT # start year <int>
+  end year: ABSOLUTE DEFAULT  # end year <int>
+
+residential buildings:
+  lifetime: ABSOLUTE DEFAULT # number years <int>  
+  start year: ABSOLUTE DEFAULT # start year <int>
+
+community buildings:
+  lifetime: ABSOLUTE DEFAULT # number years <int>  
+  start year: ABSOLUTE DEFAULT # start year <int>
+
+water wastewater:
+  lifetime:  ABSOLUTE DEFAULT # number years <int>  
+  start year:  ABSOLUTE DEFAULT # start year <int>
+  system type: ABSOLUTE DEFAULT # system type <string> 
+  energy use known:  ABSOLUTE DEFAULT # enegry use available <bool> auto check this?
+
+interties:
+  lifetime : ABSOLUTE DEFAULT # number years <int> 
+  start year : ABSOLUTE DEFAULT # start year <int>
+  phase: ABSOLUTE DEFAULT # project phase <string> 
+  hr installed: ABSOLUTE DEFAULT # is the hreat recovery installed <bool>
+  hr operational: ABSOLUTE DEFAULT # is the heat recovery operational <bool>
+  road needed: ABSOLUTE DEFAULT # is a road needed <bool> 
+  cost known: ABSOLUTE DEFAULT # is the cost known <bool>
+  cost: ABSOLUTE DEFAULT # cost for initerite <float>
+  resource potential: ABSOLUTE DEFAULT #<string>
+  resource certainty: ABSOLUTE DEFAULT #<string>

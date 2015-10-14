@@ -7,6 +7,7 @@ created: 2015/09/16
 is here for testing
 """
 from pandas import read_csv
+import yaml
 import os.path
 
 ## w&ww - water and wastewater
@@ -144,8 +145,7 @@ manley_data = {
 
 
 
-
-# TODO: i'think this should be written last
+PATH = os.path.join
 class CommunityData (object):
     """ Class doc """
     
@@ -164,7 +164,7 @@ class CommunityData (object):
         self.static["com_benchmark_data"] = com_ben_data
         self.static["com_num_buildings"]= com_num_buildings
         
-        
+    
     def __getitem__ (self, key):
         """ Function doc """
         try:
@@ -183,6 +183,83 @@ class CommunityData (object):
     def __del__ (self):
         """ Function doc """
         pass
+    
+    
+    ## new stuff    
+    def read_config (self, config_file):
+        """"""
+        fd = open(config_file, 'r')
+        text = fd.read()
+        lib = yaml.load(text)
+        fd.close()
+        return lib
+    
+    def validate_config(self, lib):
+        """validate a config library"""
+        pass
+        
+    def load_valid_keys (self):
+        """ load valid library structure"""
+        pass
+        
+    def load_input(self, community_file, defaults = "defaults"):
+        """ """
+        cwd = os.path.dirname(os.getcwd())
+        self.load_valid_keys()
+        
+        self.absolute_defaults= self.read_config(PATH("absolute_defaults.yaml"))
+        
+        if defaults == "defaults":
+            self.client_defaults = self.absolute_defaults
+        else:
+            self.client_defaults = self.read_config(PATH(cwd,defaults)) 
+        self.client_inputs = self.read_config(PATH(cwd,community_file)) 
+        
+        self.validate_config(self.absolute_defaults)
+        self.validate_config(self.client_defaults)
+        self.validate_config(self.client_inputs)
+        
+        self.glom_config_files()
+        
+        
+    
+    def get_csv_data (self):
+        """ get the data that comes from (csv files"""
+        pass
+            
+        
+    def glom_config_files (self):
+        """ take the defaults and overrides and combine in right order """
+        self.model_inputs = {}
+        for section in self.absolute_defaults:
+            temp = {}
+            for key in self.absolute_defaults[section]:
+                try:
+                    temp[key] = self.client_inputs[section][key]
+                except KeyError as e:
+                    try:
+                        #~ print "defaulting1",key
+                        temp[key] = self.client_defaults[section][key]
+                    except KeyError as e:
+                            #~ print "defaulting2",key
+                            temp[key] = self.absolute_defaults[section][key]
+            self.model_inputs[section] = temp
+
+
+    def get_item (self, section, key):
+        """ get an item """
+        pass
+        
+    def get_section (self, section):
+        """ """
+        pass
+    
+    def save_model_inputs(self, fname):
+        """ """
+        fd = open(fname, 'w')
+        text = yaml.dump(self.model_inputs, default_flow_style=False) 
+        fd.write(text)
+        fd.close()
 
 
         
