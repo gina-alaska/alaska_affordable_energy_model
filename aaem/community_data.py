@@ -143,8 +143,6 @@ manley_data = {
 
 
 
-
-
 PATH = os.path.join
 class CommunityData (object):
     """ Class doc """
@@ -189,35 +187,64 @@ class CommunityData (object):
     def read_config (self, config_file):
         """"""
         fd = open(config_file, 'r')
-        text = fd.read()
-        lib = yaml.load(text)
+        lib = yaml.load(fd)
         fd.close()
         return lib
     
     def validate_config(self, lib):
         """validate a config library"""
-        pass
+        self.load_valid_keys()
+        if not set(lib.keys()).issubset(set(self.valid_keys.keys())):
+            print 1
+            return False
+        for section in lib:
+            if not set(lib[section].keys())\
+                            .issubset(set(self.valid_keys[section])):
+                print set(lib[section].keys())
+                print set(self.valid_keys[section])
+                return False
+        return True
         
     def load_valid_keys (self):
         """ load valid library structure"""
-        pass
+        absolutes = PATH("absolute_defaults.yaml")
+        lib = self.read_config(absolutes)
+        keys = {}
+        for section in lib:
+            temp = []
+            for key in lib[section]:
+                temp.append(key)
+            keys[section]=temp
+        self.valid_keys = keys
+        #~ return self.keys
+
         
     def load_input(self, community_file, defaults = "defaults"):
         """ """
         cwd = os.path.dirname(os.getcwd())
-        self.load_valid_keys()
         
-        self.absolute_defaults= self.read_config(PATH("absolute_defaults.yaml"))
+        absolutes = PATH("absolute_defaults.yaml")
+        defaults = PATH(cwd,defaults)
+        overrides = PATH(cwd,community_file)
+        
+        
+        self.absolute_defaults= self.read_config(absolutes)
         
         if defaults == "defaults":
             self.client_defaults = self.absolute_defaults
         else:
-            self.client_defaults = self.read_config(PATH(cwd,defaults)) 
-        self.client_inputs = self.read_config(PATH(cwd,community_file)) 
+            self.client_defaults = self.read_config(defaults) 
+        self.client_inputs = self.read_config(overrides) 
         
-        self.validate_config(self.absolute_defaults)
-        self.validate_config(self.client_defaults)
-        self.validate_config(self.client_inputs)
+        if not self.validate_config(self.absolute_defaults):
+            raise RuntimeError, \
+                    "self.absolute_defaults does not meet the config standards"
+        if not self.validate_config(self.client_defaults):
+            raise RuntimeError, \
+                    "self.client_defaults does not meet the config standards"
+        if not self.validate_config(self.client_inputs):
+            raise RuntimeError, \
+                    "self.client_inputs does not meet the config standards"
         
         self.glom_config_files()
         
@@ -261,6 +288,79 @@ class CommunityData (object):
         fd.write(text)
         fd.close()
 
+import unittest
+class TestCommunityData(unittest.TestCase):
+    def setUp (self):
+        """ Function doc """
+        
+        cwd = os.path.dirname(os.getcwd())
+        self.overrides = PATH("test_case", "data_override.yaml")
+        self.defaults = PATH("test_case", "data_defaults.yaml")
+        self.absolutes = PATH("absolute_defaults.yaml")
+        
+        self.cd = CommunityData(PATH(cwd,"data","community_data_template.csv"),
+                            "Manley Hot Springs")
+                            
+        self.cd.client_inputs = self.cd.read_config(PATH(cwd, self.overrides))
+        self.cd.client_defaults = self.cd.read_config(PATH(cwd,self.defaults))
+        self.cd.absolute_defaults = self.cd.read_config(self.absolutes)
+    
+        
+      
+        
+        self.results = self.cd.read_config(PATH(cwd,
+                                    "test_case", "saved_inputs.yaml"))
+    
+    def test_read_config (self):
+        test_data = {'community': {'consumption HF': 'ABSOLUTE DEFAULT',
+                      'consumption kWh': 'ABSOLUTE DEFAULT',
+                      'current year': 'ABSOLUTE DEFAULT',
+                      'discount rate': 'ABSOLUTE DEFAULT',
+                      'generation': 'ABSOLUTE DEFAULT',
+                      'interest rate': 'ABSOLUTE DEFAULT',
+                      'line losses': 'ABSOLUTE DEFAULT',
+                      'name': 'ABSOLUTE DEFAULT NAME',
+                      'res non-PCE elec cost': 'ABSOLUTE DEFAULT'},
+                     'community buildings': {'lifetime': 'ABSOLUTE DEFAULT',
+                      'start year': 'ABSOLUTE DEFAULT'},
+                     'forecast': {'end year': 'ABSOLUTE DEFAULT',
+                      'start year': 'ABSOLUTE DEFAULT'},
+                     'interties': {'cost': 'ABSOLUTE DEFAULT',
+                      'cost known': 'ABSOLUTE DEFAULT',
+                      'hr installed': 'ABSOLUTE DEFAULT',
+                      'hr operational': 'ABSOLUTE DEFAULT',
+                      'lifetime': 'ABSOLUTE DEFAULT',
+                      'phase': 'ABSOLUTE DEFAULT',
+                      'resource certainty': 'ABSOLUTE DEFAULT',
+                      'resource potential': 'ABSOLUTE DEFAULT',
+                      'road needed': 'ABSOLUTE DEFAULT',
+                      'start year': 'ABSOLUTE DEFAULT'},
+                     'residential buildings': {'lifetime': 'ABSOLUTE DEFAULT',
+                      'start year': 'ABSOLUTE DEFAULT'},
+                     'water wastewater': {'energy use known': 'ABSOLUTE DEFAULT',
+                      'lifetime': 'ABSOLUTE DEFAULT',
+                      'start year': 'ABSOLUTE DEFAULT',
+                      'system type': 'ABSOLUTE DEFAULT'}}
+        self.assertEqual(test_data, self.cd.read_config(self.absolutes))
+        
+    def test_validate_config (self):
+        """ Function doc """
+        self.assertTrue(self.cd.validate_config(10))
+        #~ self.assertFalse(self.cd.validate_config(10))
+        
+    
+    def test_glom_config_files(self):
+        
+        self.cd.glom_config_files()
+        self.assertEqual(self.results, self.cd.model_inputs)
+        
 
+    def test_load_input (self):
+        defaults = PATH("test_case", "data_defaults.yaml")
+        overrides = PATH("test_case", "data_override.yaml")
+        self.cd.load_input(overrides, defaults)
+        self.assertEqual(self.results, self.cd.model_inputs)
         
-        
+
+if __name__ == '__main__':
+    unittest.main()

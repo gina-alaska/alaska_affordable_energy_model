@@ -11,6 +11,9 @@ community:
   res non-PCE elec cost: ABSOLUTE DEFAULT # $cost/kWh <float> .83
   line losses: ABSOLUTE DEFAULT #rate as decimal <float> (ex. .1210)
 
+  elec non-fuel cost: 0.4024526823 # TODO: should be calculated
+
+
 forecast:
   start year: ABSOLUTE DEFAULT # start year <int>
   end year: ABSOLUTE DEFAULT  # end year <int>
