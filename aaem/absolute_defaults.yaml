@@ -1,5 +1,6 @@
 community: 
   name: ABSOLUTE DEFAULT NAME # community name <string>
+  region: READ WITH RES DATA # name <string>
   current year: ABSOLUTE DEFAULT  #year to base npv calculations on <int>
   
   #AEA ASSUMPTIONS
@@ -30,6 +31,7 @@ residential buildings:
   lifetime: ABSOLUTE DEFAULT # number years <int>  
   start year: ABSOLUTE DEFAULT # start year <int>
   average refit cost: 11000 # cost/refit <float>
+  model data: IMPORT
 
 community buildings:
   lifetime: ABSOLUTE DEFAULT # number years <int>  

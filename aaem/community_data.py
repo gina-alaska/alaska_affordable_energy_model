@@ -247,13 +247,7 @@ class CommunityData (object):
                     "self.client_inputs does not meet the config standards"
         
         self.glom_config_files()
-        
-        
     
-    def get_csv_data (self):
-        """ get the data that comes from (csv files"""
-        pass
-            
         
     def glom_config_files (self):
         """ take the defaults and overrides and combine in right order """
@@ -275,11 +269,30 @@ class CommunityData (object):
 
     def get_item (self, section, key):
         """ get an item """
-        pass
+        return self.model_inputs[section][key]
         
     def get_section (self, section):
         """ """
-        pass
+        return self.model_inputs[section]
+        
+    def set_data (self, section, key, data):
+        """ Function doc """
+        self.model_inputs[section][key] = data
+        
+    def get_csv_data (self):
+        """ get the data that comes from (csv files"""
+        data_dir = os.path.join(aea_aaem_root, "data")
+        self.community = self.get_item('community','name')
+        if self.get_item('residential buildings','model data') == "IMPORT":
+            self.set_data('residential buildings','model data',
+                        read_csv(PATH(data_dir,"res_data.csv"),index_col=0,
+                                        header=2).T[self.community].to_dict())
+            self.set_data('community','region',
+                self.model_inputs['residential buildings']\
+                                 ['model data']['energy_region'])
+            del(self.model_inputs['residential buildings']\
+                                 ['model data']['energy_region'])
+            
     
     def save_model_inputs(self, fname):
         """ """
