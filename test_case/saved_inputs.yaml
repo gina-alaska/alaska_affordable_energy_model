@@ -13,10 +13,13 @@ community:
   interest rate: 0.05
   line losses: 0.121
   name: Manley Hot Springs
+  region: Yukon-Koyukuk/Upper Tanana
   res non-PCE elec cost: 0.83
 community buildings:
   average refit cost: 7.0
   cohort_savings_multiplier: 0.26
+  com benchmark data: IMPORT
+  com num buildings: IMPORT
   lifetime: 10
   start year: 2015
 construction multipliers:
@@ -52,6 +55,7 @@ interties:
 residential buildings:
   average refit cost: 11000
   lifetime: 15
+  res model data: IMPORT
   start year: 2015
 water wastewater:
   audit cost: 10000

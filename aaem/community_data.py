@@ -192,7 +192,14 @@ class CommunityData (object):
         return lib
     
     def validate_config(self, lib):
-        """validate a config library"""
+        """
+        validate a config library
+        
+        pre:
+            lib should be a dictionary object
+        post:
+            returns true if lib is a valid config object; otherwise false
+        """
         self.load_valid_keys()
         if not set(lib.keys()).issubset(set(self.valid_keys.keys())):
             print 1
@@ -206,8 +213,17 @@ class CommunityData (object):
         return True
         
     def load_valid_keys (self):
-        """ load valid library structure"""
-        absolutes = PATH("absolute_defaults.yaml")
+        """ 
+        load valid library structure
+        
+        pre:
+            absolout_defaults.yaml shoud have all of the keys nessaey for 
+        config files
+        post:
+            self.valid keys is a dict of sections with lists of keys as values
+        ex. {section1:{key1,key2,key3}, section2:{keyA,keyB,keyC}}
+        """
+        absolutes = os.path.join("absolute_defaults.yaml")
         lib = self.read_config(absolutes)
         keys = {}
         for section in lib:
@@ -216,72 +232,118 @@ class CommunityData (object):
                 temp.append(key)
             keys[section]=temp
         self.valid_keys = keys
-        #~ return self.keys
-
         
     def load_input(self, community_file, defaults = "defaults"):
-        """ """
+        """ 
+        loads the input files and creates the model input object
+        
+        pre: 
+            community_file, and defaults should be .yaml files
+        post:
+            self.model_inputs is is usable
+        """
         cwd = os.path.dirname(os.getcwd())
         
-        absolutes = PATH("absolute_defaults.yaml")
-        defaults = PATH(cwd,defaults)
-        overrides = PATH(cwd,community_file)
+        absolutes = os.path.join("absolute_defaults.yaml")
+        defaults = os.path.join(cwd,defaults)
+        overrides = os.path.join(cwd,community_file)
         
         
-        self.absolute_defaults= self.read_config(absolutes)
+        absolute_defaults = self.read_config(absolutes)
         
         if defaults == "defaults":
-            self.client_defaults = self.absolute_defaults
+            client_defaults = absolute_defaults
         else:
-            self.client_defaults = self.read_config(defaults) 
-        self.client_inputs = self.read_config(overrides) 
+            client_defaults = self.read_config(defaults) 
+        client_inputs = self.read_config(overrides) 
         
-        if not self.validate_config(self.absolute_defaults):
+        if not self.validate_config(absolute_defaults):
             raise RuntimeError, \
-                    "self.absolute_defaults does not meet the config standards"
-        if not self.validate_config(self.client_defaults):
+                    "absolute defaults do not meet the config standards"
+        if not self.validate_config(client_defaults):
             raise RuntimeError, \
-                    "self.client_defaults does not meet the config standards"
-        if not self.validate_config(self.client_inputs):
+                    "client defaults do not meet the config standards"
+        if not self.validate_config(client_inputs):
             raise RuntimeError, \
-                    "self.client_inputs does not meet the config standards"
+                    "client inputs do not meet the config standards"
         
-        self.glom_config_files()
+        self.glom_config_files(client_inputs, 
+                                client_defaults, absolute_defaults)
     
         
-    def glom_config_files (self):
-        """ take the defaults and overrides and combine in right order """
+    def glom_config_files (self, client_inputs, 
+                            client_defaults, absolute_defaults):
+        """ 
+        take the defaults and overrides and combine in right order 
+        
+        pre:
+            client_inputs, client_defaults, absolute_defaults are valid config
+        libraries
+        post:
+            self.model_inputs is a valid library 
+        """
         self.model_inputs = {}
-        for section in self.absolute_defaults:
+        for section in absolute_defaults:
             temp = {}
-            for key in self.absolute_defaults[section]:
+            for key in absolute_defaults[section]:
                 try:
-                    temp[key] = self.client_inputs[section][key]
+                    temp[key] = client_inputs[section][key]
                 except KeyError as e:
                     try:
                         #~ print "defaulting1",key
-                        temp[key] = self.client_defaults[section][key]
+                        temp[key] = client_defaults[section][key]
                     except KeyError as e:
                             #~ print "defaulting2",key
-                            temp[key] = self.absolute_defaults[section][key]
+                            temp[key] = absolute_defaults[section][key]
             self.model_inputs[section] = temp
 
 
     def get_item (self, section, key):
-        """ get an item """
+        """ 
+        get an item 
+        
+        pre:
+            self.model_inputs exists
+            section is a config section, and key is a key in said section
+        post:
+            returns an item 
+        """
         return self.model_inputs[section][key]
         
     def get_section (self, section):
-        """ """
+        """
+        gets a sction
+        pre:
+            self.model_inputs exists
+            section is a config section
+        post:
+            returns a section library 
+        """
         return self.model_inputs[section]
         
     def set_item (self, section, key, data):
-        """ Function doc """
+        """
+        set an item 
+        
+        pre:
+            self.model_inputs exists
+            section is a config section, and key is a key in said section, and 
+        data is the type that make sense there.
+        post:
+            self.model_inputs[section][key] is data 
+        """
         self.model_inputs[section][key] = data
         
     def get_csv_data (self):
-        """ get the data that comes from (csv files"""
+        """ 
+        get the data that comes from the csv files
         
+        pre: 
+            self.model_inputs exits
+            TODO: complete
+        post:
+            csvitems are in self.model_inputs 
+        """
         self.community = self.get_item('community','name')
         if self.get_item('residential buildings','res model data') == "IMPORT":
             self.set_item('residential buildings','res model data',
@@ -299,18 +361,39 @@ class CommunityData (object):
                                             self.load_csv("com num buildings"))
             
     def load_csv (self, file_key):
-        """ Function doc """
+        """ 
+        load a single csv file as a pandas data frame like object
+        
+        pre:
+            file_key should resolve to a valid csv file name 
+        post:
+            returns a pandas data frame like object
+        """
         data_dir = os.path.join(os.path.dirname(os.getcwd()), "data")
         return read_csv(os.path.join(data_dir,self.make_csv_name(file_key)),
                       comment = '#', index_col=0, header=0).T[self.community].T
         
     
     def make_csv_name (self, file_key):
-        """ Function doc """
+        """
+        create the csv file name
+        
+        pre:
+            file_key is matchs <text1> <text2> ... <text N>
+        post:
+            returns <text1>_<text2>_..._<text N>.csv
+        """
         return file_key.replace(" ","_")+".csv"
     
     def save_model_inputs(self, fname):
-        """ """
+        """ 
+        save the inputs used
+        
+        pre:
+            self.model_inputs exists, fname is the path to a file
+        pre:
+            a valid .yaml config file is created
+        """
         ## save work around 
         self.set_item('residential buildings','res model data', "IMPORT")
         self.set_item('community buildings','com benchmark data', "IMPORT")
