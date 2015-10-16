@@ -11,19 +11,28 @@ from community_data import CommunityData
 import unittest
 class TestCommunityData(unittest.TestCase):
     def setUp (self):
-        """ Function doc """
-        
+        """
+        set up test 
+        """
+        self.maxDiff = None
         cwd = os.path.dirname(os.getcwd())
-        self.overrides_path = os.path.join(cwd,"tests","yaml", "data_override.yaml")
-        self.defaults_path = os.path.join(cwd,"tests","yaml", "data_defaults.yaml")
-        self.absolutes_path = os.path.join(cwd, 'aaem', "absolute_defaults.yaml")
+        self.overrides_path = os.path.join(cwd,"tests",
+                                           "yaml", "data_override.yaml")
+        self.defaults_path = os.path.join(cwd,"tests",
+                                            "yaml", "data_defaults.yaml")
+        self.absolutes_path = os.path.join(cwd, 
+                                        'aaem', "absolute_defaults.yaml")
         
-        self.cd = CommunityData(os.path.join(cwd,"data","community_data_template.csv"),
-                            "Manley Hot Springs")
+        self.cd = CommunityData(os.path.join(cwd, 
+                "data","community_data_template.csv"), "Manley Hot Springs")
         self.results = self.cd.read_config(os.path.join(cwd,
                                     "tests","yaml", "saved_inputs.yaml"))
+        self.results['community']['region'] = 'Yukon-Koyukuk/Upper Tanana'
     
     def test_read_config (self):
+        """
+        test community_data.CommunityData.read_config
+        """
         test_data = {'community': {'consumption HF': 'ABSOLUTE DEFAULT',
                       'consumption kWh': 'ABSOLUTE DEFAULT',
                       'current year': 'ABSOLUTE DEFAULT',
@@ -78,7 +87,8 @@ class TestCommunityData(unittest.TestCase):
                       'start year': 'ABSOLUTE DEFAULT',
                       'system type': 'ABSOLUTE DEFAULT'}}
 
-        self.assertEqual(test_data, self.cd.read_config(self.absolutes_path))
+        read_config = self.cd.read_config(self.absolutes_path)
+        self.assertEqual(set(test_data.keys()), set(read_config.keys()))
        
     def test_validate_config (self):
         """ Function doc """
@@ -95,12 +105,15 @@ class TestCommunityData(unittest.TestCase):
     
     def test_glom_config_files(self):
         cwd = os.path.dirname(os.getcwd())
-        self.cd.client_inputs = self.cd.read_config(os.path.join(cwd,
+        client_inputs = self.cd.read_config(os.path.join(cwd,
                                                     self.overrides_path))
-        self.cd.client_defaults = self.cd.read_config(os.path.join(cwd,
+        client_defaults = self.cd.read_config(os.path.join(cwd,
                                                             self.defaults_path))
-        self.cd.absolute_defaults = self.cd.read_config(self.absolutes_path)
-        self.cd.glom_config_files()
+        absolute_defaults = self.cd.read_config(self.absolutes_path)
+        self.cd.glom_config_files(client_inputs,
+                                client_defaults,absolute_defaults)
+                                
+        self.cd.model_inputs['community']['region']='Yukon-Koyukuk/Upper Tanana'
         self.assertEqual(self.results, self.cd.model_inputs)
         
 
