@@ -18,7 +18,9 @@ import numpy as np
 def test (community, com_data_file = "../data/community_data_template.csv"):
     """ Function doc """
     cd = CommunityData(com_data_file, community)
-    
+    cd.load_input("test_case/data_override.yaml",
+                          "test_case/data_defaults.yaml")
+    cd.get_csv_data()
     fc = Forecast(cd)
     rb = ResidentialBuildings(cd, fc)
     rb.run()
