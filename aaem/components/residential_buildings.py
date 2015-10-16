@@ -28,12 +28,13 @@ class ResidentialBuildings(AnnualSavings):
         post:
             the model can be run
         """
-        self.cd = community_data
+        self.cd = community_data.get_section('community')
+        self.res_specs = community_data.get_section('residential buildings')
         self.forecast = forecast
         self.refit_cost_rate = AEAA.res_average_refit_cost * \
                             AEAA.construction_mulitpliers[self.cd["region"]]
-        self.set_project_life_details(self.cd["res_start_year"],
-                                      self.cd["res_lifetime"])
+        self.set_project_life_details(self.res_specs["start year"],
+                                      self.res_specs["lifetime"])
     
     def run (self):
         """ 
@@ -85,9 +86,13 @@ class ResidentialBuildings(AnnualSavings):
         """
         val = self.forecast.get_population(self.start_year)
         
-        
-        self.init_HH = int(round(self.cd["households"]*\
-                        (val / self.cd["population"])))
+        #TODO:(2) do something with population, also HH
+        #  want somthing like pop = self.cd["base pop"]
+        # need to up date cd to get it 
+        HH =self.res_specs['res model data']['total_occupied']
+        pop = self.forecast.electricty_actuals['population'][7]
+                            
+        self.init_HH = int(round(HH*(val / pop)))
         
     def calc_opportunity_values (self):
         """ 
@@ -102,7 +107,7 @@ class ResidentialBuildings(AnnualSavings):
         year of a project.
             self.percent_savings is a decimal percent. Where is this used?
         """
-        rd = self.cd["res_model_data"]
+        rd = self.res_specs["res model data"]
         ##  #HH
         self.opportunity_HH = self.init_HH -rd["BEES_number"] -rd["post_number"]
         ## cell L15 = K15*S8*(P8*O8-6000*0.00341)/0.138
@@ -126,7 +131,7 @@ class ResidentialBuildings(AnnualSavings):
         post:
             self.init_HF_use is some amount of gallons
         """
-        rd = self.cd["res_model_data"]
+        rd = self.res_specs["res model data"]
         ## cell J15 = (M8+U8+K15*O8*P8-I8*6000*0.00341)/0.138
         ##  gal = (MMBtu + MMBtu + (#HH*sqft*MMBTU/sqft) - (#HH*#*#))/#  
         ##  gal = (MMBtu + (MMBtu) - (#HH*#*#))/#
@@ -149,7 +154,7 @@ class ResidentialBuildings(AnnualSavings):
             self.baseline_HF_consumption is an array of gallons HF used for
         each year of the forecast. 
         """
-        rd = self.cd["res_model_data"]
+        rd = self.res_specs["res model data"]
         self.baseline_HF_consumption = self.init_HF_use + \
         ((self.forecast.get_households(self.start_year,self.end_year)-\
         self.init_HH)*rd['pre_avg_area']*rd['pre_avg_EUI']/.138)
@@ -254,6 +259,9 @@ def test ():
     manley_data = CommunityData("../data/community_data_template.csv",
                                 "Manley Hot Springs")
     
+    manley_data.load_input("test_case/data_override.yaml",
+                          "test_case/data_defaults.yaml")
+    manley_data.get_csv_data()
     fc = Forecast(manley_data)
     t = ResidentialBuildings(manley_data,fc)
     t.run()
