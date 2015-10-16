@@ -3,9 +3,9 @@ Alaska Energy Authority - Alaska Affordable Energy Model
 Created by University of Alaska Fairbanks/GINA
 
 # extra python libraries used:
-numpy, scipy, pandas
+numpy, scipy, pandas: info on those here: http://www.scipy.org/
 
-info on those here: http://www.scipy.org/
+pyymal
 
 # model files:
     aea_assumptions.py
