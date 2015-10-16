@@ -62,7 +62,7 @@ sqft_by_type = {
 PATH = os.path.join
 aea_aaem_root = os.path.dirname(os.getcwd())
 data_dir = os.path.join(aea_aaem_root, "data")
-res_data = read_csv(PATH(data_dir,"res_data.csv"),                  index_col=0, header=0, comment = '#').T["Manley Hot Springs"].T
+res_data = read_csv(PATH(data_dir,"res_model_data.csv"),                  index_col=0, header=0, comment = '#').T["Manley Hot Springs"].T
 com_ben_data = read_csv(PATH(data_dir,"com_benchmark_data.csv"),    index_col=0, header=0, comment = '#').T["Manley Hot Springs"].T
                                     
 com_num_buildings = read_csv(PATH(data_dir,"com_num_buildings.csv"),index_col=0, header=0, comment = '#').T["Manley Hot Springs"].T
@@ -178,7 +178,14 @@ class CommunityData (object):
     
     ## new stuff    
     def read_config (self, config_file):
-        """"""
+        """
+        read a .yaml config file
+        
+        pre: 
+            config_file is in the .yaml format
+        post:
+            returns a library generated from .yaml file
+        """
         fd = open(config_file, 'r')
         lib = yaml.load(fd)
         fd.close()
@@ -268,34 +275,47 @@ class CommunityData (object):
         """ """
         return self.model_inputs[section]
         
-    def set_data (self, section, key, data):
+    def set_item (self, section, key, data):
         """ Function doc """
         self.model_inputs[section][key] = data
         
     def get_csv_data (self):
         """ get the data that comes from (csv files"""
-        data_dir = os.path.join(aea_aaem_root, "data")
+        
         self.community = self.get_item('community','name')
-        if self.get_item('residential buildings','model data') == "IMPORT":
-            self.set_data('residential buildings','model data',
-                        read_csv(PATH(data_dir,"res_data.csv"),index_col=0,
-                                        header=2).T[self.community].to_dict())
-            self.set_data('community','region',
+        if self.get_item('residential buildings','res model data') == "IMPORT":
+            self.set_item('residential buildings','res model data',
+                                            self.load_csv('res model data'))
+            self.set_item('community','region',
                 self.model_inputs['residential buildings']\
-                                 ['model data']['energy_region'])
+                                 ['res model data']['energy_region'])
             del(self.model_inputs['residential buildings']\
-                                 ['model data']['energy_region'])
+                                 ['res model data']['energy_region'])
+        if self.get_item('community buildings','com benchmark data')== "IMPORT":
+            self.set_item('community buildings','com benchmark data',
+                                            self.load_csv('com benchmark data'))
+        if self.get_item('community buildings',"com num buildings")== "IMPORT":
+            self.set_item('community buildings',"com num buildings",
+                                            self.load_csv("com num buildings"))
             
     def load_csv (self, file_key):
         """ Function doc """
+        data_dir = os.path.join(os.path.dirname(os.getcwd()), "data")
+        return read_csv(os.path.join(data_dir,self.make_csv_name(file_key)),
+                      comment = '#', index_col=0, header=0).T[self.community].T
         
     
-    def make_csv_name (self):
+    def make_csv_name (self, file_key):
         """ Function doc """
-        
+        return file_key.replace(" ","_")+".csv"
     
     def save_model_inputs(self, fname):
         """ """
+        ## save work around 
+        self.set_item('residential buildings','res model data', "IMPORT")
+        self.set_item('community buildings','com benchmark data', "IMPORT")
+        self.set_item('community buildings',"com num buildings", "IMPORT")
+        ### 
         fd = open(fname, 'w')
         text = yaml.dump(self.model_inputs, default_flow_style=False) 
         fd.write(text)

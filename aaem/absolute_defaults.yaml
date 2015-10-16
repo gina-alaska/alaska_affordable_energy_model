@@ -31,13 +31,15 @@ residential buildings:
   lifetime: ABSOLUTE DEFAULT # number years <int>  
   start year: ABSOLUTE DEFAULT # start year <int>
   average refit cost: 11000 # cost/refit <float>
-  model data: IMPORT
+  res model data: IMPORT
 
 community buildings:
   lifetime: ABSOLUTE DEFAULT # number years <int>  
   start year: ABSOLUTE DEFAULT # start year <int>
   average refit cost: 7.00 # cost/sqft. <float>
   cohort_savings_multiplier: .26 # pecent as decimal <float>
+  com benchmark data: IMPORT
+  com num buildings: IMPORT
 
 water wastewater:
   lifetime:  ABSOLUTE DEFAULT # number years <int>  
