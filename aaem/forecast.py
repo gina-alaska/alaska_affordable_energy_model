@@ -52,16 +52,6 @@ class Forecast (object):
         self.end_year = self.fc_specs["end year"]
         #TODO:(1) 
         self.electricty_actuals = electricty_actuals
-        #~ self.ff_gen_displaced = fossil_fuel_gen_displaced
-        
-    def get_fossil_fuel_generation_displaced (self, start, end):
-        """
-        TODO: this function will probably go away
-        """
-        self.forecast_population()
-        self.forecast_consumption()
-        #~ print len(np.array(self.consumption))
-        return np.array(self.consumption)
     
     def get_trend (self, key ):
         """
@@ -244,7 +234,7 @@ class Forecast (object):
         year between start and end
         """
         self.generation = np.array(self.consumption)/\
-                                (1.0-self.cd.get_item('community','line losses'))
+                            (1.0-self.cd.get_item('community','line losses'))
         self.generation = np.round(self.generation,-3) # round to nears thousand
         
     def get_generation (self, start, end = None):
