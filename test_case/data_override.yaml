@@ -1,2 +1,5 @@
+community: 
+  name: Manley Hot Springs # community name <string>
+
 interties:
   resource certainty: OVERIDE FROM CLIENT #<string>

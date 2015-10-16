@@ -233,7 +233,7 @@ class CommunityData (object):
             keys[section]=temp
         self.valid_keys = keys
         
-    def load_input(self, community_file, defaults = "defaults"):
+    def load_input(self, community_file, defaults_file = "defaults"):
         """ 
         loads the input files and creates the model input object
         
@@ -245,13 +245,13 @@ class CommunityData (object):
         cwd = os.path.dirname(os.getcwd())
         
         absolutes = os.path.join("absolute_defaults.yaml")
-        defaults = os.path.join(cwd,defaults)
+        defaults = os.path.join(cwd,defaults_file)
         overrides = os.path.join(cwd,community_file)
         
         
         absolute_defaults = self.read_config(absolutes)
         
-        if defaults == "defaults":
+        if defaults_file == "defaults":
             client_defaults = absolute_defaults
         else:
             client_defaults = self.read_config(defaults) 
