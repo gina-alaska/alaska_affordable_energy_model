@@ -1,5 +1,5 @@
-,,,BEES,,,,Pre-Retrofit,,,Post-Retrofit,,,,,Consumption,,Opportunity,,,
-,,,,SF,MMBtu/sf,MMBtu,,SF,MMBtu/sf,,SF,,MMBtu,MMBtu,MMBtu,,,,Gallons,
+#,,,BEES,,,,Pre-Retrofit,,,Post-Retrofit,,,,,Consumption,,Opportunity,,,
+#,,,,SF,MMBtu/sf,MMBtu,,SF,MMBtu/sf,,SF,,MMBtu,MMBtu,MMBtu,,,,Gallons,
 community,energy_region,total_occupied,BEES_number,BEES_avg_area,BEES_avg_EUI,BEES_total_consumption,pre_number,pre_avg_area,pre_avg_EUI,post_number,post_avg_area,post_avg_EUI_reduction,post_avg_EUI,post_total_consumption,consumption_heating_electricity_consumption,consumption_gallons_HF,opportunity_non-Wx_HERP_BEES,opportunity_potential_reduction,opportunity_savings,opportunity_total_percent_community_savings
 Adak,Aleutians,44,10,2133.575,0.1545145847,3296.6845498939,10,2133.575,0.1545145847,0,0,0.3206591027,0,0,14505.412019533,98588.2030400939,34,3594.1804928182,26044.7861798417,0.2641775119
 Akhiok,Kodiak,19,0,0,0,0,0,1817.0217554859,0.1060456189,0,0,0.2585839941,0,0,3661.0567359294,23712.4401154303,19,946.6906733683,6860.0773432485,0.2893028853

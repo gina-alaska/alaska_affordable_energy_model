@@ -62,13 +62,10 @@ sqft_by_type = {
 PATH = os.path.join
 aea_aaem_root = os.path.dirname(os.getcwd())
 data_dir = os.path.join(aea_aaem_root, "data")
-res_data = read_csv(PATH(data_dir,"res_data.csv"),index_col=0,header=2).T["Manley Hot Springs"]
-com_ben_data = read_csv(PATH(data_dir,"com_benchmark_data.csv"),index_col=0,
-                                        header=0,
-                                    comment = '#').T["Manley Hot Springs"].T
+res_data = read_csv(PATH(data_dir,"res_data.csv"),                  index_col=0, header=0, comment = '#').T["Manley Hot Springs"].T
+com_ben_data = read_csv(PATH(data_dir,"com_benchmark_data.csv"),    index_col=0, header=0, comment = '#').T["Manley Hot Springs"].T
                                     
-com_num_buildings = read_csv(PATH(data_dir,"com_num_buildings.csv"),
-                                    index_col = 0, header=1, comment = '#').T["Manley Hot Springs"]
+com_num_buildings = read_csv(PATH(data_dir,"com_num_buildings.csv"),index_col=0, header=0, comment = '#').T["Manley Hot Springs"].T
 
 
 
@@ -151,11 +148,7 @@ class CommunityData (object):
         """ Class initialiser """
         self.inputs = read_csv(inFile,index_col=0,comment='#').T[community]
         self.static = {}
-        self.static['res_model_data'] = read_csv(PATH(data_dir,"res_data.csv"),index_col=0,
-                                                         header=2).T[community]
-        self.static["com_benchmark_data"] = read_csv(PATH(data_dir,"com_benchmark_data.csv"),
-                                           index_col=0,header=1, 
-                                           comment = '#').T[community].T
+        self.static['res_model_data'] = res_data
         self.static["fc_electricity_used"] = electricty_actuals
         self.static["com_buildings"]  = buildings_by_type #
         self.static["com_sqft_to_retofit"] = sqft_by_type 
@@ -293,6 +286,13 @@ class CommunityData (object):
             del(self.model_inputs['residential buildings']\
                                  ['model data']['energy_region'])
             
+    def load_csv (self, file_key):
+        """ Function doc """
+        
+    
+    def make_csv_name (self):
+        """ Function doc """
+        
     
     def save_model_inputs(self, fname):
         """ """
