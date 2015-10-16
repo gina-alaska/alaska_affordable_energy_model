@@ -57,15 +57,17 @@ class CommunityBuildings (AnnualSavings):
         post:
             the model can be run
         """
-        self.cd = community_data
+        self.cd = community_data.get_section('community')
+        self.comp_specs = community_data.get_section('community buildings')
         self.forecast = forecast
         self.refit_cost_rate = AEAA.com_average_refit_cost * \
                             AEAA.construction_mulitpliers[self.cd["region"]]
-        self.set_project_life_details(self.cd["com_start_year"],
-                                      self.cd["com_lifetime"])
+        self.set_project_life_details(self.comp_specs["start year"],
+                                      self.comp_specs["lifetime"])
                                       
-        self.additional_buildings = self.cd["com_num_buildings"] - \
-np.sum(self.cd['com_benchmark_data'][['Number Of Building Type']].values) - 2
+        self.additional_buildings = self.comp_specs["com num buildings"] - \
+                            np.sum(self.comp_specs['com benchmark data']\
+                            [['Number Of Building Type']].values) - 2
         self.additional_buildings = self.additional_buildings.values[0]
         
     def run (self):
@@ -133,8 +135,10 @@ np.sum(self.cd['com_benchmark_data'][['Number Of Building Type']].values) - 2
         floating-point square feet values 
         """
         self.benchmark_sqft = \
-            np.sum(self.cd['com_benchmark_data'][['Total Square Feet']].values) 
-        pop = self.cd['population']  
+            np.sum(self.comp_specs['com benchmark data'][['Total Square Feet']].values) 
+        #~ pop = self.cd['population'] 
+        #TODO:(2) do something with population
+        pop = self.forecast.electricty_actuals['population'][7] 
         if pop < 300:
             key = "Average sf<300"
         elif pop < 1200:
@@ -162,7 +166,7 @@ np.sum(self.cd['com_benchmark_data'][['Number Of Building Type']].values) - 2
         floating-point dollar values 
         """
         self.benchmark_cost = \
-            np.sum(self.cd['com_benchmark_data']\
+            np.sum(self.comp_specs['com benchmark data']\
                         [['Cohort Implementation Cost']].values) 
         self.additional_cost = self.additional_sqft * self.refit_cost_rate
         self.refit_cost_total = self.benchmark_cost + self.additional_cost
@@ -177,7 +181,9 @@ np.sum(self.cd['com_benchmark_data'][['Number Of Building Type']].values) - 2
             self.refit_pre_hf_total, self.benchmark_hf, self.additional_hf are
         floating-point HF values
         """
-        pop = self.cd['population']  
+        #~ pop = self.cd['population'] 
+        #TODO:(2) do something with population
+        pop = self.forecast.electricty_actuals['population'][7]  
         if pop < 300:
             key = "Av Gal/sf<300"
         elif pop < 1200:
@@ -189,7 +195,7 @@ np.sum(self.cd['com_benchmark_data'][['Number Of Building Type']].values) - 2
 
         
         self.benchmark_HF = \
-            np.sum(self.cd['com_benchmark_data'][['Current Fuel Oil']].values) 
+            np.sum(self.comp_specs['com benchmark data'][['Current Fuel Oil']].values) 
 
       
         self.additional_HF = self.additional_sqft * hf_sqft_yr
@@ -210,7 +216,9 @@ np.sum(self.cd['com_benchmark_data'][['Number Of Building Type']].values) - 2
             self.refit_pre_kWh_total, self.benchmark_kWh, 
         self.additional_kWh are floating-point kWh values
         """
-        pop = self.cd['population']  
+        #~ pop = self.cd['population'] 
+        #TODO:(2) do something with population
+        pop = self.forecast.electricty_actuals['population'][7]  
         if pop < 300:
             key = "Avg kWh/sf<300"
         elif pop < 1200:
@@ -222,7 +230,7 @@ np.sum(self.cd['com_benchmark_data'][['Number Of Building Type']].values) - 2
 
         
         self.benchmark_kWh = \
-            np.sum(self.cd['com_benchmark_data'][['Current Electric']].values) 
+            np.sum(self.comp_specs['com benchmark data'][['Current Electric']].values) 
         
         self.additional_kWh = self.additional_sqft * kWh_sqft_yr
         
@@ -240,8 +248,8 @@ np.sum(self.cd['com_benchmark_data'][['Number Of Building Type']].values) - 2
         self.additional_savings_HF, are floating-point HF values
         """
         self.benchmark_savings_HF = \
-                np.sum(self.cd['com_benchmark_data']["Current Fuel Oil"] -\
-                    self.cd['com_benchmark_data']["Post-Retrofit Fuel Oil"])
+                np.sum(self.comp_specs['com benchmark data']["Current Fuel Oil"] -\
+                    self.comp_specs['com benchmark data']["Post-Retrofit Fuel Oil"])
         self.additional_savings_HF = self.additional_HF * \
                                  AEAA.com_cohort_savings_multiplier
         self.refit_savings_HF_total = self.benchmark_savings_HF +\
@@ -258,8 +266,8 @@ np.sum(self.cd['com_benchmark_data'][['Number Of Building Type']].values) - 2
         self.additional_savings_kWh, are floating-point kWh values
         """
         self.benchmark_savings_kWh = \
-                np.sum(self.cd['com_benchmark_data']["Current Electric"] -\
-                    self.cd['com_benchmark_data']["Post-Retrofit Electric"])
+                np.sum(self.comp_specs['com benchmark data']["Current Electric"] -\
+                    self.comp_specs['com benchmark data']["Post-Retrofit Electric"])
         self.additional_savings_kWh = self.additional_kWh * \
                                  AEAA.com_cohort_savings_multiplier
         self.refit_savings_kWh_total = self.benchmark_savings_kWh +\
@@ -302,7 +310,7 @@ np.sum(self.cd['com_benchmark_data'][['Number Of Building Type']].values) - 2
         """
         self.annual_electric_savings = np.zeros(self.project_life) + \
                                        self.refit_savings_kWh_total* \
-                            (self.cd["elec_non-fuel_cost"]+\
+                            (self.cd["elec non-fuel cost"]+\
                             self.diesel_prices/AEAA.diesel_generation_eff)
         
     def calc_annual_heating_savings (self):
@@ -329,6 +337,11 @@ def test ():
     """
     manley_data = CommunityData("../data/community_data_template.csv",
                                 "Manley Hot Springs")
+                                
+    
+    manley_data.load_input("test_case/data_override.yaml",
+                          "test_case/data_defaults.yaml")
+    manley_data.get_csv_data()
     fc = Forecast(manley_data)
     cb = CommunityBuildings(manley_data, fc)
     cb.run()
