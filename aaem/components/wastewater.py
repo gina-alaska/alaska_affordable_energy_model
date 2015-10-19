@@ -30,11 +30,14 @@ class WaterWastewaterSystems (AnnualSavings):
         Post-conditions: 
             The class members are set to the initial values.
         """
-        self.cd = community_data
+        self.cd = community_data.get_section('community')
+        self.comp_specs = community_data.get_section('water wastewater')
+        self.forecast = forecast
         
         self.hdd = self.cd["HDD"]
-        self.pop = self.cd["population"] 
-        self.system_type = self.cd["w&ww_system_type"] 
+        #~ self.pop = self.cd["population"]
+        self.pop = self.forecast.electricty_actuals['population'][7]
+        self.system_type = self.comp_specs["system type"] 
         self.forecast = forecast
         
     def calc_annual_electric_savings (self):
@@ -68,7 +71,7 @@ class WaterWastewaterSystems (AnnualSavings):
         """
         self.base_electric_savings = np.zeros(self.project_life)
         # kWh/yr*$/kWh
-        cost = self.savings_electricity * self.cd["res_non-PCE_elec_cost"]
+        cost = self.savings_electricity * self.cd["res non-PCE elec cost"]
         self.base_electric_savings += cost #$/yr
     
     
@@ -125,11 +128,14 @@ class WaterWastewaterSystems (AnnualSavings):
         post-conditions:
             All output values will be calculated and usable
         """
-        self.set_project_life_details(self.cd["w&ww_start_year"],
-                                      self.cd["w&ww_lifetime"])
+        print self.comp_specs["start year"]
+        print self.comp_specs["lifetime"]
+        self.set_project_life_details(self.comp_specs["start year"],
+                                      self.comp_specs["lifetime"])
         
         self.calc_electricity_consumption()
-        hrm = AEAA.heat_recovery_multiplier[self.cd["w&ww_heat_recovery_used"]]
+        hr_used = self.comp_specs['heat recovery used']
+        hrm = self.comp_specs['heat recovery multiplier'][hr_used]
         self.calc_heating_fuel_consumption(hrm)
         
         self.calc_savings_electricity()
@@ -163,8 +169,9 @@ class WaterWastewaterSystems (AnnualSavings):
         post:
             self.electricity will be a number
         """
-        self.electricity = self.cd["w&ww_energy_use_electric"]
-        if not self.cd["w&ww_energy_use_known"]:
+        if self.comp_specs["energy use known"]:
+            self.electricity = self.comp_specs["collected data"]['kWh/yr']
+        else: #if not self.cd["w&ww_energy_use_known"]:
             self.electricity = \
                                (self.hdd * AEAA.HDD_KWH[self.system_type] + \
                                 self.pop * AEAA.POP_KWH[self.system_type])
@@ -187,8 +194,9 @@ class WaterWastewaterSystems (AnnualSavings):
         post:
             self.heating_fuel will be a number
         """
-        self.heating_fuel = self.cd["w&ww_energy_use_hf"]
-        if not self.cd["w&ww_energy_use_known"]:
+        if self.comp_specs["energy use known"]:
+            self.electricity = self.comp_specs["collected data"]['HF used']
+        else: #if not self.cd["energy_use_known"]:
             self.heating_fuel = (self.hdd * AEAA.HDD_HF[self.system_type] + \
                                  self.pop * AEAA.POP_HF[self.system_type]) * \
                                  hr_coeff 
@@ -210,8 +218,10 @@ class WaterWastewaterSystems (AnnualSavings):
         post:
             self.savings_electricity will be a number (kWh)
         """
-        self.savings_electricity = self.cd["w&ww_audit_savings_elec"]
-        if not self.cd["w&ww_audit_preformed"]:
+        if  self.comp_specs["audit preformed"]:
+            self.savings_electricity = \
+                    self.cdself.comp_specs["collected data"]['kWh/yr w/ retro']
+        else: # if not self.comp_sepcs["audit preformed"]:
             self.savings_electricity = self.electricity * coeff
         
     def calc_savings_heating_feul (self, coeff = .35):
@@ -226,8 +236,10 @@ class WaterWastewaterSystems (AnnualSavings):
         post:
             self.savings_heating_fuel will be a number (gal)
         """
-        self.savings_heating_fuel = self.cd["w&ww_audit_savings_hf"]
-        if not self.cd["w&ww_audit_preformed"]:
+        if  self.comp_specs["audit preformed"]:
+            self.savings_electricity = \
+                    self.cdself.comp_specs["collected data"]['HF w/Retro']
+        else: # if not self.comp_sepcs["audit preformed"]:
             self.savings_heating_fuel = self.heating_fuel * coeff
             
     def calc_capital_costs (self, cost_per_person = 450):
@@ -242,11 +254,11 @@ class WaterWastewaterSystems (AnnualSavings):
         post:
             self.captial_costs will be a dollar value
         """
-        self.capital_costs = self.cd["w&ww_audit_cost"]
+        self.capital_costs = self.comp_specs["audit cost"]
         cost_per_person = AEAA.ww_baseline_retrofit_cost * \
                                 AEAA.construction_mulitpliers[self.cd["region"]]
-        if not self.cd["w&ww_audit_preformed"]:
-            self.capital_costs = float(AEAA.w_ww_audit_cost) + \
+        if not self.comp_specs["audit preformed"]:
+            self.capital_costs = float(self.comp_specs["audit cost"]) + \
                                         self.pop * cost_per_person
     
         
@@ -292,6 +304,9 @@ def test ():
     """
     manley_data = CommunityData("../data/community_data_template.csv",
                                 "Manley Hot Springs")
+    manley_data.load_input("test_case/manley_data.yaml",
+                          "test_case/data_defaults.yaml")
+    manley_data.get_csv_data()
     fc = Forecast(manley_data)
     ww = WaterWastewaterSystems(manley_data, fc)
     ww.run()
