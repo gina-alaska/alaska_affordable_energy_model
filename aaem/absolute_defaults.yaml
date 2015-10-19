@@ -22,6 +22,7 @@ community:
 
   elec non-fuel cost: ABSOLUTE DEFAULT  #TODO this is a calculated value
 
+  HDD: IMPORT
 
 forecast:
   start year: ABSOLUTE DEFAULT # start year <int>
