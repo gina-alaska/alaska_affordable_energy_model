@@ -39,6 +39,6 @@ interties:
   hr operational: True # is the heat recovery operational <bool>
   road needed: True # is a road needed <bool> 
   cost known: False # is the cost known <bool>
-  cost: # cost for initerite <float>
-  resource potential: #<string>
-  resource certainty: #<string>
+  # cost: # cost for initerite <float>
+  # resource potential: #<string>
+  # resource certainty: #<string>

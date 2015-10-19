@@ -10,6 +10,9 @@ import numpy as np
 from math import isnan
 
 
+# TODO(4) THIS has been refactored in the spread sheet and that needs to
+# be done here
+
 #~ from annual_savings import AnnualSavings
 # for live testing ---
 import annual_savings
@@ -31,7 +34,7 @@ class Interties (AnnualSavings):
     class for preforming the interties work
     """
 
-    def __init__ (self, community_data):
+    def __init__ (self, community_data, forecast):
         """
         Class initialiser
 
@@ -40,11 +43,13 @@ class Interties (AnnualSavings):
         post:
             the model can be run
         """
-        self.cd = community_data
-
+        self.cd = community_data.get_section('community')
+        self.comp_specs = community_data.get_section('interties')
+        self.forecast = forecast
+        
         # used in the NPV calculation so this is a relevant output
-        self.current_consumption = self.cd["consumption_kWh"]
-        self.line_losses = self.cd["line_losses"]
+        self.current_consumption = self.cd["consumption kWh"]
+        self.line_losses = self.cd["line losses"]
         
     def calc_annual_electric_savings (self):
         """
@@ -71,12 +76,13 @@ class Interties (AnnualSavings):
         """
         self.proposed_electric_savings = np.zeros(self.project_life) 
         elec_gen = self.ff_gen_displaced/(1.0 - self.transmission_loss) # kWh/yr
-        price = self.cd["cost_power_nearest_comm"] # $/kWh
+        #~ price = self.cd["cost_power_nearest_comm"] # $/kWh
+        price = 1.19  # TODO:(4) this comp has been revised any way
         # += to assure the array is the right length
         # $/year
-        print self.proposed_electric_savings
-        print elec_gen
-        print price
+        #~ print self.proposed_electric_savings
+        #~ print elec_gen
+        #~ print price
         self.proposed_electric_savings += (elec_gen * price) + self.O_and_M
         
 
@@ -137,13 +143,13 @@ class Interties (AnnualSavings):
         post:
             All values will be calculated and usable
         """
-        self.set_project_life_details(self.cd["it_start_year"],
-                                      self.cd["it_lifetime"])
+        self.set_project_life_details(self.comp_specs["start year"],
+                                      self.comp_specs["lifetime"])
         
         self.calc_transmission_loss()
         self.calc_kWh_transmitted()
         
-        it_road_needed = self.cd["it_road_needed"]
+        it_road_needed = self.comp_specs["road needed"]
         tlc = AEAA.transmission_line_cost[it_road_needed]
         self.calc_transmission_line_cost(tlc)
         
@@ -154,10 +160,8 @@ class Interties (AnnualSavings):
         self.calc_capital_costs()
         
         self.get_diesel_prices()
-        self.ff_gen_displaced = \
-        Forecast(self.cd).get_consumption(self.start_year,self.end_year)
-        # TODO: this needs be checked 
-        self.ff_gen_displaced = self.ff_gen_displaced 
+        self.ff_gen_displaced = self.forecast.get_consumption(self.start_year,
+                                                                self.end_year)
         
         self.calc_annual_electric_savings()
         self.calc_annual_heating_savings()
@@ -182,9 +186,13 @@ class Interties (AnnualSavings):
         """
         # %/year
         self.transmission_loss = 0 # Annual Transmission Loss Percentage
-        if isnan(self.cd["dist_to_nearest_comm"]) == False:
-            self.transmission_loss = 1.0 - \
-            ((1 - AEAA.loss_per_mile) ** self.cd["dist_to_nearest_comm"])
+        try:
+            if self.comp_specs["distance data"]['Distance to Community']!='N/A':
+                self.transmission_loss = 1.0 - \
+                ((1 - self.comp_specs['loss per mile']) **\
+                self.comp_specs["distance data"]['Distance to Community'])
+        except StandardError:
+            pass
         #~ self.transmission_loss = round(self.transmission_loss, 7)
 
     def calc_kWh_transmitted (self):
@@ -202,12 +210,15 @@ class Interties (AnnualSavings):
         """
         # kWh
         self.kWh_transmitted = 0
-        print self.cd["it_resource_potential"]
-        if self.cd["it_resource_potential"].lower() != "low" and \
-           isnan(self.cd["dist_to_nearest_comm"]) == False:
-            self.kWh_transmitted = self.current_consumption * \
-                                   (1+self.transmission_loss) * \
-                                   (1+self.line_losses)
+        #~ print self.comp_specs["resource potential"]
+        try:
+            if self.comp_specs["resource potential"].lower() != "low" and \
+               self.comp_specs["distance data"]['Distance to Community'] != 'N/A':
+                self.kWh_transmitted = self.current_consumption * \
+                                       (1+self.transmission_loss) * \
+                                       (1+self.line_losses)
+        except StandardError:
+            pass
 
     def calc_transmission_line_cost (self, cost_per_mile):
         """
@@ -223,10 +234,10 @@ class Interties (AnnualSavings):
         post:
             self.transmission_line_cost is a number($ value)
         """
-        self.transmission_line_cost = self.cd["it_cost"]
-        if self.cd["it_cost_known"] == False:
-            self.transmission_line_cost = cost_per_mile * \
-                                    self.cd["dist_to_nearest_comm"]
+        self.transmission_line_cost = self.comp_specs["cost"]
+        if self.comp_specs["cost known"] == False:
+            self.transmission_line_cost = cost_per_mile * 35#\
+                    #~ self.comp_specs["distance data"]['Distance to Community']
 
     def calc_capital_costs (self):
         """
@@ -253,15 +264,24 @@ class Interties (AnnualSavings):
         post:
             self.loss_of_heat_recovered is a number(gallons)
         """
-        self.loss_of_heat_recovered = 0         # gal
-        if isnan(self.cd["dist_to_nearest_comm"]):
-            self.loss_of_heat_recovered = float('nan')
-        elif self.cd["it_hr_installed"] == True and \
-             self.cd["it_hr_operational"] == True:
-            # where does .15 come from
-            # it's an argument now 
-            self.loss_of_heat_recovered = \
-                            self.cd["consumption_HF"] * hr_percent
+        self.loss_of_heat_recovered = 0 # gal
+        
+        try:
+            if self.comp_specs["distance data"]['Distance to Community'] == 'N/A':
+                self.loss_of_heat_recovered = float('nan')
+            elif self.comp_specs["hr installed"] == True and \
+                 self.comp_specs["hr operational"] == True:
+                # where does .15 come from
+                # it's an argument now 
+                self.loss_of_heat_recovered = \
+                                self.cd["consumption HF"] * hr_percent
+        except StandardError:
+            if self.comp_specs["hr installed"] == True and \
+                 self.comp_specs["hr operational"] == True:
+                # where does .15 come from
+                # it's an argument now 
+                self.loss_of_heat_recovered = \
+                                self.cd["consumption HF"] * hr_percent
 
     def calc_O_and_M (self):
         """
@@ -276,9 +296,12 @@ class Interties (AnnualSavings):
             self.O_and_M is a number(gallons/year)
         """
         self.O_and_M = float('nan')
-        if isnan(self.cd["dist_to_nearest_comm"]) == False:
-            self.O_and_M = AEAA.O_and_M_cost * \
-                            self.cd["dist_to_nearest_comm"]
+        try:
+            if self.comp_specs["distance data"]['Distance to Community'] != 'N/A':
+                self.O_and_M = self.comp_specs['o&m cost'] * \
+                        self.comp_specs["distance data"]['Distance to Community']
+        except StandardError:
+            self.O_and_M = self.comp_specs['o&m cost'] * 35
 
     def calc_communtiy_price_difference (self):
         """
@@ -296,10 +319,13 @@ class Interties (AnnualSavings):
             not available
         """
         self.communtiy_price_difference = float('nan')
-        if isnan(self.cd["dist_to_nearest_comm"]) == False:
-            self.communtiy_price_difference = \
-                            self.cd["res_non-PCE_elec_cost"] -\
-                            self.cd["cost_power_nearest_comm"]
+        try:
+            if self.comp_specs["distance data"]['Distance to Community'] == 'N/A':
+                self.communtiy_price_difference = \
+                            self.cd["res non-PCE elec cost"] -\
+                            .45 # TODO:(4) this comp has been revised any way
+        except StandardError:
+            pass
 
     def print_proposed_sytstem_analysis (self):
         """
@@ -343,7 +369,14 @@ def test ():
     """
     manley_data = CommunityData("../data/community_data_template.csv",
                                 "Manley Hot Springs")
-    it = Interties(manley_data)
+                                
+                                
+    manley_data.load_input("test_case/manley_data.yaml",
+                          "test_case/data_defaults.yaml")
+    manley_data.get_csv_data()
+    fc = Forecast(manley_data)
+    
+    it = Interties(manley_data,fc)
     it.run()
     it.print_proposed_sytstem_analysis()
     print ""
