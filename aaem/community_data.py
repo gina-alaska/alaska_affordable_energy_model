@@ -360,8 +360,8 @@ class CommunityData (object):
             self.set_item('community buildings',"com num buildings",
                                             self.load_csv("com num buildings"))
                                             
-        if self.get_item('community',"HDD")== "IMPORT":
-            self.set_item('community',"HDD", int(self.load_csv("hdd"))
+        if self.get_item('community',"HDD") == "IMPORT":
+            self.set_item('community',"HDD", int(self.load_csv("hdd")))
             
     def load_csv (self, file_key):
         """ 
