@@ -19,7 +19,7 @@ def test (community, com_data_file = "../data/community_data_template.csv"):
     """
     """
     cd = CommunityData(com_data_file, community)
-    cd.load_input("test_case/data_override.yaml",
+    cd.load_input("test_case/manley_data.yaml",
                           "test_case/data_defaults.yaml")
     cd.get_csv_data()
     fc = Forecast(cd)

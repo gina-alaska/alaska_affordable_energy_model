@@ -2,7 +2,7 @@ community:
   name: ABSOLUTE DEFAULT NAME # community name <string>
   region: READ WITH RES DATA # name <string>
   current year: ABSOLUTE DEFAULT  #year to base npv calculations on <int>
-  
+ 
   #AEA ASSUMPTIONS
   interest rate: .05 # rate as decimal <float> (ex. .05) 
   discount rate: .03 # rate as decimal <float> (ex. .03)
@@ -23,6 +23,7 @@ community:
   elec non-fuel cost: ABSOLUTE DEFAULT  #TODO this is a calculated value
 
   HDD: IMPORT
+
 
 forecast:
   start year: ABSOLUTE DEFAULT # start year <int>
@@ -47,7 +48,13 @@ water wastewater:
   start year:  ABSOLUTE DEFAULT # start year <int>
   audit cost: 10000 # price <float> (ex. 10000)
   system type: ABSOLUTE DEFAULT # system type <string> 
+  
   energy use known:  ABSOLUTE DEFAULT # enegry use available <bool> auto check this?
+  heat recovery used: False  
+  audit preformed: False
+  
+  collected data: IMPORT 
+  
   heat recovery multiplier:
     True: .5 # precent as decimal <float> 
     False: 1.0 # precent as decimal <float> 
