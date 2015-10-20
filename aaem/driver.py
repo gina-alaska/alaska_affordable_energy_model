@@ -13,6 +13,77 @@ from components.wastewater import WaterWastewaterSystems
 from pandas import DataFrame, read_pickle
 import numpy as np
 
+import yaml
+import os.path
+from importlib import import_module
+
+class Driver (object):
+    """ 
+    Driver for the AAEM.
+    """
+    
+    def __init__ (self, config_file):
+        """ 
+        set up driver 
+        
+        pre:
+            infile is an absolute path 
+        post:
+            model is ready to be run
+        """
+        fd = open(config_file, 'r')
+        lib = yaml.load(fd)
+        fd.close()
+        self.cd = CommunityData(lib["overrides"], lib["defaults"])
+        self.fc = Forecast(self.cd)
+        self.load_comp_lib()
+        
+    def load_comp_lib (self):
+        """
+        load the component library
+        pre:
+            comp_lib.yaml is a library of all available model components
+        post:
+            self.comp_lib is a dictonarey the maps the names of components in
+        absolute defaults, to the python modules. 
+        """
+        fd = open("comp_lib.yaml", 'r')
+        self.comp_lib = yaml.load(fd)
+        #~ print self.comp_lib
+        fd.close()
+        
+    def run_components (self):
+        """
+        run enabled components
+        pre:
+            self.comp_lib exists
+        post:
+            self.comps_used is a dictionary of the used components. 
+        """
+        self.comps_used = {}
+        for comp in self.comp_lib:
+            ## TODO implment in yaml
+            #~ if self.cd[comp]["enabled"] == False:
+                #~ continue
+            component = self.get_component(self.comp_lib[comp])(self.cd,self.fc)
+            component.run()
+            self.comps_used[comp] = component
+        
+        
+    def get_component (self, comp_name):
+        """
+        import a component
+        pre:
+            comp name is the name of a component
+        post:
+            returns imported module
+        """
+        return import_module("components." + comp_name).component
+
+
+
+
+
 
 
 def test (com_data_file = "test_case/manley_data.yaml"):
