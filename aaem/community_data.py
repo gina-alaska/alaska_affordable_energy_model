@@ -144,37 +144,9 @@ PATH = os.path.join
 class CommunityData (object):
     """ Class doc """
     
-    def __init__ (self, inFile, community):
-        """ Class initialiser """
-        self.inputs = read_csv(inFile,index_col=0,comment='#').T[community]
-        self.static = {}
-        self.static['res_model_data'] = res_data
-        self.static["fc_electricity_used"] = electricty_actuals
-        self.static["com_buildings"]  = buildings_by_type #
-        self.static["com_sqft_to_retofit"] = sqft_by_type 
-        self.static["com_benchmark_data"] = com_ben_data
-        self.static["com_num_buildings"]= com_num_buildings
-        
-    
-    def __getitem__ (self, key):
-        """ Function doc """
-        try:
-            return self.static[key]
-        except KeyError:
-            pass
-        try:
-            return self.inputs[key]
-        except KeyError, e:
-            print e
-            raise e
-    def __setitem__ (self):
-        """ Function doc """
-        pass
-        
-    def __del__ (self):
-        """ Function doc """
-        pass
-    
+    def __init__ (self, override, default="defaults"):
+        self.load_input(override,default)
+        self.get_csv_data()
     
     ## new stuff    
     def read_config (self, config_file):
@@ -362,6 +334,19 @@ class CommunityData (object):
                                             
         if self.get_item('community',"HDD") == "IMPORT":
             self.set_item('community',"HDD", int(self.load_csv("hdd")))
+        
+        ## different type csv
+        if self.get_item('community buildings',
+                                        "com building estimates")== "IMPORT":
+            self.set_item('community buildings',"com building estimates",
+                        read_csv(PATH(data_dir, "com_building_estimates.csv"),
+                         index_col = 0, header=1, comment = '#').T)
+        if self.get_item('water wastewater', "ww assumptions")== "IMPORT":
+            self.set_item('water wastewater', "ww assumptions",
+                        read_csv(PATH(data_dir, "ww_assumptions.csv"),
+                         index_col = 0, header=0, comment = '#'))
+            
+        
             
     def load_csv (self, file_key):
         """ 
@@ -401,7 +386,10 @@ class CommunityData (object):
         self.set_item('residential buildings','res model data', "IMPORT")
         self.set_item('community buildings','com benchmark data', "IMPORT")
         self.set_item('community buildings',"com num buildings", "IMPORT")
-        ### 
+        self.set_item('community buildings',"com building estimates", "IMPORT")
+        self.set_item('water wastewater', "ww assumptions", "IMPORT")
+        
+        
         fd = open(fname, 'w')
         text = yaml.dump(self.model_inputs, default_flow_style=False) 
         fd.write(text)

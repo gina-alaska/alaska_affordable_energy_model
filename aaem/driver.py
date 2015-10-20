@@ -15,13 +15,11 @@ import numpy as np
 
 
 
-def test (community, com_data_file = "../data/community_data_template.csv"):
+def test (com_data_file = "test_case/manley_data.yaml"):
     """
     """
-    cd = CommunityData(com_data_file, community)
-    cd.load_input("test_case/manley_data.yaml",
-                          "test_case/data_defaults.yaml")
-    cd.get_csv_data()
+    cd = CommunityData(com_data_file, "test_case/data_defaults.yaml")
+    
     fc = Forecast(cd)
     
     rb = ResidentialBuildings(cd, fc)
@@ -30,7 +28,7 @@ def test (community, com_data_file = "../data/community_data_template.csv"):
     cb.run()
     ww = WaterWastewaterSystems(cd, fc)
     ww.run()
-    
+    cd.save_model_inputs("../test_case/saved_inputs_from_test_driver.yaml")
     #~ fc.calc_electricity_totals()
     #~ fc.forecast_population()
     fc.forecast_consumption()
@@ -49,15 +47,18 @@ def test (community, com_data_file = "../data/community_data_template.csv"):
                      "ww HF":fc.www_HF,
                      "total HF": fc.total_HF,}, 
                      np.array(range(len(fc.population))) + fc.start_year)
-    df.to_csv("../test_case/run_df.csv", columns =["pop","HH", "kWh consumed",
-                                                "kWh generation","avg. kW",
-                                                "res HF", "com HF", "ww HF",
-                                                "total HF"])
-    base_df = read_pickle("../test_case/base.pckl")
-    (base_df == df).to_csv("../test_case/test_truth_table.csv", 
-                                        columns =["pop","HH", "kWh consumed",
-                                                "kWh generation","avg. kW",
-                                                "res HF", "com HF", "ww HF",
-                                                "total HF"])
+                     
+    if com_data_file == "test_case/manley_data.yaml":
+        df.to_csv("../test_case/run_df.csv",columns =["pop","HH","kWh consumed",
+                                                    "kWh generation","avg. kW",
+                                                    "res HF", "com HF","ww HF",
+                                                    "total HF"])
+        base_df = read_pickle("../test_case/base.pckl")
+        (base_df == df).to_csv("../test_case/test_truth_table.csv", 
+                                          columns =["pop","HH", "kWh consumed",
+                                                    "kWh generation","avg. kW",
+                                                    "res HF", "com HF", "ww HF",
+                                                    "total HF"])
+    
 
     return df, (cd,fc,rb,cb,ww)

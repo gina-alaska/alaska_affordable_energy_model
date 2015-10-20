@@ -75,12 +75,16 @@ the individual component test don't take any arguments and return the model comp
 
 
 
-the test in driver take the community name as an input, There is only data for manley right now. A pandas DataFrame(just a mock of the table in the forecast tab) is returned along with the model components as a tuple
+To run the manley test do the following. A pandas DataFrame(just a mock of the table in the forecast tab) is returned along with the model components as a tuple. 
 
-    >>> df, model_componets = driver.test("Manley Hot Springs")
+    >>> df, model_componets = driver.test()
     >>> print df
        HH     avg. kW       com HF    kWh consumed  kWh generation  \
        2014   56   50.719736      0.00000   390543.996100          444000   
        2015   58   52.904210  41716.39827   407364.530791          463000   
        2016   61   55.182768  41716.39827   424909.517503          483000   
        ...
+
+To run another community
+  
+    >>> df, model_componets = driver.test("path relatative to project root/file.yaml")
