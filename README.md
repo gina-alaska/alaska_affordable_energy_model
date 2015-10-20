@@ -76,7 +76,8 @@ the individual component test don't take any arguments and return the model comp
 
 
 To run the manley test do the following. A pandas DataFrame(just a mock of the table in the forecast tab) is returned along with the model components as a tuple. 
-
+    
+    >>> import driver
     >>> df, model_componets = driver.test()
     >>> print df
        HH     avg. kW       com HF    kWh consumed  kWh generation  \
