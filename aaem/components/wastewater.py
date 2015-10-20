@@ -11,7 +11,7 @@ import numpy as np
 
 from annual_savings import AnnualSavings
 from community_data import CommunityData
-import aea_assumptions as AEAA
+#~ import aea_assumptions as AEAA
 import forecast
 Forecast = forecast.Forecast
 
@@ -32,6 +32,9 @@ class WaterWastewaterSystems (AnnualSavings):
         """
         self.cd = community_data.get_section('community')
         self.comp_specs = community_data.get_section('water wastewater')
+        self.cost_per_person  = self.comp_specs['average refit cost'] * \
+      community_data.get_section('construction multipliers')[self.cd["region"]] 
+       
         self.forecast = forecast
         
         self.hdd = self.cd["HDD"]
@@ -99,7 +102,7 @@ class WaterWastewaterSystems (AnnualSavings):
            self.proposed_heating_savings is an np.array of $/year values 
         """
         self.proposed_heating_savings = np.zeros(self.project_life)
-        fuel_cost = self.diesel_prices + AEAA.heating_fuel_premium# $/gal
+        fuel_cost = self.diesel_prices + self.cd['heating fuel premium']# $/gal
         #~ print fuel_cost
         # are there ever o&m costs
         # $/gal * gal/yr = $/year 
@@ -116,7 +119,7 @@ class WaterWastewaterSystems (AnnualSavings):
            self.base_heating_savings is an np.array of $/year values 
         """
         self.base_heating_savings = np.zeros(self.project_life)
-        fuel_cost = self.diesel_prices + AEAA.heating_fuel_premium #$/gal
+        fuel_cost = self.diesel_prices + self.cd['heating fuel premium'] #$/gal
         # $/gal * gal/yr = $/year 
         self.base_heating_savings += self.heating_fuel * fuel_cost #$/yr
         
@@ -152,10 +155,10 @@ class WaterWastewaterSystems (AnnualSavings):
         self.calc_annual_heating_savings()
         self.calc_annual_total_savings()
         
-        self.calc_annual_costs(AEAA.interest_rate)
+        self.calc_annual_costs(self.cd['interest rate'])
         self.calc_annual_net_benefit()
         
-        self.calc_npv(AEAA.discount_rate, 2014)
+        self.calc_npv(self.cd['discount rate'], 2014)
     
     def calc_electricity_consumption (self):
         """
@@ -173,13 +176,14 @@ class WaterWastewaterSystems (AnnualSavings):
             self.electricity = self.comp_specs["collected data"]['kWh/yr']
         else: #if not self.cd["w&ww_energy_use_known"]:
             self.electricity = \
-                               (self.hdd * AEAA.HDD_KWH[self.system_type] + \
-                                self.pop * AEAA.POP_KWH[self.system_type])
+(self.hdd * self.comp_specs['ww assumptions']['HDD kWh'][self.system_type] + \
+     self.pop * self.comp_specs['ww assumptions']['pop kWh'][self.system_type])
             # update for 9/28 spread sheet 
             # forcast needs an update to get a range of years 
             self.forecast.forecast_population()
             self.electricity += (self.forecast.population[1:16] - \
-                                 self.pop)*AEAA.POP_KWH[self.system_type]
+                                 self.pop)*\
+                 self.comp_specs['ww assumptions']['HDD kWh'][self.system_type]
                             
     def calc_heating_fuel_consumption (self, hr_coeff):
         """
@@ -197,14 +201,15 @@ class WaterWastewaterSystems (AnnualSavings):
         if self.comp_specs["energy use known"]:
             self.electricity = self.comp_specs["collected data"]['HF used']
         else: #if not self.cd["energy_use_known"]:
-            self.heating_fuel = (self.hdd * AEAA.HDD_HF[self.system_type] + \
-                                 self.pop * AEAA.POP_HF[self.system_type]) * \
+            self.heating_fuel = \
+   (self.hdd * self.comp_specs['ww assumptions']['HDD HF'][self.system_type] + \
+   self.pop * self.comp_specs['ww assumptions']['pop HF'][self.system_type]) * \
                                  hr_coeff 
             # update for 9/28 spread sheet 
             # forcast needs an update to get a range of years 
             pop_fc = self.forecast.get_population(self.start_year,self.end_year)
             self.heating_fuel += (pop_fc - self.pop) * \
-                                 AEAA.POP_HF[self.system_type]
+                 self.comp_specs['ww assumptions']['pop HF'][self.system_type]
 
     def calc_savings_electricity (self, coeff = .25):
         """
@@ -255,11 +260,9 @@ class WaterWastewaterSystems (AnnualSavings):
             self.captial_costs will be a dollar value
         """
         self.capital_costs = self.comp_specs["audit cost"]
-        cost_per_person = AEAA.ww_baseline_retrofit_cost * \
-                                AEAA.construction_mulitpliers[self.cd["region"]]
         if not self.comp_specs["audit preformed"]:
             self.capital_costs = float(self.comp_specs["audit cost"]) + \
-                                        self.pop * cost_per_person
+                                        self.pop *  self.cost_per_person
     
         
     def calc_post_savings_values (self):

@@ -39,7 +39,7 @@ from math import isnan
 
 from annual_savings import AnnualSavings
 from community_data import CommunityData
-import aea_assumptions as AEAA
+#~ import aea_assumptions as AEAA
 from forecast import Forecast
 
 
@@ -60,8 +60,8 @@ class CommunityBuildings (AnnualSavings):
         self.cd = community_data.get_section('community')
         self.comp_specs = community_data.get_section('community buildings')
         self.forecast = forecast
-        self.refit_cost_rate = AEAA.com_average_refit_cost * \
-                            AEAA.construction_mulitpliers[self.cd["region"]]
+        self.refit_cost_rate = self.comp_specs['average refit cost'] * \
+      community_data.get_section('construction multipliers')[self.cd["region"]]
         self.set_project_life_details(self.comp_specs["start year"],
                                       self.comp_specs["lifetime"])
                                       
@@ -100,10 +100,10 @@ class CommunityBuildings (AnnualSavings):
         self.calc_annual_heating_savings()
         self.calc_annual_total_savings()
         
-        self.calc_annual_costs(AEAA.interest_rate)
+        self.calc_annual_costs(self.cd['interest rate'])
         self.calc_annual_net_benefit()
         
-        self.calc_npv(AEAA.discount_rate, 2014)
+        self.calc_npv(self.cd['discount rate'], 2014)
 
     def calc_refit_values (self):
         """
@@ -146,10 +146,8 @@ class CommunityBuildings (AnnualSavings):
         else: 
             key = "Average sf>1200"
         
-        #~ print self.additional_buildings , \
-                               #~ AEAA.com_building_estimates['Other'][key]
         self.additional_sqft = self.additional_buildings * \
-                               AEAA.com_building_estimates['Other'][key]
+                        self.comp_specs['com building estimates']['Other'][key]
         #~ print self.additional_sqft, self.benchmark_sqft
         self.refit_sqft_total = self.additional_sqft + self.benchmark_sqft
         
@@ -191,11 +189,11 @@ class CommunityBuildings (AnnualSavings):
         else: 
             key = "Av Gal/sf>1200"
         
-        hf_sqft_yr = AEAA.com_building_estimates['Other'][key]
+        hf_sqft_yr = self.comp_specs['com building estimates']['Other'][key]
 
         
         self.benchmark_HF = \
-            np.sum(self.comp_specs['com benchmark data'][['Current Fuel Oil']].values) 
+      np.sum(self.comp_specs['com benchmark data'][['Current Fuel Oil']].values) 
 
       
         self.additional_HF = self.additional_sqft * hf_sqft_yr
@@ -226,11 +224,11 @@ class CommunityBuildings (AnnualSavings):
         else: 
             key = "Avg kWh/sf>1200"
         
-        kWh_sqft_yr = AEAA.com_building_estimates['Other'][key]
+        kWh_sqft_yr = self.comp_specs['com building estimates']['Other'][key]
 
         
         self.benchmark_kWh = \
-            np.sum(self.comp_specs['com benchmark data'][['Current Electric']].values) 
+     np.sum(self.comp_specs['com benchmark data'][['Current Electric']].values) 
         
         self.additional_kWh = self.additional_sqft * kWh_sqft_yr
         
@@ -248,10 +246,10 @@ class CommunityBuildings (AnnualSavings):
         self.additional_savings_HF, are floating-point HF values
         """
         self.benchmark_savings_HF = \
-                np.sum(self.comp_specs['com benchmark data']["Current Fuel Oil"] -\
-                    self.comp_specs['com benchmark data']["Post-Retrofit Fuel Oil"])
+            np.sum(self.comp_specs['com benchmark data']["Current Fuel Oil"] -\
+                self.comp_specs['com benchmark data']["Post-Retrofit Fuel Oil"])
         self.additional_savings_HF = self.additional_HF * \
-                                 AEAA.com_cohort_savings_multiplier
+                                 self.comp_specs['cohort savings multiplier']
         self.refit_savings_HF_total = self.benchmark_savings_HF +\
                                       self.additional_savings_HF
         
@@ -266,10 +264,10 @@ class CommunityBuildings (AnnualSavings):
         self.additional_savings_kWh, are floating-point kWh values
         """
         self.benchmark_savings_kWh = \
-                np.sum(self.comp_specs['com benchmark data']["Current Electric"] -\
-                    self.comp_specs['com benchmark data']["Post-Retrofit Electric"])
+            np.sum(self.comp_specs['com benchmark data']["Current Electric"] -\
+                self.comp_specs['com benchmark data']["Post-Retrofit Electric"])
         self.additional_savings_kWh = self.additional_kWh * \
-                                 AEAA.com_cohort_savings_multiplier
+                                 self.comp_specs['cohort savings multiplier']
         self.refit_savings_kWh_total = self.benchmark_savings_kWh +\
                                       self.additional_savings_kWh
         
@@ -311,7 +309,7 @@ class CommunityBuildings (AnnualSavings):
         self.annual_electric_savings = np.zeros(self.project_life) + \
                                        self.refit_savings_kWh_total* \
                             (self.cd["elec non-fuel cost"]+\
-                            self.diesel_prices/AEAA.diesel_generation_eff)
+                    self.diesel_prices/self.cd['diesel generation efficiency'])
         
     def calc_annual_heating_savings (self):
         """
@@ -327,7 +325,7 @@ class CommunityBuildings (AnnualSavings):
         self.annual_heating_savings = np.zeros(self.project_life) + \
                                        self.refit_savings_HF_total* \
                                        (self.diesel_prices + \
-                                       AEAA.heating_fuel_premium)
+                                       self.cd['heating fuel premium'])
         
     
         

@@ -24,7 +24,7 @@ from community_data import CommunityData
 #~ reload(community_data)
 #~ CommunityData = community_data.CommunityData
 from forecast import Forecast
-import aea_assumptions as AEAA
+#~ import aea_assumptions as AEAA
 
 
                         
@@ -96,13 +96,14 @@ class Interties (AnnualSavings):
            self.base_electric_savings is an np.array of $/year values 
         """
         self.base_electric_savings = np.zeros(self.project_life)
-        fuel_use = self.ff_gen_displaced / AEAA.diesel_generation_eff # gal/yr
+        fuel_use = self.ff_gen_displaced / \
+                            self.cd['diesel generation efficiency']# gal/yr
         fuel_cost = fuel_use * self.diesel_prices # $/yr
         
         # += to assure the array is the right length
         # $/yr + $/yr + gal/yr - gal/yr -> ($ + gal - gal)/yr -> $/yr -- WHAT?
         # i'm doing this instead $/yr + $/yr -> $/yr
-        self.base_electric_savings += (fuel_cost + AEAA.diesel_generator_OM)
+        self.base_electric_savings += fuel_cost+ self.cd['diesel generator o&m']
         
             
     def calc_annual_heating_savings (self):
@@ -127,11 +128,11 @@ class Interties (AnnualSavings):
            self.base_heating_savings is an np.array of $/year values 
         """
         self.base_heating_savings = np.zeros(self.project_life)
-        fuel_cost = self.diesel_prices + AEAA.heating_fuel_premium # $/gal
+        fuel_cost = self.diesel_prices + self.cd['heating fuel premium'] # $/gal
         fuel_cost = fuel_cost * (-self.loss_of_heat_recovered) # $/yr
         # += to assure the array is the right length
-        self.base_heating_savings += fuel_cost + AEAA.fuel_repairs + \
-                                     AEAA.fuel_OM # $/yr
+        self.base_heating_savings += fuel_cost +  self.cd['fuel o&m'] + \
+                                      self.cd['fuel o&m'] # $/yr
 
 
     def run (self):
@@ -150,7 +151,7 @@ class Interties (AnnualSavings):
         self.calc_kWh_transmitted()
         
         it_road_needed = self.comp_specs["road needed"]
-        tlc = AEAA.transmission_line_cost[it_road_needed]
+        tlc = self.comp_specs['transmission line cost'][it_road_needed]
         self.calc_transmission_line_cost(tlc)
         
         self.calc_loss_of_heat_recovered()
@@ -167,10 +168,10 @@ class Interties (AnnualSavings):
         self.calc_annual_heating_savings()
         self.calc_annual_total_savings()
         
-        self.calc_annual_costs(AEAA.interest_rate)
+        self.calc_annual_costs(self.cd['interest rate'])
         self.calc_annual_net_benefit()
         
-        self.calc_npv(AEAA.discount_rate, 2014)
+        self.calc_npv(self.cd['discount rate'], 2014)
         
 
     def calc_transmission_loss (self):

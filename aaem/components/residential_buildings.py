@@ -10,7 +10,7 @@ from math import isnan
 
 from annual_savings import AnnualSavings
 from community_data import CommunityData
-import aea_assumptions as AEAA
+#~ import aea_assumptions as AEAA
 from forecast import Forecast
 
 
@@ -31,8 +31,8 @@ class ResidentialBuildings(AnnualSavings):
         self.cd = community_data.get_section('community')
         self.res_specs = community_data.get_section('residential buildings')
         self.forecast = forecast
-        self.refit_cost_rate = AEAA.res_average_refit_cost * \
-                            AEAA.construction_mulitpliers[self.cd["region"]]
+        self.refit_cost_rate = self.res_specs['average refit cost'] * \
+      community_data.get_section('construction multipliers')[self.cd["region"]]
         self.set_project_life_details(self.res_specs["start year"],
                                       self.res_specs["lifetime"])
     
@@ -69,10 +69,10 @@ class ResidentialBuildings(AnnualSavings):
         self.calc_annual_heating_savings()
         self.calc_annual_total_savings()
         
-        self.calc_annual_costs(AEAA.interest_rate)
+        self.calc_annual_costs(self.cd['interest rate'])
         self.calc_annual_net_benefit()
         
-        self.calc_npv(AEAA.discount_rate, 2014)
+        self.calc_npv(self.cd['discount rate'], 2014)
     
     def calc_init_HH (self):
         """
@@ -199,7 +199,7 @@ class ResidentialBuildings(AnnualSavings):
         post:
             self.baseline_HF_cost is an array of costs over the project life
         """
-        fuel_price = (self.diesel_prices + AEAA.heating_fuel_premium)
+        fuel_price = (self.diesel_prices + self.cd['heating fuel premium'])
         self.baseline_HF_cost = fuel_price * self.baseline_HF_consumption
                 
     def calc_refit_HF_cost (self):
@@ -213,7 +213,7 @@ class ResidentialBuildings(AnnualSavings):
         post:
             self.refit_HF_cost is an array of costs over the project life
         """
-        fuel_price = (self.diesel_prices + AEAA.heating_fuel_premium)
+        fuel_price = (self.diesel_prices + self.cd['heating fuel premium'])
         self.refit_HF_cost = fuel_price * self.refit_HF_consumption
         
     
