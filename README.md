@@ -88,7 +88,7 @@ To run the manley test do the following. A pandas DataFrame(just a mock of the t
 
 To run another community
   
-    >>> model, out_dir = driver.Driver("path to config file")
+    >>> model, out_dir = driver.run_model("path to config file")
 
 
 example config 
