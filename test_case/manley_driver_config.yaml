@@ -1,2 +1,4 @@
-overrides: "test_case/manley_data.yaml"
-defaults: defaults
+overrides: "../test_case/manley_data.yaml"
+defaults: # blank or path
+output directory path: "../test_case/sample_out"
+output directory suffix: TIMESTAMP # TIMESTAMP|NONE|<string>

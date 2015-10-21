@@ -16,13 +16,14 @@ import numpy as np
 import yaml
 import os.path
 from importlib import import_module
+from datetime import datetime
 
 class Driver (object):
     """ 
     Driver for the AAEM.
     """
     
-    def __init__ (self, config_file):
+    def __init__ (self, overrides, defaults):
         """ 
         set up driver 
         
@@ -31,10 +32,7 @@ class Driver (object):
         post:
             model is ready to be run
         """
-        fd = open(config_file, 'r')
-        lib = yaml.load(fd)
-        fd.close()
-        self.cd = CommunityData(lib["overrides"], lib["defaults"])
+        self.cd = CommunityData(overrides,defaults)
         self.fc = Forecast(self.cd)
         self.load_comp_lib()
         
@@ -62,9 +60,9 @@ class Driver (object):
         """
         self.comps_used = {}
         for comp in self.comp_lib:
-            ## TODO implment in yaml
-            #~ if self.cd[comp]["enabled"] == False:
-                #~ continue
+            if self.cd.get_item(comp,"enabled") == False:
+                continue
+            #~ print comp
             component = self.get_component(self.comp_lib[comp])(self.cd,self.fc)
             component.run()
             self.comps_used[comp] = component
@@ -79,7 +77,81 @@ class Driver (object):
             returns imported module
         """
         return import_module("components." + comp_name).component
+        
+    def save_components_output (self, directory):
+        """
+        save the output from each component
+        pre:
+            self.comps_used should be a set of run components
+        post:
+            for each component in self.comps_used the electric, heating, and
+        financial outputs are saved as csv files 
+        """
+        for comp in self.comps_used:
+            self.comps_used[comp].save_csv_outputs(directory + "model_outputs/")
+    
+    def save_forecast_output (self, directory):
+        """ Function doc """
+        pass
+    
+    def save_input_files (self, directory):
+        """ Function doc """
+        self.cd.save_input_files(directory+"config_uesd.yaml")
+        
 
+
+def run_model (config_file):
+    """ 
+    run the model given an input file
+    pre:
+        config_file is the absolute path to a yaml file with this format:
+            |------ config example -------------
+            |overrides: "test_case/manley_data.yaml"
+            |defaults: defaults | defaults| 
+            |output directory path: # a path
+            |output directory suffix: TIMESTAMP # TIMESTAMP|NONE|<string>
+            |-------------------------------------
+    post:
+        The model will have been run, and outputs saved.  
+    """
+    fd = open(config_file, 'r')
+    config = yaml.load(fd)
+    fd.close()
+    
+    
+    overrides = os.path.abspath(config['overrides'])
+    defaults = "defaults" if config['defaults'] is None else\
+                os.path.abspath(config['defaults'])
+    
+    
+    
+    out_dir = config['output directory path']
+    out_dir = out_dir[:1] if out_dir[-1] == '/' else out_dir 
+    out_dir = os.path.abspath(out_dir)
+    suffix = config['output directory suffix']
+    if suffix == "TIMESTAMP":
+        timestamp = datetime.strftime(datetime.now(),"%Y%m%d%H%M%S")
+        out_dir+= "_" +timestamp + '/'
+    elif suffix != "NONE":
+        out_dir+= "_" + suffix + '/'
+    else:
+        out_dir+= '/'
+
+    print out_dir
+    
+    
+    
+    
+    model = Driver(overrides, defaults)
+    model.load_comp_lib()
+    model.run_components()
+    # save functionality needs to be written at component level
+    #~ model.save_components_output(out_dir)
+    #~ model.save_input_files(out_dir)
+    
+    
+    
+        
 
 
 
