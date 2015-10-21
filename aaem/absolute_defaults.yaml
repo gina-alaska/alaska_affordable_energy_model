@@ -30,12 +30,14 @@ forecast:
   end year: ABSOLUTE DEFAULT  # end year <int>
 
 residential buildings:
+  enabled: False
   lifetime: ABSOLUTE DEFAULT # number years <int>  
   start year: ABSOLUTE DEFAULT # start year <int>
   average refit cost: 11000 # cost/refit <float>
   res model data: IMPORT
 
 community buildings:
+  enabled: False
   lifetime: ABSOLUTE DEFAULT # number years <int>  
   start year: ABSOLUTE DEFAULT # start year <int>
   average refit cost: 7.00 # cost/sqft. <float>
@@ -45,6 +47,7 @@ community buildings:
   com building estimates: IMPORT
 
 water wastewater:
+  enabled: False
   lifetime:  ABSOLUTE DEFAULT # number years <int>  
   start year:  ABSOLUTE DEFAULT # start year <int>
   audit cost: 10000 # price <float> (ex. 10000)
@@ -62,6 +65,7 @@ water wastewater:
     False: 1.0 # precent as decimal <float> 
 
 #interties:
+#  enabled: False
 #  lifetime : ABSOLUTE DEFAULT # number years <int> 
 #  start year : ABSOLUTE DEFAULT # start year <int>
 #  phase: ABSOLUTE DEFAULT # project phase <string> 

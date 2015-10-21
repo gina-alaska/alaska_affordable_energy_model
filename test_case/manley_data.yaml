@@ -18,20 +18,24 @@ forecast:
   end year: 2040 # end year <int>
 
 residential buildings: 
+  enabled: True
   lifetime: 15 # number years <int>  
   start year: 2015 # start year <int>
 
 community buildings:
+  enabled: True
   lifetime: 10 # number years <int>  
   start year: 2015 # start year <int>
 
 water wastewater:
+  enabled: True
   lifetime: 15 # number years <int>  
   start year: 2015 # start year <int>
   system type: Haul # system type <string> 
   energy use known: False # enegry use available <bool> auto check this?
 
 #interties:
+#  enabled: False
 #  lifetime : 20 # number years <int> 
 #  start year : 2016 # start year <int>
 #  phase: Recon # project phase <string> 
