@@ -190,18 +190,6 @@ def test (config_file = "../test_case/manley_driver_config.yaml"):
     test the driver with manley data
     """
     model, out_dir = run_model(os.path.abspath(config_file))
-
-    df = DataFrame( {"pop": model.fc.population,
-                     "HH" : model.fc.households,
-                     "kWh consumed" : model.fc.consumption,
-                     "kWh generation": model.fc.generation,
-                     "avg. kW": model.fc.average_kW,
-                     "res HF": model.fc.res_HF,
-                     "com HF": model.fc.com_HF,
-                     "ww HF": model.fc.www_HF,
-                     "total HF": model.fc.total_HF,}, 
-              np.array(range(len(model.fc.population))) + model.fc.start_year)
-    
     
     df = read_csv(out_dir+"forecast.csv" , index_col=0, header=0)
     base_df = read_csv(out_dir+"base_forecast.csv" , index_col=0, header=0)
