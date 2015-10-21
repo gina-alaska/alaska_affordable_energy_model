@@ -251,7 +251,9 @@ class ResidentialBuildings(AnnualSavings):
         self.annual_heating_savings = self.baseline_HF_cost - \
                                       self.refit_HF_cost
         
-        
+
+component = ResidentialBuildings
+
 def test ():
     """
     tests the class using the manley data.

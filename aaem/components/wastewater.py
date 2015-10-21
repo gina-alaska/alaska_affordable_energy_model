@@ -300,7 +300,8 @@ class WaterWastewaterSystems (AnnualSavings):
         print ""
         print "Capital Costs: $" + "{0:.2f}".format(round(self.capital_costs,2))
        
-        
+component = WaterWastewaterSystems
+    
 def test ():
     """
     tests the class using the manley data.

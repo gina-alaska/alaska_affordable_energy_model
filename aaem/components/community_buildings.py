@@ -328,7 +328,8 @@ class CommunityBuildings (AnnualSavings):
                                        self.cd['heating fuel premium'])
         
     
-        
+component = CommunityBuildings
+
 def test ():
     """
     tests the class using the manley data.

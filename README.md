@@ -78,7 +78,7 @@ the individual component test don't take any arguments and return the model comp
 To run the manley test do the following. A pandas DataFrame(just a mock of the table in the forecast tab) is returned along with the model components as a tuple. 
     
     >>> import driver
-    >>> df, model_componets = driver.test()
+    >>> df, model = driver.test()
     >>> print df
        HH     avg. kW       com HF    kWh consumed  kWh generation  \
        2014   56   50.719736      0.00000   390543.996100          444000   
@@ -86,6 +86,17 @@ To run the manley test do the following. A pandas DataFrame(just a mock of the t
        2016   61   55.182768  41716.39827   424909.517503          483000   
        ...
 
-To run another community
+To run another community, create a config file and run
   
-    >>> df, model_componets = driver.test("path relatative to project root/file.yaml")
+    >>> model, out_dir = driver.run_model(<config file>)
+
+
+example config 
+
+
+    |------ config_example.yaml -------------
+    overrides: # a path (ex:"..test_case/manley_data.yaml")
+    defaults: # blank or a path
+    output directory path: # a path
+    output directory suffix: TIMESTAMP # TIMESTAMP|NONE|<string>
+    -------------------------------------    

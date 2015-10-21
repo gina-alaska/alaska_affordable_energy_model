@@ -95,8 +95,8 @@ class CommunityData (object):
         cwd = os.path.dirname(os.getcwd())
         
         absolutes = os.path.join("absolute_defaults.yaml")
-        defaults = os.path.join(cwd,defaults_file)
-        overrides = os.path.join(cwd,community_file)
+        defaults = defaults_file
+        overrides = community_file
         
         
         absolute_defaults = self.read_config(absolutes)

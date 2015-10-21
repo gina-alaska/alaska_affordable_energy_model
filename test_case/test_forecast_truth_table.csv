@@ -1,4 +1,4 @@
-,pop,HH,kWh consumed,kWh generation,avg. kW,res HF,com HF,ww HF,total HF
+year,pop,HH,kWh consumed,kWh generation,avg. kW,res HF,com HF,ww HF,total HF
 2014,True,True,True,True,True,True,True,True,True
 2015,True,True,True,True,True,True,True,True,True
 2016,True,True,True,True,True,True,True,True,True
