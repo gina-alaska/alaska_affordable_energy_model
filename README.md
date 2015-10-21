@@ -86,7 +86,7 @@ To run the manley test do the following. A pandas DataFrame(just a mock of the t
        2016   61   55.182768  41716.39827   424909.517503          483000   
        ...
 
-To run another community
+To run another community, create a config file and run
   
     >>> model, out_dir = driver.run_model(<config file>)
 
