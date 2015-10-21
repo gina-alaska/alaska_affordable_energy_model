@@ -105,13 +105,23 @@ class Driver (object):
     
     def save_forecast_output (self, directory):
         """
-        
+        save the forecast output:
+        pre:
+            forecast.save_forecast preconditions are met.
+        post: 
+            the forecast is saved as a csv file
         """
         self.fc.save_forecast(directory+"forecast.csv")
     
     def save_input_files (self, directory):
-        """ Function doc """
-        self.cd.save_model_inputs(directory+"config_uesd.yaml")
+        """ 
+        save the config used
+        pre:
+            model needs to have been run
+        post:
+            the nputs used for each component are saved
+        """
+        self.cd.save_model_inputs(directory+"config_used.yaml")
         
 
 
@@ -179,7 +189,6 @@ def test (config_file = "../test_case/manley_driver_config.yaml"):
     """
     test the driver with manley data
     """
-    
     model, out_dir = run_model(os.path.abspath(config_file))
 
     df = DataFrame( {"pop": model.fc.population,
