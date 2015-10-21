@@ -90,7 +90,9 @@ To run another community
   
     >>> model, out_dir = driver.Driver("path to config file")
 
-    |------ config example.yaml -------------
+
+example config 
+    |------ config_example.yaml -------------
     overrides: # a path (ex:"..test_case/manley_data.yaml")
     defaults: # blank or a path
     output directory path: # a path
