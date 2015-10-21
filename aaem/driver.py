@@ -67,7 +67,20 @@ class Driver (object):
             component.run()
             self.comps_used[comp] = component
         
-        
+    def update_forecast (self):
+        """
+        update the forecast totals
+        pre:
+            residential buildings,community buildings, and water and wastewater
+        components need to have been run
+        post:
+            the forecast totals are up to date
+        """
+        self.fc.forecast_consumption()
+        self.fc.forecast_generation()
+        self.fc.forecast_average_kW()
+        self.fc.calc_total_HF_forecast()
+    
     def get_component (self, comp_name):
         """
         import a component
@@ -91,7 +104,9 @@ class Driver (object):
             self.comps_used[comp].save_csv_outputs(directory + "model_outputs/")
     
     def save_forecast_output (self, directory):
-        """ Function doc """
+        """
+        
+        """
         self.fc.save_forecast(directory+"forecast.csv")
     
     def save_input_files (self, directory):
@@ -151,6 +166,7 @@ def run_model (config_file):
     model = Driver(overrides, defaults)
     model.load_comp_lib()
     model.run_components()
+    model.update_forecast()
     # save functionality needs to be written at component level
     #~ model.save_components_output(out_dir)
     #~ model.save_forecast_output(out_dir)
@@ -161,13 +177,11 @@ def run_model (config_file):
 
 def test (config_file = "../test_case/manley_driver_config.yaml"):
     """
+    test the driver with manley data
     """
     
     model, out_dir = run_model(os.path.abspath(config_file))
-    model.fc.forecast_consumption()
-    model.fc.forecast_generation()
-    model.fc.forecast_average_kW()
-    model.fc.calc_total_HF_forecast()
+
     df = DataFrame( {"pop": model.fc.population,
                      "HH" : model.fc.households,
                      "kWh consumed" : model.fc.consumption,
