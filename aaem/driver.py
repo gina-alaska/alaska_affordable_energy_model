@@ -92,7 +92,7 @@ class Driver (object):
     
     def save_forecast_output (self, directory):
         """ Function doc """
-        pass
+        self.fc.save_forecast(directory+"forecast.csv")
     
     def save_input_files (self, directory):
         """ Function doc """
@@ -147,6 +147,7 @@ def run_model (config_file):
     model.run_components()
     # save functionality needs to be written at component level
     #~ model.save_components_output(out_dir)
+    #~ model.save_forecast_output(out_dir)
     #~ model.save_input_files(out_dir)
     
     
