@@ -16,6 +16,7 @@ community buildings:
   com benchmark data: IMPORT
   com building estimates: IMPORT
   com num buildings: IMPORT
+  enabled: true
   lifetime: 10
   start year: 2015
 construction multipliers:
@@ -34,6 +35,7 @@ forecast:
   start year: 2014
 residential buildings:
   average refit cost: 11000
+  enabled: true
   lifetime: 15
   res model data: IMPORT
   start year: 2015
@@ -42,6 +44,7 @@ water wastewater:
   audit preformed: false
   average refit cost: 360.0
   collected data: IMPORT
+  enabled: true
   energy use known: false
   heat recovery multiplier:
     false: 1.0
