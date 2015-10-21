@@ -179,7 +179,7 @@ def run_model (config_file):
     model.update_forecast()
     # save functionality needs to be written at component level
     #~ model.save_components_output(out_dir)
-    #~ model.save_forecast_output(out_dir)
+    model.save_forecast_output(out_dir)
     model.save_input_files(out_dir)
     return model, out_dir
 
@@ -201,13 +201,9 @@ def test (config_file = "../test_case/manley_driver_config.yaml"):
                      "ww HF": model.fc.www_HF,
                      "total HF": model.fc.total_HF,}, 
               np.array(range(len(model.fc.population))) + model.fc.start_year)
-    df.to_csv(out_dir+"test_forecast.csv",columns =["pop","HH","kWh consumed",
-                                                "kWh generation","avg. kW",
-                                                "res HF", "com HF","ww HF",
-                                                "total HF"], index_label="year")
     
     
-    df = read_csv(out_dir+"test_forecast.csv" , index_col=0, header=0)
+    df = read_csv(out_dir+"forecast.csv" , index_col=0, header=0)
     base_df = read_csv(out_dir+"base_forecast.csv" , index_col=0, header=0)
 
     
