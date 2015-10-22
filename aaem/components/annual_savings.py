@@ -253,6 +253,10 @@ class AnnualSavings (object):
     def save_electric_csv (self, directory):
         """
         save electric for cast values
+        pre:
+            directory should exist
+        post:
+            <comp_name>_electric_forecast.csv is saved
         """
         years = np.array(range(self.project_life)) + self.start_year
         base_cost = self.get_base_kWh_cost()
@@ -282,7 +286,11 @@ class AnnualSavings (object):
 
     def save_heating_csv (self, directory):
         """
-        save electric for cast values
+        save heating for cast values
+        pre:
+            directory should exist
+        post:
+            <comp_name>_heating_forecast.csv is saved
         """
         years = np.array(range(self.project_life)) + self.start_year
         base_cost = self.get_base_HF_cost()
@@ -313,6 +321,10 @@ class AnnualSavings (object):
     def save_financial_csv (self, directory):
         """
         save finical csv
+        pre:
+            directory should exist
+        post:
+            <comp_name>_financial_forecast.csv is saved
         """
         years = np.array(range(self.project_life)) + self.start_year
         df = DataFrame({"capital cost": self.get_capital_costs(),
