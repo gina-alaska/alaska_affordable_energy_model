@@ -83,9 +83,9 @@ class CommunityBuildings (AnnualSavings):
             the model is run and the output values are available
         """
         self.calc_refit_values()
-        #~ print self.refit_pre_HF_total
+        #~ print self.baseline_HF_consumption
         self.pre_retrofit_HF_use = np.zeros(self.project_life) + \
-                                                    self.refit_pre_HF_total 
+                                                    self.baseline_HF_consumption 
                                                     
         
         self.calc_post_refit_use()
@@ -201,7 +201,7 @@ class CommunityBuildings (AnnualSavings):
         
             # multiple building types 
 
-        self.refit_pre_HF_total = self.benchmark_HF + self.additional_HF
+        self.baseline_HF_consumption = self.benchmark_HF + self.additional_HF
 
                 
         
@@ -283,7 +283,7 @@ class CommunityBuildings (AnnualSavings):
         refit(float)
             same  for self.refit_post_HF_total but with HF
         """
-        self.refit_post_HF_total = self.refit_pre_HF_total - \
+        self.refit_post_HF_total = self.baseline_HF_consumption - \
                                                 self.refit_savings_HF_total
         self.refit_post_kWh_total = self.refit_pre_kWh_total - \
                                                 self.refit_savings_kWh_total
@@ -347,7 +347,7 @@ def test ():
     cb.run()
     print "total sq. ft to retrofit: " + str(round(cb.refit_sqft_total,0))
     print "kWh/yr pre: " + str(round(cb.refit_pre_kWh_total,0))
-    print "HF/yr pre: " + str(round(cb.refit_pre_HF_total,0))
+    print "HF/yr pre: " + str(round(cb.baseline_HF_consumption,0))
     print "kWh/yr savings: " + str(round(cb.refit_savings_kWh_total,2))
     print "HF/yr savings: " + str(round(cb.refit_savings_HF_total,0))
     print "kWh/yr post: " + str(round(cb.refit_post_kWh_total,0))

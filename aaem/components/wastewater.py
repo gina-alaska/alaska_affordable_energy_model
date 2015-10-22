@@ -122,7 +122,7 @@ class WaterWastewaterSystems (AnnualSavings):
         self.base_heating_savings = np.zeros(self.project_life)
         fuel_cost = self.diesel_prices + self.cd['heating fuel premium'] #$/gal
         # $/gal * gal/yr = $/year 
-        self.base_heating_savings += self.heating_fuel * fuel_cost #$/yr
+        self.base_heating_savings += self.baseline_HF_consumption * fuel_cost #$/yr
         
     def run (self):
         """
@@ -147,7 +147,7 @@ class WaterWastewaterSystems (AnnualSavings):
         self.calc_capital_costs()
     
         self.calc_post_savings_values()
-        self.forecast.set_www_HF_fuel_forecast(self.heating_fuel, 
+        self.forecast.set_www_HF_fuel_forecast(self.baseline_HF_consumption, 
                                                self.start_year)
         
         
@@ -197,19 +197,19 @@ class WaterWastewaterSystems (AnnualSavings):
             "w&ww_energy_use_known" is a boolean
             hr_coeff should be a number (0 < hr_coeff <= 1)?
         post:
-            self.heating_fuel will be a number
+            self.baseline_HF_consumption will be a number
         """
         if self.comp_specs["energy use known"]:
-            self.electricity = self.comp_specs["collected data"]['HF used']
+            self.baseline_HF_consumption = self.comp_specs["collected data"]['HF used']
         else: #if not self.cd["energy_use_known"]:
-            self.heating_fuel = \
+            self.baseline_HF_consumption = \
    (self.hdd * self.comp_specs['ww assumptions']['HDD HF'][self.system_type] + \
    self.pop * self.comp_specs['ww assumptions']['pop HF'][self.system_type]) * \
                                  hr_coeff 
             # update for 9/28 spread sheet 
             # forcast needs an update to get a range of years 
             pop_fc = self.forecast.get_population(self.start_year,self.end_year)
-            self.heating_fuel += (pop_fc - self.pop) * \
+            self.baseline_HF_consumption += (pop_fc - self.pop) * \
                  self.comp_specs['ww assumptions']['pop HF'][self.system_type]
 
     def calc_savings_electricity (self, coeff = .25):
@@ -237,7 +237,7 @@ class WaterWastewaterSystems (AnnualSavings):
         pre:
             "w&ww_audit_savings_hf" is a number
             "w&ww_audit_preformed" is a boolean
-            self.heating_fuel should be calculated 
+            self.baseline_HF_consumption should be calculated 
             coeff should be a number
         post:
             self.savings_heating_fuel will be a number (gal)
@@ -246,7 +246,7 @@ class WaterWastewaterSystems (AnnualSavings):
             self.savings_electricity = \
                     self.cdself.comp_specs["collected data"]['HF w/Retro']
         else: # if not self.comp_sepcs["audit preformed"]:
-            self.savings_heating_fuel = self.heating_fuel * coeff
+            self.savings_heating_fuel = self.baseline_HF_consumption * coeff
             
     def calc_capital_costs (self, cost_per_person = 450):
         """
@@ -272,7 +272,7 @@ class WaterWastewaterSystems (AnnualSavings):
         electricity consumption 
         
         pre:
-            self.electricity, self.savings_electricty, self.heating_fuel, and
+            self.electricity, self.savings_electricty, self.baseline_HF_consumption, and
         self.savings_heating_fuel are numbers(kWh, kWh, Gallons HF, Gallons HF)
         post:
             post_savings_electricity is a number (kWh)
@@ -280,7 +280,7 @@ class WaterWastewaterSystems (AnnualSavings):
         """
         self.post_savings_electricity = self.electricity - \
                                         self.savings_electricity
-        self.post_savings_heating_fuel = self.heating_fuel - \
+        self.post_savings_heating_fuel = self.baseline_HF_consumption - \
                                          self.savings_heating_fuel
         
     def print_savings_chart (self):
@@ -294,7 +294,7 @@ class WaterWastewaterSystems (AnnualSavings):
         print "kWH\t" + str(int(round(self.electricity_init))) + "\t\t" + \
               str(int(round(self.post_savings_electricity))) + "\t\t" + \
               str(int(round(self.savings_electricity)))
-        print "kWH\t" + str(int(round(self.heating_fuel))) + "\t\t" +\
+        print "kWH\t" + str(int(round(self.baseline_HF_consumption))) + "\t\t" +\
               str(int(round(self.post_savings_heating_fuel))) + "\t\t" +\
               str(int(round(self.savings_heating_fuel)))
               

@@ -163,7 +163,10 @@ class AnnualSavings (object):
     ## Heating
     def get_base_HF_use (self): # ex: eff(res) G89-V89
         """ returns HF use array (baseline) """
-        return self.get_nan_range()
+        try:
+            return self.baseline_HF_consumption
+        except:
+            return self.get_nan_range()
         
     def get_refit_HF_use (self): # ex: eff(res) G81-V81
         """ returns HF use array (refit) """
