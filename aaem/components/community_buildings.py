@@ -59,6 +59,7 @@ class CommunityBuildings (AnnualSavings):
         """
         self.cd = community_data.get_section('community')
         self.comp_specs = community_data.get_section('community buildings')
+        self.component_name = 'community buildings'
         self.forecast = forecast
         self.refit_cost_rate = self.comp_specs['average refit cost'] * \
       community_data.get_section('construction multipliers')[self.cd["region"]]
@@ -82,14 +83,14 @@ class CommunityBuildings (AnnualSavings):
             the model is run and the output values are available
         """
         self.calc_refit_values()
-        #~ print self.refit_pre_HF_total
+        #~ print self.baseline_HF_consumption
         self.pre_retrofit_HF_use = np.zeros(self.project_life) + \
-                                                    self.refit_pre_HF_total 
+                                                    self.baseline_HF_consumption 
                                                     
         
         self.calc_post_refit_use()
         self.post_retrofit_HF_use = np.zeros(self.project_life) + \
-                                                    self.refit_post_HF_total   
+                                                    self.refit_HF_consumption   
         
         self.forecast.set_com_HF_fuel_forecast(self.pre_retrofit_HF_use, 
                                                 self.start_year)
@@ -200,7 +201,7 @@ class CommunityBuildings (AnnualSavings):
         
             # multiple building types 
 
-        self.refit_pre_HF_total = self.benchmark_HF + self.additional_HF
+        self.baseline_HF_consumption = self.benchmark_HF + self.additional_HF
 
                 
         
@@ -211,7 +212,7 @@ class CommunityBuildings (AnnualSavings):
         pre:
             tbd
         post: 
-            self.refit_pre_kWh_total, self.benchmark_kWh, 
+            self.baseline_kWh_consumption, self.benchmark_kWh, 
         self.additional_kWh are floating-point kWh values
         """
         #~ pop = self.cd['population'] 
@@ -233,7 +234,7 @@ class CommunityBuildings (AnnualSavings):
         self.additional_kWh = self.additional_sqft * kWh_sqft_yr
         
             # multiple building types 
-        self.refit_pre_kWh_total = self.benchmark_kWh + self.additional_kWh
+        self.baseline_kWh_consumption = self.benchmark_kWh + self.additional_kWh
     
     def calc_refit_savings_HF (self):
         """ 
@@ -280,11 +281,11 @@ class CommunityBuildings (AnnualSavings):
         post: 
             refit_pre_kWh_total is the total number of kWh used after a 
         refit(float)
-            same  for self.refit_post_HF_total but with HF
+            same  for self.refit_HF_consumption but with HF
         """
-        self.refit_post_HF_total = self.refit_pre_HF_total - \
+        self.refit_HF_consumption = self.baseline_HF_consumption - \
                                                 self.refit_savings_HF_total
-        self.refit_post_kWh_total = self.refit_pre_kWh_total - \
+        self.refit_kWh_consumption = self.baseline_kWh_consumption - \
                                                 self.refit_savings_kWh_total
     def calc_capital_costs (self):
         """
@@ -306,10 +307,14 @@ class CommunityBuildings (AnnualSavings):
         post:
             self.annual_electric_savings containt the projected savings
         """
+        elec_price = self.cd["elec non-fuel cost"]+\
+                    self.diesel_prices/self.cd['diesel generation efficiency']
+        self.baseline_kWh_cost = self.baseline_kWh_consumption * elec_price
+                    
+        self.refit_kWh_cost = self.refit_kWh_consumption * elec_price
+        
         self.annual_electric_savings = np.zeros(self.project_life) + \
-                                       self.refit_savings_kWh_total* \
-                            (self.cd["elec non-fuel cost"]+\
-                    self.diesel_prices/self.cd['diesel generation efficiency'])
+                                       self.refit_savings_kWh_total* elec_price
         
     def calc_annual_heating_savings (self):
         """
@@ -322,10 +327,13 @@ class CommunityBuildings (AnnualSavings):
         post:
             self.annual_heating_savings containt the projected savings
         """
+        fuel_price = (self.diesel_prices + self.cd['heating fuel premium'])
+        self.baseline_HF_cost = self.baseline_HF_consumption * fuel_price
+                    
+        self.refit_HF_cost = self.refit_HF_consumption * fuel_price
+        
         self.annual_heating_savings = np.zeros(self.project_life) + \
-                                       self.refit_savings_HF_total* \
-                                       (self.diesel_prices + \
-                                       self.cd['heating fuel premium'])
+                                       self.refit_savings_HF_total* (fuel_price)
         
     
 component = CommunityBuildings
@@ -346,7 +354,7 @@ def test ():
     cb.run()
     print "total sq. ft to retrofit: " + str(round(cb.refit_sqft_total,0))
     print "kWh/yr pre: " + str(round(cb.refit_pre_kWh_total,0))
-    print "HF/yr pre: " + str(round(cb.refit_pre_HF_total,0))
+    print "HF/yr pre: " + str(round(cb.baseline_HF_consumption,0))
     print "kWh/yr savings: " + str(round(cb.refit_savings_kWh_total,2))
     print "HF/yr savings: " + str(round(cb.refit_savings_HF_total,0))
     print "kWh/yr post: " + str(round(cb.refit_post_kWh_total,0))
