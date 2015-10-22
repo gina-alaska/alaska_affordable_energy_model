@@ -137,9 +137,7 @@ class CommunityBuildings (AnnualSavings):
         """
         self.benchmark_sqft = \
             np.sum(self.comp_specs['com benchmark data'][['Total Square Feet']].values) 
-        #~ pop = self.cd['population'] 
-        #TODO:(2) do something with population
-        pop = self.forecast.electricty_actuals['population'][7] 
+        pop = self.forecast.base_pop
         if pop < 300:
             key = "Average sf<300"
         elif pop < 1200:
@@ -180,9 +178,7 @@ class CommunityBuildings (AnnualSavings):
             self.refit_pre_hf_total, self.benchmark_hf, self.additional_hf are
         floating-point HF values
         """
-        #~ pop = self.cd['population'] 
-        #TODO:(2) do something with population
-        pop = self.forecast.electricty_actuals['population'][7]  
+        pop = self.forecast.base_pop 
         if pop < 300:
             key = "Av Gal/sf<300"
         elif pop < 1200:
@@ -215,9 +211,7 @@ class CommunityBuildings (AnnualSavings):
             self.baseline_kWh_consumption, self.benchmark_kWh, 
         self.additional_kWh are floating-point kWh values
         """
-        #~ pop = self.cd['population'] 
-        #TODO:(2) do something with population
-        pop = self.forecast.electricty_actuals['population'][7]  
+        pop = self.forecast.base_pop 
         if pop < 300:
             key = "Avg kWh/sf<300"
         elif pop < 1200:

@@ -31,7 +31,9 @@ construction multipliers:
   Southeast: 1.15
   Yukon-Koyukuk/Upper Tanana: 1.4
 forecast:
+  base year: 2010
   end year: 2040
+  input: ../test_case/manley_forecast_input.csv
   start year: 2014
 residential buildings:
   average refit cost: 11000
