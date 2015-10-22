@@ -98,12 +98,14 @@ class AnnualSavings (object):
         
     def get_diesel_prices (self):
         """
+        get the diesel prices
+        
+        pre:
+            community name should be in the community data.
+        post:
+            self.diesel prices has prices for the project life
         """
-        #TODO:(3) rejigger this
-        try:
-            prices = DieselProjections(self.cd["name"])
-        except KeyError:
-            prices = DieselProjections(self.cd["community"])
+        prices = DieselProjections(self.cd["name"])
         self.diesel_prices = prices.get_projected_prices(self.start_year,
                                                          self.end_year)
     
