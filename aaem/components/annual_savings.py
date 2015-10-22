@@ -170,75 +170,114 @@ class AnnualSavings (object):
         
     def get_refit_HF_use (self): # ex: eff(res) G81-V81
         """ returns HF use array (refit) """
-        return self.get_nan_range()
+        try:
+            return self.refit_HF_consumption
+        except:
+            return self.get_nan_range()
         
     def get_base_HF_cost (self): # ex: eff(res) G93-V93
         """ returns HF cost array (baseline) """
-        return self.get_nan_range()
+        try:
+            return self.baseline_HF_cost
+        except:
+            return self.get_nan_range()
         
     def get_refit_HF_cost (self): # ex: eff(res) G86-V86
         """ returns HF cost array (refit) """
-        return self.get_nan_range()
+        try:
+            return self.refit_HF_cost
+        except:
+            return self.get_nan_range()
 
     def get_fuel_price (self): # ex: eff(res) G84-V84 or G90-V90
         """ get the diesel fuel price used"""
-        return self.get_nan_range()
+        try:
+            return self.diesel_prices
+        except:
+            return self.get_nan_range()
 
         
     ## Electric 
     def get_base_kWh_use (self): # ex: eff(res) G89-V89
         """ returns kWh use array (baseline) """
-        return self.get_nan_range()
+        try:
+            return self.baseline_kWh_consumption
+        except:
+            return self.get_nan_range()
         
     def get_refit_kWh_use (self): # ex: eff(res) G73-V73
         """ returns kWh use array (refit) """
-        return self.get_nan_range()
+        try:
+            return self.refit_kWh_consumption
+        except:
+            return self.get_nan_range()
     
     def get_base_kWh_cost (self): # ex: eff(res) G75-V75
         """ returns kWh cost array (baseline) """
-        return self.get_nan_range()
+        try:
+            return self.baseline_kWh_cost
+        except:
+            return self.get_nan_range()
         
     def get_refit_kWh_cost (self): # ex: eff(res) G70-V70
         """ returns kWh cost array (refit) """
-        return self.get_nan_range()
+        try:
+            return self.refit_kWh_cost
+        except:
+            return self.get_nan_range()
         
     ## annual savings
     def get_electric_savings_costs (self): # ex: eff(res) G57-V57 or G75-V75
         """ returns kWh savings array (base - refit) """
-        return self.get_nan_range()
+        try:
+            return self.annual_electric_savings
+        except:
+            return self.get_nan_range()
         
     def get_heating_savings_costs (self): # ex: eff(res) G58-V58 or G94-V94
         """ returns HF savings array (base - refit) """ 
-        return self.get_nan_range()
+        try:
+            return self.annual_heating_savings
+        except:
+            return self.get_nan_range()
         
     def get_total_savings_costs (self): # ex: eff(res) G59-V59 
         """ returns total savings array """
-        return self.get_nan_range()
+        try:
+            return self.annual_total_savings
+        except:
+            return self.get_nan_range()
     
     def get_capital_costs (self): # ex: eff(res) G55-V55
         """ return capital costs array """ 
-        return self.get_nan_range()
+        try:
+            return self.annual_costs
+        except:
+            return self.get_nan_range()
     
     def get_net_beneft (self): # ex: eff(res) G62-V62
         """ return net benefit array """
-        return self.get_nan_range()
+        try:
+            return self.annual_net_benefit
+        except:
+            return self.get_nan_range()
         
     ## NPVs
     def get_NPV_benefits (self): # ex: eff(res) C13
         """ return NPV benefits (float) """
-        return 0
+        return self.benefit_npv
     
     def get_NPV_costs (self): # ex: eff(res) C14
         """ return NPV costs (float) """
-        return 0
+        return self.cost_npv
     
     def get_BC_ratio (self): # ex: eff(res) C15
         """ return NPV benefit/cost ratio (float) """
-        return 0
+        return self.benefit_cost_ratio
         
     def get_NPV_net_benefit (self): # ex: eff(res) C16
         """ return NPV net benefit (float) """
-        return 0
+        return self.net_npv
         
     ## save functions
     def save_csv_outputs (self, directory):
