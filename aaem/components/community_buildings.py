@@ -90,7 +90,7 @@ class CommunityBuildings (AnnualSavings):
         
         self.calc_post_refit_use()
         self.post_retrofit_HF_use = np.zeros(self.project_life) + \
-                                                    self.refit_post_HF_total   
+                                                    self.refit_HF_consumption   
         
         self.forecast.set_com_HF_fuel_forecast(self.pre_retrofit_HF_use, 
                                                 self.start_year)
@@ -281,9 +281,9 @@ class CommunityBuildings (AnnualSavings):
         post: 
             refit_pre_kWh_total is the total number of kWh used after a 
         refit(float)
-            same  for self.refit_post_HF_total but with HF
+            same  for self.refit_HF_consumption but with HF
         """
-        self.refit_post_HF_total = self.baseline_HF_consumption - \
+        self.refit_HF_consumption = self.baseline_HF_consumption - \
                                                 self.refit_savings_HF_total
         self.refit_post_kWh_total = self.refit_pre_kWh_total - \
                                                 self.refit_savings_kWh_total
@@ -323,10 +323,13 @@ class CommunityBuildings (AnnualSavings):
         post:
             self.annual_heating_savings containt the projected savings
         """
+        fuel_price = (self.diesel_prices + self.cd['heating fuel premium'])
+        self.baseline_HF_cost = self.baseline_HF_consumption * fuel_price
+                    
+        self.refit_HF_cost = self.refit_HF_consumption * fuel_price
+        
         self.annual_heating_savings = np.zeros(self.project_life) + \
-                                       self.refit_savings_HF_total* \
-                                       (self.diesel_prices + \
-                                       self.cd['heating fuel premium'])
+                                       self.refit_savings_HF_total* (fuel_price)
         
     
 component = CommunityBuildings
