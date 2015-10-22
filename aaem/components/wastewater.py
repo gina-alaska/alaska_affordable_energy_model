@@ -91,8 +91,8 @@ class WaterWastewaterSystems (AnnualSavings):
         self.calc_base_heating_savings()
         
         # $ / yr
-        self.annual_heating_savings = self.base_heating_savings - \
-                                            self.proposed_heating_savings
+        self.annual_heating_savings = self.baseline_HF_cost - \
+                                            self.refit_HF_cost
         
     def calc_proposed_heating_savings (self):
         """
@@ -100,14 +100,14 @@ class WaterWastewaterSystems (AnnualSavings):
         pre:
             TODO: write this 
         post:
-           self.proposed_heating_savings is an np.array of $/year values 
+           self.refit_HF_cost is an np.array of $/year values 
         """
-        self.proposed_heating_savings = np.zeros(self.project_life)
+        self.refit_HF_cost = np.zeros(self.project_life)
         fuel_cost = self.diesel_prices + self.cd['heating fuel premium']# $/gal
         #~ print fuel_cost
         # are there ever o&m costs
         # $/gal * gal/yr = $/year 
-        self.proposed_heating_savings += self.post_savings_heating_fuel * \
+        self.refit_HF_cost += self.refit_HF_consumption * \
                                                                     fuel_cost
         
     
@@ -117,12 +117,12 @@ class WaterWastewaterSystems (AnnualSavings):
         pre:
             TODO: write this 
         post:
-           self.base_heating_savings is an np.array of $/year values 
+           self.baseline_HF_cost is an np.array of $/year values 
         """
-        self.base_heating_savings = np.zeros(self.project_life)
+        self.baseline_HF_cost = np.zeros(self.project_life)
         fuel_cost = self.diesel_prices + self.cd['heating fuel premium'] #$/gal
         # $/gal * gal/yr = $/year 
-        self.base_heating_savings += self.baseline_HF_consumption * fuel_cost #$/yr
+        self.baseline_HF_cost += self.baseline_HF_consumption * fuel_cost #$/yr
         
     def run (self):
         """
@@ -280,26 +280,9 @@ class WaterWastewaterSystems (AnnualSavings):
         """
         self.post_savings_electricity = self.electricity - \
                                         self.savings_electricity
-        self.post_savings_heating_fuel = self.baseline_HF_consumption - \
+        self.refit_HF_consumption = self.baseline_HF_consumption - \
                                          self.savings_heating_fuel
-        
-    def print_savings_chart (self):
-        """
-            print the savings chart to see the values in a way similar to  the 
-        spread sheet.
-        pre:
-            the "estimates" should be numbers calling self.run() will do this
-        """
-        print "\tEst. Pre\tEst. Post\tEst. Savings"
-        print "kWH\t" + str(int(round(self.electricity_init))) + "\t\t" + \
-              str(int(round(self.post_savings_electricity))) + "\t\t" + \
-              str(int(round(self.savings_electricity)))
-        print "kWH\t" + str(int(round(self.baseline_HF_consumption))) + "\t\t" +\
-              str(int(round(self.post_savings_heating_fuel))) + "\t\t" +\
-              str(int(round(self.savings_heating_fuel)))
-              
-        print ""
-        print "Capital Costs: $" + "{0:.2f}".format(round(self.capital_costs,2))
+
        
 component = WaterWastewaterSystems
     
