@@ -172,6 +172,8 @@ class Forecast (object):
         while np.isnan(self.electricty_actuals['population'].values[idx]):
             idx -= 1
         last_pop = self.electricty_actuals['population'].values[idx]
+        #~ print last_con
+        #~ print last_pop
         self.consumption = last_con * self.population/ last_pop
         
     def get_consumption (self, start, end = None):

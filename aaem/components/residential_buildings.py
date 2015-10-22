@@ -91,7 +91,7 @@ class ResidentialBuildings(AnnualSavings):
         #  want somthing like pop = self.cd["base pop"]
         # need to up date cd to get it 
         HH =self.res_specs['res model data']['total_occupied']
-        pop = self.forecast.electricty_actuals['population'][7]
+        pop = self.forecast.base_pop
                             
         self.init_HH = int(round(HH*(val / pop)))
         

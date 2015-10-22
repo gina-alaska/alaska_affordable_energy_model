@@ -40,7 +40,7 @@ class WaterWastewaterSystems (AnnualSavings):
         
         self.hdd = self.cd["HDD"]
         #~ self.pop = self.cd["population"]
-        self.pop = self.forecast.electricty_actuals['population'][7]
+        self.pop = self.forecast.base_pop
         self.system_type = self.comp_specs["system type"] 
         self.forecast = forecast
         
@@ -174,7 +174,8 @@ class WaterWastewaterSystems (AnnualSavings):
             self.baseline_kWh_consumption will be a number
         """
         if self.comp_specs["energy use known"]:
-            self.baseline_kWh_consumption = self.comp_specs["collected data"]['kWh/yr']
+            self.baseline_kWh_consumption = self.comp_specs["collected data"]\
+                                                            ['kWh/yr']
         else: #if not self.cd["w&ww_energy_use_known"]:
             self.baseline_kWh_consumption = \
 (self.hdd * self.comp_specs['ww assumptions']['HDD kWh'][self.system_type] + \
