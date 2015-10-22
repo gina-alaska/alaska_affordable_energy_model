@@ -100,6 +100,12 @@ class Driver (object):
             for each component in self.comps_used the electric, heating, and
         financial outputs are saved as csv files 
         """
+        
+        try:
+            os.makedirs(directory + "model_outputs/")
+        except OSError:
+            pass
+    
         for comp in self.comps_used:
             self.comps_used[comp].save_csv_outputs(directory + "model_outputs/")
     
@@ -178,7 +184,7 @@ def run_model (config_file):
     model.run_components()
     model.update_forecast()
     # save functionality needs to be written at component level
-    #~ model.save_components_output(out_dir)
+    model.save_components_output(out_dir)
     model.save_forecast_output(out_dir)
     model.save_input_files(out_dir)
     return model, out_dir
