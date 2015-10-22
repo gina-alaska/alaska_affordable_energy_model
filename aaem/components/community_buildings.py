@@ -212,7 +212,7 @@ class CommunityBuildings (AnnualSavings):
         pre:
             tbd
         post: 
-            self.refit_pre_kWh_total, self.benchmark_kWh, 
+            self.baseline_kWh_consumption, self.benchmark_kWh, 
         self.additional_kWh are floating-point kWh values
         """
         #~ pop = self.cd['population'] 
@@ -234,7 +234,7 @@ class CommunityBuildings (AnnualSavings):
         self.additional_kWh = self.additional_sqft * kWh_sqft_yr
         
             # multiple building types 
-        self.refit_pre_kWh_total = self.benchmark_kWh + self.additional_kWh
+        self.baseline_kWh_consumption = self.benchmark_kWh + self.additional_kWh
     
     def calc_refit_savings_HF (self):
         """ 
@@ -285,7 +285,7 @@ class CommunityBuildings (AnnualSavings):
         """
         self.refit_HF_consumption = self.baseline_HF_consumption - \
                                                 self.refit_savings_HF_total
-        self.refit_post_kWh_total = self.refit_pre_kWh_total - \
+        self.refit_kWh_consumption = self.baseline_kWh_consumption - \
                                                 self.refit_savings_kWh_total
     def calc_capital_costs (self):
         """
@@ -307,10 +307,14 @@ class CommunityBuildings (AnnualSavings):
         post:
             self.annual_electric_savings containt the projected savings
         """
+        elec_price = self.cd["elec non-fuel cost"]+\
+                    self.diesel_prices/self.cd['diesel generation efficiency']
+        self.baseline_kWh_cost = self.baseline_kWh_consumption * elec_price
+                    
+        self.refit_kWh_cost = self.refit_kWh_consumption * elec_price
+        
         self.annual_electric_savings = np.zeros(self.project_life) + \
-                                       self.refit_savings_kWh_total* \
-                            (self.cd["elec non-fuel cost"]+\
-                    self.diesel_prices/self.cd['diesel generation efficiency'])
+                                       self.refit_savings_kWh_total* elec_price
         
     def calc_annual_heating_savings (self):
         """
