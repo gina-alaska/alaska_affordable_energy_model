@@ -33,7 +33,10 @@ class Forecast (object):
         self.start_year = self.fc_specs["start year"]
         self.end_year = self.fc_specs["end year"]
         self.electricty_actuals =\
-                        read_csv(os.path.abspath(self.fc_specs["input"]))
+                        read_csv(os.path.abspath(self.fc_specs["input"]),
+                        index_col = 0)
+        self.base_pop = self.electricty_actuals['population']\
+                        [self.fc_specs["base year"]]
     
     def get_trend (self, key ):
         """
@@ -138,7 +141,10 @@ class Forecast (object):
         """
         trend = self.get_trend('population')
         self.population = []
-        pop_pre = self.electricty_actuals['population'].values[-3] # TD: update
+        idx = -1
+        while np.isnan(self.electricty_actuals['population'].values[idx]):
+            idx -= 1
+        pop_pre = self.electricty_actuals['population'].values[idx]
         for year in range(self.start_year,self.end_year+1):
             pop = trend*pop_pre
             pop_pre = pop
@@ -157,9 +163,16 @@ class Forecast (object):
         #~ trend = self.get_trend('total')
         #~ self.consumption = np.zeros(len(self.population))
         self.calc_electricity_totals()
-        base_con = self.electricity_totals[-2]*2 # TD: update
-        base_pop = self.electricty_actuals['population'].values[-3]
-        self.consumption = base_con * self.population/ base_pop
+        idx = -1
+        while np.isnan(self.electricity_totals[idx]):
+            idx -= 1
+
+        last_con = self.electricity_totals[idx] 
+        idx = -1
+        while np.isnan(self.electricty_actuals['population'].values[idx]):
+            idx -= 1
+        last_pop = self.electricty_actuals['population'].values[idx]
+        self.consumption = last_con * self.population/ last_pop
         
     def get_consumption (self, start, end = None):
         """
@@ -275,9 +288,7 @@ class Forecast (object):
         """
         forcast # of houselholds
         """
-        #TODO:(2) something about base population
-        pop = self.electricty_actuals['population'][7]
-        peps_per_house = float(pop) / \
+        peps_per_house = float(self.base_pop) / \
     self.cd.get_item('residential buildings','res model data')['total_occupied']
         #~ print peps_per_house
         self.households = np.round(self.population / peps_per_house, 0)
