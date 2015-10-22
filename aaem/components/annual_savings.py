@@ -101,9 +101,9 @@ class AnnualSavings (object):
         """
         #TODO:(3) rejigger this
         try:
-            prices = DieselProjections(2015, self.cd["name"])
+            prices = DieselProjections(self.cd["name"])
         except KeyError:
-            prices = DieselProjections(2015, self.cd["community"])
+            prices = DieselProjections(self.cd["community"])
         self.diesel_prices = prices.get_projected_prices(self.start_year,
                                                          self.end_year)
     
