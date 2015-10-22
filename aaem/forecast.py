@@ -3,37 +3,18 @@ forecast.py
 Ross Spicer
 created: 2015/09/18
 
-    mock up of for cast tab
+    forecast
 """
 import numpy as np
 from community_data import CommunityData
 
 
 from scipy.optimize import curve_fit
-from pandas import DataFrame
+from pandas import DataFrame, read_csv
+import os.path
 
 NAN = float('nan')
 
-# subject to change with the new population forecast 
-#TODO:(1) move to a csv file
-electricty_actuals = {
-    "years":
-        [2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014],
-    "population": # 
-        [71,  75,  76,  82,  76,  81,  85,  89,  94,  116, NAN, NAN],
-    "residential":
-        [124943,125867,121817,115990,112628,110554,
-        110465,124966,164364,209675,93291,NAN],
-    "community":
-        [107254,104899,98198,95902,92973,109814,
-        142871,153216,168710,185798,79853,NAN],
-    "commercial":
-        [3096,5057,5129,5230,4331,5154,4634,8225,4440,5857,3226,NAN],
-    "gov":
-        [8728,9537,15184,13327,13429,17798,16949,14619,12047,18938,10839,NAN],
-    "unbilled":
-        [NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN]
-        }
 
 
 class Forecast (object):
@@ -51,8 +32,8 @@ class Forecast (object):
         self.fc_specs = self.cd.get_section('forecast')
         self.start_year = self.fc_specs["start year"]
         self.end_year = self.fc_specs["end year"]
-        #TODO:(1) 
-        self.electricty_actuals = electricty_actuals
+        self.electricty_actuals =\
+                        read_csv(os.path.abspath(self.fc_specs["input"]))
     
     def get_trend (self, key ):
         """
@@ -97,11 +78,11 @@ class Forecast (object):
             self.electricty_totals is a array of yearly values of total kWh used
         """
         kWh = self.electricty_actuals
-        self.electricity_totals = np.nansum([kWh['residential'],
-                                            kWh['community'],
-                                            kWh['commercial'],
-                                            kWh['gov'],
-                                            kWh['unbilled']
+        self.electricity_totals = np.nansum([kWh['residential'].values,
+                                            kWh['community'].values,
+                                            kWh['commercial'].values,
+                                            kWh['gov'].values,
+                                            kWh['unbilled'].values
                                             ],0)
     
     def get_population (self, start, end = None):
@@ -157,7 +138,7 @@ class Forecast (object):
         """
         trend = self.get_trend('population')
         self.population = []
-        pop_pre = self.electricty_actuals['population'][-3] # TD: update
+        pop_pre = self.electricty_actuals['population'].values[-3] # TD: update
         for year in range(self.start_year,self.end_year+1):
             pop = trend*pop_pre
             pop_pre = pop
@@ -177,7 +158,7 @@ class Forecast (object):
         #~ self.consumption = np.zeros(len(self.population))
         self.calc_electricity_totals()
         base_con = self.electricity_totals[-2]*2 # TD: update
-        base_pop = self.electricty_actuals['population'][-3]
+        base_pop = self.electricty_actuals['population'].values[-3]
         self.consumption = base_con * self.population/ base_pop
         
     def get_consumption (self, start, end = None):
@@ -288,7 +269,7 @@ class Forecast (object):
         ???
         """
         self.average_kW = (np.array(self.consumption)/ 8760.0)\
-                                         /(1-self.cd.get_item('community','line losses')) 
+                                /(1-self.cd.get_item('community','line losses')) 
         
     def forecast_households (self):
         """
@@ -297,7 +278,7 @@ class Forecast (object):
         #TODO:(2) something about base population
         pop = self.electricty_actuals['population'][7]
         peps_per_house = float(pop) / \
-                         self.cd.get_item('residential buildings','res model data')['total_occupied']
+    self.cd.get_item('residential buildings','res model data')['total_occupied']
         #~ print peps_per_house
         self.households = np.round(self.population / peps_per_house, 0)
         
@@ -406,12 +387,8 @@ class Forecast (object):
 
 def test ():
     """ Function doc """
-    manley_data = CommunityData("../data/community_data_template.csv",
-                                "Manley Hot Springs")
+    manley_data = CommunityData("../test_case/manley_data.yaml")
     
-    manley_data.load_input("test_case/data_override.yaml",
-                          "test_case/data_defaults.yaml")
-    manley_data.get_csv_data()
                             
     fc = Forecast(manley_data)
     fc.calc_electricity_totals()

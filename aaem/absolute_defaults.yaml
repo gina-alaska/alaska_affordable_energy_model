@@ -28,6 +28,7 @@ community:
 forecast:
   start year: ABSOLUTE DEFAULT # start year <int>
   end year: ABSOLUTE DEFAULT  # end year <int>
+  input: manley_forecast_input.csv
 
 residential buildings:
   enabled: False
