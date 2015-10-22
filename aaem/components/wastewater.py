@@ -53,7 +53,7 @@ class WaterWastewaterSystems (AnnualSavings):
             self.annual_electric_savings is an np.array of $/year values
         """
         self.calc_base_electric_savings()
-        self.annual_electric_savings = self.base_electric_savings
+        self.annual_electric_savings = self.baseline_kWh_cost
         
     def calc_proposed_electric_savings (self):
         """
@@ -71,12 +71,12 @@ class WaterWastewaterSystems (AnnualSavings):
         pre:
             TODO: write this 
         post:
-           self.base_electric_savings is an np.array of $/year values 
+           self.baseline_kWh_cost is an np.array of $/year values 
         """
-        self.base_electric_savings = np.zeros(self.project_life)
+        self.baseline_kWh_cost = np.zeros(self.project_life)
         # kWh/yr*$/kWh
         cost = self.savings_electricity * self.cd["res non-PCE elec cost"]
-        self.base_electric_savings += cost #$/yr
+        self.baseline_kWh_cost += cost #$/yr
     
     
     def calc_annual_heating_savings (self):
@@ -171,18 +171,18 @@ class WaterWastewaterSystems (AnnualSavings):
             self.system_type should be a ww system type
             "w&ww_energy_use_known" is a boolean
         post:
-            self.electricity will be a number
+            self.baseline_kWh_consumption will be a number
         """
         if self.comp_specs["energy use known"]:
-            self.electricity = self.comp_specs["collected data"]['kWh/yr']
+            self.baseline_kWh_consumption = self.comp_specs["collected data"]['kWh/yr']
         else: #if not self.cd["w&ww_energy_use_known"]:
-            self.electricity = \
+            self.baseline_kWh_consumption = \
 (self.hdd * self.comp_specs['ww assumptions']['HDD kWh'][self.system_type] + \
      self.pop * self.comp_specs['ww assumptions']['pop kWh'][self.system_type])
             # update for 9/28 spread sheet 
             # forcast needs an update to get a range of years 
             self.forecast.forecast_population()
-            self.electricity += (self.forecast.population[1:16] - \
+            self.baseline_kWh_consumption += (self.forecast.population[1:16] - \
                                  self.pop)*\
                  self.comp_specs['ww assumptions']['HDD kWh'][self.system_type]
                             
@@ -219,7 +219,7 @@ class WaterWastewaterSystems (AnnualSavings):
         pre:
             "w&ww_audit_savings_elec" is a number
             "w&ww_audit_preformed" is a bool
-            self.electricity should be calculated 
+            self.baseline_kWh_consumption should be calculated 
             coeff should be a number
         post:
             self.savings_electricity will be a number (kWh)
@@ -228,7 +228,7 @@ class WaterWastewaterSystems (AnnualSavings):
             self.savings_electricity = \
                     self.cdself.comp_specs["collected data"]['kWh/yr w/ retro']
         else: # if not self.comp_sepcs["audit preformed"]:
-            self.savings_electricity = self.electricity * coeff
+            self.savings_electricity = self.baseline_kWh_consumption * coeff
         
     def calc_savings_heating_feul (self, coeff = .35):
         """
@@ -272,13 +272,13 @@ class WaterWastewaterSystems (AnnualSavings):
         electricity consumption 
         
         pre:
-            self.electricity, self.savings_electricty, self.baseline_HF_consumption, and
+            self.baseline_kWh_consumption, self.savings_electricty, self.baseline_HF_consumption, and
         self.savings_heating_fuel are numbers(kWh, kWh, Gallons HF, Gallons HF)
         post:
             post_savings_electricity is a number (kWh)
             post_savings_heating_fuel is a number (Gallons)
         """
-        self.post_savings_electricity = self.electricity - \
+        self.refit_kWh_consumption = self.baseline_kWh_consumption - \
                                         self.savings_electricity
         self.refit_HF_consumption = self.baseline_HF_consumption - \
                                          self.savings_heating_fuel
