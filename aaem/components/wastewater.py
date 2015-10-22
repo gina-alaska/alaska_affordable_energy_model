@@ -32,6 +32,7 @@ class WaterWastewaterSystems (AnnualSavings):
         """
         self.cd = community_data.get_section('community')
         self.comp_specs = community_data.get_section('water wastewater')
+        self.component_name = 'water wastewater'
         self.cost_per_person  = self.comp_specs['average refit cost'] * \
       community_data.get_section('construction multipliers')[self.cd["region"]] 
        

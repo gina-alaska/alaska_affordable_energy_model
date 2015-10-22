@@ -59,6 +59,7 @@ class CommunityBuildings (AnnualSavings):
         """
         self.cd = community_data.get_section('community')
         self.comp_specs = community_data.get_section('community buildings')
+        self.component_name = 'community buildings'
         self.forecast = forecast
         self.refit_cost_rate = self.comp_specs['average refit cost'] * \
       community_data.get_section('construction multipliers')[self.cd["region"]]

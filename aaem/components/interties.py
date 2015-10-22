@@ -45,6 +45,7 @@ class Interties (AnnualSavings):
         """
         self.cd = community_data.get_section('community')
         self.comp_specs = community_data.get_section('interties')
+        self.component_name = 'interties'
         self.forecast = forecast
         
         # used in the NPV calculation so this is a relevant output
