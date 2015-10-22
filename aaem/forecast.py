@@ -10,6 +10,7 @@ from community_data import CommunityData
 
 
 from scipy.optimize import curve_fit
+from pandas import DataFrame
 
 NAN = float('nan')
 
@@ -377,6 +378,30 @@ class Forecast (object):
         
     def calc_total_HF_forecast(self):
         self.total_HF = self.res_HF + self.com_HF + self.www_HF
+        
+    def save_forecast (self, path):
+        """
+        save the forecast to a csv
+        pre:
+            everything needs to be foretasted
+        post:
+            saves a file
+        """
+        df = DataFrame( {"pop": self.population,
+                     "HH" : self.households,
+                     "kWh consumed" : self.consumption,
+                     "kWh generation": self.generation,
+                     "avg. kW": self.average_kW,
+                     "res HF": self.res_HF,
+                     "com HF": self.com_HF,
+                     "ww HF": self.www_HF,
+                     "total HF": self.total_HF,}, 
+              np.array(range(len(self.population))) + self.start_year)
+        df.to_csv(path,columns =["pop","HH","kWh consumed",
+                                 "kWh generation","avg. kW",
+                                 "res HF", "com HF","ww HF",
+                                 "total HF"], index_label="year")
+        
         
 
 def test ():
