@@ -136,7 +136,8 @@ class CommunityBuildings (AnnualSavings):
         floating-point square feet values 
         """
         self.benchmark_sqft = \
-            np.sum(self.comp_specs['com benchmark data'][['Total Square Feet']].values) 
+            np.sum(self.comp_specs['com benchmark data']\
+                                                [['Total Square Feet']].values) 
         pop = self.forecast.base_pop
         if pop < 300:
             key = "Average sf<300"
@@ -145,8 +146,18 @@ class CommunityBuildings (AnnualSavings):
         else: 
             key = "Average sf>1200"
         
-        self.additional_sqft = self.additional_buildings * \
-                        self.comp_specs['com building estimates']['Other'][key]
+        ben_data = self.comp_specs['com benchmark data']
+        idx = ben_data['Building Type'] != "Education - K - 12"
+        known_buildings = ben_data['Number Of Building Type'].sum()
+        
+        # 11 is the number of categories used in average
+        avg_sqft = (ben_data[idx]['Total Square Feet'].sum() / 11) if \
+           known_buildings/(known_buildings + self.additional_buildings) < .4 \
+                else self.comp_specs['com building estimates']['Average'][key]
+        
+        
+        self.additional_sqft = self.additional_buildings * avg_sqft
+                        
         #~ print self.additional_sqft, self.benchmark_sqft
         self.refit_sqft_total = self.additional_sqft + self.benchmark_sqft
         
@@ -186,7 +197,7 @@ class CommunityBuildings (AnnualSavings):
         else: 
             key = "Av Gal/sf>1200"
         
-        hf_sqft_yr = self.comp_specs['com building estimates']['Other'][key]
+        hf_sqft_yr = self.comp_specs['com building estimates']['Average'][key]
 
         
         self.benchmark_HF = \
@@ -219,8 +230,8 @@ class CommunityBuildings (AnnualSavings):
         else: 
             key = "Avg kWh/sf>1200"
         
-        kWh_sqft_yr = self.comp_specs['com building estimates']['Other'][key]
-
+        kWh_sqft_yr = self.comp_specs['com building estimates']['Average'][key]
+        print kWh_sqft_yr
         
         self.benchmark_kWh = \
      np.sum(self.comp_specs['com benchmark data'][['Current Electric']].values) 
@@ -336,22 +347,17 @@ def test ():
     """
     tests the class using the manley data.
     """
-    manley_data = CommunityData("../data/community_data_template.csv",
-                                "Manley Hot Springs")
-                                
+    manley_data = CommunityData("../test_case/manley_data.yaml")
     
-    manley_data.load_input("test_case/data_override.yaml",
-                          "test_case/data_defaults.yaml")
-    manley_data.get_csv_data()
     fc = Forecast(manley_data)
     cb = CommunityBuildings(manley_data, fc)
     cb.run()
-    print "total sq. ft to retrofit: " + str(round(cb.refit_sqft_total,0))
-    print "kWh/yr pre: " + str(round(cb.refit_pre_kWh_total,0))
-    print "HF/yr pre: " + str(round(cb.baseline_HF_consumption,0))
-    print "kWh/yr savings: " + str(round(cb.refit_savings_kWh_total,2))
-    print "HF/yr savings: " + str(round(cb.refit_savings_HF_total,0))
-    print "kWh/yr post: " + str(round(cb.refit_post_kWh_total,0))
-    print "HF/yr post: " + str(round(cb.refit_post_HF_total,0))
-    print "retro fit cost: " + str(round(cb.refit_cost_total,2))
+    #~ print "total sq. ft to retrofit: " + str(round(cb.refit_sqft_total,0))
+    #~ print "kWh/yr pre: " + str(round(cb.refit_pre_kWh_total,0))
+    #~ print "HF/yr pre: " + str(round(cb.baseline_HF_consumption,0))
+    #~ print "kWh/yr savings: " + str(round(cb.refit_savings_kWh_total,2))
+    #~ print "HF/yr savings: " + str(round(cb.refit_savings_HF_total,0))
+    #~ print "kWh/yr post: " + str(round(cb.refit_post_kWh_total,0))
+    #~ print "HF/yr post: " + str(round(cb.refit_post_HF_total,0))
+    #~ print "retro fit cost: " + str(round(cb.refit_cost_total,2))
     return cb,fc # return the object for further testing
