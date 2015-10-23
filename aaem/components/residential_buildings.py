@@ -133,14 +133,7 @@ class ResidentialBuildings(AnnualSavings):
             self.init_HF_use is some amount of gallons
         """
         rd = self.res_specs["res model data"]
-        ## cell J15 = (M8+U8+K15*O8*P8-I8*6000*0.00341)/0.138
-        ##  gal = (MMBtu + MMBtu + (#HH*sqft*MMBTU/sqft) - (#HH*#*#))/#  
-        ##  gal = (MMBtu + (MMBtu) - (#HH*#*#))/#
-        ##  gal = (MMBTU - (#HH*#*#))/#  ????  
-        self.init_HF_use = (rd["BEES_total_consumption"] + \
-                                     rd["post_total_consumption"] + \
-                    self.opportunity_HH*rd["pre_avg_area"]*rd["pre_avg_EUI"] - \
-                        self.init_HH*6000*0.00341) / 0.138
+        self.init_HF_use= rd["consumption_gallons_HF"]
         
     
     def calc_baseline_HF_consumption (self):
@@ -259,12 +252,8 @@ def test ():
     """
     tests the class using the manley data.
     """
-    manley_data = CommunityData("../data/community_data_template.csv",
-                                "Manley Hot Springs")
+    manley_data = CommunityData("../test_case/manley_data.yaml")
     
-    manley_data.load_input("test_case/data_override.yaml",
-                          "test_case/data_defaults.yaml")
-    manley_data.get_csv_data()
     fc = Forecast(manley_data)
     t = ResidentialBuildings(manley_data,fc)
     t.run()
