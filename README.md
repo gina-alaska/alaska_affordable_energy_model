@@ -95,8 +95,10 @@ example config
 
 
     |------ config_example.yaml -------------
-    overrides: # a path (ex:"..test_case/manley_data.yaml")
+    # note paths should be relative to this file or absolute
+    overrides: # a path (ex:"../test_case/manley_data.yaml")
     defaults: # blank or a path
+    data directory: # a path "../data/"
     output directory path: # a path
     output directory suffix: TIMESTAMP # TIMESTAMP|NONE|<string>
     -------------------------------------    
