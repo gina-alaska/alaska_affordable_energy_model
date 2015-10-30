@@ -1,9 +1,21 @@
+"""
+preprocessor.py
+ross spicer
+
+process data into a format for the model to use 
+"""
 from pandas import DataFrame,read_csv
 
 
 def population (in_file, out_dir, com_id):
     """
+    create the population input file
     
+    pre:
+        in_file is the most current population file in the data-repo
+        out dir is a path, com_id is a string ex "Adak"
+    post: 
+        a file is saved, and the data frame it was generated from is returned
     """
     pop_data = read_csv(in_file, index_col = 1) # update to GNIS
     pops = pop_data.ix[com_id]["2003":"2014"].values
@@ -15,6 +27,13 @@ def population (in_file, out_dir, com_id):
     
 def electricity (in_file, out_dir, com_id):
     """
+    create the electricity input file
+    
+    pre:
+        in_file is the most current PCE file in the data-repo
+        out dir is a path, com_id is a string ex "Adak"
+    post: 
+        a file is saved, and the data frame it was generated from is returned
     """
     df = read_csv(in_file, index_col = 1) # update to GNIS
     data = df.ix[com_id][["year","residential_kwh_sold",
@@ -35,6 +54,12 @@ def electricity (in_file, out_dir, com_id):
 
 def create_forecast_inputs (pop_file, pce_file, out_dir, com_id):
     """
+    create the input file used by the forecast module
+    pre:
+        electricity, and populations preconditions
+    post:
+        some files are saved in out dir, and the forecast_input 
+    DataFrame is returned
     """
     pop = population(pop_file,out_dir,com_id)
     con = electricity(pce_file,out_dir,com_id)
