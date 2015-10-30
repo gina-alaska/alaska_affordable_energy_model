@@ -14,7 +14,7 @@ import os.path
 ## it - intertie
 ## fc - forecast
 ## com - community buildings 
-
+from diesel_prices import DieselProjections
 
 
 
@@ -22,9 +22,15 @@ PATH = os.path.join
 class CommunityData (object):
     """ Class doc """
     
-    def __init__ (self, override, default="defaults"):
-        self.load_input(override,default)
+    def __init__ (self, data_dir, override, default="defaults"):
+        self.load_input(override, default)
+        self.data_dir = os.path.abspath(data_dir)
         self.get_csv_data()
+        self.set_item("community","diesel prices",
+                      DieselProjections(self.get_item("community","name"),
+                      data_dir))
+        
+        
     
     ## new stuff    
     def read_config (self, config_file):
@@ -214,15 +220,14 @@ class CommunityData (object):
             self.set_item('community',"HDD", int(self.load_csv("hdd")))
         
         ## different type csv
-        data_dir = os.path.join(os.path.dirname(os.getcwd()), "data")
         if self.get_item('community buildings',
                                         "com building estimates")== "IMPORT":
             self.set_item('community buildings',"com building estimates",
-                read_csv(os.path.join(data_dir, "com_building_estimates.csv"),
+             read_csv(os.path.join(self.data_dir, "com_building_estimates.csv"),
                          index_col = 0, header=1, comment = '#').T)
         if self.get_item('water wastewater', "ww assumptions")== "IMPORT":
             self.set_item('water wastewater', "ww assumptions",
-                        read_csv(os.path.join(data_dir, "ww_assumptions.csv"),
+                     read_csv(os.path.join(self.data_dir, "ww_assumptions.csv"),
                          index_col = 0, header=0, comment = '#'))
             
         
@@ -236,9 +241,9 @@ class CommunityData (object):
         post:
             returns a pandas data frame like object
         """
-        data_dir = os.path.join(os.path.dirname(os.getcwd()), "data")
-        return read_csv(os.path.join(data_dir,self.make_csv_name(file_key)),
-                      comment = '#', index_col=0, header=0).T[self.community].T
+        return read_csv(os.path.join(self.data_dir, 
+                        self.make_csv_name(file_key)), comment = '#', 
+                        index_col=0, header=0).T[self.community].T
         
     
     def make_csv_name (self, file_key):
@@ -267,7 +272,7 @@ class CommunityData (object):
         self.set_item('community buildings',"com num buildings", "IMPORT")
         self.set_item('community buildings',"com building estimates", "IMPORT")
         self.set_item('water wastewater', "ww assumptions", "IMPORT")
-        
+        self.set_item('community', "diesel prices", "IMPORT")
         
         fd = open(fname, 'w')
         text = yaml.dump(self.model_inputs, default_flow_style=False) 

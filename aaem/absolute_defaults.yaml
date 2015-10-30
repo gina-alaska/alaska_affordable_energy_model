@@ -23,7 +23,7 @@ community:
   elec non-fuel cost: ABSOLUTE DEFAULT  #TODO this is a calculated value
 
   HDD: IMPORT
-
+  diesel prices: IMPORT
 
 forecast:
   base year: # base year <int>
