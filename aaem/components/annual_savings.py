@@ -10,8 +10,6 @@ import numpy as np
 from abc import ABCMeta, abstractmethod
 from pandas import DataFrame
 
-from diesel_prices import DieselProjections
-
 
 class AnnualSavings (object):
     """
@@ -107,7 +105,7 @@ class AnnualSavings (object):
         post:
             self.diesel prices has prices for the project life
         """
-        prices = DieselProjections(self.cd["name"])
+        prices = self.cd["diesel prices"]
         self.diesel_prices = prices.get_projected_prices(self.start_year,
                                                          self.end_year)
     

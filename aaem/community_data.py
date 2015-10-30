@@ -14,7 +14,7 @@ import os.path
 ## it - intertie
 ## fc - forecast
 ## com - community buildings 
-
+from diesel_prices import DieselProjections
 
 
 
@@ -26,6 +26,11 @@ class CommunityData (object):
         self.load_input(override, default)
         self.data_dir = os.path.abspath(data_dir)
         self.get_csv_data()
+        self.set_item("community","diesel prices",
+                      DieselProjections(self.get_item("community","name"),
+                      data_dir))
+        
+        
     
     ## new stuff    
     def read_config (self, config_file):
@@ -267,7 +272,7 @@ class CommunityData (object):
         self.set_item('community buildings',"com num buildings", "IMPORT")
         self.set_item('community buildings',"com building estimates", "IMPORT")
         self.set_item('water wastewater', "ww assumptions", "IMPORT")
-        
+        self.set_item('community', "diesel prices", "IMPORT")
         
         fd = open(fname, 'w')
         text = yaml.dump(self.model_inputs, default_flow_style=False) 
