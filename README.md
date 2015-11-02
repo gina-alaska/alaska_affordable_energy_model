@@ -5,7 +5,11 @@ Created by University of Alaska Fairbanks/GINA
 # extra python libraries used:
 numpy, scipy, pandas: info on those here: http://www.scipy.org/
 
-pyymal
+pyyaml
+
+## Installing dependencies
+Dependencies for the Alask Affordable Energy Model can be installed using [pip](https://pypi.python.org/pypi/pip)
+    pip install --user -r requirements.txt
 
 # model files:
     aea_assumptions.py
