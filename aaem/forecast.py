@@ -100,13 +100,16 @@ class Forecast (object):
         post:
             self.electricty_totals is a array of yearly values of total kWh used
         """
-        kWh = self.electricty_actuals
-        self.electricity_totals = np.nansum([kWh['residential'].values,
+        kWh = self.fc_specs["electricity"]
+        years = kWh.T.keys().values
+        totals = np.nansum([kWh['residential'].values,
                                             kWh['community'].values,
                                             kWh['commercial'].values,
                                             kWh['gov'].values,
                                             kWh['unbilled'].values
                                             ],0)
+        self.electricity_totals = DataFrame({"year":years,
+                                        "total":totals}).set_index("year")
 
     def forecast_population (self):
         """
@@ -119,7 +122,8 @@ class Forecast (object):
         population = self.fc_specs["population"].T.values.astype(float)
         years = self.fc_specs["population"].T.keys().values.astype(int)
         new_years = np.array(range(years[-1]+1,self.end_year+1))
-        self.population = growth(years,population,new_years)
+        self.population = DataFrame({"year":new_years, 
+             "population":growth(years,population,new_years)}).set_index("year")
         #~ trend = self.get_trend('population')
         #~ self.population = []
         #~ idx = -1
@@ -429,8 +433,8 @@ def test ():
     fc = Forecast(manley_data)
     fc.calc_electricity_totals()
     fc.forecast_population()
-    fc.forecast_consumption()
-    fc.forecast_generation()
-    fc.forecast_average_kW()
-    fc.forecast_households()
+    #~ fc.forecast_consumption()
+    #~ fc.forecast_generation()
+    #~ fc.forecast_average_kW()
+    #~ fc.forecast_households()
     return fc
