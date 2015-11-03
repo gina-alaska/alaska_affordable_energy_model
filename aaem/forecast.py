@@ -87,7 +87,80 @@ class Forecast (object):
                                             kWh['gov'].values,
                                             kWh['unbilled'].values
                                             ],0)
-    
+
+    def forecast_population (self):
+        """
+        pre:
+            tbd.
+        post:
+            self.population is a array of estimated populations for each 
+        year between start and end
+        """
+        trend = self.get_trend('population')
+        self.population = []
+        idx = -1
+        while np.isnan(self.electricty_actuals['population'].values[idx]):
+            idx -= 1
+        pop_pre = self.electricty_actuals['population'].values[idx]
+        for year in range(self.start_year,self.end_year+1):
+            pop = trend*pop_pre
+            pop_pre = pop
+            self.population.append(pop)
+        self.population = np.array(self.population)
+        
+    def forecast_consumption (self):
+        """
+        pre:
+            tbd.
+        post:
+            self.consumption is a array of estimated kWh consumption for each 
+        year between start and end
+        """
+        #~ trend = self.get_trend('total')
+        #~ self.consumption = np.zeros(len(self.population))
+        self.calc_electricity_totals()
+        idx = -1
+        while np.isnan(self.electricity_totals[idx]):
+            idx -= 1
+
+        last_con = self.electricity_totals[idx] 
+        idx = -1
+        while np.isnan(self.electricty_actuals['population'].values[idx]):
+            idx -= 1
+        last_pop = self.electricty_actuals['population'].values[idx]
+        #~ print last_con
+        #~ print last_pop
+        self.consumption = last_con * self.population/ last_pop
+      
+    def forecast_generation (self):
+        """
+        pre:
+            tbd.
+            self.consumption should be a float array of kWh/yr values
+        post:
+            self.generation is a array of estimated kWh generation for each 
+        year between start and end
+        """
+        self.generation = np.array(self.consumption)/\
+                            (1.0-self.cd.get_item('community','line losses'))
+        self.generation = np.round(self.generation,-3) # round to nears thousand
+        
+    def forecast_average_kW (self):
+        """
+        ???
+        """
+        self.average_kW = (np.array(self.consumption)/ 8760.0)\
+                                /(1-self.cd.get_item('community','line losses')) 
+        
+    def forecast_households (self):
+        """
+        forcast # of houselholds
+        """
+        peps_per_house = float(self.base_pop) / \
+    self.cd.get_item('residential buildings','res model data')['total_occupied']
+        #~ print peps_per_house
+        self.households = np.round(self.population / peps_per_house, 0)
+        
     def get_population (self, start, end = None):
         """
         get population values from the population forecast. 
@@ -131,51 +204,6 @@ class Forecast (object):
         """
         return self.population[start-self.start_year]
     
-    def forecast_population (self):
-        """
-        pre:
-            tbd.
-        post:
-            self.population is a array of estimated populations for each 
-        year between start and end
-        """
-        trend = self.get_trend('population')
-        self.population = []
-        idx = -1
-        while np.isnan(self.electricty_actuals['population'].values[idx]):
-            idx -= 1
-        pop_pre = self.electricty_actuals['population'].values[idx]
-        for year in range(self.start_year,self.end_year+1):
-            pop = trend*pop_pre
-            pop_pre = pop
-            self.population.append(pop)
-        self.population = np.array(self.population)
-        
-        
-    def forecast_consumption (self):
-        """
-        pre:
-            tbd.
-        post:
-            self.consumption is a array of estimated kWh consumption for each 
-        year between start and end
-        """
-        #~ trend = self.get_trend('total')
-        #~ self.consumption = np.zeros(len(self.population))
-        self.calc_electricity_totals()
-        idx = -1
-        while np.isnan(self.electricity_totals[idx]):
-            idx -= 1
-
-        last_con = self.electricity_totals[idx] 
-        idx = -1
-        while np.isnan(self.electricty_actuals['population'].values[idx]):
-            idx -= 1
-        last_pop = self.electricty_actuals['population'].values[idx]
-        #~ print last_con
-        #~ print last_pop
-        self.consumption = last_con * self.population/ last_pop
-        
     def get_consumption (self, start, end = None):
         """
         get consumption values from the consumption forecast. 
@@ -220,20 +248,7 @@ class Forecast (object):
             returns a float 
         """
         return self.consumption[start-self.start_year]
-            
-    def forecast_generation (self):
-        """
-        pre:
-            tbd.
-            self.consumption should be a float array of kWh/yr values
-        post:
-            self.generation is a array of estimated kWh generation for each 
-        year between start and end
-        """
-        self.generation = np.array(self.consumption)/\
-                            (1.0-self.cd.get_item('community','line losses'))
-        self.generation = np.round(self.generation,-3) # round to nears thousand
-        
+
     def get_generation (self, start, end = None):
         """
         get population values from the population forecast. 
@@ -278,23 +293,7 @@ class Forecast (object):
             returns a float 
         """
         return self.generation[start-self.start_year]
-        
-    def forecast_average_kW (self):
-        """
-        ???
-        """
-        self.average_kW = (np.array(self.consumption)/ 8760.0)\
-                                /(1-self.cd.get_item('community','line losses')) 
-        
-    def forecast_households (self):
-        """
-        forcast # of houselholds
-        """
-        peps_per_house = float(self.base_pop) / \
-    self.cd.get_item('residential buildings','res model data')['total_occupied']
-        #~ print peps_per_house
-        self.households = np.round(self.population / peps_per_house, 0)
-        
+
     def get_households (self, start, end = None):
         """
         get households values from the households forecast. 
@@ -339,7 +338,7 @@ class Forecast (object):
             returns a float 
         """
         return self.households[start-self.start_year]
-    
+
     def set_res_HF_fuel_forecast (self, fc, start_year):
         """
         set the residential HF consumption forecast
