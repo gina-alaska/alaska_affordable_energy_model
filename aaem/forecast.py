@@ -18,7 +18,7 @@ def growth(xs, ys , x):
     growth function
     
     pre:
-        xs,ys are arrays of known x and y values. x is a scaler or array 
+        xs,ys are arrays of known x and y values. x is a scaler or np.array 
     of values to calculate new y values for
     
     post:
@@ -108,11 +108,6 @@ class Forecast (object):
                                             kWh['unbilled'].values
                                             ],0)
 
-    def forecast_population_2 (self):
-        """
-        """
-        pass
-
     def forecast_population (self):
         """
         pre:
@@ -121,17 +116,21 @@ class Forecast (object):
             self.population is a array of estimated populations for each 
         year between start and end
         """
-        trend = self.get_trend('population')
-        self.population = []
-        idx = -1
-        while np.isnan(self.electricty_actuals['population'].values[idx]):
-            idx -= 1
-        pop_pre = self.electricty_actuals['population'].values[idx]
-        for year in range(self.start_year,self.end_year+1):
-            pop = trend*pop_pre
-            pop_pre = pop
-            self.population.append(pop)
-        self.population = np.array(self.population)
+        population = self.fc_specs["population"].T.values.astype(float)
+        years = self.fc_specs["population"].T.keys().values.astype(int)
+        new_years = np.array(range(years[-1]+1,self.end_year+1))
+        self.population = growth(years,population,new_years)
+        #~ trend = self.get_trend('population')
+        #~ self.population = []
+        #~ idx = -1
+        #~ while np.isnan(self.electricty_actuals['population'].values[idx]):
+            #~ idx -= 1
+        #~ pop_pre = self.electricty_actuals['population'].values[idx]
+        #~ for year in range(self.start_year,self.end_year+1):
+            #~ pop = trend*pop_pre
+            #~ pop_pre = pop
+            #~ self.population.append(pop)
+        #~ self.population = np.array(self.population)
         
     def forecast_consumption (self):
         """
