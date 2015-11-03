@@ -38,7 +38,7 @@ class Forecast (object):
         self.base_pop = self.electricty_actuals['population']\
                         [self.fc_specs["base year"]]
     
-    def get_trend (self, key ):
+    def get_trend (self, key):
         """
         pre:
             key should be a string{'years'|'population'|'community'|
@@ -400,7 +400,7 @@ class Forecast (object):
 
 def test ():
     """ Function doc """
-    manley_data = CommunityData("../test_case/manley_data.yaml")
+    manley_data = CommunityData("../data/", "../test_case/manley_data.yaml")
     
                             
     fc = Forecast(manley_data)
