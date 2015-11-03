@@ -13,8 +13,28 @@ from scipy.optimize import curve_fit
 from pandas import DataFrame, read_csv
 import os.path
 
-NAN = float('nan')
-
+def growth(xs, ys , x):
+    """
+    growth function
+    
+    pre:
+        xs,ys are arrays of known x and y values. x is a scaler or array 
+    of values to calculate new y values for
+    
+    post:
+        return new y values
+    """
+    xs = np.array(xs)
+    ys = np.log(np.array(ys))
+    
+    xy_bar = np.average(xs*ys)
+    x_bar = np.average(xs)
+    y_bar = np.average(ys)
+    x_sq_bar = np.average(xs**2)
+    
+    beta = (xy_bar - x_bar*y_bar)/(x_sq_bar- x_bar**2)
+    alpha = y_bar - beta* x_bar
+    return np.exp(alpha  + beta * x)
 
 
 class Forecast (object):
@@ -87,6 +107,11 @@ class Forecast (object):
                                             kWh['gov'].values,
                                             kWh['unbilled'].values
                                             ],0)
+
+    def forecast_population_2 (self):
+        """
+        """
+        pass
 
     def forecast_population (self):
         """
