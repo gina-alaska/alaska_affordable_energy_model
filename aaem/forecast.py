@@ -50,7 +50,7 @@ class Forecast (object):
         """
         self.cd = community_data
         self.fc_specs = self.cd.get_section('forecast')
-        self.start_year = self.fc_specs["start year"]
+        #~ self.start_year = self.fc_specs["start year"]
         self.end_year = self.fc_specs["end year"]
         self.electricty_actuals =\
                         read_csv(os.path.abspath(self.fc_specs["input"]),
@@ -136,17 +136,6 @@ class Forecast (object):
         new_years = np.array(range(years[-1]+1,self.end_year+1))
         self.population = DataFrame({"year":new_years, 
              "population":growth(years,population,new_years)}).set_index("year")
-        #~ trend = self.get_trend('population')
-        #~ self.population = []
-        #~ idx = -1
-        #~ while np.isnan(self.electricty_actuals['population'].values[idx]):
-            #~ idx -= 1
-        #~ pop_pre = self.electricty_actuals['population'].values[idx]
-        #~ for year in range(self.start_year,self.end_year+1):
-            #~ pop = trend*pop_pre
-            #~ pop_pre = pop
-            #~ self.population.append(pop)
-        #~ self.population = np.array(self.population)
         
     def forecast_consumption (self):
         """
@@ -205,21 +194,6 @@ class Forecast (object):
         
         self.consumption = DataFrame({'year':range(last_year+1,self.end_year+1),
                             'consumption kWh':consumption}).set_index('year')
-        
-        
-        #~ trend = self.get_trend('total')
-        #~ self.consumption = np.zeros(len(self.population))
-        #~ self.calc_electricity_totals()
-        #~ idx = -1
-        #~ while np.isnan(self.electricity_totals[idx]):
-            #~ idx -= 1
-
-        #~ last_con = self.electricity_totals[idx] 
-        #~ idx = -1
-        #~ while np.isnan(self.electricty_actuals['population'].values[idx]):
-            #~ idx -= 1
-        #~ last_pop = self.electricty_actuals['population'].values[idx]
-        #~ self.consumption = last_con * self.population/ last_pop
       
     def forecast_generation (self):
         """
@@ -320,9 +294,9 @@ class Forecast (object):
         
         pre: 
         """
-        start_pad = np.zeros(start_year - self.start_year)
+        #~ start_pad = np.zeros(start_year - self.start_year)
         end_pad = np.zeros(self.end_year - (start_year + len(fc))+1) + fc[-1]
-        self.res_HF = np.append(np.append(start_pad, fc), end_pad)
+        self.res_HF = np.append(fc, end_pad)
         years = (self.end_year - np.arange(len(self.res_HF)))[::-1]
         self.res_HF = DataFrame({'year': years,
                                 'consumption': self.res_HF}).set_index('year')
@@ -333,9 +307,9 @@ class Forecast (object):
         
         pre: 
         """
-        start_pad = np.zeros(start_year - self.start_year)
+        #~ start_pad = np.zeros(start_year - self.start_year)
         end_pad = np.zeros(self.end_year - (start_year + len(fc))+1) + fc[-1]
-        self.com_HF = np.append(np.append(start_pad, fc), end_pad)
+        self.com_HF = np.append(fc, end_pad)
         years = (self.end_year - np.arange(len(self.com_HF)))[::-1]
         self.com_HF = DataFrame({'year': years,
                                 'consumption': self.com_HF}).set_index('year')
@@ -346,9 +320,9 @@ class Forecast (object):
         
         pre: 
         """
-        start_pad = np.zeros(start_year - self.start_year)
+        #~ start_pad = np.zeros(start_year - self.start_year)
         end_pad = np.zeros(self.end_year - (start_year + len(fc) )+1) + fc[-1]
-        self.www_HF = np.append(np.append(start_pad, fc), end_pad)
+        self.www_HF = np.append( fc, end_pad)
         years = (self.end_year - np.arange(len(self.www_HF)))[::-1]
         self.www_HF = DataFrame({'year': years,
                                 'consumption': self.www_HF}).set_index('year')
