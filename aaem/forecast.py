@@ -106,7 +106,8 @@ class Forecast (object):
                                             kWh['community'].values,
                                             kWh['commercial'].values,
                                             kWh['gov'].values,
-                                            kWh['unbilled'].values
+                                            kWh['unbilled'].values,
+                                            kWh['industrial'].values
                                             ],0)
         self.electricity_totals = DataFrame({"year":years,
                                         "total":totals}).set_index("year")
