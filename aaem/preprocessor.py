@@ -25,15 +25,16 @@ def population (in_file, out_dir, com_id):
     df.to_csv(out_dir+"population.csv")
     return df
     
-def electricity (in_file, out_dir, com_id):
+def pce_electricity (in_file, com_id):
     """
-    create the electricity input file
+    parse PCE electricity data 
     
     pre:
         in_file is the most current PCE file in the data-repo
-        out dir is a path, com_id is a string ex "Adak"
+    com_id is a string ex "Adak"
+    
     post: 
-        a file is saved, and the data frame it was generated from is returned
+       a data frame is returned
     """
     df = read_csv(in_file, index_col = 1) # update to GNIS
     data = df.ix[com_id][["year","residential_kwh_sold",
@@ -49,9 +50,55 @@ def electricity (in_file, out_dir, com_id):
         temp["year"] = int(year)
         sums.append(temp)
     df = DataFrame(sums).set_index("year")
-    df.to_csv(out_dir+"electricity.csv")
+    for key in df.keys():
+        df[key.split('_')[0]] = df[key]
+        del(df[key])
+    #~ df.to_csv(out_dir+"electricity.csv")
     return df
-
+    
+def eia_electricity (in_file, com_id):
+    """
+    parse EIA electricity data 
+    
+    pre:
+        in_file is the most current PCE file in the data-repo
+    com_id is a string ex "Sitka"
+    
+    post: 
+       a data frame is returned
+    """
+    df = read_csv(in_file, index_col = 0, comment='#')
+    data = df.ix[com_id][['Data Year','Sum - Residential Megawatthours',
+            'Sum - Commercial Megawatthours',
+            'Sum - Industrial Megawatthours']].values.astype(int)
+    df = DataFrame(data,
+                 columns=["year","residential",
+                          "commercial","industrial"]).set_index("year")
+    #~ df.to_csv(out_dir+"eia.csv")
+    return df
+    
+def electricity (in_file, out_dir, com_id):
+    """
+    create the electricity input file
+    
+    pre:
+        in_file is the most current PCE file in the data-repo
+        out dir is a path, com_id is a string ex "Adak"
+    post: 
+        a file is saved, and the data frame it was generated from is returned
+    """
+    try:
+        data = pce_electricity (in_file, com_id)
+        data["industrial"] = data["residential"]/0-data["residential"]/0
+    except KeyError:
+        data = eia_electricity (in_file, com_id)
+        nans = data["residential"]/0-data["residential"]/0
+        data["community"] = nans
+        data["government"] = nans
+        data["unbilled"] = nans
+    data.to_csv(out_dir+"electricity.csv")
+    return data
+        
 def create_forecast_inputs (pop_file, pce_file, out_dir, com_id):
     """
     create the input file used by the forecast module
@@ -62,7 +109,7 @@ def create_forecast_inputs (pop_file, pce_file, out_dir, com_id):
     DataFrame is returned
     """
     pop = population(pop_file,out_dir,com_id)
-    con = electricity(pce_file,out_dir,com_id)
+    con = pce_electricity(pce_file,com_id)
     t = []
     
     for year in pop.T.keys():
