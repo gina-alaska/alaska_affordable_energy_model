@@ -297,7 +297,6 @@ class CommunityData (object):
         self.set_item('forecast', "population", "IMPORT")
         
         fd = open(fname, 'w')
-        print self.model_inputs
         text = yaml.dump(self.model_inputs, default_flow_style=False) 
         fd.write(text)
         fd.close()
