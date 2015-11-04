@@ -198,7 +198,7 @@ class Forecast (object):
         consumption = fc_con_known_pop + fc_con_fc_pop.tolist()
         
         self.consumption = DataFrame({'year':range(last_year+1,self.end_year+1),
-                                   'consumption':consumption}).set_index('year')
+                            'consumption kWh':consumption}).set_index('year')
         
         
         #~ trend = self.get_trend('total')
@@ -224,16 +224,22 @@ class Forecast (object):
             self.generation is a array of estimated kWh generation for each 
         year between start and end
         """
-        self.generation = np.array(self.consumption)/\
-                            (1.0-self.cd.get_item('community','line losses'))
-        self.generation = np.round(self.generation,-3) # round to nears thousand
+        generation = self.consumption/\
+                    (1.0-self.cd.get_item('community','line losses'))
+        self.generation = generation.apply(np.round, args=(-3,))
+        
+        self.generation["kWh generation"] = self.generation["consumption kWh"]
+        del(self.generation["consumption kWh"])
         
     def forecast_average_kW (self):
         """
         ???
         """
-        self.average_kW = (np.array(self.consumption)/ 8760.0)\
-                                /(1-self.cd.get_item('community','line losses')) 
+        self.average_kW = (self.consumption/ 8760.0)\
+                                /(1-self.cd.get_item('community','line losses'))
+        
+        self.average_kW["avg. kW"] = self.average_kW["consumption kWh"]
+        del(self.average_kW["consumption kWh"])
         
     def forecast_households (self):
         """
@@ -241,8 +247,10 @@ class Forecast (object):
         """
         peps_per_house = float(self.base_pop) / \
     self.cd.get_item('residential buildings','res model data')['total_occupied']
-        #~ print peps_per_house
         self.households = np.round(self.population / peps_per_house, 0)
+        
+        self.households["HH"] = self.households["population"]
+        del(self.households["population"])
         
     def get_population (self, start, end = None):
         """
@@ -453,7 +461,39 @@ class Forecast (object):
         self.www_HF = np.append(np.append(start_pad, fc), end_pad)
         
     def calc_total_HF_forecast(self):
+        try:
+            r = self.res_HF
+        except AttributeError:
+            r = np.array([])
+            years = (self.end_year - np.arange(len(r)))[::-1]
+            self.res_HF = DataFrame({'year': years,
+                                   'consumption': r}).set_index('year')
+        try:
+            c = self.com_HF 
+        except AttributeError:
+            c = np.array([])
+            years = (self.end_year - np.arange(len(c)))[::-1]
+            self.com_HF = DataFrame({'year': years,
+                                   'consumption': c}).set_index('year')
+        try:
+            w = self.www_HF
+        except AttributeError:
+            w = np.array([])
+            years = (self.end_year - np.arange(len(w)))[::-1]
+            self.www_HF = DataFrame({'year': years,
+                                   'consumption': w}).set_index('year')
+        
+        
         self.total_HF = self.res_HF + self.com_HF + self.www_HF
+        
+        self.res_HF["res HF"] = self.res_HF["consumption"]
+        del(self.res_HF["consumption"])
+        self.com_HF["com HF"] = self.com_HF["consumption"]
+        del(self.com_HF["consumption"])
+        self.www_HF["ww HF"] = self.www_HF["consumption"]
+        del(self.www_HF["consumption"])
+        self.total_HF["total HF"] = self.total_HF["consumption"]
+        del(self.total_HF["consumption"])
         
     def save_forecast (self, path):
         """
@@ -463,20 +503,22 @@ class Forecast (object):
         post:
             saves a file
         """
-        df = DataFrame( {"pop": self.population,
-                     "HH" : self.households,
-                     "kWh consumed" : self.consumption,
-                     "kWh generation": self.generation,
-                     "avg. kW": self.average_kW,
-                     "res HF": self.res_HF,
-                     "com HF": self.com_HF,
-                     "ww HF": self.www_HF,
-                     "total HF": self.total_HF,}, 
-              np.array(range(len(self.population))) + self.start_year)
-        df.to_csv(path,columns =["pop","HH","kWh consumed",
-                                 "kWh generation","avg. kW",
-                                 "res HF", "com HF","ww HF",
-                                 "total HF"], index_label="year")
+        df = concat([self.population.T, self.households.T, self.consumption.T,
+                     self.generation.T, self.average_kW.T, self.res_HF.T,
+                     self.com_HF.T, self.www_HF.T, self.total_HF.T]).T
+        
+        #~ return df
+        #~ df = DataFrame( {"pop": self.population,
+                     #~ "HH" : self.households,
+                     #~ "kWh consumed" : self.consumption,
+                     #~ "kWh generation": self.generation,
+                     #~ "avg. kW": self.average_kW,
+                     #~ "res HF": self.res_HF,
+                     #~ "com HF": self.com_HF,
+                     #~ "ww HF": self.www_HF,
+                     #~ "total HF": self.total_HF,}, 
+              #~ np.array(range(len(self.population))) + self.start_year)
+        df.to_csv(path, index_label="year")
         
         
 
