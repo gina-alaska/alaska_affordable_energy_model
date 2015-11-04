@@ -10,7 +10,7 @@ from community_data import CommunityData
 
 
 from scipy.optimize import curve_fit
-from pandas import DataFrame, read_csv
+from pandas import DataFrame, read_csv, concat
 import os.path
 
 def growth(xs, ys , x):
@@ -105,11 +105,11 @@ class Forecast (object):
         totals = np.nansum([kWh['residential'].values,
                                             kWh['community'].values,
                                             kWh['commercial'].values,
-                                            kWh['gov'].values,
+                                            kWh['government'].values,
                                             kWh['unbilled'].values,
                                             kWh['industrial'].values
                                             ],0)
-        self.electricity_totals = DataFrame({"year":years,
+        self.yearly_kWh_totals = DataFrame({"year":years,
                                         "total":totals}).set_index("year")
 
     def forecast_population (self):
@@ -120,6 +120,11 @@ class Forecast (object):
             self.population is a array of estimated populations for each 
         year between start and end
         """
+        if len(self.fc_specs["population"]) < 10:
+            print "warning: forecast: "\
+                  "the data range is < 10 for input population "\
+                  "check population.csv in the models data directory"
+        
         population = self.fc_specs["population"].T.values.astype(float)
         years = self.fc_specs["population"].T.keys().values.astype(int)
         new_years = np.array(range(years[-1]+1,self.end_year+1))
@@ -145,21 +150,70 @@ class Forecast (object):
             self.consumption is a array of estimated kWh consumption for each 
         year between start and end
         """
+        self.calc_electricity_totals()
+        
+        if len(self.yearly_kWh_totals) < 10:
+            print "warning: forecast: "\
+                  "the data range is < 10 for input consumption "\
+                  "check electricity.csv in the models data directory"
+        ### for fit version
+        #~ start = self.fc_specs["population"].T.keys().values[0] \
+                #~ if self.fc_specs["population"].T.keys().values[0] > \
+                #~ self.yearly_kWh_totals.T.keys().values[0] \
+                #~ else self.yearly_kWh_totals.T.keys().values[0]
+        
+        #~ end = self.fc_specs["population"].T.keys().values[-1] \
+                #~ if self.fc_specs["population"].T.keys().values[-1] < \
+                #~ self.yearly_kWh_totals.T.keys().values[-1] \
+                #~ else self.yearly_kWh_totals.T.keys().values[-1]
+        
+        #~ population = self.fc_specs["population"].ix[start:end].T.values[0]
+        #~ consumption = self.yearly_kWh_totals[start:end].T.values[0]
+        #~ if len(population) < 10:
+            #~ print "warning: forecast: "\
+                  #~ "the data range is < 10 matching years for "\
+                  #~ "population and consumption "\
+                  #~ "check population.csv and electricity.csv "\
+                  #~ "in the models data directory"
+        
+        last_year = int(self.yearly_kWh_totals.T.keys()[-1])
+        
+        ### for last year version
+        last_consumption = self.yearly_kWh_totals.ix[last_year].values[0]
+        last_population = self.fc_specs["population"].ix[last_year].values[0]
+        
+        
+        year = last_year + 1 
+        fc_con_known_pop = []
+        while year <= self.end_year:
+            try: 
+                pop = self.fc_specs["population"].ix[year].values[0]
+            except KeyError:
+                break
+            fc_con_known_pop.append(last_consumption * pop / last_population)
+            year +=1 
+            
+        fc_con_fc_pop = last_consumption * \
+                    self.population.T.values[0] / last_population
+        consumption = fc_con_known_pop + fc_con_fc_pop.tolist()
+        
+        self.consumption = DataFrame({'year':range(last_year+1,self.end_year+1),
+                                   'consumption':consumption}).set_index('year')
+        
+        
         #~ trend = self.get_trend('total')
         #~ self.consumption = np.zeros(len(self.population))
-        self.calc_electricity_totals()
-        idx = -1
-        while np.isnan(self.electricity_totals[idx]):
-            idx -= 1
+        #~ self.calc_electricity_totals()
+        #~ idx = -1
+        #~ while np.isnan(self.electricity_totals[idx]):
+            #~ idx -= 1
 
-        last_con = self.electricity_totals[idx] 
-        idx = -1
-        while np.isnan(self.electricty_actuals['population'].values[idx]):
-            idx -= 1
-        last_pop = self.electricty_actuals['population'].values[idx]
-        #~ print last_con
-        #~ print last_pop
-        self.consumption = last_con * self.population/ last_pop
+        #~ last_con = self.electricity_totals[idx] 
+        #~ idx = -1
+        #~ while np.isnan(self.electricty_actuals['population'].values[idx]):
+            #~ idx -= 1
+        #~ last_pop = self.electricty_actuals['population'].values[idx]
+        #~ self.consumption = last_con * self.population/ last_pop
       
     def forecast_generation (self):
         """
@@ -434,8 +488,8 @@ def test ():
     fc = Forecast(manley_data)
     fc.calc_electricity_totals()
     fc.forecast_population()
-    #~ fc.forecast_consumption()
-    #~ fc.forecast_generation()
-    #~ fc.forecast_average_kW()
-    #~ fc.forecast_households()
+    fc.forecast_consumption()
+    fc.forecast_generation()
+    fc.forecast_average_kW()
+    fc.forecast_households()
     return fc
