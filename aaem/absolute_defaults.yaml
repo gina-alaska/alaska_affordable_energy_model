@@ -27,11 +27,9 @@ community:
 
 forecast:
   base year: # base year <int>
-  #start year: ABSOLUTE DEFAULT # start year <int>
   end year: ABSOLUTE DEFAULT  # end year <int>
   population: IMPORT
   electricity: IMPORT 
-  input: # file path <string>
 
 residential buildings:
   enabled: False
