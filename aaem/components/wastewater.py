@@ -76,6 +76,8 @@ class WaterWastewaterSystems (AnnualSavings):
         self.baseline_kWh_cost = np.zeros(self.project_life)
         # kWh/yr*$/kWh
         cost = self.savings_electricity * self.cd["res non-PCE elec cost"]
+        #~ print self.baseline_kWh_cost
+        #~ print cost
         self.baseline_kWh_cost += cost #$/yr
     
     
@@ -132,8 +134,6 @@ class WaterWastewaterSystems (AnnualSavings):
         post-conditions:
             All output values will be calculated and usable
         """
-        print self.comp_specs["start year"]
-        print self.comp_specs["lifetime"]
         self.set_project_life_details(self.comp_specs["start year"],
                                       self.comp_specs["lifetime"])
         
@@ -182,8 +182,9 @@ class WaterWastewaterSystems (AnnualSavings):
      self.pop * self.comp_specs['ww assumptions']['pop kWh'][self.system_type])
             # update for 9/28 spread sheet 
             # forcast needs an update to get a range of years 
-            self.forecast.forecast_population()
-            self.baseline_kWh_consumption += (self.forecast.population[1:16] - \
+            #~ self.forecast.forecast_population()
+            self.baseline_kWh_consumption += \
+            (self.forecast.get_population(self.start_year,self.end_year) - \
                                  self.pop)*\
                  self.comp_specs['ww assumptions']['HDD kWh'][self.system_type]
                             
@@ -291,11 +292,7 @@ def test ():
     """
     tests the class using the manley data.
     """
-    manley_data = CommunityData("../data/community_data_template.csv",
-                                "Manley Hot Springs")
-    manley_data.load_input("test_case/manley_data.yaml",
-                          "test_case/data_defaults.yaml")
-    manley_data.get_csv_data()
+    manley_data = CommunityData("../test_case/manley_data.yaml")
     fc = Forecast(manley_data)
     ww = WaterWastewaterSystems(manley_data, fc)
     ww.run()
