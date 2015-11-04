@@ -57,6 +57,12 @@ class Forecast (object):
                         index_col = 0)
         self.base_pop = self.electricty_actuals['population']\
                         [self.fc_specs["base year"]]
+                        
+        self.forecast_population()
+        self.forecast_consumption()
+        self.forecast_generation()
+        self.forecast_average_kW()
+        self.forecast_households()
     
     def get_trend (self, key):
         """
@@ -262,38 +268,9 @@ class Forecast (object):
         post:
             returns a float or list of floats
         """
-        get_pop = self.get_pop_range
         if end is None:
-            get_pop = self.get_pop_val
-        try:
-            return get_pop(start,end)
-        except AttributeError:
-            self.forecast_population()
-        return get_pop(start,end)
-    
-    def get_pop_range (self, start, end):
-        """
-        get population list from the population forecast. 
-        
-        pre:
-            start is a year where start >= self.start_year
-            end is a year where start <= end < self.end_year
-        post:
-            returns a list of floats
-        """
-        return self.population[start-self.start_year:end-self.start_year]
-    
-    def get_pop_val (self, start, end):
-        """
-        get population values from the population forecast. 
-        
-        pre:
-            start is a year where start >= self.start_year
-            end is not used, but is here for consistency with get_pop_range
-        post:
-            returns a float 
-        """
-        return self.population[start-self.start_year]
+            return self.population.ix[start].T.values[0]
+        return self.population.ix[start-1:end-1].T.values[0]
     
     def get_consumption (self, start, end = None):
         """
@@ -305,40 +282,9 @@ class Forecast (object):
         post:
             returns a float or list of floats
         """
-        get_pop = self.get_con_range
         if end is None:
-            get_pop = self.get_con_val
-        try:
-            return get_pop(start,end)
-        except AttributeError:
-            self.forecast_population()
-            self.forecast_consumption()
-            
-        return get_pop(start,end)
-    
-    def get_con_range (self, start, end):
-        """
-        get consumption list from the consumption forecast. 
-        
-        pre:
-            start is a year where start >= self.start_year
-            end is a year where start <= end < self.end_year
-        post:
-            returns a list of floats
-        """
-        return self.consumption[start-self.start_year:end-self.start_year]
-    
-    def get_con_val (self, start, end):
-        """
-        get consumption values from the consumption forecast. 
-        
-        pre:
-            start is a year where start >= self.start_year
-            end is not used, but is here for consistency with get_pop_range
-        post:
-            returns a float 
-        """
-        return self.consumption[start-self.start_year]
+            return self.consumption.ix[start].T.values[0]
+        return self.consumption.ix[start-1:end-1].T.values[0]
 
     def get_generation (self, start, end = None):
         """
@@ -350,40 +296,9 @@ class Forecast (object):
         post:
             returns a float or list of floats
         """
-        get_gen = self.get_gen_range
         if end is None:
-            get_gen = self.get_gen_val
-        try:
-            return get_gen(start,end)
-        except AttributeError:
-            self.forecast_population()
-            self.forecast_consumption()
-            self.forecast_generation()
-        return get_gen(start,end)
-    
-    def get_gen_range (self, start, end):
-        """
-        get generation list from the generation forecast. 
-        
-        pre:
-            start is a year where start >= self.start_year
-            end is a year where start <= end < self.end_year
-        post:
-            returns a list of floats
-        """
-        return self.generation[start-self.start_year:end-self.start_year]
-    
-    def get_gen_val (self, start, end):
-        """
-        get generation values from the generation forecast. 
-        
-        pre:
-            start is a year where start >= self.start_year
-            end is not used, but is here for consistency with get_pop_range
-        post:
-            returns a float 
-        """
-        return self.generation[start-self.start_year]
+            return self.generation.ix[start].T.values[0]
+        return self.generation.ix[start-1:end-1].T.values[0]
 
     def get_households (self, start, end = None):
         """
@@ -395,41 +310,10 @@ class Forecast (object):
         post:
             returns a float or list of floats
         """
-        get_pop = self.get_hh_range
         if end is None:
-            get_pop = self.get_hh_val
-        try:
-            return get_pop(start,end)
-        except AttributeError:
-            self.forecast_population()
-            self.forecast_households()
-            
-        return get_pop(start,end)
-    
-    def get_hh_range (self, start, end):
-        """
-        get households list from the households forecast. 
+            return self.households.ix[start].T.values[0]
+        return self.households.ix[start-1:end-1].T.values[0]
         
-        pre:
-            start is a year where start >= self.start_year
-            end is a year where start <= end < self.end_year
-        post:
-            returns a list of floats
-        """
-        return self.households[start-self.start_year:end-self.start_year]
-    
-    def get_hh_val (self, start, end):
-        """
-        get households values from the households forecast. 
-        
-        pre:
-            start is a year where start >= self.start_year
-            end is not used, but is here for consistency with get_pop_range
-        post:
-            returns a float 
-        """
-        return self.households[start-self.start_year]
-
     def set_res_HF_fuel_forecast (self, fc, start_year):
         """
         set the residential HF consumption forecast
@@ -439,6 +323,9 @@ class Forecast (object):
         start_pad = np.zeros(start_year - self.start_year)
         end_pad = np.zeros(self.end_year - (start_year + len(fc))+1) + fc[-1]
         self.res_HF = np.append(np.append(start_pad, fc), end_pad)
+        years = (self.end_year - np.arange(len(self.res_HF)))[::-1]
+        self.res_HF = DataFrame({'year': years,
+                                'consumption': self.res_HF}).set_index('year')
     
     def set_com_HF_fuel_forecast (self, fc, start_year):
         """
@@ -449,6 +336,9 @@ class Forecast (object):
         start_pad = np.zeros(start_year - self.start_year)
         end_pad = np.zeros(self.end_year - (start_year + len(fc))+1) + fc[-1]
         self.com_HF = np.append(np.append(start_pad, fc), end_pad)
+        years = (self.end_year - np.arange(len(self.com_HF)))[::-1]
+        self.com_HF = DataFrame({'year': years,
+                                'consumption': self.com_HF}).set_index('year')
         
     def set_www_HF_fuel_forecast (self, fc, start_year):
         """
@@ -459,6 +349,9 @@ class Forecast (object):
         start_pad = np.zeros(start_year - self.start_year)
         end_pad = np.zeros(self.end_year - (start_year + len(fc) )+1) + fc[-1]
         self.www_HF = np.append(np.append(start_pad, fc), end_pad)
+        years = (self.end_year - np.arange(len(self.www_HF)))[::-1]
+        self.www_HF = DataFrame({'year': years,
+                                'consumption': self.www_HF}).set_index('year')
         
     def calc_total_HF_forecast(self):
         try:
@@ -528,10 +421,6 @@ def test ():
     
                             
     fc = Forecast(manley_data)
-    fc.calc_electricity_totals()
-    fc.forecast_population()
-    fc.forecast_consumption()
-    fc.forecast_generation()
-    fc.forecast_average_kW()
-    fc.forecast_households()
+    #~ fc.calc_electricity_totals()
+
     return fc
