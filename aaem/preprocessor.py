@@ -109,7 +109,7 @@ def create_forecast_inputs (pop_file, pce_file, out_dir, com_id):
     DataFrame is returned
     """
     pop = population(pop_file,out_dir,com_id)
-    con = pce_electricity(pce_file,out_dir,com_id)
+    con = pce_electricity(pce_file,com_id)
     t = []
     
     for year in pop.T.keys():
