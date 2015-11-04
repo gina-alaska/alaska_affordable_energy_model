@@ -52,52 +52,14 @@ class Forecast (object):
         self.fc_specs = self.cd.get_section('forecast')
         #~ self.start_year = self.fc_specs["start year"]
         self.end_year = self.fc_specs["end year"]
-        self.electricty_actuals =\
-                        read_csv(os.path.abspath(self.fc_specs["input"]),
-                        index_col = 0)
-        self.base_pop = self.electricty_actuals['population']\
-                        [self.fc_specs["base year"]]
-                        
+        self.base_pop = self.fc_specs['population'].ix\
+                        [self.fc_specs["base year"]].values[0]
+        #~ print self.base_pop
         self.forecast_population()
         self.forecast_consumption()
         self.forecast_generation()
         self.forecast_average_kW()
         self.forecast_households()
-    
-    def get_trend (self, key):
-        """
-        pre:
-            key should be a string{'years'|'population'|'community'|
-                                   'residential','gov',commercial'|
-                                   'unbilled'|'total'}
-            'fc_electricity_used' should contain the kWh used for each key type
-            except 'total'
-        post:
-            a trend rate is returned 
-        """
-        try:
-            e = self.trends[key]
-            return e
-        except AttributeError:
-            self.trends = {} 
-        except KeyError:
-            pass
-        
-        try:
-            y = self.electricty_actuals[key]
-        except KeyError as e:
-            if key != "total":
-                raise
-            self.calc_electricity_totals()
-            y = self.electricity_totals #kWh
-        y = y[:-2] # TODO: Replace when model is updated
-        x = range(len(y))
-        
-        def f (x,m,b):
-            """ this is the functin for curve fit"""
-            return b*(m**x)
-        self.trends[key] = curve_fit(f,np.array(x)*1.101,y)[0][0]
-        return self.trends[key]
 
     def calc_electricity_totals (self):
         """ 
