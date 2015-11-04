@@ -293,8 +293,11 @@ class CommunityData (object):
         self.set_item('community buildings',"com building estimates", "IMPORT")
         self.set_item('water wastewater', "ww assumptions", "IMPORT")
         self.set_item('community', "diesel prices", "IMPORT")
+        self.set_item('forecast', "electricity", "IMPORT")
+        self.set_item('forecast', "population", "IMPORT")
         
         fd = open(fname, 'w')
+        print self.model_inputs
         text = yaml.dump(self.model_inputs, default_flow_style=False) 
         fd.write(text)
         fd.close()
