@@ -5,7 +5,12 @@ Created by University of Alaska Fairbanks/GINA
 # extra python libraries used:
 numpy, scipy, pandas: info on those here: http://www.scipy.org/
 
-pyymal
+pyyaml
+
+## Installing dependencies
+Dependencies for the Alask Affordable Energy Model can be installed using [pip](https://pypi.python.org/pypi/pip)
+
+    pip install --user -r requirements.txt
 
 # model files:
     aea_assumptions.py
@@ -75,8 +80,8 @@ the individual component test don't take any arguments and return the model comp
 
 
 
-To run the manley test do the following. A pandas DataFrame(just a mock of the table in the forecast tab) is returned along with the model components as a tuple. 
-    
+To run the manley test do the following. A pandas DataFrame(just a mock of the table in the forecast tab) is returned along with the model components as a tuple.
+
     >>> import driver
     >>> df, model = driver.test()
     >>> print df
@@ -87,11 +92,11 @@ To run the manley test do the following. A pandas DataFrame(just a mock of the t
        ...
 
 To run another community, create a config file and run
-  
+
     >>> model, out_dir = driver.run_model(<config file>)
 
 
-example config 
+example config
 
 
     |------ config_example.yaml -------------
