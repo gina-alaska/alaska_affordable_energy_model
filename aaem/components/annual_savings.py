@@ -143,6 +143,15 @@ class AnnualSavings (object):
         raise NotImplementedError, "should be implemented by child class to" +\
         " create self.annual_heating_savings as an np.array, length" +\
         " self.project_life, of dollar values(numbers)"
+    
+    @abstractmethod
+    def run (self):
+        """
+        abstract function 
+        should be implemented by child class to run component
+        """
+        raise NotImplementedError, "should be implemented by child class to" +\
+        " run the component"
   
     ## helper
     def get_nan_range (self):

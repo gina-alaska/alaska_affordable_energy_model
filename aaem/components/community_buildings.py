@@ -39,7 +39,6 @@ from math import isnan
 
 from annual_savings import AnnualSavings
 from community_data import CommunityData
-#~ import aea_assumptions as AEAA
 from forecast import Forecast
 
 
@@ -83,7 +82,6 @@ class CommunityBuildings (AnnualSavings):
             the model is run and the output values are available
         """
         self.calc_refit_values()
-        #~ print self.baseline_HF_consumption
         self.pre_retrofit_HF_use = np.zeros(self.project_life) + \
                                                     self.baseline_HF_consumption 
                                                     
@@ -147,7 +145,6 @@ class CommunityBuildings (AnnualSavings):
         
         self.additional_sqft = self.additional_buildings * \
                         self.comp_specs['com building estimates']['Other'][key]
-        #~ print self.additional_sqft, self.benchmark_sqft
         self.refit_sqft_total = self.additional_sqft + self.benchmark_sqft
         
 

@@ -54,7 +54,6 @@ def pce_electricity (in_file, com_id):
     for key in df.keys():
         df[key.split('_')[0]] = df[key]
         del(df[key])
-    #~ df.to_csv(out_dir+"electricity.csv")
     return df
     
 def eia_electricity (in_file, com_id):
@@ -75,7 +74,6 @@ def eia_electricity (in_file, com_id):
     df = DataFrame(data,
                  columns=["year","residential",
                           "commercial","industrial"]).set_index("year")
-    #~ df.to_csv(out_dir+"eia.csv")
     return df
     
 def electricity (in_file, out_dir, com_id):
@@ -99,38 +97,7 @@ def electricity (in_file, out_dir, com_id):
         data["unbilled"] = nans
     data.to_csv(out_dir+"electricity.csv")
     return data
-        
-def create_forecast_inputs (pop_file, pce_file, out_dir, com_id):
-    """
-    create the input file used by the forecast module
-    pre:
-        electricity, and populations preconditions
-    post:
-        some files are saved in out dir, and the forecast_input 
-    DataFrame is returned
-    """
-    pop = population(pop_file,out_dir,com_id)
-    con = pce_electricity(pce_file,com_id)
-    t = []
-    
-    for year in pop.T.keys():
-        try:
-            temp = con.T[year].values.tolist()
-            temp.insert(0,pop.T[year].values[0])
-            temp.insert(0,int(year))
-            t.append(temp)
-        except KeyError:
-            temp = [float("nan"),float("nan"),float("nan"),
-                    float("nan"),float("nan")]
-            temp.insert(0,pop.T[year].values[0])
-            temp.insert(0,int(year))
-            t.append(temp)
 
-    
-    df = DataFrame(t,columns= ["years","population","residential",
-                "community","commercial","gov","unbilled"]).set_index("years")
-    df.to_csv(out_dir+"forecast_inputs.csv")
-    return df
     
 def preprocess(data_dir, out_dir, com_id):
     """
