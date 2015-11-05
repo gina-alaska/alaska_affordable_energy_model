@@ -26,7 +26,6 @@ community:
   diesel prices: IMPORT
 
 forecast:
-  base year: # base year <int>
   end year: ABSOLUTE DEFAULT  # end year <int>
   population: IMPORT
   electricity: IMPORT 

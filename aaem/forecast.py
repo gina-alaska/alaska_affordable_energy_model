@@ -53,7 +53,8 @@ class Forecast (object):
         #~ self.start_year = self.fc_specs["start year"]
         self.end_year = self.fc_specs["end year"]
         self.base_pop = self.fc_specs['population'].ix\
-                        [self.cd.get_item("residential","year")].values[0]
+                    [self.cd.get_item('residential buildings',
+                                            'res model data')['year']].values[0]
         #~ print self.base_pop
         self.forecast_population()
         self.forecast_consumption()

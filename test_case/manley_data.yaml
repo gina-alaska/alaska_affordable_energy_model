@@ -14,7 +14,6 @@ community:
   elec non-fuel cost: 0.4024526823 # TODO: should be calculated
 
 forecast:
-  base year: 2010
   end year: 2040 # end year <int>
 
 residential buildings: 
