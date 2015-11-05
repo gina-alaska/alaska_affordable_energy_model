@@ -57,6 +57,11 @@ from the aaem/ directory
     Python 2.7.9 (default, Apr  2 2015, 15:33:21)
     [GCC 4.9.2] on linux2
     Type "help", "copyright", "credits" or "license" for more information.
+    
+The Preprocssor module contains the function preprocess to set up the data files the model needs to run
+    
+    >>> import preprocessor as p
+    >>> p.preprocess(<input dir>,<out dir>,<commuinty id>) # input dir shoud be to a copy of the AAEM-data dir, out dir should be the data dir indcated in the driver config, and commuity id is the community name at this point.
 
 the individual component test don't take any arguments and return the model components used
 
