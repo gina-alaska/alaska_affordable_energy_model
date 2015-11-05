@@ -58,13 +58,10 @@ class CommunityData (object):
         """
         self.load_valid_keys()
         if not set(lib.keys()).issubset(set(self.valid_keys.keys())):
-            #~ print 1
             return False
         for section in lib:
             if not set(lib[section].keys())\
                             .issubset(set(self.valid_keys[section])):
-                #~ print set(lib[section].keys())
-                #~ print set(self.valid_keys[section])
                 return False
         return True
         
@@ -146,10 +143,8 @@ class CommunityData (object):
                     temp[key] = client_inputs[section][key]
                 except KeyError as e:
                     try:
-                        #~ print "defaulting1",key
                         temp[key] = client_defaults[section][key]
                     except KeyError as e:
-                            #~ print "defaulting2",key
                             temp[key] = absolute_defaults[section][key]
             self.model_inputs[section] = temp
 
