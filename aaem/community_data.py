@@ -229,7 +229,27 @@ class CommunityData (object):
             self.set_item('water wastewater', "ww assumptions",
                      read_csv(os.path.join(self.data_dir, "ww_assumptions.csv"),
                          index_col = 0, header=0, comment = '#'))
+                         
+        
+        ## load preprocessed files
+        if self.get_item('forecast', "population") == "IMPORT":
+            self.set_item('forecast', "population", 
+                          self.load_pp_csv("population.csv"))
+        if self.get_item('forecast', "electricity") == "IMPORT":
+            self.set_item('forecast', "electricity", 
+                          self.load_pp_csv("electricity.csv"))
+        
+        
             
+    def load_pp_csv(self, f_name):
+        """
+        load a preprocessed csv file
+        
+        
+        """
+        return read_csv(os.path.join(self.data_dir, f_name),
+                        comment = '#', index_col=0, header=0)
+
         
             
     def load_csv (self, file_key):
@@ -273,6 +293,8 @@ class CommunityData (object):
         self.set_item('community buildings',"com building estimates", "IMPORT")
         self.set_item('water wastewater', "ww assumptions", "IMPORT")
         self.set_item('community', "diesel prices", "IMPORT")
+        self.set_item('forecast', "electricity", "IMPORT")
+        self.set_item('forecast', "population", "IMPORT")
         
         fd = open(fname, 'w')
         text = yaml.dump(self.model_inputs, default_flow_style=False) 
