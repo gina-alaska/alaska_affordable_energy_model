@@ -134,10 +134,24 @@ def create_forecast_inputs (pop_file, pce_file, out_dir, com_id):
     
 def preprocess(data_dir, out_dir, com_id):
     """
+    preprocess data in to data dir 
+    
+    pre:
+        data dir: path to the data files from the AAEM-data dir
+        out_dir: save location
+        com_id: community id("Name")
+    post:
+        all of the files necessary to run the model are in out_dir, if out_dir
+    dose not it exist it is created
     """
     data_dir = os.path.abspath(data_dir) + '/'
     out_dir = os.path.abspath(out_dir) + '/'
-    # copy files that still need their own preprocessor function yet
+    try:
+        os.makedirs(out_dir)
+    except OSError:
+        pass
+    
+    ### copy files that still need their own preprocessor function yet
     shutil.copy(data_dir+"com_benchmark_data.csv", out_dir)
     shutil.copy(data_dir+"com_building_estimates.csv", out_dir)
     shutil.copy(data_dir+"com_num_buildings.csv", out_dir)
@@ -145,6 +159,7 @@ def preprocess(data_dir, out_dir, com_id):
     shutil.copy(data_dir+"hdd.csv", out_dir)
     shutil.copy(data_dir+"res_model_data.csv", out_dir)
     shutil.copy(data_dir+"ww_assumptions.csv", out_dir)
+    ###
     
     population(data_dir+"population.csv",out_dir,com_id)
     
