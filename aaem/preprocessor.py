@@ -5,7 +5,8 @@ ross spicer
 process data into a format for the model to use 
 """
 from pandas import DataFrame,read_csv
-
+import shutil
+import os.path
 
 def population (in_file, out_dir, com_id):
     """
@@ -130,3 +131,26 @@ def create_forecast_inputs (pop_file, pce_file, out_dir, com_id):
                 "community","commercial","gov","unbilled"]).set_index("years")
     df.to_csv(out_dir+"forecast_inputs.csv")
     return df
+    
+def preprocess(data_dir, out_dir, com_id):
+    """
+    """
+    data_dir = os.path.abspath(data_dir) + '/'
+    out_dir = os.path.abspath(out_dir) + '/'
+    # copy files that still need their own preprocessor function yet
+    shutil.copy(data_dir+"com_benchmark_data.csv", out_dir)
+    shutil.copy(data_dir+"com_building_estimates.csv", out_dir)
+    shutil.copy(data_dir+"com_num_buildings.csv", out_dir)
+    shutil.copy(data_dir+"diesel_fuel_prices.csv", out_dir)
+    shutil.copy(data_dir+"hdd.csv", out_dir)
+    shutil.copy(data_dir+"res_model_data.csv", out_dir)
+    shutil.copy(data_dir+"ww_assumptions.csv", out_dir)
+    
+    population(data_dir+"population.csv",out_dir,com_id)
+    
+    try:
+        electricity(data_dir+"power-cost-equalization-pce-data.csv", out_dir,
+                                                                    com_id)
+    except KeyError:
+        electricity(data_dir+"EIA.csv", out_dir, com_id)
+    
