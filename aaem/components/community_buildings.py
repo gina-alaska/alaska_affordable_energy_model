@@ -39,7 +39,6 @@ from math import isnan
 
 from annual_savings import AnnualSavings
 from community_data import CommunityData
-#~ import aea_assumptions as AEAA
 from forecast import Forecast
 
 
@@ -83,7 +82,6 @@ class CommunityBuildings (AnnualSavings):
             the model is run and the output values are available
         """
         self.calc_refit_values()
-        #~ print self.baseline_HF_consumption
         self.pre_retrofit_HF_use = np.zeros(self.project_life) + \
                                                     self.baseline_HF_consumption 
                                                     
@@ -146,6 +144,7 @@ class CommunityBuildings (AnnualSavings):
         else: 
             key = "Average sf>1200"
         
+
         ben_data = self.comp_specs['com benchmark data']
         idx = ben_data['Building Type'] != "Education - K - 12"
         known_buildings = ben_data['Number Of Building Type'].sum()
@@ -158,7 +157,7 @@ class CommunityBuildings (AnnualSavings):
         
         self.additional_sqft = self.additional_buildings * avg_sqft
                         
-        #~ print self.additional_sqft, self.benchmark_sqft
+
         self.refit_sqft_total = self.additional_sqft + self.benchmark_sqft
         
 
@@ -347,7 +346,7 @@ def test ():
     """
     tests the class using the manley data.
     """
-    manley_data = CommunityData("../test_case/manley_data.yaml")
+    manley_data = CommunityData("../data/","../test_case/manley_data.yaml")
     
     fc = Forecast(manley_data)
     cb = CommunityBuildings(manley_data, fc)

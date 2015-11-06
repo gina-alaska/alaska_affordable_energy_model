@@ -23,13 +23,12 @@ community:
   elec non-fuel cost: ABSOLUTE DEFAULT  #TODO this is a calculated value
 
   HDD: IMPORT
-
+  diesel prices: IMPORT
 
 forecast:
-  base year: # base year <int>
-  start year: ABSOLUTE DEFAULT # start year <int>
   end year: ABSOLUTE DEFAULT  # end year <int>
-  input: # file path <string>
+  population: IMPORT
+  electricity: IMPORT 
 
 residential buildings:
   enabled: False

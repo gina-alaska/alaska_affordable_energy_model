@@ -23,7 +23,7 @@ class Driver (object):
     Driver for the AAEM.
     """
     
-    def __init__ (self, overrides, defaults):
+    def __init__ (self, data_dir ,overrides, defaults):
         """ 
         set up driver 
         
@@ -32,7 +32,7 @@ class Driver (object):
         post:
             model is ready to be run
         """
-        self.cd = CommunityData(overrides,defaults)
+        self.cd = CommunityData(data_dir, overrides,defaults)
         self.fc = Forecast(self.cd)
         self.load_comp_lib()
         
@@ -150,6 +150,7 @@ def run_model (config_file):
     fd.close()
     
     
+    data_dir = os.path.abspath(config['data directory'])
     overrides = os.path.abspath(config['overrides'])
     defaults = "defaults" if config['defaults'] is None else\
                 os.path.abspath(config['defaults'])
@@ -179,7 +180,7 @@ def run_model (config_file):
     
     
     
-    model = Driver(overrides, defaults)
+    model = Driver(data_dir, overrides, defaults)
     model.load_comp_lib()
     model.run_components()
     model.update_forecast()
