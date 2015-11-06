@@ -59,6 +59,10 @@ water wastewater:
   audit preformed: False
   data: IMPORT
 
+  electricity refit reduction: .25 # decimal precent <float> percent saved by preforming electricity refit 
+  heating fuel refit reduction: .35 # decimal precent <float> percent saved by preforming heating fuel refit 
+  
+  
   heat recovery multiplier:
     True: .5 # precent as decimal <float> 
     False: 1.0 # precent as decimal <float> 
