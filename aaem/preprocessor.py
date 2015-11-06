@@ -173,7 +173,11 @@ def preprocess (data_dir, out_dir, com_id):
     shutil.copy(data_dir+"diesel_fuel_prices.csv", out_dir)
     shutil.copy(data_dir+"hdd.csv", out_dir)
     shutil.copy(data_dir+"res_model_data.csv", out_dir)
+    shutil.copy(data_dir+"cpi.csv", out_dir)
+
     ###
+    
+    
     
     population(data_dir+"population.csv",out_dir,com_id)
     wastewater(data_dir+"ww_data.csv",data_dir+"ww_assumptions.csv",
