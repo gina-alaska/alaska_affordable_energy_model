@@ -220,10 +220,6 @@ class CommunityData (object):
             self.set_item('community buildings',"com building estimates",
              read_csv(os.path.join(self.data_dir, "com_building_estimates.csv"),
                          index_col = 0, header=1, comment = '#').T)
-        if self.get_item('water wastewater', "ww assumptions")== "IMPORT":
-            self.set_item('water wastewater', "ww assumptions",
-                     read_csv(os.path.join(self.data_dir, "ww_assumptions.csv"),
-                         index_col = 0, header=0, comment = '#'))
                          
         
         ## load preprocessed files

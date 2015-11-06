@@ -250,7 +250,7 @@ def test ():
     """
     tests the class using the manley data.
     """
-    manley_data = CommunityData("../test_case/manley_data.yaml")
+    manley_data = CommunityData("../data","../test_case/manley_data.yaml")
     
     fc = Forecast(manley_data)
     t = ResidentialBuildings(manley_data,fc)
