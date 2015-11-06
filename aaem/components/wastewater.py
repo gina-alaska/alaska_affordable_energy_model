@@ -81,10 +81,10 @@ class WaterWastewaterSystems (AnnualSavings):
         post:
            self.baseline_kWh_cost is an np.array of $/year values 
         """
-        self.baseline_kWh_cost = np.zeros(self.project_life)
+        kWh_cost = self.cd["elec non-fuel cost"] + \
+                self.diesel_prices/self.cd['diesel generation efficiency']
         # kWh/yr*$/kWh
-        cost = self.baseline_kWh_consumption * self.cd["elec non-fuel cost"] 
-        self.baseline_kWh_cost += cost #$/yr
+        self.baseline_kWh_cost = self.savings_kWh_consumption * kWh_cost
     
     
     def calc_annual_heating_savings (self):
@@ -97,7 +97,6 @@ class WaterWastewaterSystems (AnnualSavings):
         """
         self.calc_proposed_heating_savings()
         self.calc_base_heating_savings()
-        
         # $ / yr
         self.annual_heating_savings = self.baseline_HF_cost - \
                                             self.refit_HF_cost
@@ -114,8 +113,7 @@ class WaterWastewaterSystems (AnnualSavings):
         fuel_cost = self.diesel_prices + self.cd['heating fuel premium']# $/gal
         # are there ever o&m costs
         # $/gal * gal/yr = $/year 
-        self.refit_HF_cost += self.refit_HF_consumption * \
-                                                                    fuel_cost
+        self.refit_HF_cost += self.refit_HF_consumption * fuel_cost
         
     
     def calc_base_heating_savings (self):
@@ -146,24 +144,22 @@ class WaterWastewaterSystems (AnnualSavings):
         self.calc_refit_kWh_consumption()
         self.calc_refit_HF_consumption()
         
-        #~ self.calc_savings_electricity()
-        #~ self.calc_savings_heating_feul()
+        self.calc_savings_kWh_consumption()
+        self.calc_savings_HF_consumption()
+        
+
         self.calc_capital_costs()
-    
-        #~ self.calc_post_savings_values()
-        #~ self.forecast.set_www_HF_fuel_forecast(self.baseline_HF_consumption, 
-                                               #~ self.start_year)
         
         
-        #~ self.get_diesel_prices()
-        #~ self.calc_annual_electric_savings()
-        #~ self.calc_annual_heating_savings()
-        #~ self.calc_annual_total_savings()
+        self.get_diesel_prices()
+        self.calc_annual_electric_savings()
+        self.calc_annual_heating_savings()
+        self.calc_annual_total_savings()
         
-        #~ self.calc_annual_costs(self.cd['interest rate'])
-        #~ self.calc_annual_net_benefit()
+        self.calc_annual_costs(self.cd['interest rate'])
+        self.calc_annual_net_benefit()
         
-        #~ self.calc_npv(self.cd['discount rate'], 2014)
+        self.calc_npv(self.cd['discount rate'], 2014)
     
     def calc_baseline_kWh_consumption (self):
         """
@@ -245,44 +241,33 @@ class WaterWastewaterSystems (AnnualSavings):
          
         self.refit_HF_consumption = consumption 
         
-    #~ def calc_savings_kWh_consumption (self):
+    def calc_savings_kWh_consumption (self):
+        """
+        calculate the savings in kWh use
         
-
-    #~ def calc_savings_electricity (self, coeff = .25):
-        #~ """
-        #~ calculate possible electricity savings
+        pre:
+            self.baseline_kWh_consumption, self.refit_kWh_consumption
+        must be calculated
         
-        #~ pre:
-            #~ "w&ww_audit_savings_elec" is a number
-            #~ "w&ww_audit_preformed" is a bool
-            #~ self.baseline_kWh_consumption should be calculated 
-            #~ coeff should be a number
-        #~ post:
-            #~ self.savings_electricity will be a number (kWh)
-        #~ """
-        #~ if  self.comp_specs["audit preformed"]:
-            #~ self.savings_electricity = \
-                    #~ self.cdself.comp_specs['data'].ix['kWh/yr w/ retro']
-        #~ else: # if not self.comp_sepcs["audit preformed"]:
-            #~ self.savings_electricity = self.baseline_kWh_consumption * coeff
+        post:
+            self.savings_kWh_consumption is calculated
+        """
+        self.savings_kWh_consumption = self.baseline_kWh_consumption -\
+                                       self.refit_kWh_consumption
+                                       
+    def calc_savings_HF_consumption (self):
+        """
+        calculate the savings in HF use
         
-    #~ def calc_savings_heating_feul (self, coeff = .35):
-        #~ """
-        #~ calculate possible hf savings
+        pre:
+            self.baseline_HF_consumption, self.refit_HF_consumption
+        must be calculated
         
-        #~ pre:
-            #~ "w&ww_audit_savings_hf" is a number
-            #~ "w&ww_audit_preformed" is a boolean
-            #~ self.baseline_HF_consumption should be calculated 
-            #~ coeff should be a number
-        #~ post:
-            #~ self.savings_heating_fuel will be a number (gal)
-        #~ """
-        #~ if  self.comp_specs["audit preformed"]:
-            #~ self.savings_electricity = \
-                    #~ self.cdself.comp_specs['data'].ix['HF w/Retro']
-        #~ else: # if not self.comp_sepcs["audit preformed"]:
-            #~ self.savings_heating_fuel = self.baseline_HF_consumption * coeff
+        post:
+            self.savings_HF_consumption is calculated
+        """
+        self.savings_HF_consumption = self.baseline_HF_consumption -\
+                                       self.refit_HF_consumption
             
     def calc_capital_costs (self, cost_per_person = 450):
         """
@@ -301,24 +286,6 @@ class WaterWastewaterSystems (AnnualSavings):
             self.capital_costs = float(self.comp_specs["audit cost"]) + \
                                         self.pop *  self.cost_per_person
     
-        
-    #~ def calc_post_savings_values (self):
-        #~ """
-            #~ calculate the post savings estimates for heating fuel and 
-        #~ electricity consumption 
-        
-        #~ pre:
-            #~ self.baseline_kWh_consumption, self.savings_electricty, self.baseline_HF_consumption, and
-        #~ self.savings_heating_fuel are numbers(kWh, kWh, Gallons HF, Gallons HF)
-        #~ post:
-            #~ post_savings_electricity is a number (kWh)
-            #~ post_savings_heating_fuel is a number (Gallons)
-        #~ """
-        #~ self.refit_kWh_consumption = self.baseline_kWh_consumption - \
-                                        #~ self.savings_electricity
-        #~ self.refit_HF_consumption = self.baseline_HF_consumption - \
-                                         #~ self.savings_heating_fuel
-
        
 component = WaterWastewaterSystems
     
@@ -331,9 +298,9 @@ def test ():
     ww = WaterWastewaterSystems(manley_data, fc)
     ww.run()
     print ""
-    #~ print round(ww.benefit_npv,0)
-    #~ print round(ww.cost_npv,0)
-    #~ print round(ww.benefit_cost_ratio ,2)
-    #~ print round(ww.net_npv,0)
+    print round(ww.benefit_npv,0)
+    print round(ww.cost_npv,0)
+    print round(ww.benefit_cost_ratio ,2)
+    print round(ww.net_npv,0)
     return ww, fc # return the object for further testing
 
