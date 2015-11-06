@@ -179,7 +179,7 @@ class WaterWastewaterSystems (AnnualSavings):
             self.baseline_kWh_consumption = self.baseline_kWh_consumption + \
             (self.forecast.get_population(self.start_year,self.end_year) - \
                                  self.pop)*\
-                 self.comp_specs['data'].ix['HDD kWh'].values[0]
+                 self.comp_specs['data'].ix['pop kWh'].values[0]
                             
     def calc_heating_fuel_consumption (self, hr_coeff):
         """
