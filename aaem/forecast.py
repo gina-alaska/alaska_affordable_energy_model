@@ -56,6 +56,7 @@ class Forecast (object):
                     [self.cd.get_item('residential buildings',
                                             'res model data')['year']].values[0]
         #~ print self.base_pop
+        self.cpi = self.cd.load_pp_csv("cpi.csv")
         self.forecast_population()
         self.forecast_consumption()
         self.forecast_generation()
