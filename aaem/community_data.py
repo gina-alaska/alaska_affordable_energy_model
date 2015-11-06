@@ -220,10 +220,10 @@ class CommunityData (object):
             self.set_item('community buildings',"com building estimates",
              read_csv(os.path.join(self.data_dir, "com_building_estimates.csv"),
                          index_col = 0, header=1, comment = '#').T)
-        if self.get_item('water wastewater', "ww assumptions")== "IMPORT":
-            self.set_item('water wastewater', "ww assumptions",
-                     read_csv(os.path.join(self.data_dir, "ww_assumptions.csv"),
-                         index_col = 0, header=0, comment = '#'))
+        #~ if self.get_item('water wastewater', "ww assumptions")== "IMPORT":
+            #~ self.set_item('water wastewater', "ww assumptions",
+                     #~ read_csv(os.path.join(self.data_dir, "ww_assumptions.csv"),
+                         #~ index_col = 0, header=0, comment = '#'))
                          
         
         ## load preprocessed files
@@ -233,6 +233,9 @@ class CommunityData (object):
         if self.get_item('forecast', "electricity") == "IMPORT":
             self.set_item('forecast', "electricity", 
                           self.load_pp_csv("electricity.csv"))
+        if self.get_item('water wastewater', "data") == "IMPORT":
+            self.set_item('water wastewater', "data", 
+                          self.load_pp_csv("wastewater_data.csv"))
         
         
             
@@ -286,10 +289,11 @@ class CommunityData (object):
         self.set_item('community buildings','com benchmark data', "IMPORT")
         self.set_item('community buildings',"com num buildings", "IMPORT")
         self.set_item('community buildings',"com building estimates", "IMPORT")
-        self.set_item('water wastewater', "ww assumptions", "IMPORT")
+
         self.set_item('community', "diesel prices", "IMPORT")
         self.set_item('forecast', "electricity", "IMPORT")
         self.set_item('forecast', "population", "IMPORT")
+        self.set_item('water wastewater', "data", "IMPORT")
         
         fd = open(fname, 'w')
         text = yaml.dump(self.model_inputs, default_flow_style=False) 

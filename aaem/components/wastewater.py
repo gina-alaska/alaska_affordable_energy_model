@@ -37,7 +37,6 @@ class WaterWastewaterSystems (AnnualSavings):
         self.forecast = forecast
         
         self.hdd = self.cd["HDD"]
-        #~ self.pop = self.cd["population"]
         self.pop = self.forecast.base_pop
         self.system_type = self.comp_specs["system type"] 
         self.forecast = forecast
@@ -169,18 +168,18 @@ class WaterWastewaterSystems (AnnualSavings):
             self.baseline_kWh_consumption will be a number
         """
         if self.comp_specs["energy use known"]:
-            self.baseline_kWh_consumption = self.comp_specs["collected data"]\
-                                                            ['kWh/yr']
+            self.baseline_kWh_consumption = self.comp_specs['data'].ix['kWh/yr']
         else: #if not self.cd["w&ww_energy_use_known"]:
+            
             self.baseline_kWh_consumption = \
-(self.hdd * self.comp_specs['ww assumptions']['HDD kWh'][self.system_type] + \
-     self.pop * self.comp_specs['ww assumptions']['pop kWh'][self.system_type])
+                    (self.hdd * self.comp_specs['data'].ix['HDD kWh'] + \
+                    self.pop * self.comp_specs['data'].ix['pop kWh']).values[0]
             # update for 9/28 spread sheet 
             # forcast needs an update to get a range of years 
-            self.baseline_kWh_consumption += \
+            self.baseline_kWh_consumption = self.baseline_kWh_consumption + \
             (self.forecast.get_population(self.start_year,self.end_year) - \
                                  self.pop)*\
-                 self.comp_specs['ww assumptions']['HDD kWh'][self.system_type]
+                 self.comp_specs['data'].ix['HDD kWh'].values[0]
                             
     def calc_heating_fuel_consumption (self, hr_coeff):
         """
@@ -196,17 +195,17 @@ class WaterWastewaterSystems (AnnualSavings):
             self.baseline_HF_consumption will be a number
         """
         if self.comp_specs["energy use known"]:
-            self.baseline_HF_consumption = self.comp_specs["collected data"]['HF used']
+            self.baseline_HF_consumption = self.comp_specs['data'].ix['HF used']
         else: #if not self.cd["energy_use_known"]:
             self.baseline_HF_consumption = \
-   (self.hdd * self.comp_specs['ww assumptions']['HDD HF'][self.system_type] + \
-   self.pop * self.comp_specs['ww assumptions']['pop HF'][self.system_type]) * \
+   (self.hdd * self.comp_specs['data'].ix['HDD HF']+ \
+   self.pop * self.comp_specs['data'].ix['pop HF']).values[0] * \
                                  hr_coeff 
             # update for 9/28 spread sheet 
             # forcast needs an update to get a range of years 
             pop_fc = self.forecast.get_population(self.start_year,self.end_year)
             self.baseline_HF_consumption += (pop_fc - self.pop) * \
-                 self.comp_specs['ww assumptions']['pop HF'][self.system_type]
+                 self.comp_specs['data'].ix['pop HF'].values[0]
 
     def calc_savings_electricity (self, coeff = .25):
         """
@@ -222,7 +221,7 @@ class WaterWastewaterSystems (AnnualSavings):
         """
         if  self.comp_specs["audit preformed"]:
             self.savings_electricity = \
-                    self.cdself.comp_specs["collected data"]['kWh/yr w/ retro']
+                    self.cdself.comp_specs['data'].ix['kWh/yr w/ retro']
         else: # if not self.comp_sepcs["audit preformed"]:
             self.savings_electricity = self.baseline_kWh_consumption * coeff
         
@@ -240,7 +239,7 @@ class WaterWastewaterSystems (AnnualSavings):
         """
         if  self.comp_specs["audit preformed"]:
             self.savings_electricity = \
-                    self.cdself.comp_specs["collected data"]['HF w/Retro']
+                    self.cdself.comp_specs['data'].ix['HF w/Retro']
         else: # if not self.comp_sepcs["audit preformed"]:
             self.savings_heating_fuel = self.baseline_HF_consumption * coeff
             
@@ -286,7 +285,7 @@ def test ():
     """
     tests the class using the manley data.
     """
-    manley_data = CommunityData("../test_case/manley_data.yaml")
+    manley_data = CommunityData("../data/","../test_case/manley_data.yaml")
     fc = Forecast(manley_data)
     ww = WaterWastewaterSystems(manley_data, fc)
     ww.run()

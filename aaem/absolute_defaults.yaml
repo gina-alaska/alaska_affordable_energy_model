@@ -57,9 +57,7 @@ water wastewater:
   energy use known:  ABSOLUTE DEFAULT # enegry use available <bool> auto check this?
   heat recovery used: False  
   audit preformed: False
-  
-  collected data: IMPORT 
-  ww assumptions: IMPORT  
+  data: IMPORT
 
   heat recovery multiplier:
     True: .5 # precent as decimal <float> 
