@@ -14,10 +14,7 @@ community:
   elec non-fuel cost: 0.4024526823 # TODO: should be calculated
 
 forecast:
-  base year: 2010
-  start year: 2014 # start year <int>
   end year: 2040 # end year <int>
-  input: ../test_case/manley_forecast_input.csv # file name <string>
 
 residential buildings: 
   enabled: True

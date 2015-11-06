@@ -14,7 +14,7 @@ class DieselProjections (object):
     This class Projects diesel fuel prices
     """
     
-    def __init__ (self, community):
+    def __init__ (self, community, data_dir):
         """
         create the projected values
         Pre:
@@ -24,8 +24,7 @@ class DieselProjections (object):
             self.projected_prices will contain the projected prices, and 
         the start year is configred based off of it 
         """
-        data_dir = os.path.join(os.path.dirname(os.getcwd()), "data")
-        df = read_csv(os.path.join(data_dir,"diesel_fuel_prices.csv"), 
+        df = read_csv(data_dir+"/diesel_fuel_prices.csv", 
                         index_col=3, comment="#", header=1)
         
         # 3 is the first column that has a year as the name/index

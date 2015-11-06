@@ -10,8 +10,6 @@ import numpy as np
 from abc import ABCMeta, abstractmethod
 from pandas import DataFrame
 
-from diesel_prices import DieselProjections
-
 
 class AnnualSavings (object):
     """
@@ -45,10 +43,10 @@ class AnnualSavings (object):
             self.annual_costs will be a numpy array of dollar values 
         indicating the cost of the project per year.
         """
-        rate = np.zeros(self.project_life) + rate
+        cost_per_year = -np.pmt(rate, self.project_life, self.capital_costs) 
+        cpi= self.forecast.cpi.ix[self.start_year:self.end_year-1].T.values[0]
+        self.annual_costs = cost_per_year * cpi
         
-        self.annual_costs = -np.pmt(rate, self.project_life
-                                                    , self.capital_costs)
     
     def calc_annual_net_benefit (self):
         """
@@ -107,7 +105,7 @@ class AnnualSavings (object):
         post:
             self.diesel prices has prices for the project life
         """
-        prices = DieselProjections(self.cd["name"])
+        prices = self.cd["diesel prices"]
         self.diesel_prices = prices.get_projected_prices(self.start_year,
                                                          self.end_year)
     
@@ -145,6 +143,15 @@ class AnnualSavings (object):
         raise NotImplementedError, "should be implemented by child class to" +\
         " create self.annual_heating_savings as an np.array, length" +\
         " self.project_life, of dollar values(numbers)"
+    
+    @abstractmethod
+    def run (self):
+        """
+        abstract function 
+        should be implemented by child class to run component
+        """
+        raise NotImplementedError, "should be implemented by child class to" +\
+        " run the component"
   
     ## helper
     def get_nan_range (self):

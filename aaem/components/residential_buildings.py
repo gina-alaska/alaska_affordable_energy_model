@@ -10,7 +10,6 @@ from math import isnan
 
 from annual_savings import AnnualSavings
 from community_data import CommunityData
-#~ import aea_assumptions as AEAA
 from forecast import Forecast
 
 
@@ -54,7 +53,6 @@ class ResidentialBuildings(AnnualSavings):
         self.calc_opportunity_values()
         self.calc_init_HF_use()
         
-        #~ self.calc_capital_costs()
         self.get_diesel_prices()
         
         self.calc_baseline_HF_consumption()
