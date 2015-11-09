@@ -35,7 +35,7 @@ residential buildings:
   lifetime: ABSOLUTE DEFAULT # number years <int>  
   start year: ABSOLUTE DEFAULT # start year <int>
   average refit cost: 11000 # cost/refit <float>
-  res model data: IMPORT
+  data: IMPORT
 
 community buildings:
   enabled: False
