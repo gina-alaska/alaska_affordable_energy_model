@@ -11,7 +11,7 @@ from math import isnan
 from annual_savings import AnnualSavings
 from community_data import CommunityData
 from forecast import Forecast
-
+import constants
 
 class ResidentialBuildings(AnnualSavings):
     """
@@ -108,23 +108,28 @@ class ResidentialBuildings(AnnualSavings):
         
         amnt = np.float64(rd["Fuel Oil"])
         percent_acconuted += amnt
-        self.init_HF = self.calc_consumption_by_fuel(amnt, total, HH, (1/.138))
+        self.init_HF = self.calc_consumption_by_fuel(amnt, total, HH, 
+                                                     constants.mmbtu_to_gal_HF)
         
         amnt = np.float64(rd["Wood"])
         percent_acconuted += amnt
-        self.init_wood = self.calc_consumption_by_fuel(amnt, total, HH, 1/20.0)
+        self.init_wood = self.calc_consumption_by_fuel(amnt, total, HH, 
+                                                    constants.mmbtu_to_cords)
         
         amnt = np.float64(rd["Utility Gas"])
         percent_acconuted += amnt
-        self.init_gas = self.calc_consumption_by_fuel(amnt, total, HH, 0.967)
+        self.init_gas = self.calc_consumption_by_fuel(amnt, total, HH, 
+                                                    constants.mmbtu_to_Mcf)
         
         amnt = np.float64(rd["LP"])
         percent_acconuted += amnt
-        self.init_LP = self.calc_consumption_by_fuel(amnt, total, HH, 1/.092)
+        self.init_LP = self.calc_consumption_by_fuel(amnt, total, HH, 
+                                                    constants.mmbtu_to_gal_LP)
         
         amnt = np.float64(rd["Electricity"])
         percent_acconuted += amnt
-        self.init_kWh = self.calc_consumption_by_fuel(amnt, total, HH, 293.0)
+        self.init_kWh = self.calc_consumption_by_fuel(amnt, total, HH,
+                                                      constants.mmbtu_to_kWh)
         #~ self.init_coal
         #~ self.init_solar
         #~ self.init_other
@@ -155,32 +160,36 @@ class ResidentialBuildings(AnnualSavings):
         # the one in each of these function calls is an identity 
         amnt = np.float64(rd["Fuel Oil"])
         self.savings_HF = avg_EUI_reduction * self.opportunity_HH * \
-                          self.calc_consumption_by_fuel(amnt, total, 1, 1/.138)
+                          self.calc_consumption_by_fuel(amnt, total, 1,
+                          constants.mmbtu_to_gal_HF)
         
         amnt = np.float64(rd["Wood"])
         self.savings_wood = avg_EUI_reduction * self.opportunity_HH * \
-                            self.calc_consumption_by_fuel(amnt, total, 1, 1/20.)
+                            self.calc_consumption_by_fuel(amnt, total, 1, 
+                            constants.mmbtu_to_cords)
         
         amnt = np.float64(rd["Utility Gas"])
         self.savings_gas = avg_EUI_reduction * self.opportunity_HH * \
-                           self.calc_consumption_by_fuel(amnt, total, 1, 0.967)
+                           self.calc_consumption_by_fuel(amnt, total, 1, 
+                           constants.mmbtu_to_Mcf)
         
         amnt = np.float64(rd["LP"])
         self.savings_LP = avg_EUI_reduction * self.opportunity_HH * \
-                          self.calc_consumption_by_fuel(amnt, total, 1, 1/.092)
+                          self.calc_consumption_by_fuel(amnt, total, 1,
+                          constants.mmbtu_to_gal_LP)
         
         amnt = np.float64(rd["Electricity"])
         self.savings_kWh = avg_EUI_reduction * self.opportunity_HH * \
-                           self.calc_consumption_by_fuel(amnt, total, 1, 293.0)
+                           self.calc_consumption_by_fuel(amnt, total, 1, 
+                           constants.mmbtu_to_kWh)
         #~ self.savings_coal
         #~ self.savings_solar
         #~ self.savings_other
         
     def calc_consumption_by_fuel (self, fuel_amnt, total_consumption, HH, cf):
         """ Function doc """
-        kWh_to_mmbtu = 0.003412
         # 500 average energy use, 12 months in a year
-        HH_consumption = HH * 500 * 12 * kWh_to_mmbtu
+        HH_consumption = HH * 500 * 12 * constants.kWh_to_mmbtu
         return np.float64(fuel_amnt * (total_consumption - HH_consumption) * cf)
                             
     def calc_baseline_fuel_consumption (self):
@@ -195,17 +204,17 @@ class ResidentialBuildings(AnnualSavings):
         scaler = (HH - self.init_HH) * area * EUI
         
         self.baseline_HF_consumption = self.init_HF+np.float64(rd["Fuel Oil"])*\
-                                       scaler * 1/.138
+                                       scaler * constants.mmbtu_to_gal_HF
         self.baseline_wood_consumption = self.init_wood+np.float64(rd["Wood"])*\
-                                       scaler * 1/20.0
+                                       scaler * constants.mmbtu_to_cords
         self.baseline_gas_consumption = self.init_gas + \
                                         np.float64(rd["Utility Gas"]) * \
-                                        scaler * 0.967
+                                        scaler * constants.mmbtu_to_Mcf
         self.baseline_LP_consumption = self.init_LP+np.float64(rd["LP"])*\
-                                       scaler * 1/.092
+                                       scaler * constants.mmbtu_to_gal_LP
         self.baseline_kWh_consumption = self.init_kWh+\
                                         np.float64(rd["Electricity"])*\
-                                        scaler * 1/20.0
+                                        scaler * constants.mmbtu_to_kWh
         #~ self.baseline_coal_consumption
         #~ self.baseline_solar_consumption
         #~ self.baseline_other_consumption
@@ -214,7 +223,7 @@ class ResidentialBuildings(AnnualSavings):
         """
         """
         HF_price = (self.diesel_prices + self.cd['heating fuel premium'])
-        wood_price = 250
+        wood_price = 250 # TODO: change to mutable
         elec_price = self.elec_prices[self.start_year-self.start_year:
                                          self.end_year-self.start_year]
         LP_price = 0 # TODO: find
