@@ -50,9 +50,10 @@ class ResidentialBuildings(AnnualSavings):
         
         """
         self.calc_init_HH()
-        self.calc_opportunity_values()
+        self.calc_savings_opportunities()
         self.calc_init_consumption()
         
+        self.calc_capital_costs()
         self.get_diesel_prices()
         
         #~ self.calc_baseline_HF_consumption()
@@ -63,7 +64,7 @@ class ResidentialBuildings(AnnualSavings):
         #~ self.calc_baseline_HF_cost()
         #~ self.calc_refit_HF_cost()
         
-        #~ self.calc_capital_costs()
+        
         #~ self.calc_annual_electric_savings()
         #~ self.calc_annual_heating_savings()
         #~ self.calc_annual_total_savings()
@@ -114,7 +115,7 @@ class ResidentialBuildings(AnnualSavings):
         
         amnt = np.float64(rd["Utility Gas"])
         percent_acconuted += amnt
-        self.inti_gas = self.calc_consumption_by_fuel(amnt, total, HH, 0.967)
+        self.init_gas = self.calc_consumption_by_fuel(amnt, total, HH, 0.967)
         
         amnt = np.float64(rd["LP"])
         percent_acconuted += amnt
@@ -127,49 +128,11 @@ class ResidentialBuildings(AnnualSavings):
         #~ self.init_solar
         #~ self.init_other
         
-        print percent_acconuted
+        print str(round(percent_acconuted * 100)) + \
+              " of residential fuel sources accounted for"
         
-        
-        
-                            
-        
-    
-    
-    
-    def calc_consumption_by_fuel (self, fuel_amnt, total_consumption, HH, cf):
-        """ Function doc """
-        kWh_to_mmbtu = 0.003412
-        HH_consumption = HH * 500 * 12 * kWh_to_mmbtu
-        return np.float64(fuel_amnt * (total_consumption - HH_consumption) * cf)
-                            
-        
-        
-        
-    def calc_init_HF_use (self):
-        """
-        calculate the initial fuel use with no project. 
-        
-        pre:
-            self.cd["res_model_data"] should be valid residential data
-            other init values should be calculated. \
-        post:
-            self.init_HF_use is some amount of gallons
-        """
-        rd = self.comp_specs['data'].T
-        self.init_HF_use= rd["consumption_gallons_HF"]
-        
-    def calc_opportunity_values (self):
+    def calc_savings_opportunities (self):
         """ 
-        calculate the values that appear in the opportunity section of the
-        inputs on the eff(res) tab TODO:rename/describe
-        
-        pre:
-            self.cd["res_model_data"] should be valid residential data
-        post:
-            self.opportunity_HH is a inter # of Housholds
-            self.init_HF_savings is the gallons of HF saved durring the first
-        year of a project.
-            self.percent_savings is a decimal percent. Where is this used?
         """
         rd = self.comp_specs['data'].T
         ##  #HH
@@ -177,7 +140,48 @@ class ResidentialBuildings(AnnualSavings):
         ## % as decimal 
         self.percent_savings = rd["opportunity_total_percent_community_savings"]
         
-    
+        self.opportunity_HH = np.float64( self.opportunity_HH )
+        self.percent_savings = np.float64( self.percent_savings)
+        
+        
+        area = np.float64(rd["pre_avg_area"])
+        EUI = np.float64(rd["pre_avg_EUI"])
+        avg_EUI_reduction = np.float64(rd["post_avg_EUI_reduction"])
+        
+        total = area * EUI
+        
+        
+        # the one in each of these function calls is an identity 
+        amnt = np.float64(rd["Fuel Oil"])
+        self.savings_HF = avg_EUI_reduction * self.opportunity_HH * \
+                          self.calc_consumption_by_fuel(amnt, total, 1, 1/.138)
+        
+        amnt = np.float64(rd["Wood"])
+        self.savings_wood = avg_EUI_reduction * self.opportunity_HH * \
+                            self.calc_consumption_by_fuel(amnt, total, 1, 1/20.)
+        
+        amnt = np.float64(rd["Utility Gas"])
+        self.savings_gas = avg_EUI_reduction * self.opportunity_HH * \
+                           self.calc_consumption_by_fuel(amnt, total, 1, 0.967)
+        
+        amnt = np.float64(rd["LP"])
+        self.savings_LP = avg_EUI_reduction * self.opportunity_HH * \
+                          self.calc_consumption_by_fuel(amnt, total, 1, 1/.092)
+        
+        amnt = np.float64(rd["Electricity"])
+        self.savings_kWh = avg_EUI_reduction * self.opportunity_HH * \
+                           self.calc_consumption_by_fuel(amnt, total, 1, 293.0)
+        #~ self.init_coal
+        #~ self.init_solar
+        #~ self.init_other
+        
+    def calc_consumption_by_fuel (self, fuel_amnt, total_consumption, HH, cf):
+        """ Function doc """
+        kWh_to_mmbtu = 0.003412
+        # 500 average energy use, 12 months in a year
+        HH_consumption = HH * 500 * 12 * kWh_to_mmbtu
+        return np.float64(fuel_amnt * (total_consumption - HH_consumption) * cf)
+                            
     def calc_baseline_HF_consumption (self):
         """
         forecast the fuel consumption with no project upgrades
