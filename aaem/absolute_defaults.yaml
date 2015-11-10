@@ -6,7 +6,7 @@ community:
   #AEA ASSUMPTIONS
   interest rate: .05 # rate as decimal <float> (ex. .05) 
   discount rate: .03 # rate as decimal <float> (ex. .03)
-  heating fuel premium: .45 # price/gallon <float> (ex. 0.45)
+  heating fuel premium: IMPORT # price/gallon <float> (ex. 0.45)
 
   # fuel repairs: 500 # price/yr <float> TODO: still used??
   # fuel o&m: 1000 # # price/yr <float> TODO: still used??

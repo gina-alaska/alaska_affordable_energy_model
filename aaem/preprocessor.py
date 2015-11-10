@@ -191,10 +191,11 @@ def residential (fuel_file, data_file, out_dir, com_id):
     del df.T["energy_region"]
     df.to_csv(out_file,mode="a")
 
-def region (data_file, out_dir, com_id):
+def region (data_file, premium_file, out_dir, com_id):
     """ Function doc """
     
     region = read_csv(data_file, index_col=0, comment='#').energy_region[com_id]
+    premium = read_csv(premium_file, index_col=0, comment='#').premium[region]
 
     out_file = out_dir + "region.csv"
     fd = open(out_file,'w')
@@ -203,6 +204,7 @@ def region (data_file, out_dir, com_id):
     fd.write("#### #### #### #### ####\n")
     fd.write("key,value \n")
     fd.write("region,"+ str(region) + "\n")
+    fd.write("premium," + str(premium) + "\n")
     fd.close()
 
     
@@ -235,7 +237,8 @@ def preprocess (data_dir, out_dir, com_id):
 
     ###
     
-    region(data_dir+"res_model_data.csv",out_dir,com_id)
+    region(data_dir+"res_model_data.csv",
+           data_dir+"heating_fuel_premium.csv",out_dir,com_id)
     
     population(data_dir+"population.csv",out_dir,com_id)
     residential(data_dir+"res_fuel_source.csv", data_dir+"res_model_data.csv",

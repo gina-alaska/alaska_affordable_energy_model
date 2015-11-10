@@ -9,7 +9,7 @@ is here for testing
 from pandas import read_csv
 import yaml
 import os.path
-
+import numpy as np
 ## w&ww - water and wastewater
 ## it - intertie
 ## fc - forecast
@@ -242,10 +242,13 @@ class CommunityData (object):
             self.set_item('water wastewater', "data", 
                           self.load_pp_csv("wastewater_data.csv"))
 
+        region = self.load_pp_csv("region.csv")
         if self.get_item('community',"region") == "IMPORT":
-            self.set_item('community',"region",
-                            self.load_pp_csv("region.csv").values[0][0])
-            
+            self.set_item('community',"region", region.ix["region"][0])
+        if self.get_item('community',"heating fuel premium") == "IMPORT":    
+            self.set_item('community',"heating fuel premium", 
+                         np.float64(region.ix["premium"][0]))
+                         
     def load_pp_csv(self, f_name):
         """
         load a preprocessed csv file
