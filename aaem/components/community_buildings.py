@@ -102,7 +102,7 @@ class CommunityBuildings (AnnualSavings):
         self.calc_annual_costs(self.cd['interest rate'])
         self.calc_annual_net_benefit()
         
-        self.calc_npv(self.cd['discount rate'], 2014)
+        self.calc_npv(self.cd['discount rate'], self.cd["current year"])
 
     def calc_refit_values (self):
         """
@@ -149,8 +149,8 @@ class CommunityBuildings (AnnualSavings):
         idx = ben_data['Building Type'] != "Education - K - 12"
         known_buildings = ben_data['Number Of Building Type'].sum()
         
-        # 11 is the number of categories used in average
-        avg_sqft = (ben_data[idx]['Total Square Feet'].sum() / 11) if \
+        # 12 is the number of categories used in average
+        avg_sqft = (ben_data[idx]['Total Square Feet'].sum() / 12) if \
            known_buildings/(known_buildings + self.additional_buildings) < .4 \
                 else self.comp_specs['com building estimates']['Average'][key]
         
@@ -202,8 +202,15 @@ class CommunityBuildings (AnnualSavings):
         self.benchmark_HF = \
       np.sum(self.comp_specs['com benchmark data'][['Current Fuel Oil']].values) 
 
-      
-        self.additional_HF = self.additional_sqft * hf_sqft_yr
+
+        if pop < 300:
+            key = "HDD<300"
+        elif pop < 1100:
+            key = "HDD>300,<1200"
+        else: 
+            key = "HDD>1200"
+        self.additional_HF = self.additional_sqft * hf_sqft_yr * \
+     (self.cd["HDD"]/self.comp_specs['com building estimates']['Average'][key])
         
             # multiple building types 
 
