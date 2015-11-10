@@ -145,6 +145,52 @@ def wastewater (data_file, assumptions_file, out_dir, com_id):
     df = concat([ww_d,ww_a])
     df.to_csv(out_file, mode = 'a')
    
+def residential (fuel_file, data_file, out_dir, com_id):
+    """ Function doc """
+    out_file = out_dir + "residential_data.csv"
+    fd = open(out_file,'w')
+    fd.write("# " + com_id + " residential data\n")
+    fd.write("# energy_region: region used by model \n")
+    fd.write("# year: year of data  collected \n")
+    fd.write("# total_occupied: # houses occupied \n")
+    fd.write("# BEES_number: # of houses at BEES standard \n")
+    fd.write("# BEES_avg_area: average Sq. ft. of BEES home \n")
+    fd.write("# BEES_avg_EUI: BEES energy use intensity MMBtu/sq. ft.\n")
+    fd.write("# BEES_total_consumption: BEES home energy consumption MMBtu \n")
+    
+    fd.write("# pre_number: # of houses pre-retrofit \n")
+    fd.write("# pre_avg_area: average Sq. ft. of pre-retrofit home \n")
+    fd.write("# pre_avg_EUI: pre-retrofit energy use intensity MMBtu/sq. ft.\n")
+    
+    fd.write("# post_number: # of houses at post-retrofit \n")
+    fd.write("# post_avg_area: average Sq. ft. of post-retrofithome \n")
+    fd.write("# post_avg_EUI: post-retrofit energy use intensity "+\
+             "MMBtu/sq. ft.\n")
+    fd.write("# post_total_consumption: post-retrofit home energy consumption"+\
+             " MMBtu \n")
+             
+    fd.write("# opportunity_non-Wx_HERP_BEES:  # of houses \n")
+    fd.write("# opportunity_potential_reduction: ???? \n")
+    fd.write("# opportunity_savings: potention savings in heating Fuel(gal)\n")
+    fd.write("# opportunity_total_percent_community_savings: ???\n")
+    
+    fd.write("# Total; Utility Gas; LP; Electricity; Fuel Oil; "+\
+            "Coal; Wood; Solar; Other; No Fuel Used: % of heating fuel types\n")
+    fd.write("#### #### #### #### ####\n")
+    fd.write("key, value\n")
+    fd.close()
+    
+    fuel = read_csv(fuel_file, index_col=0, comment = "#").ix[com_id]
+    fuel = fuel.ix[["Total", "Utility Gas", "LP", "Electricity", "Fuel Oil",
+                    "Coal", "Wood", "Solar", "Other", "No fuel used"]]
+    
+    data = read_csv(data_file, index_col=0, comment = "#").ix[com_id]
+    
+    df = concat([data,fuel])
+    del df.T["energy_region"]
+    df.to_csv(out_file,mode="a")
+
+    
 
     
 def preprocess (data_dir, out_dir, com_id):
@@ -172,7 +218,6 @@ def preprocess (data_dir, out_dir, com_id):
     shutil.copy(data_dir+"com_num_buildings.csv", out_dir)
     shutil.copy(data_dir+"diesel_fuel_prices.csv", out_dir)
     shutil.copy(data_dir+"hdd.csv", out_dir)
-    shutil.copy(data_dir+"res_model_data.csv", out_dir)
     shutil.copy(data_dir+"cpi.csv", out_dir)
 
     ###
@@ -180,7 +225,9 @@ def preprocess (data_dir, out_dir, com_id):
     
     
     population(data_dir+"population.csv",out_dir,com_id)
-    wastewater(data_dir+"ww_data.csv",data_dir+"ww_assumptions.csv",
+    residential(data_dir+"res_fuel_source.csv", data_dir+"res_model_data.csv",
+                out_dir, com_id)
+    wastewater(data_dir+"ww_data.csv", data_dir+"ww_assumptions.csv",
                out_dir, com_id)
     
     

@@ -54,7 +54,7 @@ class Forecast (object):
         self.end_year = self.fc_specs["end year"]
         self.base_pop = self.fc_specs['population'].ix\
                     [self.cd.get_item('residential buildings',
-                                            'res model data')['year']].values[0]
+                                            'data').ix['year']].values[0]
         #~ print self.base_pop
         self.cpi = self.cd.load_pp_csv("cpi.csv")
         self.forecast_population()
@@ -190,9 +190,8 @@ class Forecast (object):
         forcast # of houselholds
         """
         peps_per_house = float(self.base_pop) / \
-    self.cd.get_item('residential buildings','res model data')['total_occupied']
-        self.households = np.round(self.population / peps_per_house, 0)
-        
+    self.cd.get_item('residential buildings','data').ix['total_occupied']
+        self.households = np.round(self.population / np.float64(peps_per_house))
         self.households["HH"] = self.households["population"]
         del(self.households["population"])
         

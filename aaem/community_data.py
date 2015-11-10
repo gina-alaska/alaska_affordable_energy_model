@@ -201,14 +201,14 @@ class CommunityData (object):
             csvitems are in self.model_inputs 
         """
         self.community = self.get_item('community','name')
-        if self.get_item('residential buildings','res model data') == "IMPORT":
-            self.set_item('residential buildings','res model data',
-                                            self.load_csv('res model data'))
-            self.set_item('community','region',
-                self.model_inputs['residential buildings']\
-                                 ['res model data']['energy_region'])
-            del(self.model_inputs['residential buildings']\
-                                 ['res model data']['energy_region'])
+        #~ if self.get_item('residential buildings','res model data') == "IMPORT":
+            #~ self.set_item('residential buildings','res model data',
+                                            #~ self.load_csv('res model data'))
+            #~ self.set_item('community','region',
+                #~ self.model_inputs['residential buildings']\
+                                 #~ ['res model data']['energy_region'])
+            #~ del(self.model_inputs['residential buildings']\
+                                 #~ ['res model data']['energy_region'])
         if self.get_item('community buildings','com benchmark data')== "IMPORT":
             self.set_item('community buildings','com benchmark data',
                                             self.load_csv('com benchmark data'))
@@ -225,11 +225,6 @@ class CommunityData (object):
             self.set_item('community buildings',"com building estimates",
              read_csv(os.path.join(self.data_dir, "com_building_estimates.csv"),
                          index_col = 0, header=1, comment = '#').T)
-        #~ if self.get_item('water wastewater', "ww assumptions")== "IMPORT":
-            #~ self.set_item('water wastewater', "ww assumptions",
-                     #~ read_csv(os.path.join(self.data_dir, "ww_assumptions.csv"),
-                         #~ index_col = 0, header=0, comment = '#'))
-                         
         
         ## load preprocessed files
         if self.get_item('forecast', "population") == "IMPORT":
@@ -238,9 +233,15 @@ class CommunityData (object):
         if self.get_item('forecast', "electricity") == "IMPORT":
             self.set_item('forecast', "electricity", 
                           self.load_pp_csv("electricity.csv"))
+
+        if  self.get_item('residential buildings','data') == "IMPORT":
+            self.set_item('residential buildings','data',
+                          self.load_pp_csv("residential_data.csv"))
+
         if self.get_item('water wastewater', "data") == "IMPORT":
             self.set_item('water wastewater', "data", 
                           self.load_pp_csv("wastewater_data.csv"))
+
         
         
             
@@ -290,7 +291,7 @@ class CommunityData (object):
             a valid .yaml config file is created
         """
         ## save work around 
-        self.set_item('residential buildings','res model data', "IMPORT")
+        self.set_item('residential buildings','data', "IMPORT")
         self.set_item('community buildings','com benchmark data', "IMPORT")
         self.set_item('community buildings',"com num buildings", "IMPORT")
         self.set_item('community buildings',"com building estimates", "IMPORT")

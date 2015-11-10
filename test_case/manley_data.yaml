@@ -1,5 +1,6 @@
 community: 
   name: Manley Hot Springs # community name <string>
+  region: Yukon-Koyukuk/Upper Tanana
   current year: 2014 #year to base npv calculations on <int>
   interest rate: .05 # rate as decimal <float> (ex. .05) 
   discount rate: .03 # rate as decimal <float> (ex. .03)
