@@ -81,6 +81,7 @@ class WaterWastewaterSystems (AnnualSavings):
         post:
            self.baseline_kWh_cost is an np.array of $/year values 
         """
+        # TODO update with new way of doing this when it's finished
         kWh_cost = self.cd["elec non-fuel cost"] + \
                 self.diesel_prices/self.cd['diesel generation efficiency']
         # kWh/yr*$/kWh
