@@ -56,23 +56,23 @@ class ResidentialBuildings(AnnualSavings):
         self.calc_capital_costs()
         self.get_diesel_prices()
         
-        #~ self.calc_baseline_HF_consumption()
-        #~ self.forecast.set_res_HF_fuel_forecast(self.baseline_HF_consumption,
-                                                #~ self.start_year)
-        #~ self.calc_refit_HF_consumption()
+        self.calc_baseline_fuel_consumption()
+        self.calc_baseline_fuel_cost() 
         
-        #~ self.calc_baseline_HF_cost()
-        #~ self.calc_refit_HF_cost()
+        self.calc_refit_fuel_consumption()
+        self.calc_refit_fuel_cost()
         
+        self.forecast.set_res_HF_fuel_forecast(self.baseline_HF_consumption,
+                                                self.start_year)
         
-        #~ self.calc_annual_electric_savings()
-        #~ self.calc_annual_heating_savings()
-        #~ self.calc_annual_total_savings()
+        self.calc_annual_electric_savings()
+        self.calc_annual_heating_savings()
+        self.calc_annual_total_savings()
         
-        #~ self.calc_annual_costs(self.cd['interest rate'])
-        #~ self.calc_annual_net_benefit()
+        self.calc_annual_costs(self.cd['interest rate'])
+        self.calc_annual_net_benefit()
         
-        #~ self.calc_npv(self.cd['discount rate'], 2014)
+        self.calc_npv(self.cd['discount rate'], self.cd['current year'])
     
     def calc_init_HH (self):
         """
@@ -171,9 +171,9 @@ class ResidentialBuildings(AnnualSavings):
         amnt = np.float64(rd["Electricity"])
         self.savings_kWh = avg_EUI_reduction * self.opportunity_HH * \
                            self.calc_consumption_by_fuel(amnt, total, 1, 293.0)
-        #~ self.init_coal
-        #~ self.init_solar
-        #~ self.init_other
+        #~ self.savings_coal
+        #~ self.savings_solar
+        #~ self.savings_other
         
     def calc_consumption_by_fuel (self, fuel_amnt, total_consumption, HH, cf):
         """ Function doc """
@@ -182,80 +182,81 @@ class ResidentialBuildings(AnnualSavings):
         HH_consumption = HH * 500 * 12 * kWh_to_mmbtu
         return np.float64(fuel_amnt * (total_consumption - HH_consumption) * cf)
                             
-    def calc_baseline_HF_consumption (self):
+    def calc_baseline_fuel_consumption (self):
         """
-        forecast the fuel consumption with no project upgrades
-        
-        pre:
-            self.cd["res_model_data"] should be valid residential data
-            self.init_HF_use should be an amount of gallons HF
-            self.forecast should be able to forecast the #HH
-        post:
-            self.baseline_HF_consumption is an array of gallons HF used for
-        each year of the forecast. 
         """
         rd = self.comp_specs['data'].T
-        self.baseline_HF_consumption = self.init_HF_use + \
-        ((self.forecast.get_households(self.start_year,self.end_year)-\
-        self.init_HH)*rd['pre_avg_area']*rd['pre_avg_EUI']/.138)
+        HH = self.forecast.get_households(self.start_year,self.end_year)
+        
+        area = np.float64(rd["pre_avg_area"])
+        EUI = np.float64(rd["pre_avg_EUI"])
+        
+        scaler = (HH - self.init_HH) * area * EUI
+        
+        self.baseline_HF_consumption = self.init_HF+np.float64(rd["Fuel Oil"])*\
+                                       scaler * 1/.138
+        self.baseline_wood_consumption = self.init_wood+np.float64(rd["Wood"])*\
+                                       scaler * 1/20.0
+        self.baseline_gas_consumption = self.init_gas + \
+                                        np.float64(rd["Utility Gas"]) * \
+                                        scaler * 0.967
+        self.baseline_LP_consumption = self.init_LP+np.float64(rd["LP"])*\
+                                       scaler * 1/.092
+        self.baseline_kWh_consumption = self.init_kWh+\
+                                        np.float64(rd["Electricity"])*\
+                                        scaler * 1/20.0
+        #~ self.baseline_coal_consumption
+        #~ self.baseline_solar_consumption
+        #~ self.baseline_other_consumption
 
-    def calc_refit_HF_consumption (self):
+    def calc_baseline_fuel_cost (self):
         """
-        forecast the fuel consumption with project upgrades
+        """
+        HF_price = (self.diesel_prices + self.cd['heating fuel premium'])
+        wood_price = 250
+        elec_price = 0 # TODO: this needs to be calculated for all components that use it, its not used here for manly so I'll put it off
+        LP_price = 0 # TODO: find
+        gas_price = 0 # TODO: find
         
-        pre:
-            self.baseline_HF_consumption is an array of gallons HF used for
-        each year of the forecast. 
-            self.init_HF_use should be an amount of gallons HF
-            self.forecast should be able to forecast the #HH
-            self.opportunity_HH is an int
-        post:
-            self.refit_HF_consumption is an array of gallons HF used for
-        each year of the forecast. 
-        """
-        self.refit_HF_consumption = []
-        for idx in range(len(self.baseline_HF_consumption)):
-            if idx == 0:
-                self.refit_HF_consumption.append(\
-                    self.baseline_HF_consumption[idx] - self.init_HF_savings)
-                continue
-            
-            val = self.baseline_HF_consumption[idx] - self.init_HF_savings
-            if self.baseline_HF_consumption[idx] < \
-               self.baseline_HF_consumption[idx-1]:
-                HH_estimate = self.forcast.get_households(self.start_year + idx)
-                val -= (HH_estimate - self.init_HH)*\
-                        self.init_HF_savings/self.opportunity_HH 
-            self.refit_HF_consumption.append(val)
-            
-    def calc_baseline_HF_cost (self):
-        """
-        forecast the baseline cost of HF ($/yr for each year)
         
-        pre:
-            self.diesel_prices is a price(float) for each year. the heating fuel
-        premium is price(float). self.baseline_HF_consumption is an array 
-        of gallon values over the project life time 
-        post:
-            self.baseline_HF_cost is an array of costs over the project life
-        """
-        fuel_price = (self.diesel_prices + self.cd['heating fuel premium'])
-        self.baseline_HF_cost = fuel_price * self.baseline_HF_consumption
-                
-    def calc_refit_HF_cost (self):
-        """
-        forecast the post-refit cost of HF ($/yr for each year)
+        self.baseline_HF_cost =  self.baseline_HF_consumption * HF_price + \
+                                 self.baseline_wood_consumption * wood_price + \
+                                 self.baseline_gas_consumption * gas_price + \
+                                 self.baseline_LP_consumption * LP_price + \
+                                 self.baseline_kWh_consumption * gas_price
+        # coal,solar, other
         
-        pre:
-            self.diesel_prices is a price(float) for each year. the heating fuel
-        premium is price(float). self.refit_HF_consumption is an array 
-        of gallon values over the project life time 
-        post:
-            self.refit_HF_cost is an array of costs over the project life
+
+    def calc_refit_fuel_consumption (self):
         """
-        fuel_price = (self.diesel_prices + self.cd['heating fuel premium'])
-        self.refit_HF_cost = fuel_price * self.refit_HF_consumption
+        """
+        self.refit_HF_consumption = self.baseline_HF_consumption -\
+                                    self.savings_HF 
+        self.refit_wood_consumption = self.baseline_wood_consumption -\
+                                      self.savings_wood 
+        self.refit_LP_consumption = self.baseline_LP_consumption -\
+                                    self.savings_LP 
+        self.refit_gas_consumption = self.baseline_gas_consumption - \
+                                     self.savings_gas 
+        self.refit_kWh_consumption = self.baseline_kWh_consumption - \
+                                     self.savings_kWh 
+        # coal,solar, other
         
+    def calc_refit_fuel_cost (self):
+        """
+        """
+        HF_price = (self.diesel_prices + self.cd['heating fuel premium'])
+        wood_price = 250
+        elec_price = 0 # TODO: this needs to be calculated for all components that use it, its not used here for manly so I'll put it off
+        LP_price = 0 # TODO: find
+        gas_price = 0 # TODO: find
+        
+        
+        self.refit_HF_cost =  self.refit_HF_consumption * HF_price + \
+                                 self.refit_wood_consumption * wood_price + \
+                                 self.refit_gas_consumption * gas_price + \
+                                 self.refit_LP_consumption * LP_price + \
+                                 self.refit_kWh_consumption * gas_price
     
     def calc_capital_costs (self):
         """
