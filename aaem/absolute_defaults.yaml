@@ -52,15 +52,14 @@ water wastewater:
   lifetime:  ABSOLUTE DEFAULT # number years <int>  
   start year:  ABSOLUTE DEFAULT # start year <int>
   audit cost: 10000 # price <float> (ex. 10000)
-  system type: ABSOLUTE DEFAULT # system type <string> 
   average refit cost: 360.00 # cost/per person <float>
-  energy use known:  ABSOLUTE DEFAULT # enegry use available <bool> auto check this?
   heat recovery used: False  
-  audit preformed: False
-  
-  collected data: IMPORT 
-  ww assumptions: IMPORT  
+  data: IMPORT
 
+  electricity refit reduction: .25 # decimal precent <float> percent saved by preforming electricity refit 
+  heating fuel refit reduction: .35 # decimal precent <float> percent saved by preforming heating fuel refit 
+  
+  
   heat recovery multiplier:
     True: .5 # precent as decimal <float> 
     False: 1.0 # precent as decimal <float> 
