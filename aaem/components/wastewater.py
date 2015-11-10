@@ -45,7 +45,7 @@ class WaterWastewaterSystems (AnnualSavings):
         
         self.hdd = self.cd["HDD"]
         self.pop = self.forecast.base_pop
-        self.system_type = self.comp_specs["system type"] 
+        self.system_type = str(self.comp_specs['data'].ix["System Type"]) 
         self.forecast = forecast
         
         
@@ -174,7 +174,7 @@ class WaterWastewaterSystems (AnnualSavings):
         post:
             self.baseline_kWh_consumption will be a number
         """
-        if self.comp_specs["energy use known"]:
+        if not np.isnan(np.float64(self.comp_specs['data'].ix['kWh/yr'])):
             self.baseline_kWh_consumption = self.comp_specs['data'].ix['kWh/yr']
         else: #if not self.cd["w&ww_energy_use_known"]:
             hdd_coeff = np.float64(self.comp_specs['data'].ix['HDD kWh'])
@@ -197,9 +197,9 @@ class WaterWastewaterSystems (AnnualSavings):
         post:
             self.baseline_HF_consumption will be a number
         """
-        if self.comp_specs["energy use known"]:
+        if not np.isnan(np.float64(self.comp_specs['data'].ix['HF Used'])):
             self.baseline_HF_consumption = \
-                            np.float64(self.comp_specs['data'].ix['HF used'])
+                            np.float64(self.comp_specs['data'].ix['HF Used'])
         else: #if not self.cd["energy_use_known"]:
             hr_used = self.comp_specs['heat recovery used']
             hr_coeff =  self.comp_specs['heat recovery multiplier'][hr_used]
@@ -219,9 +219,15 @@ class WaterWastewaterSystems (AnnualSavings):
         post:
             self.refit_kWh_consumption is calculated
         """
-        #~ consumption = np.float64(self.comp_specs['data'].ix['kWh/yr w/ retro'])
-        #~ if np.isnan(consumption):
         percent = 1 - self.comp_specs['electricity refit reduction']
+        if not \
+           (np.isnan(np.float64(self.comp_specs['data'].ix['kWh/yr w/ retro']))\
+                and np.isnan(np.float64(self.comp_specs['data'].ix['kWh/yr']))):
+            
+            percent =np.float64(self.comp_specs['data'].ix['kWh/yr w/ retro'])/\
+                      np.float64(self.comp_specs['data'].ix['kWh/yr'])
+        
+        
         consumption = self.baseline_kWh_consumption * percent
          
         self.refit_kWh_consumption = consumption 
@@ -235,11 +241,14 @@ class WaterWastewaterSystems (AnnualSavings):
         post:
             self.refit_HF_consumption is calculated
         """
-        #~ consumption = np.float64(self.comp_specs['data'].ix['HF w/Retro'])
-        #~ if np.isnan(consumption):
         percent = 1 - self.comp_specs['heating fuel refit reduction']
+        if not (np.isnan(np.float64(self.comp_specs['data'].ix['HF w/Retro']))\
+           and np.isnan(np.float64(self.comp_specs['data'].ix['HF Used']))):
+            percent = np.float64(self.comp_specs['data'].ix['HF w/Retro'])/\
+                      np.float64(self.comp_specs['data'].ix['HF Used'])
+        
         consumption = self.baseline_HF_consumption * percent
-         
+        
         self.refit_HF_consumption = consumption 
         
     def calc_savings_kWh_consumption (self):
@@ -282,8 +291,9 @@ class WaterWastewaterSystems (AnnualSavings):
         post:
             self.captial_costs will be a dollar value
         """
-        self.capital_costs = self.comp_specs["audit cost"]
-        if not self.comp_specs["audit preformed"]:
+        cc = self.comp_specs['data'].ix["Implementation Cost"]
+        self.capital_costs = np.float64(cc)
+        if np.isnan(self.capital_costs):
             self.capital_costs = float(self.comp_specs["audit cost"]) + \
                                         self.pop *  self.cost_per_person
     
