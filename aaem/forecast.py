@@ -191,8 +191,7 @@ class Forecast (object):
         """
         peps_per_house = float(self.base_pop) / \
     self.cd.get_item('residential buildings','data').ix['total_occupied']
-        self.households = np.round(self.population / peps_per_house, 0)
-        
+        self.households = np.round(self.population / np.float64(peps_per_house))
         self.households["HH"] = self.households["population"]
         del(self.households["population"])
         
