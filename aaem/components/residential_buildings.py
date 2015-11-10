@@ -28,6 +28,7 @@ class ResidentialBuildings(AnnualSavings):
             the model can be run
         """
         self.cd = community_data.get_section('community')
+        self.elec_prices = community_data.electricity_price
         self.comp_specs = community_data.get_section('residential buildings')
         self.component_name = 'residential buildings'
         self.forecast = forecast
@@ -214,7 +215,8 @@ class ResidentialBuildings(AnnualSavings):
         """
         HF_price = (self.diesel_prices + self.cd['heating fuel premium'])
         wood_price = 250
-        elec_price = 0 # TODO: this needs to be calculated for all components that use it, its not used here for manly so I'll put it off
+        elec_price = self.elec_prices[self.start_year-self.start_year:
+                                         self.end_year-self.start_year]
         LP_price = 0 # TODO: find
         gas_price = 0 # TODO: find
         
@@ -247,7 +249,8 @@ class ResidentialBuildings(AnnualSavings):
         """
         HF_price = (self.diesel_prices + self.cd['heating fuel premium'])
         wood_price = 250
-        elec_price = 0 # TODO: this needs to be calculated for all components that use it, its not used here for manly so I'll put it off
+        elec_price =self.elec_prices[self.start_year-self.start_year:
+                                         self.end_year-self.start_year]
         LP_price = 0 # TODO: find
         gas_price = 0 # TODO: find
         
