@@ -30,7 +30,12 @@ class CommunityData (object):
                       DieselProjections(self.get_item("community","name"),
                       data_dir))
         
-        
+        # TODO: 1 is 100% need to change to a calculation
+        # TODO: update generation efficiency
+        generation_eff = 440077./40739
+        self.electricity_price = self.get_item("community","elec non-fuel cost") +\
+                            1.00 * self.get_item("community","diesel prices").projected_prices/\
+                            generation_eff
     
     ## new stuff    
     def read_config (self, config_file):
