@@ -130,6 +130,7 @@ def wastewater (data_file, assumptions_file, out_dir, com_id):
     fd.write("# pop kWh: an assumption ??? \n")
     fd.write("# pop HF: an assumption ??? \n")
     fd.write("#### #### #### #### ####\n")
+    fd.write("key,value\n")
     fd.close()
     
     try:
@@ -177,7 +178,7 @@ def residential (fuel_file, data_file, out_dir, com_id):
     fd.write("# Total; Utility Gas; LP; Electricity; Fuel Oil; "+\
             "Coal; Wood; Solar; Other; No Fuel Used: % of heating fuel types\n")
     fd.write("#### #### #### #### ####\n")
-    fd.write("key, value\n")
+    fd.write("key,value\n")
     fd.close()
     
     fuel = read_csv(fuel_file, index_col=0, comment = "#").ix[com_id]
@@ -190,7 +191,19 @@ def residential (fuel_file, data_file, out_dir, com_id):
     del df.T["energy_region"]
     df.to_csv(out_file,mode="a")
 
+def region (data_file, out_dir, com_id):
+    """ Function doc """
     
+    region = read_csv(data_file, index_col=0, comment='#').energy_region[com_id]
+
+    out_file = out_dir + "region.csv"
+    fd = open(out_file,'w')
+    fd.write("# " + com_id + " residential data\n")
+    fd.write("# region: region used by model \n")
+    fd.write("#### #### #### #### ####\n")
+    fd.write("key,value \n")
+    fd.write("region,"+ str(region) + "\n")
+    fd.close()
 
     
 def preprocess (data_dir, out_dir, com_id):
@@ -222,7 +235,7 @@ def preprocess (data_dir, out_dir, com_id):
 
     ###
     
-    
+    region(data_dir+"res_model_data.csv",out_dir,com_id)
     
     population(data_dir+"population.csv",out_dir,com_id)
     residential(data_dir+"res_fuel_source.csv", data_dir+"res_model_data.csv",

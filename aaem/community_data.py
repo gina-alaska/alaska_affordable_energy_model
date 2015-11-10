@@ -242,8 +242,9 @@ class CommunityData (object):
             self.set_item('water wastewater', "data", 
                           self.load_pp_csv("wastewater_data.csv"))
 
-        
-        
+        if self.get_item('community',"region") == "IMPORT":
+            self.set_item('community',"region",
+                            self.load_pp_csv("region.csv").values[0][0])
             
     def load_pp_csv(self, f_name):
         """

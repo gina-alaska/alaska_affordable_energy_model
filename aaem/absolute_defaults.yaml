@@ -1,6 +1,6 @@
 community: 
   name: ABSOLUTE DEFAULT NAME # community name <string>
-  region: READ WITH RES DATA # name <string>
+  region: IMPORT # name <string>
   current year: ABSOLUTE DEFAULT  #year to base npv calculations on <int>
  
   #AEA ASSUMPTIONS
