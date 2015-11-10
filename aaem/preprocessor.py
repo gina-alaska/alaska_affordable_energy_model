@@ -219,6 +219,7 @@ def preprocess (data_dir, out_dir, com_id):
     shutil.copy(data_dir+"diesel_fuel_prices.csv", out_dir)
     shutil.copy(data_dir+"hdd.csv", out_dir)
     shutil.copy(data_dir+"cpi.csv", out_dir)
+
     ###
     
     
