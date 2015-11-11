@@ -36,7 +36,8 @@ class CommunityData (object):
         """
         # TODO: 1 is 100% need to change to a calculation
         # TODO: update generation efficiency
-        generation_eff = 440077./40739
+        generation_eff = self.get_item("community","generation")/\
+                         self.get_item("community","consumption HF")
         price = self.get_item("community","elec non-fuel cost") +\
             1.00 * self.get_item("community","diesel prices").projected_prices/\
                             generation_eff
@@ -212,14 +213,6 @@ class CommunityData (object):
             csvitems are in self.model_inputs 
         """
         self.community = self.get_item('community','name')
-        #~ if self.get_item('residential buildings','res model data') == "IMPORT":
-            #~ self.set_item('residential buildings','res model data',
-                                            #~ self.load_csv('res model data'))
-            #~ self.set_item('community','region',
-                #~ self.model_inputs['residential buildings']\
-                                 #~ ['res model data']['energy_region'])
-            #~ del(self.model_inputs['residential buildings']\
-                                 #~ ['res model data']['energy_region'])
         if self.get_item('community buildings','com benchmark data')== "IMPORT":
             self.set_item('community buildings','com benchmark data',
                                             self.load_csv('com benchmark data'))
@@ -258,7 +251,7 @@ class CommunityData (object):
             self.set_item('community',"region", region.ix["region"][0])
         if self.get_item('community',"heating fuel premium") == "IMPORT":    
             self.set_item('community',"heating fuel premium", 
-                         np.float64(region.ix["premium"][0]))
+                         float(region.ix["premium"][0]))
                          
     def load_pp_csv(self, f_name):
         """
