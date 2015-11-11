@@ -6,7 +6,7 @@ created: 2015/09/16
     a place holder for an eventual community data module. the manley_data
 is here for testing
 """
-from pandas import read_csv
+from pandas import read_csv, DataFrame
 import yaml
 import os.path
 
@@ -29,15 +29,26 @@ class CommunityData (object):
         self.set_item("community","diesel prices",
                       DieselProjections(self.get_item("community","name"),
                       data_dir))
-        
+        self.calc_non_fuel_electricty_price ()
+    
+    def calc_non_fuel_electricty_price (self):
+        """
+        """
         # TODO: 1 is 100% need to change to a calculation
         # TODO: update generation efficiency
         generation_eff = 440077./40739
-        self.electricity_price = self.get_item("community","elec non-fuel cost") +\
-                            1.00 * self.get_item("community","diesel prices").projected_prices/\
+        price = self.get_item("community","elec non-fuel cost") +\
+            1.00 * self.get_item("community","diesel prices").projected_prices/\
                             generation_eff
+        
+        start_year = self.get_item("community","diesel prices").start_year
+        years = range(start_year,start_year+len(price))
+        self.electricity_price =price
+        df = DataFrame({"year":years,
+                        "price":self.electricity_price}).set_index("year")
+        self.set_item("community","electric non-fuel prices",df)
+        
     
-    ## new stuff    
     def read_config (self, config_file):
         """
         read a .yaml config file
@@ -295,6 +306,7 @@ class CommunityData (object):
         self.set_item('community', "diesel prices", "IMPORT")
         self.set_item('forecast', "electricity", "IMPORT")
         self.set_item('forecast', "population", "IMPORT")
+        self.set_item("community","electric non-fuel prices","IMPORT")
         
         fd = open(fname, 'w')
         text = yaml.dump(self.model_inputs, default_flow_style=False) 

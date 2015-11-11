@@ -24,6 +24,7 @@ community:
 
   HDD: IMPORT
   diesel prices: IMPORT
+  electric non-fuel prices: IMPORT
 
 forecast:
   end year: ABSOLUTE DEFAULT  # end year <int>
