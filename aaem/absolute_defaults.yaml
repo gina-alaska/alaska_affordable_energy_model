@@ -1,12 +1,12 @@
 community: 
   name: ABSOLUTE DEFAULT NAME # community name <string>
-  region: READ WITH RES DATA # name <string>
+  region: IMPORT # name <string>
   current year: ABSOLUTE DEFAULT  #year to base npv calculations on <int>
  
   #AEA ASSUMPTIONS
   interest rate: .05 # rate as decimal <float> (ex. .05) 
   discount rate: .03 # rate as decimal <float> (ex. .03)
-  heating fuel premium: .45 # price/gallon <float> (ex. 0.45)
+  heating fuel premium: IMPORT # price/gallon <float> (ex. 0.45)
 
   # fuel repairs: 500 # price/yr <float> TODO: still used??
   # fuel o&m: 1000 # # price/yr <float> TODO: still used??
@@ -36,7 +36,7 @@ residential buildings:
   lifetime: ABSOLUTE DEFAULT # number years <int>  
   start year: ABSOLUTE DEFAULT # start year <int>
   average refit cost: 11000 # cost/refit <float>
-  res model data: IMPORT
+  data: IMPORT
 
 community buildings:
   enabled: False
@@ -53,15 +53,14 @@ water wastewater:
   lifetime:  ABSOLUTE DEFAULT # number years <int>  
   start year:  ABSOLUTE DEFAULT # start year <int>
   audit cost: 10000 # price <float> (ex. 10000)
-  system type: ABSOLUTE DEFAULT # system type <string> 
   average refit cost: 360.00 # cost/per person <float>
-  energy use known:  ABSOLUTE DEFAULT # enegry use available <bool> auto check this?
   heat recovery used: False  
-  audit preformed: False
-  
-  collected data: IMPORT 
-  ww assumptions: IMPORT  
+  data: IMPORT
 
+  electricity refit reduction: .25 # decimal precent <float> percent saved by preforming electricity refit 
+  heating fuel refit reduction: .35 # decimal precent <float> percent saved by preforming heating fuel refit 
+  
+  
   heat recovery multiplier:
     True: .5 # precent as decimal <float> 
     False: 1.0 # precent as decimal <float> 
