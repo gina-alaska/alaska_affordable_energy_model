@@ -5,6 +5,7 @@ driver.py
 """
 from community_data import CommunityData
 from forecast import Forecast
+from diagnostics import diagnostics
 
 from components.residential_buildings import ResidentialBuildings
 from components.community_buildings import CommunityBuildings
@@ -32,6 +33,7 @@ class Driver (object):
         post:
             model is ready to be run
         """
+        self.di= diagnostics()
         self.cd = CommunityData(data_dir, overrides,defaults)
         self.fc = Forecast(self.cd)
         self.load_comp_lib()
@@ -63,7 +65,9 @@ class Driver (object):
             if self.cd.get_item(comp,"enabled") == False:
                 continue
             #~ print comp
-            component = self.get_component(self.comp_lib[comp])(self.cd,self.fc)
+            component = self.get_component(self.comp_lib[comp])(self.cd,
+                                                                self.fc,
+                                                                self.di)
             component.run()
             self.comps_used[comp] = component
         
@@ -128,6 +132,16 @@ class Driver (object):
             the nputs used for each component are saved
         """
         self.cd.save_model_inputs(directory+"config_used.yaml")
+    
+    def save_diagnostics (self, directory):
+        """ 
+        save the diagnostics
+        pre:
+            directory is the location to save the file
+        post:
+            diagnostics file is saved
+        """
+        self.di.save_messages(directory+"diagnostics.csv")
         
 
 
@@ -188,6 +202,7 @@ def run_model (config_file):
     model.save_components_output(out_dir)
     model.save_forecast_output(out_dir)
     model.save_input_files(out_dir)
+    model.save_diagnostics(out_dir)
     return model, out_dir
 
 

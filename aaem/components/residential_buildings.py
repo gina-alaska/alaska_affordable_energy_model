@@ -11,6 +11,7 @@ from math import isnan
 from annual_savings import AnnualSavings
 from community_data import CommunityData
 from forecast import Forecast
+from diagnostics import diagnostics
 import constants
 
 class ResidentialBuildings(AnnualSavings):
@@ -18,7 +19,7 @@ class ResidentialBuildings(AnnualSavings):
     for forecasting residential building consumption/savings   
     """
     
-    def __init__ (self, community_data, forecast):
+    def __init__ (self, community_data, forecast, diag=None):
         """
         Class initialiser
 
@@ -27,6 +28,9 @@ class ResidentialBuildings(AnnualSavings):
         post:
             the model can be run
         """
+        self.diagnostics = diag
+        if self.diagnostics == None:
+            self.diagnostics = diagnostics()
         self.cd = community_data.get_section('community')
         self.elec_prices = community_data.electricity_price
         self.comp_specs = community_data.get_section('residential buildings')
@@ -134,8 +138,9 @@ class ResidentialBuildings(AnnualSavings):
         #~ self.init_solar
         #~ self.init_other
         
-        print str(round(percent_acconuted * 100)) + \
+        msg = str(round(percent_acconuted * 100)) + \
               " of residential fuel sources accounted for"
+        self.diagnostics.add_message(self.component_name, "message", msg)
         
     def calc_savings_opportunities (self):
         """ 
