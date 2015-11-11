@@ -7,7 +7,7 @@ created: 2015/09/18
 """
 import numpy as np
 from community_data import CommunityData
-
+from diagnostics import diagnostics
 
 from scipy.optimize import curve_fit
 from pandas import DataFrame, read_csv, concat
@@ -40,7 +40,7 @@ def growth(xs, ys , x):
 class Forecast (object):
     """ Class doc """
     
-    def __init__ (self, community_data):
+    def __init__ (self, community_data, diag = None):
         """
         pre:
             self.cd is a community_data instance. 
@@ -48,6 +48,9 @@ class Forecast (object):
             self.start_year < self.end_year are years(ints) 
             self.cd is a community_data instance. 
         """
+        self.diagnostics = diag
+        if self.diagnostics == None:
+            self.diagnostics = diagnostics()
         self.cd = community_data
         self.fc_specs = self.cd.get_section('forecast')
         #~ self.start_year = self.fc_specs["start year"]
@@ -55,7 +58,6 @@ class Forecast (object):
         self.base_pop = self.fc_specs['population'].ix\
                     [self.cd.get_item('residential buildings',
                                             'data').ix['year']].values[0]
-        #~ print self.base_pop
         self.cpi = self.cd.load_pp_csv("cpi.csv")
         self.forecast_population()
         self.forecast_consumption()
@@ -91,9 +93,9 @@ class Forecast (object):
         year between start and end
         """
         if len(self.fc_specs["population"]) < 10:
-            print "warning: forecast: "\
-                  "the data range is < 10 for input population "\
+            msg = "the data range is < 10 for input population "\
                   "check population.csv in the models data directory"
+            self.diagnostics.add_message("forecast", "warning", msg)
         
         population = self.fc_specs["population"].T.values.astype(float)
         years = self.fc_specs["population"].T.keys().values.astype(int)
@@ -112,9 +114,9 @@ class Forecast (object):
         self.calc_electricity_totals()
         
         if len(self.yearly_kWh_totals) < 10:
-            print "warning: forecast: "\
-                  "the data range is < 10 for input consumption "\
+            msg = "the data range is < 10 for input consumption "\
                   "check electricity.csv in the models data directory"
+            self.diagnostics.add_message("forecast", "warning", msg)
         ### for fit version
         #~ start = self.fc_specs["population"].T.keys().values[0] \
                 #~ if self.fc_specs["population"].T.keys().values[0] > \
