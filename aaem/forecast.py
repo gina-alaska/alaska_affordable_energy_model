@@ -99,8 +99,16 @@ class Forecast (object):
         population = self.fc_specs["population"].T.values.astype(float)
         years = self.fc_specs["population"].T.keys().values.astype(int)
         new_years = np.array(range(years[-1]+1,self.end_year+1))
-        self.population = DataFrame({"year":new_years, 
+        
+        population = DataFrame({"year":new_years, 
              "population":growth(years,population,new_years)}).set_index("year")
+    
+        population.ix[new_years[0]+15:] =\
+                                    np.float64(population.ix[new_years[0]+15])
+        
+        self.population = population
+        
+        
         
     def forecast_consumption (self):
         """
