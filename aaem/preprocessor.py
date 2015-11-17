@@ -70,7 +70,7 @@ def eia_electricity (in_file, com_id):
     df = read_csv(in_file, index_col = 0, comment='#')
     data = df.ix[com_id][['Data Year','Sum - Residential Megawatthours',
             'Sum - Commercial Megawatthours',
-            'Sum - Industrial Megawatthours']].values.astype(int)
+            'Sum - Industrial Megawatthours']].values.astype(int)*1000
     df = DataFrame(data,
                  columns=["year","residential",
                           "commercial","industrial"]).set_index("year")

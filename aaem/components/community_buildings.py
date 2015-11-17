@@ -40,14 +40,14 @@ from math import isnan
 from annual_savings import AnnualSavings
 from community_data import CommunityData
 from forecast import Forecast
-
+from diagnostics import diagnostics
 
 class CommunityBuildings (AnnualSavings):
     """
     for forecasting community building consumption/savings  
     """
     
-    def __init__ (self, community_data, forecast):
+    def __init__ (self, community_data, forecast, diag = None):
         """
         Class initialiser
 
@@ -56,6 +56,9 @@ class CommunityBuildings (AnnualSavings):
         post:
             the model can be run
         """
+        self.diagnostics = diag
+        if self.diagnostics == None:
+            self.diagnostics = diagnostics()
         self.cd = community_data.get_section('community')
         self.comp_specs = community_data.get_section('community buildings')
         self.component_name = 'community buildings'
@@ -237,7 +240,6 @@ class CommunityBuildings (AnnualSavings):
             key = "Avg kWh/sf>1200"
         
         kWh_sqft_yr = self.comp_specs['com building estimates']['Average'][key]
-        print kWh_sqft_yr
         
         self.benchmark_kWh = \
      np.sum(self.comp_specs['com benchmark data'][['Current Electric']].values) 
@@ -354,7 +356,6 @@ def test ():
     tests the class using the manley data.
     """
     manley_data = CommunityData("../data/","../test_case/manley_data.yaml")
-    
     fc = Forecast(manley_data)
     cb = CommunityBuildings(manley_data, fc)
     cb.run()

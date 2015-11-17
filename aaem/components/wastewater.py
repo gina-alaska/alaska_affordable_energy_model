@@ -12,13 +12,14 @@ import numpy as np
 from annual_savings import AnnualSavings
 from community_data import CommunityData
 from forecast import Forecast
+from diagnostics import diagnostics
 
 class WaterWastewaterSystems (AnnualSavings):
     """
     this class mocks up the Eff(w & ww) tab in the spreed sheet
     """
     
-    def __init__ (self, community_data, forecast):
+    def __init__ (self, community_data, forecast, diag):
         """ 
         Class initialiser 
         
@@ -28,6 +29,9 @@ class WaterWastewaterSystems (AnnualSavings):
         Post-conditions: 
             The class members are set to the initial values.
         """
+        self.diagnostics = diag
+        if self.diagnostics == None:
+            self.diagnostics = diagnostics()
         self.component_name = 'water wastewater'
           
         self.cd = community_data.get_section('community')
