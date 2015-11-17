@@ -6,7 +6,7 @@ created: 2015/09/16
     a place holder for an eventual community data module. the manley_data
 is here for testing
 """
-from pandas import read_csv
+from pandas import read_csv, DataFrame
 import yaml
 import os.path
 import numpy as np
@@ -29,15 +29,27 @@ class CommunityData (object):
         self.set_item("community","diesel prices",
                       DieselProjections(self.get_item("community","name"),
                       data_dir))
-        
+        self.calc_non_fuel_electricty_price ()
+    
+    def calc_non_fuel_electricty_price (self):
+        """
+        """
         # TODO: 1 is 100% need to change to a calculation
         # TODO: update generation efficiency
-        generation_eff = 440077./40739
-        self.electricity_price = self.get_item("community","elec non-fuel cost") +\
-                            1.00 * self.get_item("community","diesel prices").projected_prices/\
+        generation_eff = self.get_item("community","generation")/\
+                         self.get_item("community","consumption HF")
+        price = self.get_item("community","elec non-fuel cost") +\
+            1.00 * self.get_item("community","diesel prices").projected_prices/\
                             generation_eff
+        
+        start_year = self.get_item("community","diesel prices").start_year
+        years = range(start_year,start_year+len(price))
+        self.electricity_price =price
+        df = DataFrame({"year":years,
+                        "price":self.electricity_price}).set_index("year")
+        self.set_item("community","electric non-fuel prices",df)
+        
     
-    ## new stuff    
     def read_config (self, config_file):
         """
         read a .yaml config file
@@ -201,14 +213,6 @@ class CommunityData (object):
             csvitems are in self.model_inputs 
         """
         self.community = self.get_item('community','name')
-        #~ if self.get_item('residential buildings','res model data') == "IMPORT":
-            #~ self.set_item('residential buildings','res model data',
-                                            #~ self.load_csv('res model data'))
-            #~ self.set_item('community','region',
-                #~ self.model_inputs['residential buildings']\
-                                 #~ ['res model data']['energy_region'])
-            #~ del(self.model_inputs['residential buildings']\
-                                 #~ ['res model data']['energy_region'])
         if self.get_item('community buildings','com benchmark data')== "IMPORT":
             self.set_item('community buildings','com benchmark data',
                                             self.load_csv('com benchmark data'))
@@ -247,7 +251,7 @@ class CommunityData (object):
             self.set_item('community',"region", region.ix["region"][0])
         if self.get_item('community',"heating fuel premium") == "IMPORT":    
             self.set_item('community',"heating fuel premium", 
-                         np.float64(region.ix["premium"][0]))
+                         float(region.ix["premium"][0]))
                          
     def load_pp_csv(self, f_name):
         """
@@ -304,6 +308,9 @@ class CommunityData (object):
         self.set_item('forecast', "electricity", "IMPORT")
         self.set_item('forecast', "population", "IMPORT")
         self.set_item('water wastewater', "data", "IMPORT")
+        self.set_item("community","electric non-fuel prices","IMPORT")
+        
+
         
         fd = open(fname, 'w')
         text = yaml.dump(self.model_inputs, default_flow_style=False) 
