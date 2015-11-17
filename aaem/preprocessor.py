@@ -141,8 +141,13 @@ def wastewater (data_file, assumptions_file, out_dir, com_id):
     try:
         ww_a = read_csv(assumptions_file, comment = '#', index_col = 0)
         ww_a = ww_a.ix[ww_d["System Type"]]
-    except KeyError:
-        raise StandardError, "wastewater system type is unknown"
+    except (KeyError, ValueError )as e:
+        print "!!!!!!ERROR!!!!!!"
+        print "wastewater system type is unknown, "+\
+        "Please Disable wastewater component in config .yaml file"
+        print "!!!!!!!!!!!!!!!!!"
+        return
+ 
     df = concat([ww_d,ww_a])
     df.to_csv(out_file, mode = 'a')
    
