@@ -103,7 +103,7 @@ class Forecast (object):
         population = DataFrame({"year":new_years, 
              "population":growth(years,population,new_years)}).set_index("year")
     
-        population.ix[new_years[0]+15:] =\ 
+        population.ix[new_years[0]+15:] =\
                                     np.float64(population.ix[new_years[0]+15])
         
         self.population = population
