@@ -166,6 +166,7 @@ def wastewater (data_file, assumptions_file, out_dir, com_id):
         sys_type = sys_map[ww_d["System Type"]]
         ww_a = read_csv(assumptions_file, comment = '#', index_col = 0)
         ww_a = ww_a.ix[sys_type]
+        ww_a["assumption type used"] = sys_type
     except (KeyError, ValueError )as e:
         print "!!!!!!ERROR!!!!!!"
         print "wastewater system type is unknown, "+\
