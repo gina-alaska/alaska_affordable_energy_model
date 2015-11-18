@@ -19,7 +19,7 @@ class WaterWastewaterSystems (AnnualSavings):
     this class mocks up the Eff(w & ww) tab in the spreed sheet
     """
     
-    def __init__ (self, community_data, forecast, diag):
+    def __init__ (self, community_data, forecast, diag=None):
         """ 
         Class initialiser 
         
@@ -49,12 +49,16 @@ class WaterWastewaterSystems (AnnualSavings):
         
         self.hdd = self.cd["HDD"]
         self.pop = self.forecast.base_pop
-        self.system_type = str(self.comp_specs['data'].ix["System Type"]) 
+        
         self.forecast = forecast
         
         
         self.population_fc = self.forecast.get_population(self.start_year,
                                                                  self.end_year)
+
+        sys_type = self.comp_specs['data'].ix["assumption type used"].values[0]
+        if sys_type == "Pressure/Gravity" and self.population_fc.any() > 250:
+            print "type assumption invalid"
         
     def calc_annual_electric_savings (self):
         """
@@ -165,7 +169,6 @@ class WaterWastewaterSystems (AnnualSavings):
         self.calc_annual_net_benefit()
         
         self.calc_npv(self.cd['discount rate'], self.cd["current year"])
-        
         self.forecast.set_www_HF_fuel_forecast(self.baseline_HF_consumption, 
                                                 self.start_year)
     
@@ -181,7 +184,8 @@ class WaterWastewaterSystems (AnnualSavings):
         post:
             self.baseline_kWh_consumption will be a number
         """
-        if not np.isnan(np.float64(self.comp_specs['data'].ix['kWh/yr'])):
+        if not np.isnan(np.float64(self.comp_specs['data'].ix['kWh/yr'])) and \
+               np.float64(self.comp_specs['data'].ix['kWh/yr']) != 0:
             self.baseline_kWh_consumption = self.comp_specs['data'].ix['kWh/yr']
         else: #if not self.cd["w&ww_energy_use_known"]:
             hdd_coeff = np.float64(self.comp_specs['data'].ix['HDD kWh'])
@@ -204,11 +208,13 @@ class WaterWastewaterSystems (AnnualSavings):
         post:
             self.baseline_HF_consumption will be a number
         """
-        if not np.isnan(np.float64(self.comp_specs['data'].ix['HF Used'])):
+        if not np.isnan(np.float64(self.comp_specs['data'].ix['HF Used'])) and\
+                np.float64(self.comp_specs['data'].ix['HF Used']) != 0:
             self.baseline_HF_consumption = \
                             np.float64(self.comp_specs['data'].ix['HF Used'])
         else: #if not self.cd["energy_use_known"]:
-            hr_used = self.comp_specs['heat recovery used']
+            hr_used = self.comp_specs['data'].ix["HR Installed"].values[0] == \
+                                                                            True
             hr_coeff =  self.comp_specs['heat recovery multiplier'][hr_used]
             hdd_coeff = np.float64(self.comp_specs['data'].ix['HDD HF'])
             pop_coeff = np.float64(self.comp_specs['data'].ix['pop HF'])
@@ -227,14 +233,12 @@ class WaterWastewaterSystems (AnnualSavings):
             self.refit_kWh_consumption is calculated
         """
         percent = 1 - self.comp_specs['electricity refit reduction']
-        if not \
-           (np.isnan(np.float64(self.comp_specs['data'].ix['kWh/yr w/ retro']))\
-                and np.isnan(np.float64(self.comp_specs['data'].ix['kWh/yr']))):
-            
-            percent =np.float64(self.comp_specs['data'].ix['kWh/yr w/ retro'])/\
-                      np.float64(self.comp_specs['data'].ix['kWh/yr'])
-        
-        
+        con = np.float64(self.comp_specs['data'].ix['kWh/yr'])
+        retro_con = np.float64(self.comp_specs['data'].ix['kWh/yr w/ retro']) 
+        if (not (np.isnan(con) and np.isnan(retro_con))) and \
+                (con != 0 and retro_con != 0):
+            percent = retro_con/con
+                      
         consumption = self.baseline_kWh_consumption * percent
          
         self.refit_kWh_consumption = consumption 
@@ -249,8 +253,10 @@ class WaterWastewaterSystems (AnnualSavings):
             self.refit_HF_consumption is calculated
         """
         percent = 1 - self.comp_specs['heating fuel refit reduction']
-        if not (np.isnan(np.float64(self.comp_specs['data'].ix['HF w/Retro']))\
-           and np.isnan(np.float64(self.comp_specs['data'].ix['HF Used']))):
+        if (not (np.isnan(np.float64(self.comp_specs['data'].ix['HF w/Retro']))\
+            and np.isnan(np.float64(self.comp_specs['data'].ix['HF Used']))))\
+            and (np.float64(self.comp_specs['data'].ix['HF Used']) != 0 and\
+                 np.float64(self.comp_specs['data'].ix['HF w/Retro'])):
             percent = np.float64(self.comp_specs['data'].ix['HF w/Retro'])/\
                       np.float64(self.comp_specs['data'].ix['HF Used'])
         
@@ -300,7 +306,7 @@ class WaterWastewaterSystems (AnnualSavings):
         """
         cc = self.comp_specs['data'].ix["Implementation Cost"]
         self.capital_costs = np.float64(cc)
-        if np.isnan(self.capital_costs):
+        if np.isnan(self.capital_costs) or self.capital_costs ==0:
             self.capital_costs = float(self.comp_specs["audit cost"]) + \
                                         self.pop *  self.cost_per_person
     
