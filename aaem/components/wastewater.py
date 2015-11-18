@@ -56,9 +56,6 @@ class WaterWastewaterSystems (AnnualSavings):
         self.population_fc = self.forecast.get_population(self.start_year,
                                                                  self.end_year)
 
-        sys_type = self.comp_specs['data'].ix["assumption type used"].values[0]
-        if sys_type == "Pressure/Gravity" and self.population_fc.any() > 250:
-            print "type assumption invalid"
         
     def calc_annual_electric_savings (self):
         """
