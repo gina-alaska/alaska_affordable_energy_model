@@ -140,7 +140,7 @@ class ResidentialBuildings(AnnualSavings):
         
         msg = str(round(percent_acconuted * 100)) + \
               " of residential fuel sources accounted for"
-        self.diagnostics.add_message(self.component_name, "message", msg)
+        self.diagnostics.add_note(self.component_name, msg)
         
     def calc_savings_opportunities (self):
         """ 

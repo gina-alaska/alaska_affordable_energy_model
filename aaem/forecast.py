@@ -94,7 +94,7 @@ class Forecast (object):
         if len(self.fc_specs["population"]) < 10:
             msg = "the data range is < 10 for input population "\
                   "check population.csv in the models data directory"
-            self.diagnostics.add_message("forecast", "warning", msg)
+            self.diagnostics.add_warning("forecast", msg)
         
         population = self.fc_specs["population"].T.values.astype(float)
         years = self.fc_specs["population"].T.keys().values.astype(int)
@@ -123,7 +123,7 @@ class Forecast (object):
         if len(self.yearly_kWh_totals) < 10:
             msg = "the data range is < 10 for input consumption "\
                   "check electricity.csv in the models data directory"
-            self.diagnostics.add_message("forecast", "warning", msg)
+            self.diagnostics.add_warning("forecast", msg)
         #~ ### for fit version
         start = self.fc_specs["population"].T.keys().values[0] \
                 if self.fc_specs["population"].T.keys().values[0] > \
