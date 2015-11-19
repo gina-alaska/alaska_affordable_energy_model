@@ -18,12 +18,22 @@ def population (in_file, out_dir, com_id):
     post: 
         a file is saved, and the data frame it was generated from is returned
     """
+    
+    
     pop_data = read_csv(in_file, index_col = 1) # update to GNIS
     pops = pop_data.ix[com_id]["2003":"2014"].values
     years = pop_data.ix[com_id]["2003":"2014"].keys().values.astype(int)
-    #~ return pops, years
+    
+    out_file = out_dir+"population.csv"
+    fd = open(out_file,'w')
+    fd.write("# " + com_id + " population\n")
+    fd.write("# recorded population in a given year\n")
+    fd.write("#### #### #### #### ####\n")
+    fd.close()
+    
+    
     df = DataFrame([years,pops],["year","population"]).T.set_index("year")
-    df.to_csv(out_dir+"population.csv")
+    df.to_csv(out_dir+"population.csv",mode="a")
     return df
     
 def pce_electricity (in_file, com_id):
@@ -95,7 +105,16 @@ def electricity (in_file, out_dir, com_id):
         data["community"] = nans
         data["government"] = nans
         data["unbilled"] = nans
-    data.to_csv(out_dir+"electricity.csv")
+    
+        
+    out_file = out_dir+"electricity.csv"
+    fd = open(out_file,'w')
+    fd.write("# " + com_id + " electricity consumption\n")
+    fd.write("# all units are in kWh/year for a given year and category\n")
+    fd.write("#### #### #### #### ####\n")
+    fd.close()    
+    
+    data.to_csv(out_dir+"electricity.csv", mode="a")
     return data
 
 def wastewater (data_file, assumptions_file, out_dir, com_id):
@@ -179,7 +198,15 @@ def wastewater (data_file, assumptions_file, out_dir, com_id):
     return df
    
 def residential (fuel_file, data_file, out_dir, com_id):
-    """ Function doc """
+    """
+    preprocess the residential data
+    pre:
+        fuel_file, data_file are files
+        out_dir is a path
+        com_id is a string 
+    post:
+        residential data is in a file the model can use
+    """
     out_file = out_dir + "residential_data.csv"
     fd = open(out_file,'w')
     fd.write("# " + com_id + " residential data\n")
@@ -224,8 +251,13 @@ def residential (fuel_file, data_file, out_dir, com_id):
     df.to_csv(out_file,mode="a")
 
 def region (data_file, premium_file, out_dir, com_id):
-    """ Function doc """
-    
+    """
+    preprocess the regional input items
+    pre:
+        data_file, premium_file is are files
+    post:
+        regional related items are in a file the model can read
+    """
     region = read_csv(data_file, index_col=0, comment='#').energy_region[com_id]
     premium = read_csv(premium_file, index_col=0, comment='#').premium[region]
 
