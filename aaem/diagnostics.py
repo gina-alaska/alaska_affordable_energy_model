@@ -63,7 +63,7 @@ class diagnostics (object):
         """
         self.add_message(module, "WARNING", text)
     
-     def add_note (self, module, text):
+    def add_note (self, module, text):
         """
         add a Note to the message list
         pre:
