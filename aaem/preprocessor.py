@@ -138,9 +138,35 @@ def wastewater (data_file, assumptions_file, out_dir, com_id):
         ww_d = read_csv(data_file, comment = '#', index_col = 0).ix[com_id]
     except KeyError:
         raise StandardError, str(com_id) + " is not in " + data_file
+    
+    ## system type mapping From Neil
+    ##Circulating/Gravity: Circulating/Gravity, Circulating/Pressure,
+    ##                     Circulating/ST/DF
+    ##Circulating/Vacuum: Circulating/Vacuum, Closed Haul/Vacuum
+    ##Haul:  Closed Haul/Closed, Haul, Watering Point
+    ##Pressure/Gravity: Pressure/Gravity, Pressure/NA, Pressure/ST/DF
+    ##Washeteria/Honey Bucket: Washeteria
+    ##None:  Wells/Gravity, Wells/NA, Wells/ST/DF, Wells/ST/OF 
+    
+    sys_map = {
+                "Circulating/Gravity":"Circulating/Gravity",
+                "Circulating/Pressurey":"Circulating/Gravity",
+                "Circulating/ST/DF":"Circulating/Gravity",
+                "Circulating/Vacuum":"Circulating/Vac",
+                "Closed Haul/Vacuum":"Circulating/Vac",
+                "Haul":"Haul",
+                "Closed Haul/Closed Haul":"Haul",
+                "Watering Point":"Haul",
+                "Pressure/Gravity": "Pressure/Gravity",
+                "Pressure/NA": "Pressure/Gravity",
+                "Pressure/ST/DF": "Pressure/Gravity",
+                "Washeteria":"Wash/HB",
+              } 
     try:
+        sys_type = sys_map[ww_d["System Type"]]
         ww_a = read_csv(assumptions_file, comment = '#', index_col = 0)
-        ww_a = ww_a.ix[ww_d["System Type"]]
+        ww_a = ww_a.ix[sys_type]
+        ww_a["assumption type used"] = sys_type
     except (KeyError, ValueError )as e:
         print "!!!!!!ERROR!!!!!!"
         print "wastewater system type is unknown, "+\
@@ -150,6 +176,7 @@ def wastewater (data_file, assumptions_file, out_dir, com_id):
  
     df = concat([ww_d,ww_a])
     df.to_csv(out_file, mode = 'a')
+    return df
    
 def residential (fuel_file, data_file, out_dir, com_id):
     """ Function doc """
