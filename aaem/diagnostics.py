@@ -35,11 +35,44 @@ class diagnostics (object):
         """
         message = {}
         message["timestamp"] = datetime.strftime(datetime.now(),
-                                                 "%Y-%m-%d %H:%M:%S") 
+                                                    "%Y-%m-%d %H:%M:%S") 
         message["module"] = module 
         message["type"] = type_code
         message["text"] = text
         self.messages.append(message)
+    
+    def add_error (self, module, text):
+        """
+        add an error to the message list
+        pre:
+            module: is the component were error occurred
+            text: the message
+        post: 
+            self.messages is appended to 
+        """
+        self.add_message(module, "ERROR", text)
+       
+    def add_warning (self, module, text):
+        """
+        add a warning to the message list
+        pre:
+            module: is the component were warning occurred
+            text: the messege
+        post: 
+            self.messages is appended to 
+        """
+        self.add_message(module, "WARNING", text)
+    
+     def add_note (self, module, text):
+        """
+        add a Note to the message list
+        pre:
+            module: is the component were note occurred
+            text: the messege
+        post: 
+            self.messages is appended to 
+        """
+        self.add_message(module, "NOTE", text)
         
     def save_messages (self, file_path):
         """ 
