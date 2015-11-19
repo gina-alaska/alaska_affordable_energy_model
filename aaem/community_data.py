@@ -30,6 +30,16 @@ class CommunityData (object):
                       DieselProjections(self.get_item("community","name"),
                       data_dir))
         self.calc_non_fuel_electricty_price ()
+        self.check_auto_disable_conditions ()
+    
+    def check_auto_disable_conditions  (self):
+        """
+        check for any auto disable conditions and disable those components
+        """
+        st = self.get_item('water wastewater',"data").ix["assumption type used"]
+        if st.values[0] == "UNKNOWN":
+            self.set_item('water wastewater',"enabled",  False)
+        
     
     def calc_non_fuel_electricty_price (self):
         """

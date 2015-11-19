@@ -169,10 +169,12 @@ def wastewater (data_file, assumptions_file, out_dir, com_id):
         ww_a["assumption type used"] = sys_type
     except (KeyError, ValueError )as e:
         print "!!!!!!ERROR!!!!!!"
-        print "wastewater system type is unknown, "+\
-        "Please Disable wastewater component in config .yaml file"
+        print "wastewater system type is unknown, "
         print "!!!!!!!!!!!!!!!!!"
-        return
+        ww_d["assumption type used"] = "UNKNOWN"
+        ww_d.to_csv(out_file, mode = 'a')
+        
+        return ww_d
  
     df = concat([ww_d,ww_a])
     df.to_csv(out_file, mode = 'a')
