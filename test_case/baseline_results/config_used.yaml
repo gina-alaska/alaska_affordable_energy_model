@@ -1,11 +1,14 @@
 community:
   HDD: 14593
+  consumption HF: 40739.0
   current year: 2014
   diesel generation efficiency: 10.802351555
   diesel prices: IMPORT
   discount rate: 0.03
   elec non-fuel cost: 0.4024526823
-  heating fuel premium: 0.45
+  electric non-fuel prices: IMPORT
+  generation: 440077.0
+  heating fuel premium: 1.5507921943
   interest rate: 0.05
   line losses: 0.121
   name: Manley Hot Springs
@@ -37,22 +40,19 @@ forecast:
   population: IMPORT
 residential buildings:
   average refit cost: 11000
+  data: IMPORT
   enabled: true
   lifetime: 15
-  res model data: IMPORT
   start year: 2015
 water wastewater:
   audit cost: 10000
-  audit preformed: false
   average refit cost: 360.0
-  collected data: IMPORT
+  data: IMPORT
+  electricity refit reduction: 0.25
   enabled: true
-  energy use known: false
   heat recovery multiplier:
     false: 1.0
     true: 0.5
-  heat recovery used: false
+  heating fuel refit reduction: 0.35
   lifetime: 15
   start year: 2015
-  system type: Haul
-  ww assumptions: IMPORT

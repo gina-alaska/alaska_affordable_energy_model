@@ -205,25 +205,3 @@ def run_model (config_file):
     model.save_diagnostics(out_dir)
     return model, out_dir
 
-
-
-def test (config_file = "../test_case/manley_driver_config.yaml"):
-    """
-    test the driver with manley data
-    """
-    model, out_dir = run_model(os.path.abspath(config_file))
-    
-    df = read_csv(out_dir+"forecast.csv" , index_col=0, header=0)
-    base_df = read_csv(out_dir+"base_forecast.csv" , index_col=0, header=0)
-
-    
-    tt = (df > (base_df*.90)) 
-    tt2 = (df < (base_df*1.10))
-    (tt == tt2).to_csv(out_dir+"test_forecast_truth_table.csv", 
-                                      columns =["pop","HH", "kWh consumed",
-                                                "kWh generation","avg. kW",
-                                                "res HF", "com HF", "ww HF",
-                                                "total HF"], index_label="year")
-    
-
-    return df, model
