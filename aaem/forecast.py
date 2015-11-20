@@ -138,11 +138,11 @@ class Forecast (object):
         population = self.fc_specs["population"].ix[start:end].T.values[0]
         consumption = self.yearly_kWh_totals[start:end].T.values[0]
         if len(population) < 10:
-            print "warning: forecast: "\
+            self.diagnostics.add_warning("forecast", 
                   "the data range is < 10 matching years for "\
                   "population and consumption "\
                   "check population.csv and electricity.csv "\
-                  "in the models data directory"
+                  "in the models data directory")
         
         # get slope(m),intercept(b)
         m, b = np.polyfit(population,consumption,1) 

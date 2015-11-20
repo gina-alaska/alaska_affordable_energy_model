@@ -35,7 +35,7 @@ class Driver (object):
         """
         self.di= diagnostics()
         self.cd = CommunityData(data_dir, overrides,defaults)
-        self.fc = Forecast(self.cd)
+        self.fc = Forecast(self.cd, self.di)
         self.load_comp_lib()
         
     def load_comp_lib (self):
@@ -80,9 +80,9 @@ class Driver (object):
         post:
             the forecast totals are up to date
         """
-        self.fc.forecast_consumption()
-        self.fc.forecast_generation()
-        self.fc.forecast_average_kW()
+        #~ self.fc.forecast_consumption()
+        #~ self.fc.forecast_generation()
+        #~ self.fc.forecast_average_kW()
         self.fc.calc_total_HF_forecast()
     
     def get_component (self, comp_name):
