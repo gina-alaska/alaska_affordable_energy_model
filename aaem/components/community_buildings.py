@@ -211,7 +211,7 @@ class CommunityBuildings (AnnualSavings):
         elif pop < 1100:
             key = "HDD>300,<1200"
         else: 
-            key = "HDD>1200"
+            key = "HDD>1000"
         self.additional_HF = self.additional_sqft * hf_sqft_yr * \
      (self.cd["HDD"]/self.comp_specs['com building estimates']['Average'][key])
         
