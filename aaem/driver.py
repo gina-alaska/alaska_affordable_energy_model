@@ -6,7 +6,6 @@ driver.py
 from community_data import CommunityData
 from forecast import Forecast
 from diagnostics import diagnostics
-from reg_test import reg_test
 
 from components.residential_buildings import ResidentialBuildings
 from components.community_buildings import CommunityBuildings
@@ -205,11 +204,4 @@ def run_model (config_file):
     model.save_input_files(out_dir)
     model.save_diagnostics(out_dir)
     return model, out_dir
-
-    
-def test (config_file = "../test_case/Manley_Hot_Springs_driver.yaml"):
-    """
-    run the regression test
-    """
-    reg_test(config_file)
 

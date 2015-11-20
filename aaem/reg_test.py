@@ -43,6 +43,7 @@ def setup_reg_test (directory, community, data_dir):
     """
     sets up a regression test 
     """
+    directory = os.path.abspath(directory)
     try:
         os.makedirs(os.path.join(directory,"config"))
     except OSError:
@@ -102,6 +103,4 @@ def reg_test (config_file, lim = .1):
                                                 "kWh generation","avg. kW",
                                                 "res HF", "com HF", "ww HF",
                                                 "total HF"], index_label="year")
-    
-
     return df, model
