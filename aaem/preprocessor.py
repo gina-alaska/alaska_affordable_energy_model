@@ -322,9 +322,47 @@ class Preprocessor (object):
             self.electricity(data_dir+"power-cost-equalization-pce-data.csv", 
                                                                         out_dir,
                                                                         com_id)
+            self.electricity_prices(data_dir+\
+                                        "power-cost-equalization-pce-data.csv",
+                                                                        out_dir,
+                                                                        com_id)
         except KeyError:
             self.electricity(data_dir+"EIA.csv", out_dir, com_id)
-            
+            self.diagnostics.add_note("preprocessor","no $/kWh estimates")
+        
+    
+    def electricity_prices (self, in_file, out_dir, com_id):
+        """
+        pre process fuel prices
+        """
+        data = read_csv(in_file, index_col=1, comment = "#").ix[com_id]
+        data = data[["year","month","residential_rate",
+                     "pce_rate","effective_rate","residential_kwh_sold",
+                                         "commercial_kwh_sold",
+                                         "community_kwh_sold",
+                                         "government_kwh_sold",
+                                         "unbilled_kwh", "fuel_cost"]].tail(1)
+        elec_fuel_cost = (data['fuel_cost']/data[["residential_kwh_sold",
+                                         "commercial_kwh_sold",
+                                         "community_kwh_sold",
+                                         "government_kwh_sold",
+                                         "unbilled_kwh"]].T.sum()).max()
+                                         
+        res_nonPCE_price = data["residential_rate"].max()
+        elec_nonFuel_cost = res_nonPCE_price - elec_fuel_cost
+        
+        self.diagnostics.add_note("preprocessor",
+                                "suggestion: add (res non-PCE elec cost: " + \
+                                 str(res_nonPCE_price) +\
+                                 ") to the community section of your "+\
+                                 "community_data.yaml file for this community ")
+        self.diagnostics.add_note("preprocessor",
+                                    "suggestion: add (elec non-fuel cost: " + \
+                                    str(elec_nonFuel_cost) +\
+                                    ") to the community section of your"+\
+                                " community_data.yaml file for this community ")
+    
+
 def preprocess(data_dir, out_dir, com_id):
     """
     """
