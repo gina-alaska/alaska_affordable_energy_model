@@ -6,6 +6,7 @@ driver.py
 from community_data import CommunityData
 from forecast import Forecast
 from diagnostics import diagnostics
+from reg_test import reg_test
 
 from components.residential_buildings import ResidentialBuildings
 from components.community_buildings import CommunityBuildings
@@ -205,25 +206,10 @@ def run_model (config_file):
     model.save_diagnostics(out_dir)
     return model, out_dir
 
-
-
-def test (config_file = "../test_case/manley_driver_config.yaml"):
+    
+def test (config_file = "../test_case/Manley_Hot_Springs_driver.yaml"):
     """
-    test the driver with manley data
+    run the regression test
     """
-    model, out_dir = run_model(os.path.abspath(config_file))
-    
-    df = read_csv(out_dir+"forecast.csv" , index_col=0, header=0)
-    base_df = read_csv(out_dir+"base_forecast.csv" , index_col=0, header=0)
+    reg_test(config_file)
 
-    
-    tt = (df > (base_df*.90)) 
-    tt2 = (df < (base_df*1.10))
-    (tt == tt2).to_csv(out_dir+"test_forecast_truth_table.csv", 
-                                      columns =["pop","HH", "kWh consumed",
-                                                "kWh generation","avg. kW",
-                                                "res HF", "com HF", "ww HF",
-                                                "total HF"], index_label="year")
-    
-
-    return df, model

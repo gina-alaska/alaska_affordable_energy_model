@@ -1,6 +1,4 @@
 community: 
-  name: Manley Hot Springs # community name <string>
-  region: Yukon-Koyukuk/Upper Tanana
   current year: 2014 #year to base npv calculations on <int>
   interest rate: .05 # rate as decimal <float> (ex. .05) 
   discount rate: .03 # rate as decimal <float> (ex. .03)
@@ -31,18 +29,3 @@ water wastewater:
   enabled: True
   lifetime: 15 # number years <int>  
   start year: 2015 # start year <int>
-
-
-
-#interties:
-#  enabled: False
-#  lifetime : 20 # number years <int> 
-#  start year : 2016 # start year <int>
-#  phase: Recon # project phase <string> 
-#  hr installed: True # is the hreat recovery installed <bool>
-#  hr operational: True # is the heat recovery operational <bool>
-#  road needed: True # is a road needed <bool> 
-#  cost known: False # is the cost known <bool>
-#  # cost: # cost for initerite <float>
-#  # resource potential: #<string>
-#  # resource certainty: #<string>
