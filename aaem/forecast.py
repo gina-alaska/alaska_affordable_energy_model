@@ -52,7 +52,7 @@ class Forecast (object):
             self.diagnostics = diagnostics()
         self.cd = community_data
         self.fc_specs = self.cd.get_section('forecast')
-        #~ self.start_year = self.fc_specs["start year"]
+        self.start_year = self.fc_specs["end year"]
         self.end_year = self.fc_specs["end year"]
         self.base_pop = self.fc_specs['population'].ix\
                     [self.cd.get_item('residential buildings',
@@ -129,6 +129,8 @@ class Forecast (object):
                 if self.fc_specs["population"].T.keys().values[0] > \
                 self.yearly_kWh_totals.T.keys().values[0] \
                 else self.yearly_kWh_totals.T.keys().values[0]
+             
+        
         
         end = self.fc_specs["population"].T.keys().values[-1] \
                 if self.fc_specs["population"].T.keys().values[-1] < \
@@ -158,7 +160,7 @@ class Forecast (object):
         consumption["consumption kWh"] = consumption["population"] 
         del consumption["population"] 
         self.consumption = consumption
-        
+        self.start_year = last_year
         
     def forecast_generation (self):
         """
@@ -295,25 +297,25 @@ class Forecast (object):
         try:
             r = self.res_HF
         except AttributeError:
-            r = np.array([])
+            r = np.zeros(self.end_year - self.start_year)
             years = (self.end_year - np.arange(len(r)))[::-1]
             self.res_HF = DataFrame({'year': years,
                                    'consumption': r}).set_index('year')
         try:
             c = self.com_HF 
         except AttributeError:
-            c = np.array([])
+            c = np.zeros(self.end_year - self.start_year)
             years = (self.end_year - np.arange(len(c)))[::-1]
             self.com_HF = DataFrame({'year': years,
                                    'consumption': c}).set_index('year')
         try:
             w = self.www_HF
         except AttributeError:
-            w = np.array([])
+            w = np.zeros(self.end_year - self.start_year)
+            #~ print self.end_year - 
             years = (self.end_year - np.arange(len(w)))[::-1]
             self.www_HF = DataFrame({'year': years,
                                    'consumption': w}).set_index('year')
-        
         
         self.total_HF = self.res_HF + self.com_HF + self.www_HF
         
