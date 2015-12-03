@@ -379,7 +379,8 @@ class Preprocessor (object):
         data = read_csv(in_file, index_col=1, comment = "#").ix[com_id]
         data = data[["year","diesel_kwh_generated",
                      "powerhouse_consumption_kwh","hydro_kwh_generated",
-                     "other_1_kwh_generated","other_2_kwh_generated"]]
+                     "other_1_kwh_generated","other_2_kwh_generated",
+                     "fuel_used_gal"]]
                      
         
         last_year = data["year"].max()
@@ -393,16 +394,20 @@ class Preprocessor (object):
         
         net_generation = generation - data[data["year"]==last_year][\
                                         "powerhouse_consumption_kwh"].sum()
-                    
+                                        
+        fuel_used = data[data["year"]==last_year]["fuel_used_gal"].sum()
+
         out_file = os.path.join(out_dir, "generation.csv")
         fd = open(out_file,'w')
         fd.write("# " + com_id + " kWh Generation data\n")
         fd.write("# generation (kWh/yr) gross generation\n")
         fd.write("# net generation(kWh/yr) generation-powerhouse consumption\n")
+        fd.write("# consumption HF(gal/yr) heating fuel used in generation\n")
         fd.write("#### #### #### #### ####\n")
         fd.write("key,value\n")
         fd.write("generation," + str(generation) + "\n")
         fd.write("net_generation," + str(net_generation) + "\n")
+        fd.write("consumption HF," + str(fuel_used) + "\n")
         fd.close()
         
 

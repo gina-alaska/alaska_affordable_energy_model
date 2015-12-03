@@ -268,6 +268,9 @@ class CommunityData (object):
         if self.get_item('community',"generation") == "IMPORT":
             self.set_item('community',"generation", 
             np.float(generation.ix["generation"]))
+        if self.get_item('community',"consumption HF") == "IMPORT":
+            self.set_item('community',"consumption HF", 
+            np.float(generation.ix["consumption HF"]))
                          
     def load_pp_csv(self, f_name):
         """
