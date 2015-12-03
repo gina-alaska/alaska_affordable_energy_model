@@ -13,7 +13,7 @@ class Preprocessor (object):
     def __init__ (self):
         self.diagnostics = diagnostics()
     
-    def population (self, in_file, out_dir, com_id):
+    def population (self, in_file, out_dir, com_id, threshold = 20):
         """
         create the population input file
         
@@ -28,6 +28,10 @@ class Preprocessor (object):
         pop_data = read_csv(in_file, index_col = 1) # update to GNIS
         pops = pop_data.ix[com_id]["2003":"2014"].values
         years = pop_data.ix[com_id]["2003":"2014"].keys().values.astype(int)
+        
+        if (pops < threshold).any():
+            self.diagnostics.add_warning("preprocessor","population < 20")
+        
         
         out_file = os.path.join(out_dir,"population.csv")
         fd = open(out_file,'w')
@@ -111,6 +115,14 @@ class Preprocessor (object):
             data["government"] = nans
             data["unbilled"] = nans
         
+            
+        res = data['residential']
+        non_res = data.sum(1) - res
+        data = DataFrame({"year":res.keys(),
+                   "residential":res.values,
+                   "non-residential":non_res.values}).set_index("year")
+
+            
             
         out_file = os.path.join(out_dir,"electricity.csv")
         fd = open(out_file,'w')
@@ -332,9 +344,15 @@ class Preprocessor (object):
                                         "power-cost-equalization-pce-data.csv"),
                                                                         out_dir,
                                                                         com_id)
+            self.electricity_genneration(os.path.join(data_dir,
+                                        "power-cost-equalization-pce-data.csv"), 
+                                                                        out_dir,
+                                                                        com_id)
         except KeyError:
             self.electricity(os.path.join(data_dir,"EIA.csv"), out_dir, com_id)
             self.diagnostics.add_note("preprocessor","no $/kWh estimates")
+            self.diagnostics.add_note("preprocessor","no generation estimates")
+            
         
     
     def electricity_prices (self, in_file, out_dir, com_id):
@@ -383,7 +401,45 @@ class Preprocessor (object):
         fd.close()
         
         
+                                
+    def electricity_genneration (self, in_file, out_dir, com_id):
+        """
+        pre process kwh generation 
+        """
+        data = read_csv(in_file, index_col=1, comment = "#").ix[com_id]
+        data = data[["year","diesel_kwh_generated",
+                     "powerhouse_consumption_kwh","hydro_kwh_generated",
+                     "other_1_kwh_generated","other_2_kwh_generated",
+                     "fuel_used_gal"]]
+                     
+        
+        last_year = data["year"].max()
+        while len(data[data["year"] == last_year]) != 12:
+            last_year -= 1 
     
+        generation = data[data["year"]==last_year][["diesel_kwh_generated",
+                     "powerhouse_consumption_kwh","hydro_kwh_generated",
+                     "other_1_kwh_generated",
+                     "other_2_kwh_generated"]].sum().sum()
+        
+        net_generation = generation - data[data["year"]==last_year][\
+                                        "powerhouse_consumption_kwh"].sum()
+                                        
+        fuel_used = data[data["year"]==last_year]["fuel_used_gal"].sum()
+
+        out_file = os.path.join(out_dir, "generation.csv")
+        fd = open(out_file,'w')
+        fd.write("# " + com_id + " kWh Generation data\n")
+        fd.write("# generation (kWh/yr) gross generation\n")
+        fd.write("# net generation(kWh/yr) generation-powerhouse consumption\n")
+        fd.write("# consumption HF(gal/yr) heating fuel used in generation\n")
+        fd.write("#### #### #### #### ####\n")
+        fd.write("key,value\n")
+        fd.write("generation," + str(generation) + "\n")
+        fd.write("net_generation," + str(net_generation) + "\n")
+        fd.write("consumption HF," + str(fuel_used) + "\n")
+        fd.close()
+        
 
 def preprocess(data_dir, out_dir, com_id):
     """

@@ -263,6 +263,7 @@ class CommunityData (object):
             self.set_item('community',"heating fuel premium", 
                          float(region.ix["premium"][0]))
                          
+
         prices = self.load_pp_csv("prices.csv")
         if self.get_item('community',"res non-PCE elec cost") == "IMPORT":
             self.set_item("community", "res non-PCE elec cost",
@@ -270,6 +271,15 @@ class CommunityData (object):
         if self.get_item('community',"elec non-fuel cost") == "IMPORT":
             self.set_item("community", "elec non-fuel cost",
                             np.float(prices.ix["elec non-fuel cost"]))
+
+        generation = self.load_pp_csv("generation.csv")
+        if self.get_item('community',"generation") == "IMPORT":
+            self.set_item('community',"generation", 
+            np.float(generation.ix["generation"]))
+        if self.get_item('community',"consumption HF") == "IMPORT":
+            self.set_item('community',"consumption HF", 
+            np.float(generation.ix["consumption HF"]))
+
                          
     def load_pp_csv(self, f_name):
         """

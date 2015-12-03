@@ -10,9 +10,7 @@ defaults = """community:
   discount rate: .03 # rate as decimal <float> (ex. .03)
    
   #do these come from community profiles?
-  generation: 440077.00 # kWh generated/yr  <float> 123456.00
   #consumption kWh: 384000.00 # kWh consumed/year <float> 12345.00
-  consumption HF: 40739.00 # gallons HF consumed/year <float> 12345.00
   line losses: .1210 #rate as decimal <float> (ex. .1210)
 
 forecast:

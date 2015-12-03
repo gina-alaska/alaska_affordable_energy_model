@@ -1,13 +1,13 @@
 community:
   HDD: 14593
-  consumption HF: 40739.0
+  consumption HF: 39356.0
   current year: 2014
   diesel generation efficiency: 10.802351555
   diesel prices: IMPORT
   discount rate: 0.03
   elec non-fuel cost: 0.4024526823
   electric non-fuel prices: IMPORT
-  generation: 440077.0
+  generation: 496816.0
   heating fuel premium: 1.5507921943
   interest rate: 0.05
   line losses: 0.121
