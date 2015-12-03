@@ -118,3 +118,6 @@ To run the regression test use this function. Give it the path to the driver fli
     2016  129.980917   60    485880.667825          553000   63.101058 .....
     
 a file generated forecast_comparsion_results.csv is cerated it provides a grid of booleans based on the forecast. The cells are true if the new values are with in + or - the percent limit provied as a decimal. The limit by default is 10%(.1)
+
+
+To reset the test case: delete the test case directory and run reg_test.setup_reg_test again after updating the model data, or copy the resultes directory into the baseline_results directory in the test case directory after runing the model with the updated data.
