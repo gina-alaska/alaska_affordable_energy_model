@@ -5,7 +5,7 @@ community:
   diesel generation efficiency: 10.802351555
   diesel prices: IMPORT
   discount rate: 0.03
-  elec non-fuel cost: 0.4024526823
+  elec non-fuel cost: 0.5387745034120001
   electric non-fuel prices: IMPORT
   generation: 496816.0
   heating fuel premium: 1.5507921943
@@ -13,7 +13,7 @@ community:
   line losses: 0.121
   name: Manley Hot Springs
   region: Yukon-Koyukuk/Upper Tanana
-  res non-PCE elec cost: 0.83
+  res non-PCE elec cost: 0.89975
 community buildings:
   average refit cost: 7.0
   cohort savings multiplier: 0.26
