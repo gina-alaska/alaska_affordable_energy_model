@@ -13,7 +13,7 @@ class Preprocessor (object):
     def __init__ (self):
         self.diagnostics = diagnostics()
     
-    def population (self, in_file, out_dir, com_id):
+    def population (self, in_file, out_dir, com_id, threshold = 20):
         """
         create the population input file
         
@@ -28,6 +28,10 @@ class Preprocessor (object):
         pop_data = read_csv(in_file, index_col = 1) # update to GNIS
         pops = pop_data.ix[com_id]["2003":"2014"].values
         years = pop_data.ix[com_id]["2003":"2014"].keys().values.astype(int)
+        
+        if (pops < threshold).any():
+            self.diagnostics.add_warning("preprocessor","population < 20")
+        
         
         out_file = os.path.join(out_dir,"population.csv")
         fd = open(out_file,'w')
@@ -111,6 +115,14 @@ class Preprocessor (object):
             data["government"] = nans
             data["unbilled"] = nans
         
+            
+        res = data['residential']
+        non_res = data.sum(1) - res
+        data = DataFrame({"year":res.keys(),
+                   "residential":res.values,
+                   "non-residential":non_res.values}).set_index("year")
+
+            
             
         out_file = os.path.join(out_dir,"electricity.csv")
         fd = open(out_file,'w')
