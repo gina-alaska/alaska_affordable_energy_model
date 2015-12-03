@@ -13,7 +13,7 @@ class Preprocessor (object):
     def __init__ (self):
         self.diagnostics = diagnostics()
     
-    def population (self, in_file, out_dir, com_id):
+    def population (self, in_file, out_dir, com_id, thershold = 20):
         """
         create the population input file
         
@@ -28,6 +28,10 @@ class Preprocessor (object):
         pop_data = read_csv(in_file, index_col = 1) # update to GNIS
         pops = pop_data.ix[com_id]["2003":"2014"].values
         years = pop_data.ix[com_id]["2003":"2014"].keys().values.astype(int)
+        
+        if (pops < thershold).any():
+            self.diagnostics.add_warning("preprocessor","population < 20")
+        
         
         out_file = os.path.join(out_dir,"population.csv")
         fd = open(out_file,'w')
