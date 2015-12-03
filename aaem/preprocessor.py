@@ -29,7 +29,7 @@ class Preprocessor (object):
         pops = pop_data.ix[com_id]["2003":"2014"].values
         years = pop_data.ix[com_id]["2003":"2014"].keys().values.astype(int)
         
-        out_file = out_dir+"population.csv"
+        out_file = os.path.join(out_dir,"population.csv")
         fd = open(out_file,'w')
         fd.write("# " + com_id + " population\n")
         fd.write("# recorded population in a given year\n")
@@ -112,7 +112,7 @@ class Preprocessor (object):
             data["unbilled"] = nans
         
             
-        out_file = out_dir+"electricity.csv"
+        out_file = os.path.join(out_dir,"electricity.csv")
         fd = open(out_file,'w')
         fd.write("# " + com_id + " electricity consumption\n")
         fd.write("# all units are in kWh/year for a given year and category\n")
@@ -137,7 +137,7 @@ class Preprocessor (object):
         or if the system type is unknown
         """
         
-        out_file = out_dir+"wastewater_data.csv"
+        out_file = os.path.join(out_dir,"wastewater_data.csv")
         fd = open(out_file,'w')
         fd.write("# " + com_id + " wastewater data\n")
         fd.write("# System Type: The system type \n")
@@ -267,7 +267,7 @@ class Preprocessor (object):
         region = read_csv(data_file, index_col=0, comment='#').energy_region[com_id]
         premium = read_csv(premium_file, index_col=0, comment='#').premium[region]
     
-        out_file = out_dir + "region.csv"
+        out_file = os.path.join(out_dir, "region.csv")
         fd = open(out_file,'w')
         fd.write("# " + com_id + " residential data\n")
         fd.write("# region: region used by model \n")
@@ -290,44 +290,48 @@ class Preprocessor (object):
             all of the files necessary to run the model are in out_dir, if out_dir
         dose not it exist it is created
         """
-        data_dir = os.path.abspath(data_dir) + '/'
-        out_dir = os.path.abspath(out_dir) + '/'
+        
+         # join makes it a directory not a file 
+        data_dir = os.path.join(os.path.abspath(data_dir),"")
+        out_dir = os.path.join(os.path.abspath(out_dir),"")
         try:
             os.makedirs(out_dir)
         except OSError:
             pass
         
         ### copy files that still need their own preprocessor function yet
-        shutil.copy(data_dir+"com_benchmark_data.csv", out_dir)
-        shutil.copy(data_dir+"com_building_estimates.csv", out_dir)
-        shutil.copy(data_dir+"com_num_buildings.csv", out_dir)
-        shutil.copy(data_dir+"diesel_fuel_prices.csv", out_dir)
-        shutil.copy(data_dir+"hdd.csv", out_dir)
-        shutil.copy(data_dir+"cpi.csv", out_dir)
+        shutil.copy(os.path.join(data_dir,"com_benchmark_data.csv"), out_dir)
+        shutil.copy(os.path.join(data_dir,"com_building_estimates.csv"),out_dir)
+        shutil.copy(os.path.join(data_dir,"com_num_buildings.csv"), out_dir)
+        shutil.copy(os.path.join(data_dir,"diesel_fuel_prices.csv"), out_dir)
+        shutil.copy(os.path.join(data_dir,"hdd.csv"), out_dir)
+        shutil.copy(os.path.join(data_dir,"cpi.csv"), out_dir)
     
         ###
         
-        self.region(data_dir+"res_model_data.csv",
-               data_dir+"heating_fuel_premium.csv",out_dir,com_id)
+        self.region(os.path.join(data_dir,"res_model_data.csv"),
+               os.path.join(data_dir,"heating_fuel_premium.csv"),out_dir,com_id)
         
-        self.population(data_dir+"population.csv",out_dir,com_id)
-        self.residential(data_dir+"res_fuel_source.csv", 
-                         data_dir+"res_model_data.csv",
+        self.population(os.path.join(data_dir,"population.csv"),out_dir,com_id)
+        self.residential(os.path.join(data_dir,"res_fuel_source.csv"), 
+                         os.path.join(data_dir,"res_model_data.csv"),
                     out_dir, com_id)
-        self.wastewater(data_dir+"ww_data.csv", data_dir+"ww_assumptions.csv",
+        self.wastewater(os.path.join(data_dir,"ww_data.csv"),
+                        os.path.join(data_dir,"ww_assumptions.csv"),
                    out_dir, com_id)
         
         
         try:
-            self.electricity(data_dir+"power-cost-equalization-pce-data.csv", 
+            self.electricity(os.path.join(data_dir,
+                                        "power-cost-equalization-pce-data.csv"), 
                                                                         out_dir,
                                                                         com_id)
-            self.electricity_prices(data_dir+\
-                                        "power-cost-equalization-pce-data.csv",
+            self.electricity_prices(os.path.join(data_dir,
+                                        "power-cost-equalization-pce-data.csv"),
                                                                         out_dir,
                                                                         com_id)
         except KeyError:
-            self.electricity(data_dir+"EIA.csv", out_dir, com_id)
+            self.electricity(os.path.join(data_dir,"EIA.csv"), out_dir, com_id)
             self.diagnostics.add_note("preprocessor","no $/kWh estimates")
         
     
