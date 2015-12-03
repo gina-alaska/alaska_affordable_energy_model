@@ -116,6 +116,14 @@ class Preprocessor (object):
             data["unbilled"] = nans
         
             
+        res = data['residential']
+        non_res = data.sum(1) - res
+        data = DataFrame({"year":res.keys(),
+                   "residential":res.values,
+                   "non-residential":non_res.values}).set_index("year")
+
+            
+            
         out_file = os.path.join(out_dir,"electricity.csv")
         fd = open(out_file,'w')
         fd.write("# " + com_id + " electricity consumption\n")
