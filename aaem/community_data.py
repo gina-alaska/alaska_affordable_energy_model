@@ -263,6 +263,14 @@ class CommunityData (object):
             self.set_item('community',"heating fuel premium", 
                          float(region.ix["premium"][0]))
                          
+        prices = self.load_pp_csv("prices.csv")
+        if self.get_item('community',"res non-PCE elec cost") == "IMPORT":
+            self.set_item("community", "res non-PCE elec cost",
+                            np.float(prices.ix["res non-PCE elec cost"]))
+        if self.get_item('community',"elec non-fuel cost") == "IMPORT":
+            self.set_item("community", "elec non-fuel cost",
+                            np.float(prices.ix["elec non-fuel cost"]))
+                         
     def load_pp_csv(self, f_name):
         """
         load a preprocessed csv file

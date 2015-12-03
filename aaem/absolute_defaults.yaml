@@ -17,10 +17,11 @@ community:
   generation: ABSOLUTE DEFAULT # kWh generated/yr  <float> 123456.00
   #consumption kWh: ABSOLUTE DEFAULT # kWh consumed/year <float> 12345.00
   consumption HF: ABSOLUTE DEFAULT # gallons HF consumed/year <float> 12345.00
-  res non-PCE elec cost: ABSOLUTE DEFAULT # $cost/kWh <float> (ex. .83)
+  
   line losses: ABSOLUTE DEFAULT #rate as decimal <float> (ex. .1210)
 
-  elec non-fuel cost: ABSOLUTE DEFAULT  #TODO this is a calculated value
+  res non-PCE elec cost: IMPORT # $cost/kWh <float> (ex. .83)
+  elec non-fuel cost: IMPORT # $cost/kWh <float> (ex. .83)
 
   HDD: IMPORT
   diesel prices: IMPORT

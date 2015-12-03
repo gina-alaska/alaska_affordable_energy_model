@@ -119,7 +119,7 @@ class Preprocessor (object):
         fd.write("#### #### #### #### ####\n")
         fd.close()    
         
-        data.to_csv(out_dir+"electricity.csv", mode="a")
+        data.to_csv(out_file, mode="a")
         return data
     
     def wastewater (self, data_file, assumptions_file, out_dir, com_id):
@@ -264,8 +264,10 @@ class Preprocessor (object):
         post:
             regional related items are in a file the model can read
         """
-        region = read_csv(data_file, index_col=0, comment='#').energy_region[com_id]
-        premium = read_csv(premium_file, index_col=0, comment='#').premium[region]
+        region = read_csv(data_file, index_col=0,
+                                            comment='#').energy_region[com_id]
+        premium = read_csv(premium_file, index_col=0, 
+                                            comment='#').premium[region]
     
         out_file = os.path.join(out_dir, "region.csv")
         fd = open(out_file,'w')
@@ -345,26 +347,42 @@ class Preprocessor (object):
                                          "commercial_kwh_sold",
                                          "community_kwh_sold",
                                          "government_kwh_sold",
-                                         "unbilled_kwh", "fuel_cost"]].tail(1)
-        elec_fuel_cost = (data['fuel_cost']/data[["residential_kwh_sold",
+                                         "unbilled_kwh", "fuel_cost"]]
+        
+        last_year = data["year"].max()
+        while len(data[data["year"] == last_year]) != 12:
+            last_year -= 1 
+                                    
+                                    
+        elec_fuel_cost = (data[data["year"] == last_year]['fuel_cost'].mean()\
+                     / data[data["year"] == last_year][["residential_kwh_sold",
                                          "commercial_kwh_sold",
                                          "community_kwh_sold",
                                          "government_kwh_sold",
-                                         "unbilled_kwh"]].T.sum()).max()
+                                         "unbilled_kwh"]].mean().sum())
                                          
-        res_nonPCE_price = data["residential_rate"].max()
+        res_nonPCE_price = data[data["year"] == \
+                                last_year]["residential_rate"].mean()
         elec_nonFuel_cost = res_nonPCE_price - elec_fuel_cost
         
         self.diagnostics.add_note("preprocessor",
-                                "suggestion: add (res non-PCE elec cost: " + \
-                                 str(res_nonPCE_price) +\
-                                 ") to the community section of your "+\
-                                 "community_data.yaml file for this community ")
+                                "calculated res non-PCE elec cost: " + \
+                                 str(res_nonPCE_price))
         self.diagnostics.add_note("preprocessor",
-                                    "suggestion: add (elec non-fuel cost: " + \
-                                    str(elec_nonFuel_cost) +\
-                                    ") to the community section of your"+\
-                                " community_data.yaml file for this community ")
+                                    "calculated elec non-fuel cost: " + \
+                                    str(elec_nonFuel_cost))
+                                    
+        out_file = os.path.join(out_dir, "prices.csv")
+        fd = open(out_file,'w')
+        fd.write("# " + com_id + " electricity consumption\n")
+        fd.write("# all units are in $/kWh \n")
+        fd.write("#### #### #### #### ####\n")
+        fd.write("key,value \n")
+        fd.write("res non-PCE elec cost,"+ str(res_nonPCE_price) + "\n")
+        fd.write("elec non-fuel cost," + str(elec_nonFuel_cost) + "\n")
+        fd.close()
+        
+        
     
 
 def preprocess(data_dir, out_dir, com_id):
