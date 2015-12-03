@@ -74,11 +74,7 @@ class Forecast (object):
         kWh = self.fc_specs["electricity"]
         years = kWh.T.keys().values
         totals = np.nansum([kWh['residential'].values,
-                                            kWh['community'].values,
-                                            kWh['commercial'].values,
-                                            kWh['government'].values,
-                                            kWh['unbilled'].values,
-                                            kWh['industrial'].values
+                            kWh['non-residential'].values,
                                             ],0)
         self.yearly_kWh_totals = DataFrame({"year":years,
                                         "total":totals}).set_index("year")
