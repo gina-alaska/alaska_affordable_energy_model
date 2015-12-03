@@ -14,7 +14,7 @@ community:
   diesel generation efficiency: 10.802351555 # kWh/gal <float>
 
   #do these come from community profiles?
-  generation: ABSOLUTE DEFAULT # kWh generated/yr  <float> 123456.00
+  generation: IMPORT # kWh generated/yr  <float> 123456.00
   #consumption kWh: ABSOLUTE DEFAULT # kWh consumed/year <float> 12345.00
   consumption HF: ABSOLUTE DEFAULT # gallons HF consumed/year <float> 12345.00
   res non-PCE elec cost: ABSOLUTE DEFAULT # $cost/kWh <float> (ex. .83)

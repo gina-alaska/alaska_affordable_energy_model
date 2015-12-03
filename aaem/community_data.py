@@ -263,6 +263,12 @@ class CommunityData (object):
             self.set_item('community',"heating fuel premium", 
                          float(region.ix["premium"][0]))
                          
+        
+        generation = self.load_pp_csv("generation.csv")
+        if self.get_item('community',"generation") == "IMPORT":
+            self.set_item('community',"generation", 
+            np.float(generation.ix["generation"]))
+                         
     def load_pp_csv(self, f_name):
         """
         load a preprocessed csv file

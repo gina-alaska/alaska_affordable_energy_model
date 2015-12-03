@@ -330,9 +330,15 @@ class Preprocessor (object):
                                         "power-cost-equalization-pce-data.csv"),
                                                                         out_dir,
                                                                         com_id)
+            self.electricity_genneration(os.path.join(data_dir,
+                                        "power-cost-equalization-pce-data.csv"), 
+                                                                        out_dir,
+                                                                        com_id)
         except KeyError:
             self.electricity(os.path.join(data_dir,"EIA.csv"), out_dir, com_id)
             self.diagnostics.add_note("preprocessor","no $/kWh estimates")
+            self.diagnostics.add_note("preprocessor","no generation estimates")
+            
         
     
     def electricity_prices (self, in_file, out_dir, com_id):
@@ -365,7 +371,40 @@ class Preprocessor (object):
                                     str(elec_nonFuel_cost) +\
                                     ") to the community section of your"+\
                                 " community_data.yaml file for this community ")
+                                
+    def electricity_genneration (self, in_file, out_dir, com_id):
+        """
+        pre process kwh generation 
+        """
+        data = read_csv(in_file, index_col=1, comment = "#").ix[com_id]
+        data = data[["year","diesel_kwh_generated",
+                     "powerhouse_consumption_kwh","hydro_kwh_generated",
+                     "other_1_kwh_generated","other_2_kwh_generated"]]
+                     
+        
+        last_year = data["year"].max()
+        while len(data[data["year"] == last_year]) != 12:
+            last_year -= 1 
     
+        generation = data[data["year"]==last_year][["diesel_kwh_generated",
+                     "powerhouse_consumption_kwh","hydro_kwh_generated",
+                     "other_1_kwh_generated",
+                     "other_2_kwh_generated"]].sum().sum()
+        
+        net_generation = generation - data[data["year"]==last_year][\
+                                        "powerhouse_consumption_kwh"].sum()
+                    
+        out_file = os.path.join(out_dir, "generation.csv")
+        fd = open(out_file,'w')
+        fd.write("# " + com_id + " kWh Generation data\n")
+        fd.write("# generation (kWh/yr) gross generation\n")
+        fd.write("# net generation(kWh/yr) generation-powerhouse consumption\n")
+        fd.write("#### #### #### #### ####\n")
+        fd.write("key,value\n")
+        fd.write("generation," + str(generation) + "\n")
+        fd.write("net_generation," + str(net_generation) + "\n")
+        fd.close()
+        
 
 def preprocess(data_dir, out_dir, com_id):
     """
