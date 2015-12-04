@@ -353,6 +353,8 @@ class Preprocessor (object):
             self.diagnostics.add_note("preprocessor","no $/kWh estimates")
             self.diagnostics.add_note("preprocessor","no generation estimates")
             
+        self.interties(os.path.join(data_dir,"interties.csv"),out_dir,com_id)
+            
         
     
     def electricity_prices (self, in_file, out_dir, com_id):
@@ -440,6 +442,26 @@ class Preprocessor (object):
         fd.write("consumption HF," + str(fuel_used) + "\n")
         fd.close()
         
+    def interties (self, in_file, out_dir, com_id):
+        """ 
+        preprocess interties
+        
+        pre:
+            in_infile is the intertie data file
+            out_dir is a directory
+            com_id is a string
+        post
+            com_id's intertie data is saved to out_dir as interties.csv
+        """
+        data = read_csv(in_file, index_col=0, 
+                        comment = "#").ix[com_id].fillna("''")
+        out_file = os.path.join(out_dir, "interties.csv")
+        fd = open(out_file,'w')
+        fd.write("# " + com_id + " intertied communities\n")
+        fd.write("#### #### #### #### ####\n")
+        fd.close()
+        data.to_csv(out_file, mode = 'a')
+        return data
 
 def preprocess(data_dir, out_dir, com_id):
     """
