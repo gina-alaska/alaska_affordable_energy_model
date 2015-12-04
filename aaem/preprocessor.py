@@ -61,7 +61,11 @@ class Preprocessor (object):
                                          "commercial_kwh_sold",
                                          "community_kwh_sold",
                                          "government_kwh_sold",
-                                         "unbilled_kwh"]]
+                                         "unbilled_kwh","notes"]]
+                                         
+        self.diagnostics.add_note("preprocessor", 
+                "notes from pce data: " + str(data["notes"].tail(1)[0]))
+        
         sums = []
         for year in set(data["year"].values):
             if len(data[data["year"] == year]) != 12:
