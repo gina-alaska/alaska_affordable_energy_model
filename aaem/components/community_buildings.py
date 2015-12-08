@@ -68,10 +68,10 @@ class CommunityBuildings (AnnualSavings):
         self.set_project_life_details(self.comp_specs["start year"],
                                       self.comp_specs["lifetime"])
                                       
-        self.additional_buildings = self.comp_specs["com num buildings"] - \
-                            np.sum(self.comp_specs['com benchmark data']\
-                            [['Number Of Building Type']].values) - 2
-        self.additional_buildings = self.additional_buildings.values[0]
+        #~ self.additional_buildings = self.comp_specs["com num buildings"] - \
+                            #~ np.sum(self.comp_specs['com benchmark data']\
+                            #~ [['Number Of Building Type']].values) - 2
+        #~ self.additional_buildings = self.additional_buildings.values[0]
         
     def run (self):
         """
@@ -136,34 +136,26 @@ class CommunityBuildings (AnnualSavings):
           self.refit_sqft_total, self.benchmark_sqft, self.additional_sqft are
         floating-point square feet values 
         """
-        self.benchmark_sqft = \
-            np.sum(self.comp_specs['com benchmark data']\
-                                                [['Total Square Feet']].values) 
-        pop = self.forecast.base_pop
-        if pop < 300:
-            key = "Average sf<300"
-        elif pop < 1200:
-            key = "Average sf>300,<1200"
-        else: 
-            key = "Average sf>1200"
+        sqft_ests = self.comp_specs["com building estimates"]["Sqft"]
+        data = self.comp_specs['com benchmark data']
+        keys = set(data.T.keys())
+        measure = "Square Feet"
         
-
-        ben_data = self.comp_specs['com benchmark data']
-        idx = ben_data['Building Type'] != "Education - K - 12"
-        known_buildings = ben_data['Number Of Building Type'].sum()
+        for k in keys:
+            try:
+                # more than one item for each k 
+                data.ix[k][measure]\
+                          [data.ix[k][measure].apply(np.isnan)] = \
+                                    sqft_ests.ix[k]
+            
+            except AttributeError:
+                # only one item 
+                if np.isnan(data.ix[k][measure]):
+                    data.ix[k][measure] = sqft_ests.ix[k]
         
-        # 12 is the number of categories used in average
-        avg_sqft = (ben_data[idx]['Total Square Feet'].sum() / 12) if \
-           known_buildings/(known_buildings + self.additional_buildings) < .4 \
-                else self.comp_specs['com building estimates']['Average'][key]
+        self.refit_sqft_total = data[measure].sum()
         
-        
-        self.additional_sqft = self.additional_buildings * avg_sqft
-                        
-
-        self.refit_sqft_total = self.additional_sqft + self.benchmark_sqft
-        
-
+    
     def calc_refit_cost (self):
         """ 
         calc refit cost 
@@ -175,11 +167,26 @@ class CommunityBuildings (AnnualSavings):
             self.refit_cost_total, self.benchmark_cost, self.additional_cost are
         floating-point dollar values 
         """
-        self.benchmark_cost = \
-            np.sum(self.comp_specs['com benchmark data']\
-                        [['Cohort Implementation Cost']].values) 
-        self.additional_cost = self.additional_sqft * self.refit_cost_rate
-        self.refit_cost_total = self.benchmark_cost + self.additional_cost
+        data = self.comp_specs['com benchmark data']
+        keys = set(data.T.keys())
+        measure = "implementation cost"
+        
+        for k in keys:
+            try:
+                # more than one item for each k 
+                data.ix[k][measure][data.ix[k][measure].apply(np.isnan)] = \
+                        data.ix[k]["Square Feet"]\
+                        [data.ix[k][measure].apply(np.isnan)] * \
+                        self.refit_cost_rate       
+            
+            except AttributeError:
+                # only one item 
+                if np.isnan(data.ix[k][measure]):
+                    data.ix[k][measure] = data.ix[k]["Square Feet"] * \
+                                            self.refit_cost_rate     
+        
+        
+        self.refit_cost_total = data[measure].sum()
         
     def calc_refit_pre_HF (self):
         """ 
@@ -191,34 +198,33 @@ class CommunityBuildings (AnnualSavings):
             self.refit_pre_hf_total, self.benchmark_hf, self.additional_hf are
         floating-point HF values
         """
-        pop = self.forecast.base_pop 
-        if pop < 300:
-            key = "Av Gal/sf<300"
-        elif pop < 1200:
-            key = "Av Gal/sf>300,<1200"
-        else: 
-            key = "Av Gal/sf>1200"
+        HDD_ests = self.comp_specs["com building estimates"]["HDD"]
+        gal_sf_ests = self.comp_specs["com building estimates"]["Gal/sf"]
         
-        hf_sqft_yr = self.comp_specs['com building estimates']['Average'][key]
+        data = self.comp_specs['com benchmark data']
+        keys = set(data.T.keys())
+        measure = "Fuel Oil"
 
+        for k in keys:
+            HDD_ratio = self.cd["HDD"]/HDD_ests.ix[k]
+            gal_sf = gal_sf_ests.ix[k]
+            try:
+                # more than one item for each k 
+                sqft = data.ix[k]["Square Feet"]\
+                                   [data.ix[k][measure].apply(np.isnan)]
+                
+                
+                data.ix[k][measure][data.ix[k][measure].apply(np.isnan)] = \
+                                                      sqft * HDD_ratio * gal_sf
+                    
+            except AttributeError:
+                # only one item 
+                if np.isnan(data.ix[k][measure]):
+                    data.ix[k][measure] = data.ix[k]["Square Feet"] * \
+                                                            HDD_ratio * gal_sf
+                                                                
+        self.baseline_HF_consumption = data[measure].sum()
         
-        self.benchmark_HF = \
-      np.sum(self.comp_specs['com benchmark data'][['Current Fuel Oil']].values) 
-
-
-        if pop < 300:
-            key = "HDD<300"
-        elif pop < 1100:
-            key = "HDD>300,<1200"
-        else: 
-            key = "HDD>1000"
-        self.additional_HF = self.additional_sqft * hf_sqft_yr * \
-     (self.cd["HDD"]/self.comp_specs['com building estimates']['Average'][key])
-        
-            # multiple building types 
-
-        self.baseline_HF_consumption = self.benchmark_HF + self.additional_HF
-
                 
         
     def calc_refit_pre_kWh (self):
@@ -231,23 +237,29 @@ class CommunityBuildings (AnnualSavings):
             self.baseline_kWh_consumption, self.benchmark_kWh, 
         self.additional_kWh are floating-point kWh values
         """
-        pop = self.forecast.base_pop 
-        if pop < 300:
-            key = "Avg kWh/sf<300"
-        elif pop < 1200:
-            key = "Avg kWh/sf>300,<1200"
-        else: 
-            key = "Avg kWh/sf>1200"
+        kwh_sf_ests = self.comp_specs["com building estimates"]["kWh/sf"]
+        data = self.comp_specs['com benchmark data']
+        keys = set(data.T.keys())
+        measure = "Electric"
         
-        kWh_sqft_yr = self.comp_specs['com building estimates']['Average'][key]
+        for k in keys:
+            kwh_sf = kwh_sf_ests.ix[k]
+            try:
+                # more than one item for each k 
+                data.ix[k][measure][data.ix[k][measure].apply(np.isnan)] = \
+                        data.ix[k]["Square Feet"]\
+                        [data.ix[k][measure].apply(np.isnan)] * \
+                        kwh_sf  
+            
+            except AttributeError:
+                # only one item 
+                if np.isnan(data.ix[k][measure]):
+                    data.ix[k][measure] = data.ix[k]["Square Feet"] * \
+                                            kwh_sf     
         
-        self.benchmark_kWh = \
-     np.sum(self.comp_specs['com benchmark data'][['Current Electric']].values) 
+
+        self.baseline_kWh_consumption = data[measure].sum()
         
-        self.additional_kWh = self.additional_sqft * kWh_sqft_yr
-        
-            # multiple building types 
-        self.baseline_kWh_consumption = self.benchmark_kWh + self.additional_kWh
     
     def calc_refit_savings_HF (self):
         """ 
@@ -259,13 +271,15 @@ class CommunityBuildings (AnnualSavings):
             self.refit_savings_HF, self.benchmark_savings_HF,
         self.additional_savings_HF, are floating-point HF values
         """
-        self.benchmark_savings_HF = \
-            np.sum(self.comp_specs['com benchmark data']["Current Fuel Oil"] -\
-                self.comp_specs['com benchmark data']["Post-Retrofit Fuel Oil"])
-        self.additional_savings_HF = self.additional_HF * \
-                                 self.comp_specs['cohort savings multiplier']
-        self.refit_savings_HF_total = self.benchmark_savings_HF +\
-                                      self.additional_savings_HF
+        #~ self.benchmark_savings_HF = \
+            #~ np.sum(self.comp_specs['com benchmark data']["Current Fuel Oil"] -\
+                #~ self.comp_specs['com benchmark data']["Post-Retrofit Fuel Oil"])
+        #~ self.additional_savings_HF = self.additional_HF * \
+                                 #~ self.comp_specs['cohort savings multiplier']
+        #~ self.refit_savings_HF_total = self.benchmark_savings_HF +\
+                                      #~ self.additional_savings_HF
+        self.refit_savings_HF_total = self.baseline_HF_consumption * \
+                                    self.comp_specs['cohort savings multiplier']
         
     def calc_refit_savings_kWh (self):
         """ 
@@ -277,13 +291,15 @@ class CommunityBuildings (AnnualSavings):
             self.refit_savings_kWh, self.benchmark_savings_kWh,
         self.additional_savings_kWh, are floating-point kWh values
         """
-        self.benchmark_savings_kWh = \
-            np.sum(self.comp_specs['com benchmark data']["Current Electric"] -\
-                self.comp_specs['com benchmark data']["Post-Retrofit Electric"])
-        self.additional_savings_kWh = self.additional_kWh * \
-                                 self.comp_specs['cohort savings multiplier']
-        self.refit_savings_kWh_total = self.benchmark_savings_kWh +\
-                                      self.additional_savings_kWh
+        #~ self.benchmark_savings_kWh = \
+            #~ np.sum(self.comp_specs['com benchmark data']["Current Electric"] -\
+                #~ self.comp_specs['com benchmark data']["Post-Retrofit Electric"])
+        #~ self.additional_savings_kWh = self.additional_kWh * \
+                                 #~ self.comp_specs['cohort savings multiplier']
+        #~ self.refit_savings_kWh_total = self.benchmark_savings_kWh +\
+                                      #~ self.additional_savings_kWh
+        self.refit_savings_kWh_total = self.baseline_kWh_consumption * \
+                                    self.comp_specs['cohort savings multiplier']
         
     def calc_post_refit_use (self):
         """ 
