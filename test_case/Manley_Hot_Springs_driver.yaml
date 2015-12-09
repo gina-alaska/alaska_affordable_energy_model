@@ -1,5 +1,5 @@
-overrides: /home/ross/Desktop/setup_test/config/community_data.yaml
-defaults: /home/ross/Desktop/setup_test/config/test_defaults.yaml
-data directory: /home/ross/Desktop/setup_test/input_data
-output directory path: /home/ross/Desktop/setup_test/results
+overrides: /home/ross/Desktop/alaska_affordable_energy_model/test_case/config/community_data.yaml
+defaults: /home/ross/Desktop/alaska_affordable_energy_model/test_case/config/test_defaults.yaml
+data directory: /home/ross/Desktop/alaska_affordable_energy_model/test_case/input_data
+output directory path: /home/ross/Desktop/alaska_affordable_energy_model/test_case/results
 output directory suffix: NONE # TIMESTAMP|NONE|<str>

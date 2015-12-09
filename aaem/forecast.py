@@ -126,15 +126,15 @@ class Forecast (object):
                 self.yearly_kWh_totals.T.keys().values[0] \
                 else self.yearly_kWh_totals.T.keys().values[0]
              
-        
+        start = int(start)
         
         end = self.fc_specs["population"].T.keys().values[-1] \
                 if self.fc_specs["population"].T.keys().values[-1] < \
                 self.yearly_kWh_totals.T.keys().values[-1] \
                 else self.yearly_kWh_totals.T.keys().values[-1]
-        
+        end = int(end)
         population = self.fc_specs["population"].ix[start:end].T.values[0]
-        consumption = self.yearly_kWh_totals[start:end].T.values[0]
+        consumption = self.yearly_kWh_totals.ix[start:end].T.values[0]
         if len(population) < 10:
             self.diagnostics.add_warning("forecast", 
                   "the data range is < 10 matching years for "\
