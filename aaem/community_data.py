@@ -263,16 +263,27 @@ class CommunityData (object):
             self.set_item('community',"heating fuel premium", 
                          float(region.ix["premium"][0]))
                          
-
-        prices = self.load_pp_csv("prices.csv")
+        try:
+            prices = self.load_pp_csv("prices.csv")
+        except IOError:
+            if self.get_item('community',"res non-PCE elec cost") == "IMPORT" \
+              and self.get_item('community',"elec non-fuel cost") == "IMPORT":
+                raise IOError, "Prices not found"
+                
         if self.get_item('community',"res non-PCE elec cost") == "IMPORT":
             self.set_item("community", "res non-PCE elec cost",
                             np.float(prices.ix["res non-PCE elec cost"]))
         if self.get_item('community',"elec non-fuel cost") == "IMPORT":
             self.set_item("community", "elec non-fuel cost",
                             np.float(prices.ix["elec non-fuel cost"]))
-
-        generation = self.load_pp_csv("generation.csv")
+    
+        try:
+            generation = self.load_pp_csv("generation.csv")
+        except IOError:
+            if self.get_item('community',"generation") == "IMPORT" \
+              and self.get_item('community',"consumption HF") == "IMPORT":
+                raise IOError, "Generation not found"
+        
         if self.get_item('community',"generation") == "IMPORT":
             self.set_item('community',"generation", 
             np.float(generation.ix["generation"]))

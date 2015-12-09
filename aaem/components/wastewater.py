@@ -172,7 +172,7 @@ class WaterWastewaterSystems (AnnualSavings):
         self.calc_annual_costs(self.cd['interest rate'])
         self.calc_annual_net_benefit()
         self.calc_npv(self.cd['discount rate'], self.cd["current year"])
-        
+        print self.baseline_HF_consumption
         self.forecast.set_www_HF_fuel_forecast(self.baseline_HF_consumption, 
                                                 self.start_year)
     
@@ -192,7 +192,7 @@ class WaterWastewaterSystems (AnnualSavings):
         """
         if not np.isnan(np.float64(self.comp_specs['data'].ix['kWh/yr'])) and \
                np.float64(self.comp_specs['data'].ix['kWh/yr']) != 0:
-            self.baseline_kWh_consumption = self.comp_specs['data'].ix['kWh/yr']
+            self.baseline_kWh_consumption = np.float64(self.comp_specs['data'].ix['kWh/yr'])
         else: #if not self.cd["w&ww_energy_use_known"]:
             hdd_coeff = np.float64(self.comp_specs['data'].ix['HDD kWh'])
             pop_coeff = np.float64(self.comp_specs['data'].ix['pop kWh'])
@@ -218,7 +218,8 @@ class WaterWastewaterSystems (AnnualSavings):
         """
         if not np.isnan(np.float64(self.comp_specs['data'].ix['HF Used'])) and\
                 np.float64(self.comp_specs['data'].ix['HF Used']) != 0:
-            self.baseline_HF_consumption = \
+            self.baseline_HF_consumption = np.zeros(self.project_life)
+            self.baseline_HF_consumption += \
                             np.float64(self.comp_specs['data'].ix['HF Used'])
         else:
             hr_used = self.comp_specs['data'].ix["HR Installed"].values[0]
