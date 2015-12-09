@@ -319,8 +319,6 @@ class Preprocessor (object):
             pass
         
         ### copy files that still need their own preprocessor function yet
-        shutil.copy(os.path.join(data_dir,"com_benchmark_data.csv"), out_dir)
-        shutil.copy(os.path.join(data_dir,"com_building_estimates.csv"),out_dir)
         shutil.copy(os.path.join(data_dir,"com_num_buildings.csv"), out_dir)
         shutil.copy(os.path.join(data_dir,"diesel_fuel_prices.csv"), out_dir)
         shutil.copy(os.path.join(data_dir,"hdd.csv"), out_dir)
@@ -453,26 +451,24 @@ class Preprocessor (object):
         """ Function doc """
         data = read_csv(in_file, index_col=0, comment = "#").ix[com_id]
         
+        l = ["Square Feet",
+             "implementation cost", "Electric", "Electric Post", "Fuel Oil",
+             "Fuel Oil Post", "HW District", "HW District Post", "Natural Gas", 
+             "Natural Gas Post", "Propane", "Propane Post"]
+        data[l] = data[l].replace(r'\s+', np.nan, regex=True)
+        print data
         
-        ### do estimates in model
-        #~ data["Square Feet"][data["Square Feet"].astype(float).apply(np.isnan)]=\
-                        #~ 11111
-                        
-        #~ data["Fuel Oil"][data["Fuel Oil"].astype(float).apply(np.isnan)]=\
-                        #~ 11111
-                        
-        #~ data["Electric"][data["Electric"].astype(float).apply(np.isnan)]=\
-                        #~ 11111
         out_file = os.path.join(out_dir, "community_buildings.csv")
         fd = open(out_file,'w')
         fd.write("# " + com_id + " non-res buildigns\n")
         fd.close()
-        
-        #~ c= set(data.keys()) ^ set(['Data Source',"Building"])
+       
+            
+       
         c = ["Building Type", "Square Feet", "Audited", "Retrofits Done",
-             "implementation cost", "Electric", "Electric.1", "Fuel Oil",
-             "Fuel Oil.1", "HW District", "HW District.1", "Natural Gas", 
-             "Natural Gas.1", "Propane", "Propane.1"]
+             "implementation cost", "Electric", "Electric Post", "Fuel Oil",
+             "Fuel Oil Post", "HW District", "HW District Post", "Natural Gas", 
+             "Natural Gas Post", "Propane", "Propane Post"]
         data.to_csv(out_file, columns = c, mode="a", index=False)
         
         
