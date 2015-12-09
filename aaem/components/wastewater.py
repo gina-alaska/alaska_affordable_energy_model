@@ -172,7 +172,7 @@ class WaterWastewaterSystems (AnnualSavings):
         self.calc_annual_costs(self.cd['interest rate'])
         self.calc_annual_net_benefit()
         self.calc_npv(self.cd['discount rate'], self.cd["current year"])
-        print self.baseline_HF_consumption
+
         self.forecast.set_www_HF_fuel_forecast(self.baseline_HF_consumption, 
                                                 self.start_year)
     
