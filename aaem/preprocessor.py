@@ -91,9 +91,12 @@ class Preprocessor (object):
         data = df.ix[com_id][['Data Year','Sum - Residential Megawatthours',
                 'Sum - Commercial Megawatthours',
                 'Sum - Industrial Megawatthours']].values.astype(int)*1000
+        
         df = DataFrame(data,
                      columns=["year","residential",
-                              "commercial","industrial"]).set_index("year")
+                              "commercial","industrial"])
+        df['year'] /= 1000
+        df = df.set_index("year")
         return df
         
     def electricity (self, in_file, out_dir, com_id):
