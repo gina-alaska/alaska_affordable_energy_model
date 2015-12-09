@@ -144,17 +144,15 @@ class CommunityBuildings (AnnualSavings):
         for k in keys:
             try:
                 # more than one item for each k 
-                data.ix[k][measure]\
-                          [data.ix[k][measure].apply(np.isnan)] = \
-                                    sqft_ests.ix[k]
-            
+                data.loc[:,measure].loc[k] = \
+                            data.loc[:,measure].loc[k].fillna(sqft_ests.ix[k])
             except AttributeError:
                 # only one item 
                 if np.isnan(data.ix[k][measure]):
                     data.ix[k][measure] = sqft_ests.ix[k]
         
         self.refit_sqft_total = data[measure].sum()
-        
+
     
     def calc_refit_cost (self):
         """ 
@@ -167,25 +165,19 @@ class CommunityBuildings (AnnualSavings):
             self.refit_cost_total, self.benchmark_cost, self.additional_cost are
         floating-point dollar values 
         """
-        data = self.comp_specs['com benchmark data']
-        keys = set(data.T.keys())
         measure = "implementation cost"
+        data = self.comp_specs['com benchmark data']
+        keys = data.T.keys()
+        d2 = data[["Square Feet", measure]].T.values.tolist()
+        d2.insert(0,keys.values.tolist())
+        d2 = np.array(d2).T
+        keys = set(keys)
         
         for k in keys:
-            try:
-                # more than one item for each k 
-                data.ix[k][measure][data.ix[k][measure].apply(np.isnan)] = \
-                        data.ix[k]["Square Feet"]\
-                        [data.ix[k][measure].apply(np.isnan)] * \
-                        self.refit_cost_rate       
-            
-            except AttributeError:
-                # only one item 
-                if np.isnan(data.ix[k][measure]):
-                    data.ix[k][measure] = data.ix[k]["Square Feet"] * \
-                                            self.refit_cost_rate     
+            sqft = d2[d2[:,0] == k,1].astype(np.float64)
+            d2[d2[:,0] == k,2] = sqft * self.refit_cost_rate  
         
-        
+        data[measure] = d2[:,2].astype(np.float64)  
         self.refit_cost_total = data[measure].sum()
         
     def calc_refit_pre_HF (self):
@@ -201,30 +193,22 @@ class CommunityBuildings (AnnualSavings):
         HDD_ests = self.comp_specs["com building estimates"]["HDD"]
         gal_sf_ests = self.comp_specs["com building estimates"]["Gal/sf"]
         
-        data = self.comp_specs['com benchmark data']
-        keys = set(data.T.keys())
         measure = "Fuel Oil"
+        data = self.comp_specs['com benchmark data']
+        keys = data.T.keys()
+        d2 = data[["Square Feet", measure]].T.values.tolist()
+        d2.insert(0,keys.values.tolist())
+        d2 = np.array(d2).T
+        keys = set(keys)
 
         for k in keys:
             HDD_ratio = self.cd["HDD"]/HDD_ests.ix[k]
             gal_sf = gal_sf_ests.ix[k]
-            try:
-                # more than one item for each k 
-                sqft = data.ix[k]["Square Feet"]\
-                                   [data.ix[k][measure].apply(np.isnan)]
-                
-                
-                data.ix[k][measure][data.ix[k][measure].apply(np.isnan)] = \
-                                                      sqft * HDD_ratio * gal_sf
-                    
-            except AttributeError:
-                # only one item 
-                if np.isnan(data.ix[k][measure]):
-                    data.ix[k][measure] = data.ix[k]["Square Feet"] * \
-                                                            HDD_ratio * gal_sf
-                                                                
-        self.baseline_HF_consumption = data[measure].sum()
+            sqft = d2[d2[:,0] == k,1].astype(np.float64)
+            d2[d2[:,0] == k,2] = sqft * HDD_ratio * gal_sf
         
+        data[measure] = d2[:,2].astype(np.float64)                                                 
+        self.baseline_HF_consumption = data[measure].sum()
                 
         
     def calc_refit_pre_kWh (self):
@@ -238,26 +222,21 @@ class CommunityBuildings (AnnualSavings):
         self.additional_kWh are floating-point kWh values
         """
         kwh_sf_ests = self.comp_specs["com building estimates"]["kWh/sf"]
-        data = self.comp_specs['com benchmark data']
-        keys = set(data.T.keys())
+        
         measure = "Electric"
+        data = self.comp_specs['com benchmark data']
+        keys = data.T.keys()
+        d2 = data[["Square Feet", measure]].T.values.tolist()
+        d2.insert(0,keys.values.tolist())
+        d2 = np.array(d2).T
+        keys = set(keys)
         
         for k in keys:
             kwh_sf = kwh_sf_ests.ix[k]
-            try:
-                # more than one item for each k 
-                data.ix[k][measure][data.ix[k][measure].apply(np.isnan)] = \
-                        data.ix[k]["Square Feet"]\
-                        [data.ix[k][measure].apply(np.isnan)] * \
-                        kwh_sf  
-            
-            except AttributeError:
-                # only one item 
-                if np.isnan(data.ix[k][measure]):
-                    data.ix[k][measure] = data.ix[k]["Square Feet"] * \
-                                            kwh_sf     
-        
+            sqft = d2[d2[:,0] == k,1].astype(np.float64)
+            d2[d2[:,0] == k,2] = sqft * kwh_sf
 
+        data[measure] = d2[:,2].astype(np.float64)  
         self.baseline_kWh_consumption = data[measure].sum()
         
     
