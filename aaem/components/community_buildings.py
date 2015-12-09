@@ -174,8 +174,9 @@ class CommunityBuildings (AnnualSavings):
         keys = set(keys)
         
         for k in keys:
-            sqft = d2[d2[:,0] == k,1].astype(np.float64)
-            d2[d2[:,0] == k,2] = sqft * self.refit_cost_rate  
+            idx = np.logical_and(d2[:,0] == k, np.isnan(d2[:,2].astype(float)))
+            sqft = d2[idx,1].astype(np.float64)
+            d2[idx,2] = sqft * self.refit_cost_rate  
         
         data[measure] = d2[:,2].astype(np.float64)  
         self.refit_cost_total = data[measure].sum()
@@ -204,8 +205,10 @@ class CommunityBuildings (AnnualSavings):
         for k in keys:
             HDD_ratio = self.cd["HDD"]/HDD_ests.ix[k]
             gal_sf = gal_sf_ests.ix[k]
-            sqft = d2[d2[:,0] == k,1].astype(np.float64)
-            d2[d2[:,0] == k,2] = sqft * HDD_ratio * gal_sf
+            
+            idx = np.logical_and(d2[:,0] == k, np.isnan(d2[:,2].astype(float)))
+            sqft = d2[idx,1].astype(np.float64)
+            d2[idx,2] = sqft * HDD_ratio * gal_sf
         
         data[measure] = d2[:,2].astype(np.float64)                                                 
         self.baseline_HF_consumption = data[measure].sum()
@@ -233,12 +236,13 @@ class CommunityBuildings (AnnualSavings):
         
         for k in keys:
             kwh_sf = kwh_sf_ests.ix[k]
-            sqft = d2[d2[:,0] == k,1].astype(np.float64)
-            d2[d2[:,0] == k,2] = sqft * kwh_sf
+            
+            idx = np.logical_and(d2[:,0] == k, np.isnan(d2[:,2].astype(float)))
+            sqft = d2[idx, 1].astype(np.float64)
+            d2[idx, 2] = sqft * kwh_sf
 
         data[measure] = d2[:,2].astype(np.float64)  
         self.baseline_kWh_consumption = data[measure].sum()
-        
     
     def calc_refit_savings_HF (self):
         """ 
