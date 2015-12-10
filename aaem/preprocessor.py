@@ -456,7 +456,7 @@ class Preprocessor (object):
              "Fuel Oil Post", "HW District", "HW District Post", "Natural Gas", 
              "Natural Gas Post", "Propane", "Propane Post"]
         data[l] = data[l].replace(r'\s+', np.nan, regex=True)
-        print data
+        
         
         out_file = os.path.join(out_dir, "community_buildings.csv")
         fd = open(out_file,'w')
