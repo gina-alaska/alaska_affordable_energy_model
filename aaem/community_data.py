@@ -223,9 +223,9 @@ class CommunityData (object):
             csvitems are in self.model_inputs 
         """
         self.community = self.get_item('community','name')
-        if self.get_item('community buildings','com benchmark data')== "IMPORT":
-            self.set_item('community buildings','com benchmark data',
-                                            self.load_csv('com benchmark data'))
+        #~ if self.get_item('community buildings','com benchmark data')== "IMPORT":
+            #~ self.set_item('community buildings','com benchmark data',
+                                            #~ self.load_csv('com benchmark data'))
         if self.get_item('community buildings',"com num buildings")== "IMPORT":
             self.set_item('community buildings',"com num buildings",
                                             self.load_csv("com num buildings"))
@@ -234,11 +234,11 @@ class CommunityData (object):
             self.set_item('community',"HDD", int(self.load_csv("hdd")))
         
         ## different type csv
-        if self.get_item('community buildings',
-                                        "com building estimates")== "IMPORT":
-            self.set_item('community buildings',"com building estimates",
-             read_csv(os.path.join(self.data_dir, "com_building_estimates.csv"),
-                         index_col = 0, header=1, comment = '#').T)
+        #~ if self.get_item('community buildings',
+                                        #~ "com building estimates")== "IMPORT":
+            #~ self.set_item('community buildings',"com building estimates",
+             #~ read_csv(os.path.join(self.data_dir, "com_building_estimates.csv"),
+                         #~ index_col = 0, header=1, comment = '#').T)
         
         ## load preprocessed files
         if self.get_item('forecast', "population") == "IMPORT":
@@ -263,22 +263,42 @@ class CommunityData (object):
             self.set_item('community',"heating fuel premium", 
                          float(region.ix["premium"][0]))
                          
-
-        prices = self.load_pp_csv("prices.csv")
+        try:
+            prices = self.load_pp_csv("prices.csv")
+        except IOError:
+            if self.get_item('community',"res non-PCE elec cost") == "IMPORT" \
+              and self.get_item('community',"elec non-fuel cost") == "IMPORT":
+                raise IOError, "Prices not found"
+                
         if self.get_item('community',"res non-PCE elec cost") == "IMPORT":
             self.set_item("community", "res non-PCE elec cost",
                             np.float(prices.ix["res non-PCE elec cost"]))
         if self.get_item('community',"elec non-fuel cost") == "IMPORT":
             self.set_item("community", "elec non-fuel cost",
                             np.float(prices.ix["elec non-fuel cost"]))
-
-        generation = self.load_pp_csv("generation.csv")
+    
+        try:
+            generation = self.load_pp_csv("generation.csv")
+        except IOError:
+            if self.get_item('community',"generation") == "IMPORT" \
+              and self.get_item('community',"consumption HF") == "IMPORT":
+                raise IOError, "Generation not found"
+        
         if self.get_item('community',"generation") == "IMPORT":
             self.set_item('community',"generation", 
             np.float(generation.ix["generation"]))
         if self.get_item('community',"consumption HF") == "IMPORT":
             self.set_item('community',"consumption HF", 
             np.float(generation.ix["consumption HF"]))
+        
+        if self.get_item('community buildings',
+                                        "com building estimates") == "IMPORT":
+            self.set_item('community buildings',"com building estimates",
+                           self.load_pp_csv("com_building_estimates.csv"))
+                           
+        if self.get_item('community buildings','com benchmark data')== "IMPORT":
+            self.set_item('community buildings','com benchmark data',
+                                    self.load_pp_csv("community_buildings.csv"))
 
                          
     def load_pp_csv(self, f_name):

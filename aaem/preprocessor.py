@@ -8,6 +8,7 @@ from pandas import DataFrame,read_csv, concat
 import shutil
 import os.path
 from diagnostics import diagnostics
+import numpy as np
 
 class Preprocessor (object):
     def __init__ (self):
@@ -61,7 +62,11 @@ class Preprocessor (object):
                                          "commercial_kwh_sold",
                                          "community_kwh_sold",
                                          "government_kwh_sold",
-                                         "unbilled_kwh"]]
+                                         "unbilled_kwh","notes"]]
+                                         
+        self.diagnostics.add_note("preprocessor", 
+                "notes from pce data: " + str(data["notes"].tail(1)[0]))
+        
         sums = []
         for year in set(data["year"].values):
             if len(data[data["year"] == year]) != 12:
@@ -90,9 +95,12 @@ class Preprocessor (object):
         data = df.ix[com_id][['Data Year','Sum - Residential Megawatthours',
                 'Sum - Commercial Megawatthours',
                 'Sum - Industrial Megawatthours']].values.astype(int)*1000
+        
         df = DataFrame(data,
                      columns=["year","residential",
-                              "commercial","industrial"]).set_index("year")
+                              "commercial","industrial"])
+        df['year'] /= 1000
+        df = df.set_index("year")
         return df
         
     def electricity (self, in_file, out_dir, com_id):
@@ -267,6 +275,7 @@ class Preprocessor (object):
         df = concat([data,fuel])
         del df.T["energy_region"]
         df.to_csv(out_file,mode="a")
+        return df.ix['year']
     
     def region (self, data_file, premium_file, out_dir, com_id):
         """
@@ -314,8 +323,6 @@ class Preprocessor (object):
             pass
         
         ### copy files that still need their own preprocessor function yet
-        shutil.copy(os.path.join(data_dir,"com_benchmark_data.csv"), out_dir)
-        shutil.copy(os.path.join(data_dir,"com_building_estimates.csv"),out_dir)
         shutil.copy(os.path.join(data_dir,"com_num_buildings.csv"), out_dir)
         shutil.copy(os.path.join(data_dir,"diesel_fuel_prices.csv"), out_dir)
         shutil.copy(os.path.join(data_dir,"hdd.csv"), out_dir)
@@ -326,10 +333,12 @@ class Preprocessor (object):
         self.region(os.path.join(data_dir,"res_model_data.csv"),
                os.path.join(data_dir,"heating_fuel_premium.csv"),out_dir,com_id)
         
-        self.population(os.path.join(data_dir,"population.csv"),out_dir,com_id)
-        self.residential(os.path.join(data_dir,"res_fuel_source.csv"), 
+        pop = self.population(os.path.join(data_dir,"population.csv"),
+                                                            out_dir,com_id)
+        year = self.residential(os.path.join(data_dir,"res_fuel_source.csv"), 
                          os.path.join(data_dir,"res_model_data.csv"),
                     out_dir, com_id)
+        base_pop = np.float(pop.ix[year])
         self.wastewater(os.path.join(data_dir,"ww_data.csv"),
                         os.path.join(data_dir,"ww_assumptions.csv"),
                    out_dir, com_id)
@@ -353,9 +362,15 @@ class Preprocessor (object):
             self.diagnostics.add_note("preprocessor","no $/kWh estimates")
             self.diagnostics.add_note("preprocessor","no generation estimates")
             
+
         self.interties(os.path.join(data_dir,"interties.csv"),out_dir,com_id)
             
         
+
+        self.buildings(os.path.join(data_dir, "non_res_buildings.csv"), 
+                       os.path.join(data_dir, "com_building_estimates.csv"),
+                       out_dir, com_id, base_pop)
+
     
     def electricity_prices (self, in_file, out_dir, com_id):
         """
@@ -462,6 +477,56 @@ class Preprocessor (object):
         fd.close()
         data.to_csv(out_file, mode = 'a')
         return data
+
+    def buildings (self, in_file, est_file, out_dir, com_id, pop):
+        """ Function doc """
+        data = read_csv(in_file, index_col=0, comment = "#").ix[com_id]
+        
+        l = ["Square Feet",
+             "implementation cost", "Electric", "Electric Post", "Fuel Oil",
+             "Fuel Oil Post", "HW District", "HW District Post", "Natural Gas", 
+             "Natural Gas Post", "Propane", "Propane Post"]
+        data[l] = data[l].replace(r'\s+', np.nan, regex=True)
+        
+        
+        out_file = os.path.join(out_dir, "community_buildings.csv")
+        fd = open(out_file,'w')
+        fd.write("# " + com_id + " non-res buildigns\n")
+        fd.close()
+       
+            
+       
+        c = ["Building Type", "Square Feet", "Audited", "Retrofits Done",
+             "implementation cost", "Electric", "Electric Post", "Fuel Oil",
+             "Fuel Oil Post", "HW District", "HW District Post", "Natural Gas", 
+             "Natural Gas Post", "Propane", "Propane Post"]
+        data.to_csv(out_file, columns = c, mode="a", index=False)
+        
+        
+        out_file = out_file = os.path.join(out_dir, 
+                                                "com_building_estimates.csv")
+        fd = open(out_file,'w')
+        fd.write("# " + com_id + " community building estimates\n")
+        fd.close()
+        
+        data = read_csv(est_file ,comment = u"#",index_col = 0, header = 0)
+        units = set(data.ix["Estimate units"])
+        l = []
+        for itm in units:
+            l.append(data.T[data.ix["Estimate units"] == itm]\
+                          [(data.T[data.ix["Estimate units"] == itm]\
+                          ["Lower Limit"].astype(float) <= pop)]\
+                          [data.ix["Estimate units"] == itm]\
+                          [(data.T[data.ix["Estimate units"] == itm]\
+                          ["Upper Limit"].astype(float) > pop)])
+        df = concat(l)
+        del(df["Lower Limit"])
+        del(df["Upper Limit"])
+        #~ del(df["Estimate units"])  
+        df = df.T
+        
+        df.to_csv(out_file,mode="a", header = False)
+
 
 def preprocess(data_dir, out_dir, com_id):
     """
