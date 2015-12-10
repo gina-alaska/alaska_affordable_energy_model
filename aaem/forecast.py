@@ -60,9 +60,21 @@ class Forecast (object):
         self.cpi = self.cd.load_pp_csv("cpi.csv")
         self.forecast_population()
         self.forecast_consumption()
+        self.merge_real_and_proj()
         self.forecast_generation()
         self.forecast_average_kW()
         self.forecast_households()
+        #~ self.merge_real_and_proj()
+        
+    def merge_real_and_proj (self):
+        """ Function doc """
+        self.population = concat([self.fc_specs["population"],self.population])
+        real = self.real_consumption
+        projected = self.consumption
+        real.columns = projected.columns
+        
+        self.consumption =  concat([real,projected])
+        
 
     def calc_electricity_totals (self):
         """ 
@@ -134,7 +146,9 @@ class Forecast (object):
                 else self.yearly_kWh_totals.T.keys().values[-1]
         end = int(end)
         population = self.fc_specs["population"].ix[start:end].T.values[0]
-        consumption = self.yearly_kWh_totals.ix[start:end].T.values[0]
+        
+        self.real_consumption = self.yearly_kWh_totals.ix[start:end]
+        consumption = self.real_consumption.T.values[0]
         if len(population) < 10:
             self.diagnostics.add_warning("forecast", 
                   "the data range is < 10 matching years for "\
@@ -155,6 +169,9 @@ class Forecast (object):
         consumption = concat([fc_con_known_pop, fc_con_fc_pop])
         consumption["consumption kWh"] = consumption["population"] 
         del consumption["population"] 
+        
+        
+        
         self.consumption = consumption
         self.start_year = last_year
         
@@ -206,7 +223,7 @@ class Forecast (object):
         """
         if end is None:
             return self.population.ix[start].T.values[0]
-        return self.population.ix[start-1:end-1].T.values[0]
+        return self.population.ix[start:end-1].T.values[0]
     
     def get_consumption (self, start, end = None):
         """
@@ -220,7 +237,7 @@ class Forecast (object):
         """
         if end is None:
             return self.consumption.ix[start].T.values[0]
-        return self.consumption.ix[start-1:end-1].T.values[0]
+        return self.consumption.ix[start:end-1].T.values[0]
 
     def get_generation (self, start, end = None):
         """
@@ -234,7 +251,7 @@ class Forecast (object):
         """
         if end is None:
             return self.generation.ix[start].T.values[0]
-        return self.generation.ix[start-1:end-1].T.values[0]
+        return self.generation.ix[start:end-1].T.values[0]
 
     def get_households (self, start, end = None):
         """
@@ -248,7 +265,7 @@ class Forecast (object):
         """
         if end is None:
             return self.households.ix[start].T.values[0]
-        return self.households.ix[start-1:end-1].T.values[0]
+        return self.households.ix[start:end-1].T.values[0]
         
     def set_res_HF_fuel_forecast (self, fc, start_year):
         """
@@ -332,9 +349,9 @@ class Forecast (object):
         post:
             saves a file
         """
-        df = concat([self.population.T, self.households.T, self.consumption.T,
-                     self.generation.T, self.average_kW.T, self.res_HF.T,
-                     self.com_HF.T, self.www_HF.T, self.total_HF.T]).T
+        df = concat([self.population, self.households, self.consumption,
+                     self.generation, self.average_kW, self.res_HF,
+                     self.com_HF, self.www_HF, self.total_HF],axis=1)
         
         #~ return df
         #~ df = DataFrame( {"pop": self.population,
@@ -353,10 +370,10 @@ class Forecast (object):
 
 def test ():
     """ Function doc """
-    manley_data = CommunityData("../data/", "../test_case/manley_data.yaml")
+    manley_data = CommunityData("../test_case/input_data/", "../test_case/baseline_results/config_used.yaml")
     
                             
     fc = Forecast(manley_data)
-    #~ fc.calc_electricity_totals()
+    fc.calc_total_HF_forecast()
 
     return fc
