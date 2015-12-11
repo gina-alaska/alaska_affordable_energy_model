@@ -86,16 +86,25 @@ def reg_test (config_file, lim = .1):
     
     out_dir = os.path.dirname(os.path.dirname(out_dir))
     df = read_csv(os.path.join(out_dir,"results","forecast.csv"),
-                                                    index_col=0, header=0)
+                                                    index_col=0, header=0, 
+                                                    comment = "#")
     base_df = read_csv(os.path.join(out_dir,"baseline_results","forecast.csv"),
-                                                    index_col=0, header=0)
+                                                    index_col=0, header=0,
+                                                    comment = "#")
+    num_cols = ["population",
+                "total_electricity_consumed [kWh/year]",
+                "total_electricity_generation [kWh/year]",
+                "heating_fuel_residential_consumed [gallons/year]",
+                "heating_fuel_residential_consumed [mmbtu/year]",
+                "heating_fuel_non-residential_consumed [gallons/year]",
+                "heating_fuel_non-residential_consumed [mmbtu/year]",
+                "heating_fuel_water-wastewater_consumed [gallons/year]",
+                "heating_fuel_water-wastewater_consumed [mmbtu/year]",
+                "heating_fuel_total_consumed [gallons/year]",
+                "heating_fuel_total_consumed [mmbtu/year]"]
 
-    tt = (df > (base_df * (1 - lim))) 
-    tt2 = (df < (base_df * (1 + lim)))
+    tt = (df[num_cols] > (base_df[num_cols] * (1 - lim))) 
+    tt2 = (df[num_cols] < (base_df[num_cols] * (1 + lim)))
     (tt == tt2).to_csv(os.path.join(out_dir,"forecast_comparison_results.csv"), 
-                                      columns =["population","HH",
-                                                "consumption kWh",
-                                                "kWh generation","avg. kW",
-                                                "res HF", "com HF", "ww HF",
-                                                "total HF"], index_label="year")
+                                       index_label="year")
     return df, model
