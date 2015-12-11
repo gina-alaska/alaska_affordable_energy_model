@@ -121,7 +121,7 @@ class Driver (object):
         post: 
             the forecast is saved as a csv file
         """
-        self.fc.save_forecast(directory+"forecast.csv")
+        self.fc.save_forecast(directory)
     
     def save_input_files (self, directory):
         """ 
