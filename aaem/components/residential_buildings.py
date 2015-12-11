@@ -70,14 +70,15 @@ class ResidentialBuildings(AnnualSavings):
         self.forecast.set_res_HF_fuel_forecast(self.baseline_HF_consumption,
                                                 self.start_year)
         
-        self.calc_annual_electric_savings()
-        self.calc_annual_heating_savings()
-        self.calc_annual_total_savings()
-        
-        self.calc_annual_costs(self.cd['interest rate'])
-        self.calc_annual_net_benefit()
-        
-        self.calc_npv(self.cd['discount rate'], self.cd['current year'])
+        if self.cd["model financial"]:
+            self.calc_annual_electric_savings()
+            self.calc_annual_heating_savings()
+            self.calc_annual_total_savings()
+            
+            self.calc_annual_costs(self.cd['interest rate'])
+            self.calc_annual_net_benefit()
+            
+            self.calc_npv(self.cd['discount rate'], self.cd['current year'])
     
     def calc_init_HH (self):
         """

@@ -297,7 +297,8 @@ class AnnualSavings (object):
         """
         self.save_electric_csv (directory)
         self.save_heating_csv (directory)
-        self.save_financial_csv (directory)
+        if self.cd["model financial"]:
+            self.save_financial_csv (directory)
     
     def save_electric_csv (self, directory):
         """

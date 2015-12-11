@@ -162,19 +162,22 @@ class WaterWastewaterSystems (AnnualSavings):
         self.calc_savings_kWh_consumption()
         self.calc_savings_HF_consumption()
         
-        self.calc_capital_costs()
-        
-        self.get_diesel_prices()
-        self.calc_annual_electric_savings()
-        self.calc_annual_heating_savings()
-        self.calc_annual_total_savings()
-        
-        self.calc_annual_costs(self.cd['interest rate'])
-        self.calc_annual_net_benefit()
-        self.calc_npv(self.cd['discount rate'], self.cd["current year"])
-
         self.forecast.set_www_HF_fuel_forecast(self.baseline_HF_consumption, 
                                                 self.start_year)
+        
+        if self.cd["model financial"]:
+            self.calc_capital_costs()
+            
+            self.get_diesel_prices()
+            self.calc_annual_electric_savings()
+            self.calc_annual_heating_savings()
+            self.calc_annual_total_savings()
+            
+            self.calc_annual_costs(self.cd['interest rate'])
+            self.calc_annual_net_benefit()
+            self.calc_npv(self.cd['discount rate'], self.cd["current year"])
+
+        
     
     def calc_baseline_kWh_consumption (self):
         """

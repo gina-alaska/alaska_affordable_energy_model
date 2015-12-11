@@ -95,17 +95,19 @@ class CommunityBuildings (AnnualSavings):
         
         self.forecast.set_com_HF_fuel_forecast(self.pre_retrofit_HF_use, 
                                                 self.start_year)
-        self.get_diesel_prices()
         
-        self.calc_capital_costs()
-        self.calc_annual_electric_savings()
-        self.calc_annual_heating_savings()
-        self.calc_annual_total_savings()
-        
-        self.calc_annual_costs(self.cd['interest rate'])
-        self.calc_annual_net_benefit()
-        
-        self.calc_npv(self.cd['discount rate'], self.cd["current year"])
+        if self.cd["model financial"]:
+            self.get_diesel_prices()
+            
+            self.calc_capital_costs()
+            self.calc_annual_electric_savings()
+            self.calc_annual_heating_savings()
+            self.calc_annual_total_savings()
+            
+            self.calc_annual_costs(self.cd['interest rate'])
+            self.calc_annual_net_benefit()
+            
+            self.calc_npv(self.cd['discount rate'], self.cd["current year"])
 
     def calc_refit_values (self):
         """
