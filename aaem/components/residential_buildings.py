@@ -59,18 +59,23 @@ class ResidentialBuildings(AnnualSavings):
         self.calc_init_consumption()
         
         self.calc_capital_costs()
-        self.get_diesel_prices()
+        
         
         self.calc_baseline_fuel_consumption()
-        self.calc_baseline_fuel_cost() 
+        
         
         self.calc_refit_fuel_consumption()
-        self.calc_refit_fuel_cost()
+        
         
         self.forecast.set_res_HF_fuel_forecast(self.baseline_HF_consumption,
                                                 self.start_year)
         
         if self.cd["model financial"]:
+            self.get_diesel_prices()
+            self.calc_baseline_fuel_cost() 
+            self.calc_refit_fuel_cost()
+            
+            
             self.calc_annual_electric_savings()
             self.calc_annual_heating_savings()
             self.calc_annual_total_savings()
