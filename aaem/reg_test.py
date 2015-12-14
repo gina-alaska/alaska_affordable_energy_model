@@ -2,7 +2,7 @@
 from driver import run_model
 from preprocessor import preprocess
 import os.path
-from pandas import read_csv
+from pandas import read_csv, concat
 
 defaults = """community: 
   current year: 2014 #year to base npv calculations on <int>
@@ -86,15 +86,30 @@ def reg_test (config_file, lim = .1):
     model, out_dir = run_model(os.path.abspath(config_file))
     
     out_dir = os.path.dirname(os.path.dirname(out_dir))
-    df = read_csv(os.path.join(out_dir,"results","forecast.csv"),
+    new_e = read_csv(os.path.join(out_dir,"results",
+                                                    "electricity_forecast.csv"),
                                                     index_col=0, header=0, 
                                                     comment = "#")
-    base_df = read_csv(os.path.join(out_dir,"baseline_results","forecast.csv"),
+    base_e = read_csv(os.path.join(out_dir,"baseline_results",
+                                                    "electricity_forecast.csv"),
                                                     index_col=0, header=0,
                                                     comment = "#")
-    num_cols = ["population",
+                                                    
+    new_f = read_csv(os.path.join(out_dir,"results",
+                                                   "heating_fuel_forecast.csv"),
+                                                    index_col=0, header=0, 
+                                                    comment = "#")
+    base_f = read_csv(os.path.join(out_dir,"baseline_results",
+                                                   "heating_fuel_forecast.csv"),
+                                                    index_col=0, header=0,
+                                                    comment = "#")
+                                                    
+    cols_e = ["population",
                 "total_electricity_consumed [kWh/year]",
-                "total_electricity_generation [kWh/year]",
+                "total_electricity_generation [kWh/year]"]
+                
+                
+    cols_f = ["population",
                 "heating_fuel_residential_consumed [gallons/year]",
                 "heating_fuel_residential_consumed [mmbtu/year]",
                 "heating_fuel_non-residential_consumed [gallons/year]",
@@ -104,8 +119,19 @@ def reg_test (config_file, lim = .1):
                 "heating_fuel_total_consumed [gallons/year]",
                 "heating_fuel_total_consumed [mmbtu/year]"]
 
-    tt = (df[num_cols] > (base_df[num_cols] * (1 - lim))) 
-    tt2 = (df[num_cols] < (base_df[num_cols] * (1 + lim)))
-    (tt == tt2).to_csv(os.path.join(out_dir,"forecast_comparison_results.csv"), 
+    l_e = (new_e[cols_e] > (base_e[cols_e] * (1 - lim))) 
+    h_e = (new_e[cols_e] < (base_e[cols_e] * (1 + lim)))
+
+    l_f = (new_f[cols_f] > (base_f[cols_f] * (1 - lim))) 
+    h_f = (new_f[cols_f] < (base_f[cols_f] * (1 + lim)))
+
+
+    res_e = (l_e == h_e)
+    res_f = (l_f == h_f)
+    
+    results = concat([res_e,res_f],axis=1)
+    
+    results.to_csv(os.path.join(out_dir,"forecast_comparison_results.csv"), 
                                        index_label="year")
-    return df, model
+    
+    return results, model

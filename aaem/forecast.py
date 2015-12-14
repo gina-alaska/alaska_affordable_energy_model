@@ -409,30 +409,50 @@ class Forecast (object):
         kWh_gen = self.generation
         kWh_gen.columns = ["total_electricity_generation [kWh/year]"]
         
-        # make a data frame
-        df = concat([self.population.round().astype(int), self.p_map, 
-                     self.consumption.round(), self.c_map, 
-                     self.generation.round(), 
-                     res_gal.round(), res_mmbtu.round(),
-                     com_gal.round(), com_mmbtu.round(),
-                     ww_gal.round(), ww_mmbtu.round(),
-                     total_gal.round(),
-                     total_mmbtu.round()],axis=1)
+        # make a data frames
+        dfe = concat([self.population.round().astype(int), self.p_map, 
+                      self.consumption.round(), self.c_map, 
+                      self.generation.round()],axis=1)
+                     
+        dff = concat([self.population.round().astype(int), self.p_map,
+                      res_gal.round(), res_mmbtu.round(),
+                      com_gal.round(), com_mmbtu.round(),
+                      ww_gal.round(), ww_mmbtu.round(),
+                      total_gal.round(),
+                      total_mmbtu.round()],axis=1)
         
         # fix the index
-        df.index = df.index.values.astype(int)
+        dfe.index = dfe.index.values.astype(int)
+        dff.index = dff.index.values.astype(int)
+        #file names
+        e_file = path + "electricity_forecast.csv"
+        f_file = path + "heating_fuel_forecast.csv"
         
+        # save e_file
         # add the file header
-        fd = open(path,"w")
-        fd.write("# Forecast for " +self.cd.get_item("community","name") + "\n")
+        fd = open(e_file ,"w")
+        fd.write("# Electricity Forecast for " + \
+                                    self.cd.get_item("community","name") + "\n")
         fd.write("# Qualifier info: \n")
         fd.write("#   M indicates a measured value \n")
         fd.write("#   P indicates a projected value \n")
         fd.close()
         
         # save
-        df.to_csv(path, index_label="year",mode = "a")
+        dfe.to_csv(e_file, index_label="year",mode = "a")
         
+        # save f_file
+        # add the file header
+        fd = open(f_file ,"w")
+        fd.write("# Heating Fuel Forecast for " + \
+                                    self.cd.get_item("community","name") + "\n")
+        fd.write("# Qualifier info: \n")
+        fd.write("#   M indicates a measured value \n")
+        fd.write("#   P indicates a projected value \n")
+        fd.close()
+        
+        # save
+        dff.to_csv(f_file, index_label="year",mode = "a")
         
 
 def test ():
