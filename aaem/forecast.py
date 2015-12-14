@@ -174,7 +174,6 @@ class Forecast (object):
                 else self.yearly_kWh_totals.T.keys().values[-1]
         end = int(end)
         population = self.fc_specs["population"].ix[start:end].T.values[0]
-        
         self.measured_consumption = self.yearly_kWh_totals.ix[start:end]
         consumption = self.measured_consumption.T.values[0]
         if len(population) < 10:
@@ -189,11 +188,9 @@ class Forecast (object):
         
         # forecast kWh where population is known
         last_year = int(self.yearly_kWh_totals.T.keys()[-1])
-        fc_con_known_pop  = m * self.fc_specs["population"][last_year+1:] + b
-
+        fc_con_known_pop  = m * self.fc_specs["population"].ix[last_year+1:] + b
         #forecast with forecasted population 
         fc_con_fc_pop = m * self.population + b
-
         consumption = concat([fc_con_known_pop, fc_con_fc_pop])
         consumption.columns = ["consumption kWh"]
         
