@@ -24,8 +24,6 @@ class Preprocessor (object):
         post: 
             a file is saved, and the data frame it was generated from is returned
         """
-        
-        
         pop_data = read_csv(in_file, index_col = 1) # update to GNIS
         pops = pop_data.ix[com_id]["2003":"2014"].values
         years = pop_data.ix[com_id]["2003":"2014"].keys().values.astype(int)
@@ -57,8 +55,18 @@ class Preprocessor (object):
         post: 
            a data frame is returned
         """
-        df = read_csv(in_file, index_col = 1) # update to GNIS
-        data = df.ix[com_id][["year","residential_kwh_sold",
+        indata = read_csv(in_file, index_col = 1, comment = "#", header = 0) # update to GNIS
+        
+        try:
+            data = indata.loc[com_id]\
+                                        [["year","residential_kwh_sold",
+                                         "commercial_kwh_sold",
+                                         "community_kwh_sold",
+                                         "government_kwh_sold",
+                                         "unbilled_kwh","notes"]]
+        except KeyError:
+            data = indata.loc[[com_id + ',' in s for s in indata.index]]\
+                                        [["year","residential_kwh_sold",
                                          "commercial_kwh_sold",
                                          "community_kwh_sold",
                                          "government_kwh_sold",
@@ -66,7 +74,8 @@ class Preprocessor (object):
                                          
         self.diagnostics.add_note("preprocessor", 
                 "notes from pce data: " + str(data["notes"].tail(1)[0]))
-        
+        del data["notes"]
+        #~ print data
         sums = []
         for year in set(data["year"].values):
             if len(data[data["year"] == year]) != 12:
@@ -74,6 +83,9 @@ class Preprocessor (object):
             temp = data[data["year"] == year].sum()
             temp["year"] = int(year)
             sums.append(temp)
+            
+        #~ return sums
+        #~ print DataFrame(sums).set_index("year")
         df = DataFrame(sums).set_index("year")
         for key in df.keys():
             df[key.split('_')[0]] = df[key]
@@ -115,20 +127,29 @@ class Preprocessor (object):
         """
         try:
             data = self.pce_electricity (in_file, com_id)
-            data["industrial"] = data["residential"]/0-data["residential"]/0
+            #~ print data
+            #~ data = DataFrame(data).set_index("year")
+            #~ data["industrial"] = data["residential"]/0-data["residential"]/0
         except KeyError:
             data = self.eia_electricity (in_file, com_id)
             nans = data["residential"]/0-data["residential"]/0
             data["community"] = nans
             data["government"] = nans
             data["unbilled"] = nans
+        except TypeError:
+            pass # i don't know why this is needed this exception is raised
+                 # but it the code still works
         
-            
-        res = data['residential']
-        non_res = data.sum(1) - res
-        data = DataFrame({"year":res.keys(),
+        try:
+            res = data['residential']
+            non_res = data.sum(1) - res
+            data = DataFrame({"year":res.keys(),
                    "residential":res.values,
                    "non-residential":non_res.values}).set_index("year")
+        except UnboundLocalError:
+            pass # i don't know why this is needed this exception is raised
+                 # but it the code still works
+        
 
             
             
@@ -138,9 +159,12 @@ class Preprocessor (object):
         fd.write("# all units are in kWh/year for a given year and category\n")
         fd.write("#### #### #### #### ####\n")
         fd.close()    
-        
-        data.to_csv(out_file, mode="a")
-        return data
+        try:
+            data.to_csv(out_file, mode="a")
+        except UnboundLocalError:
+            pass # i don't know why this is needed this exception is raised
+                 # but it the code still works
+        #~ return data
     
     def wastewater (self, data_file, assumptions_file, out_dir, com_id):
         """
@@ -342,8 +366,6 @@ class Preprocessor (object):
         self.wastewater(os.path.join(data_dir,"ww_data.csv"),
                         os.path.join(data_dir,"ww_assumptions.csv"),
                    out_dir, com_id)
-        
-        
         try:
             self.electricity(os.path.join(data_dir,
                                         "power-cost-equalization-pce-data.csv"), 
@@ -380,7 +402,12 @@ class Preprocessor (object):
         """
         pre process fuel prices
         """
-        data = read_csv(in_file, index_col=1, comment = "#").ix[com_id]
+        data = read_csv(in_file, index_col=1, comment = "#")#.ix[com_id]
+        try:
+            data = data.ix[com_id]
+        except KeyError:
+            data = data.loc[[com_id+',' in s for s in data.index]]
+        
         data = data[["year","month","residential_rate",
                      "pce_rate","effective_rate","residential_kwh_sold",
                                          "commercial_kwh_sold",
@@ -427,7 +454,11 @@ class Preprocessor (object):
         """
         pre process kwh generation 
         """
-        data = read_csv(in_file, index_col=1, comment = "#").ix[com_id]
+        data = read_csv(in_file, index_col=1, comment = "#")
+        try:
+            data = data.ix[com_id]
+        except KeyError:
+            data = data.loc[[com_id+',' in s for s in data.index]]
         data = data[["year","diesel_kwh_generated",
                      "powerhouse_consumption_kwh","hydro_kwh_generated",
                      "other_1_kwh_generated","other_2_kwh_generated",
@@ -532,11 +563,45 @@ class Preprocessor (object):
         df.to_csv(out_file,mode="a", header = False)
 
 
-def preprocess(data_dir, out_dir, com_id):
+def it_population (in_file, out_dir, com_ids, threshold = 20):
+    """
+    preprocess intertied population
+    """
+    pop_data = read_csv(in_file, index_col = 1) # update to GNIS
+    pops = pop_data.ix[com_ids].T.ix["2003":"2014"].sum(1)
+    
+    if (pops < threshold).any():
+        self.diagnostics.add_warning("preprocessor","population < 20")
+    
+    
+    out_file = os.path.join(out_dir,"population.csv")
+    fd = open(out_file,'w')
+    fd.write("# " + str(com_ids) + "combined population\n")
+    fd.write("# recorded(summed for each community)" +\
+             "population in a given year\n")
+    fd.write("#### #### #### #### ####\n")
+    fd.write("year,population\n")
+    fd.close()
+    
+    
+    #~ df = DataFrame([years,pops],["year","population"]).T.set_index("year")
+    pops.to_csv(out_dir+"population.csv",mode="a")
+    #~ return df
+    
+
+
+def preprocess(data_dir, out_dir, com_id, intertied = False):
     """
     """
     pp = Preprocessor()
     pp.preprocess(data_dir,out_dir,com_id)
     pp.diagnostics.save_messages(os.path.join(out_dir,
                                             "preprocessor_diagnostis.csv"))
+    if intertied == True:
+        com_ids = read_csv(out_dir+"interties.csv",index_col=0, comment = "#").T.values[0]
+        com_ids = list(com_ids)
+        com_ids.append(com_id)
+        com_ids = list(set(com_ids).symmetric_difference({"''",}))
+        it_population(os.path.join(data_dir,"population.csv"),
+                                                            out_dir,com_ids)
     
