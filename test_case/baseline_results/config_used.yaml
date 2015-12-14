@@ -18,11 +18,11 @@ community:
 community buildings:
   average refit cost: 7.0
   cohort savings multiplier: 0.26
-  com benchmark data: IMPORT
+  com building data: IMPORT
   com building estimates: IMPORT
-  com num buildings: IMPORT
   enabled: true
   lifetime: 10
+  number buildings: 21
   start year: 2015
 construction multipliers:
   Aleutians: 1.4

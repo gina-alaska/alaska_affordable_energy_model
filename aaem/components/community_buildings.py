@@ -69,7 +69,7 @@ class CommunityBuildings (AnnualSavings):
                                       self.comp_specs["lifetime"])
                                       
         #~ self.additional_buildings = self.comp_specs["com num buildings"] - \
-                            #~ np.sum(self.comp_specs['com benchmark data']\
+                            #~ np.sum(self.comp_specs['com building data']\
                             #~ [['Number Of Building Type']].values) - 2
         #~ self.additional_buildings = self.additional_buildings.values[0]
         
@@ -84,6 +84,7 @@ class CommunityBuildings (AnnualSavings):
             TODO: define output values. 
             the model is run and the output values are available
         """
+        self.compare_num_buildings()
         self.calc_refit_values()
         self.pre_retrofit_HF_use = np.zeros(self.project_life) + \
                                                     self.baseline_HF_consumption 
@@ -109,6 +110,16 @@ class CommunityBuildings (AnnualSavings):
             
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
 
+    def compare_num_buildings (self):
+        """ Function doc """
+        if len(self.comp_specs['com building data']) != \
+                self.comp_specs["number buildings"]:
+            self.diagnostics.add_warning(self.component_name, 
+            "# buildings estimated does not match # buildings actual. "+\
+            "Estimated: " + str(self.comp_specs["number buildings"]) +\
+            ". Actual: " + str(len(self.comp_specs['com building data'])) + ".")
+    
+    
     def calc_refit_values (self):
         """
         calculate the forecast input values related to refit buildings
@@ -139,7 +150,7 @@ class CommunityBuildings (AnnualSavings):
         floating-point square feet values 
         """
         sqft_ests = self.comp_specs["com building estimates"]["Sqft"]
-        data = self.comp_specs['com benchmark data']
+        data = self.comp_specs['com building data']
         keys = set(data.T.keys())
         measure = "Square Feet"
         
@@ -168,7 +179,7 @@ class CommunityBuildings (AnnualSavings):
         floating-point dollar values 
         """
         measure = "implementation cost"
-        data = self.comp_specs['com benchmark data']
+        data = self.comp_specs['com building data']
         keys = data.T.keys()
         d2 = data[["Square Feet", measure]].T.values.tolist()
         d2.insert(0,keys.values.tolist())
@@ -197,7 +208,7 @@ class CommunityBuildings (AnnualSavings):
         gal_sf_ests = self.comp_specs["com building estimates"]["Gal/sf"]
         
         measure = "Fuel Oil"
-        data = self.comp_specs['com benchmark data']
+        data = self.comp_specs['com building data']
         keys = data.T.keys()
         d2 = data[["Square Feet", measure]].T.values.tolist()
         d2.insert(0,keys.values.tolist())
@@ -229,7 +240,7 @@ class CommunityBuildings (AnnualSavings):
         kwh_sf_ests = self.comp_specs["com building estimates"]["kWh/sf"]
         
         measure = "Electric"
-        data = self.comp_specs['com benchmark data']
+        data = self.comp_specs['com building data']
         keys = data.T.keys()
         d2 = data[["Square Feet", measure]].T.values.tolist()
         d2.insert(0,keys.values.tolist())
@@ -257,8 +268,8 @@ class CommunityBuildings (AnnualSavings):
         self.additional_savings_HF, are floating-point HF values
         """
         #~ self.benchmark_savings_HF = \
-            #~ np.sum(self.comp_specs['com benchmark data']["Current Fuel Oil"] -\
-                #~ self.comp_specs['com benchmark data']["Post-Retrofit Fuel Oil"])
+            #~ np.sum(self.comp_specs['com building data']["Current Fuel Oil"] -\
+                #~ self.comp_specs['com building data']["Post-Retrofit Fuel Oil"])
         #~ self.additional_savings_HF = self.additional_HF * \
                                  #~ self.comp_specs['cohort savings multiplier']
         #~ self.refit_savings_HF_total = self.benchmark_savings_HF +\
@@ -277,8 +288,8 @@ class CommunityBuildings (AnnualSavings):
         self.additional_savings_kWh, are floating-point kWh values
         """
         #~ self.benchmark_savings_kWh = \
-            #~ np.sum(self.comp_specs['com benchmark data']["Current Electric"] -\
-                #~ self.comp_specs['com benchmark data']["Post-Retrofit Electric"])
+            #~ np.sum(self.comp_specs['com building data']["Current Electric"] -\
+                #~ self.comp_specs['com building data']["Post-Retrofit Electric"])
         #~ self.additional_savings_kWh = self.additional_kWh * \
                                  #~ self.comp_specs['cohort savings multiplier']
         #~ self.refit_savings_kWh_total = self.benchmark_savings_kWh +\
@@ -356,7 +367,7 @@ def test ():
     """
     tests the class using the manley data.
     """
-    manley_data = CommunityData("../data/","../test_case/manley_data.yaml")
+    manley_data = CommunityData("../test_case/input_data/","../test_case/baseline_results/config_used.yaml")
     fc = Forecast(manley_data)
     cb = CommunityBuildings(manley_data, fc)
     cb.run()

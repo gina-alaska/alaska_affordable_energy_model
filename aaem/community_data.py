@@ -226,9 +226,9 @@ class CommunityData (object):
         #~ if self.get_item('community buildings','com benchmark data')== "IMPORT":
             #~ self.set_item('community buildings','com benchmark data',
                                             #~ self.load_csv('com benchmark data'))
-        if self.get_item('community buildings',"com num buildings")== "IMPORT":
-            self.set_item('community buildings',"com num buildings",
-                                            self.load_csv("com num buildings"))
+        #~ if self.get_item('community buildings',"com num buildings")== "IMPORT":
+            #~ self.set_item('community buildings',"com num buildings",
+                                            #~ self.load_csv("com num buildings"))
                                             
         if self.get_item('community',"HDD") == "IMPORT":
             self.set_item('community',"HDD", int(self.load_csv("hdd")))
@@ -296,9 +296,13 @@ class CommunityData (object):
             self.set_item('community buildings',"com building estimates",
                            self.load_pp_csv("com_building_estimates.csv"))
                            
-        if self.get_item('community buildings','com benchmark data')== "IMPORT":
-            self.set_item('community buildings','com benchmark data',
+        if self.get_item('community buildings','com building data')== "IMPORT":
+            self.set_item('community buildings','com building data',
                                     self.load_pp_csv("community_buildings.csv"))
+                                    
+        if self.get_item('community buildings','number buildings')== "IMPORT":
+            self.set_item('community buildings','number buildings',
+                int(self.load_pp_csv("com_num_buildings.csv").ix["Buildings"]))
 
                          
     def load_pp_csv(self, f_name):
@@ -348,8 +352,7 @@ class CommunityData (object):
         """
         ## save work around 
         self.set_item('residential buildings','data', "IMPORT")
-        self.set_item('community buildings','com benchmark data', "IMPORT")
-        self.set_item('community buildings',"com num buildings", "IMPORT")
+        self.set_item('community buildings','com building data', "IMPORT")
         self.set_item('community buildings',"com building estimates", "IMPORT")
 
         self.set_item('community', "diesel prices", "IMPORT")
