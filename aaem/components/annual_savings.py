@@ -73,7 +73,7 @@ class AnnualSavings (object):
         """
         # number of arrays as zero ($ value) until project start
         yts = np.zeros((self.start_year - current_year)+1)
-        #~ print yts
+
         
         self.benefit_npv = np.npv(rate, 
                                     np.append(yts, self.annual_total_savings))

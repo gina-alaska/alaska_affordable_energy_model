@@ -360,12 +360,4 @@ def test ():
     fc = Forecast(manley_data)
     cb = CommunityBuildings(manley_data, fc)
     cb.run()
-    #~ print "total sq. ft to retrofit: " + str(round(cb.refit_sqft_total,0))
-    #~ print "kWh/yr pre: " + str(round(cb.refit_pre_kWh_total,0))
-    #~ print "HF/yr pre: " + str(round(cb.baseline_HF_consumption,0))
-    #~ print "kWh/yr savings: " + str(round(cb.refit_savings_kWh_total,2))
-    #~ print "HF/yr savings: " + str(round(cb.refit_savings_HF_total,0))
-    #~ print "kWh/yr post: " + str(round(cb.refit_post_kWh_total,0))
-    #~ print "HF/yr post: " + str(round(cb.refit_post_HF_total,0))
-    #~ print "retro fit cost: " + str(round(cb.refit_cost_total,2))
     return cb,fc # return the object for further testing

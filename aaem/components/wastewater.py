@@ -334,10 +334,5 @@ def test ():
     fc = Forecast(manley_data)
     ww = WaterWastewaterSystems(manley_data, fc)
     ww.run()
-    print ""
-    print round(ww.benefit_npv,0)
-    print round(ww.cost_npv,0)
-    print round(ww.benefit_cost_ratio ,2)
-    print round(ww.net_npv,0)
     return ww, fc # return the object for further testing
 

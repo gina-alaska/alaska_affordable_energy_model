@@ -49,7 +49,6 @@ class Driver (object):
         """
         fd = open("comp_lib.yaml", 'r')
         self.comp_lib = yaml.load(fd)
-        #~ print self.comp_lib
         fd.close()
         
     def run_components (self):
@@ -64,7 +63,6 @@ class Driver (object):
         for comp in self.comp_lib:
             if self.cd.get_item(comp,"enabled") == False:
                 continue
-            #~ print comp
             component = self.get_component(self.comp_lib[comp])(self.cd,
                                                                 self.fc,
                                                                 self.di)
@@ -80,9 +78,6 @@ class Driver (object):
         post:
             the forecast totals are up to date
         """
-        #~ self.fc.forecast_consumption()
-        #~ self.fc.forecast_generation()
-        #~ self.fc.forecast_average_kW()
         self.fc.calc_total_HF_forecast()
     
     def get_component (self, comp_name):
@@ -174,9 +169,7 @@ def run_model (config_file):
     out_dir = config['output directory path']
     
     out_dir = out_dir[:-1] if out_dir[-1] == '/' else out_dir 
-    print out_dir
     out_dir = os.path.abspath(out_dir)
-    print out_dir
     suffix = config['output directory suffix']
     if suffix == "TIMESTAMP":
         timestamp = datetime.strftime(datetime.now(),"%Y%m%d%H%M%S")
@@ -186,7 +179,6 @@ def run_model (config_file):
     else:
         out_dir+= '/'
 
-    print out_dir
     try:
         os.makedirs(out_dir)
     except OSError:

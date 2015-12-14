@@ -349,8 +349,7 @@ class Forecast (object):
         try:
             w = self.www_HF
         except AttributeError:
-            w = np.zeros(self.end_year - self.start_year) + np.nan
-            #~ print self.end_year - 
+            w = np.zeros(self.end_year - self.start_year) + np.nan 
             years = (self.end_year - np.arange(len(w)))[::-1]
             self.www_HF = DataFrame({'year': years,
                                    'consumption': w}).set_index('year')
