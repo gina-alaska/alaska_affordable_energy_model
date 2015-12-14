@@ -363,8 +363,12 @@ class Preprocessor (object):
             self.diagnostics.add_note("preprocessor","no generation estimates")
             
 
-        self.interties(os.path.join(data_dir,"interties.csv"),out_dir,com_id)
-            
+        try:
+            self.interties(os.path.join(data_dir,"interties.csv"),
+                                                                out_dir,com_id)
+        except KeyError:
+            self.diagnostics.add_note("preprocessor", 
+                                                    "no intertie on community")
         
 
         self.buildings(os.path.join(data_dir, "non_res_buildings.csv"), 
