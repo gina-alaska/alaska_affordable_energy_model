@@ -205,3 +205,20 @@ def run_model (config_file):
     model.save_diagnostics(out_dir)
     return model, out_dir
 
+
+
+def run_batch (config):
+    """ Function doc """
+    try:
+        fd = open(config, 'r')
+        config = yaml.load(fd)
+        fd.close()
+    except:
+        pass
+    communities = {}
+    for key in config:
+        r_val = run_model(config[key])
+        communities[key] = {"model": r_val[0], "directory": r_val[1]}
+    return communities
+    
+    
