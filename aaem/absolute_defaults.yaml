@@ -48,8 +48,8 @@ community buildings:
   start year: ABSOLUTE DEFAULT # start year <int>
   average refit cost: 7.00 # cost/sqft. <float>
   cohort savings multiplier: .26 # pecent as decimal <float>
-  com benchmark data: IMPORT
-  com num buildings: IMPORT
+  com building data: IMPORT
+  number buildings: IMPORT
   com building estimates: IMPORT
 
 water wastewater:

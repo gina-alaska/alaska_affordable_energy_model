@@ -323,7 +323,6 @@ class Preprocessor (object):
             pass
         
         ### copy files that still need their own preprocessor function yet
-        shutil.copy(os.path.join(data_dir,"com_num_buildings.csv"), out_dir)
         shutil.copy(os.path.join(data_dir,"diesel_fuel_prices.csv"), out_dir)
         shutil.copy(os.path.join(data_dir,"hdd.csv"), out_dir)
         shutil.copy(os.path.join(data_dir,"cpi.csv"), out_dir)
@@ -373,6 +372,7 @@ class Preprocessor (object):
 
         self.buildings(os.path.join(data_dir, "non_res_buildings.csv"), 
                        os.path.join(data_dir, "com_building_estimates.csv"),
+                       os.path.join(data_dir,"com_num_buildings.csv"),
                        out_dir, com_id, base_pop)
 
     
@@ -482,7 +482,7 @@ class Preprocessor (object):
         data.to_csv(out_file, mode = 'a')
         return data
 
-    def buildings (self, in_file, est_file, out_dir, com_id, pop):
+    def buildings (self, in_file, est_file, count_file, out_dir, com_id, pop):
         """ Function doc """
         data = read_csv(in_file, index_col=0, comment = "#").ix[com_id]
         
@@ -505,6 +505,20 @@ class Preprocessor (object):
              "Fuel Oil Post", "HW District", "HW District Post", "Natural Gas", 
              "Natural Gas Post", "Propane", "Propane Post"]
         data.to_csv(out_file, columns = c, mode="a", index=False)
+        
+        
+        out_file = os.path.join(out_dir, "com_num_buildings.csv")
+        fd = open(out_file,'w')
+        fd.write("# " + com_id + " estimated number of buildings\n")
+        fd.write("#### #### #### #### ####\n")
+        fd.write("key,value\n")
+        fd.close()
+        
+        data = read_csv(count_file ,comment = "#", index_col = 0,
+                                                 header = 0).ix[com_id]
+        data.to_csv(out_file,mode="a", header = False)
+        
+        
         
         
         out_file = out_file = os.path.join(out_dir, 
@@ -530,6 +544,9 @@ class Preprocessor (object):
         df = df.T
         
         df.to_csv(out_file,mode="a", header = False)
+        
+        
+        
 
 
 def preprocess(data_dir, out_dir, com_id):
