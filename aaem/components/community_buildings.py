@@ -242,12 +242,12 @@ class CommunityBuildings (AnnualSavings):
         keys = set(keys)
 
         for k in keys:
-            HDD_ratio = self.cd["HDD"]/HDD_ests.ix[k]
-            gal_sf = gal_sf_ests.ix[k]
+            HDD_ratio = self.cd["HDD"]/HDD_ests.ix[k] # unitless
+            gal_sf = gal_sf_ests.ix[k] # (gal)/sqft
             
             idx = np.logical_and(d2[:,0] == k, np.isnan(d2[:,2].astype(float)))
-            sqft = d2[idx,1].astype(np.float64)
-            d2[idx,2] = sqft * HDD_ratio * gal_sf
+            sqft = d2[idx,1].astype(np.float64) # sqft
+            d2[idx,2] = sqft * HDD_ratio * gal_sf # gal/yr
         
         data[measure] = d2[:,2].astype(np.float64)                                                 
         self.baseline_HF_consumption = data[measure].sum()
@@ -278,11 +278,11 @@ class CommunityBuildings (AnnualSavings):
         keys = set(keys)
         
         for k in keys:
-            kwh_sf = kwh_sf_ests.ix[k]
+            kwh_sf = kwh_sf_ests.ix[k] # (kWh)/sqft
             
             idx = np.logical_and(d2[:,0] == k, np.isnan(d2[:,2].astype(float)))
-            sqft = d2[idx, 1].astype(np.float64)
-            d2[idx, 2] = sqft * kwh_sf
+            sqft = d2[idx, 1].astype(np.float64) #sqft
+            d2[idx, 2] = sqft * kwh_sf # kWh
 
         data[measure] = d2[:,2].astype(np.float64)  
         self.baseline_kWh_consumption = data[measure].sum()
@@ -398,6 +398,7 @@ def test ():
     tests the class using the manley data.
     """
     manley_data = CommunityData("../test_case/input_data/","../test_case/baseline_results/config_used.yaml")
+    return manley_data
     fc = Forecast(manley_data)
     cb = CommunityBuildings(manley_data, fc)
     cb.run()
