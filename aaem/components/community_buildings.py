@@ -398,7 +398,6 @@ def test ():
     tests the class using the manley data.
     """
     manley_data = CommunityData("../test_case/input_data/","../test_case/baseline_results/config_used.yaml")
-    return manley_data
     fc = Forecast(manley_data)
     cb = CommunityBuildings(manley_data, fc)
     cb.run()
