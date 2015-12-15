@@ -12,8 +12,11 @@ GLOSSARY:
         -- a python library of values with the Building Types as string keys. 
     Building Types:
         -- the types of buildings used as keys (strings): 
-           "education", "health care","office","other","public_assembly",
-           "public_order","warehouse", "unknown"
+            "Education - K - 12", "Education - University",
+            "Food Service and Drinking Places", "Health Care - Hospitals", 
+            "Health Care - Nursing/Residential Care", "Office","Other",
+            "Public Assembly", "Public Safety", "Residential - Multi-Family",
+            "Retail - Other", "Warehousing", "Average", "Water & Sewer"
     CommunityData Object:
         -- defied in community_data.py
     Output Values: 
@@ -52,7 +55,8 @@ class CommunityBuildings (AnnualSavings):
         Class initialiser
 
         pre:
-            community_data is a CommunityData object
+            community_data is a CommunityData object. diag (if provided) should 
+        be a Diagnostics object
         post:
             the model can be run
         """
@@ -78,8 +82,7 @@ class CommunityBuildings (AnnualSavings):
         run the forecast model
         
         pre:
-            AEAA should provide interest and discount rates as floats 0<rate<=1
-            self.cd should be a community data object 
+            self.cd should be the community library from a community data object
         post:
             TODO: define output values. 
             the model is run and the output values are available
@@ -111,7 +114,16 @@ class CommunityBuildings (AnnualSavings):
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
 
     def compare_num_buildings (self):
-        """ Function doc """
+        """
+            This function compares the counted buildings with the estimated 
+        buildings
+        
+        pre:
+            'com building data' is a DataFrame, and "number buildings" is 
+        an integer 
+        post:
+            a warning may be added to self.diagnostics 
+        """
         if len(self.comp_specs['com building data']) != \
                 self.comp_specs["number buildings"]:
             self.diagnostics.add_warning(self.component_name, 
@@ -143,11 +155,14 @@ class CommunityBuildings (AnnualSavings):
         calc refit square feet 
           
         pre:
-            self.cd should be a community data object 
-        
+            self.comp_specs["com building estimates"]["Sqft"] is a Pandas series
+        indexed by building type of sqft. estimates for the community. 
+        self.comp_specs['com building data'] is a Pandas DataFrame containing 
+        the actual data on buildings in the community, indexed by building type
         post:
-          self.refit_sqft_total, self.benchmark_sqft, self.additional_sqft are
-        floating-point square feet values 
+            self.refit_sqft_total is the total sqft. that can retrofitted in
+        the community. self.comp_specs['com building data']['Square Feet'] has
+        been updated with square footage estimates. 
         """
         sqft_ests = self.comp_specs["com building estimates"]["Sqft"]
         data = self.comp_specs['com building data']
@@ -165,31 +180,35 @@ class CommunityBuildings (AnnualSavings):
                     data.ix[k][measure] = sqft_ests.ix[k]
         
         self.refit_sqft_total = data[measure].sum()
-
+        
     
     def calc_refit_cost (self):
         """ 
         calc refit cost 
           
         pre:
-            self.additional_sqft should be a float in square feet
-        
+            self.comp_specs['com building data'] is a Pandas DataFrame 
+        containing the actual data on buildings in the community, indexed by 
+        building type. self.refit_cost_rate is the $$/sqft. for preforming a 
+        refit to the building. 
         post:
-            self.refit_cost_total, self.benchmark_cost, self.additional_cost are
-        floating-point dollar values 
+            self.refit_cost_total is the total cost to refit buildings in the 
+        community ($$). 
+        self.comp_specs['com building data']['implementation cost'] has been 
+        updated with  cost estimates. 
         """
         measure = "implementation cost"
         data = self.comp_specs['com building data']
         keys = data.T.keys()
         d2 = data[["Square Feet", measure]].T.values.tolist()
         d2.insert(0,keys.values.tolist())
-        d2 = np.array(d2).T
-        keys = set(keys)
+        d2 = np.array(d2).T # [key, sqft, $$]
+        keys = set(keys) # filter unique keys
         
         for k in keys:
             idx = np.logical_and(d2[:,0] == k, np.isnan(d2[:,2].astype(float)))
             sqft = d2[idx,1].astype(np.float64)
-            d2[idx,2] = sqft * self.refit_cost_rate  
+            d2[idx,2] = sqft * self.refit_cost_rate  #sqft * $$/sqft = $$
         
         data[measure] = d2[:,2].astype(np.float64)  
         self.refit_cost_total = data[measure].sum()
@@ -199,10 +218,17 @@ class CommunityBuildings (AnnualSavings):
         calculate pre refit kWh use
         
         pre:
-            tbd
+            self.comp_specs["com building estimates"]["HDD"] is a Pandas
+        series of heating degree day values (deg. C/day) with the building 
+        types as keys. self.comp_specs["com building estimates"]["Gal/sf"] is
+        a Pandas series of Gal/sqft. values building types as keys. 
+        self.comp_specs['com building data'] is a Pandas DataFrame containing 
+        the actual data on buildings in the community, indexed by building type
         post: 
-            self.refit_pre_hf_total, self.benchmark_hf, self.additional_hf are
-        floating-point HF values
+            self.baseline_HF_consumption is the base line heating fuel 
+        consumption for the community (pre-refit). 
+        self.comp_specs['com building data']['Fuel Oil'] has been updated with 
+        square fuel oil use estimates (gal/yr). 
         """
         HDD_ests = self.comp_specs["com building estimates"]["HDD"]
         gal_sf_ests = self.comp_specs["com building estimates"]["Gal/sf"]
@@ -225,17 +251,21 @@ class CommunityBuildings (AnnualSavings):
         
         data[measure] = d2[:,2].astype(np.float64)                                                 
         self.baseline_HF_consumption = data[measure].sum()
-                
         
     def calc_refit_pre_kWh (self):
         """ 
         calculate pre refit kWh use
         
         pre:
-            tbd
+            self.comp_specs["com building estimates"]["kWh/sf"] is a Pandas 
+        series of kWh/sqft. values building types as keys. 
+        self.comp_specs['com building data'] is a Pandas DataFrame containing 
+        the actual data on buildings in the community, indexed by building type
         post: 
-            self.baseline_kWh_consumption, self.benchmark_kWh, 
-        self.additional_kWh are floating-point kWh values
+            self.baseline_kWh_consumption is the base line electricity
+        consumption for the community (pre-refit). 
+        self.comp_specs['com building data']['Electric'] has been updated with 
+        square fuel oil use estimates (kWh/yr). 
         """
         kwh_sf_ests = self.comp_specs["com building estimates"]["kWh/sf"]
         
