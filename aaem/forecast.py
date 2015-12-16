@@ -65,6 +65,8 @@ class Forecast (object):
         self.forecast_generation()
         self.forecast_average_kW()
         self.forecast_households()
+        self.output_cols = []
+        
         
     def merge_real_and_proj (self):
         """ 
@@ -453,7 +455,53 @@ class Forecast (object):
         # save
         dff.to_csv(f_file, index_label="year",mode = "a")
         
+    
+    def add_output_column (self, key, year_col, data_col):
+        """ Function doc """
+        self.output_cols.append(DataFrame({"year":year_col, 
+                                           key:data_col}).set_index("year"))
+    
+    def save_fc_2 (self, path):
+        """ Function doc """
+        f_name = path + "heating_fuel_forecast.csv"
+        data = concat([self.population.round().astype(int), self.p_map]  + self.output_cols,axis=1)
 
+        demand_idx = ['heat_energy_demand_' in s for s in data.keys()]
+        hf_gal_idx = ['heating_fuel' in s for s in data.keys()] and ['gallons' in s for s in data.keys()]
+        hf_btu_idx = ['heating_fuel' in s for s in data.keys()] and ['mmbtu' in s for s in data.keys()]
+
+        total_gal = DataFrame(data[data.keys()[hf_gal_idx]].sum(1))
+        total_gal.columns = ["heating_fuel_total_consumed [gallons/year]"]
+        
+        total_btu = DataFrame(data[data.keys()[hf_btu_idx]].sum(1))
+        total_btu.columns = ["heating_fuel_total_consumed [mmbtu/year]"]
+        
+        total_demand = DataFrame(data[data.keys()[demand_idx]].sum(1))
+        total_demand.columns = ["heat_energy_demand_total [mmbtu/year]"]
+        
+        data = concat([data,total_gal,total_btu,total_demand],axis=1)
+        
+        fd = open(f_name ,"w")
+        fd.write("# Heating Fuel Forecast for " + \
+                                    self.cd.get_item("community","name") + "\n")
+        fd.write("# Qualifier info: \n")
+        fd.write("#   M indicates a measured value \n")
+        fd.write("#   P indicates a projected value \n")
+        fd.close()
+        
+        for key in data.keys():
+            try:
+                col = data[key]
+                lv = col[np.logical_not(col.apply(np.isnan))].tail(1).values[0]
+                yr = col[np.logical_not(col.apply(np.isnan))].tail(1).index[0]
+                col[col.index > yr] = lv
+            except TypeError:
+                pass
+        
+        data.to_csv(f_name, index_label="year", mode = 'a')
+        data.index = data.index.values.astype(int)
+        #~ return data
+        
 def test ():
     """ Function doc """
     manley_data = CommunityData("../test_case/input_data/", 

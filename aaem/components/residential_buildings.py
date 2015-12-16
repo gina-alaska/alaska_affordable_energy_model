@@ -70,6 +70,14 @@ class ResidentialBuildings(AnnualSavings):
         self.forecast.set_res_HF_fuel_forecast(self.baseline_HF_consumption,
                                                 self.start_year)
         
+        years = range(self.start_year,self.end_year)
+        self.forecast.add_output_column("heating_fuel_residential_consumed [gallons/year]",
+                                 years, self.baseline_HF_consumption)
+        self.forecast.add_output_column("heating_fuel_residential_consumed [mmbtu/year]",
+                                 years, self.baseline_HF_consumption/constants.mmbtu_to_gal_HF)
+        self.forecast.add_output_column("heat_energy_demand_residential [mmbtu/year]",
+                                 years, self.baseline_total_heating_demand)
+        
         if self.cd["model financial"]:
             self.get_diesel_prices()
             self.calc_baseline_fuel_cost() 
@@ -229,6 +237,15 @@ class ResidentialBuildings(AnnualSavings):
         #~ self.baseline_coal_consumption
         #~ self.baseline_solar_consumption
         #~ self.baseline_other_consumption
+        
+        
+        self.baseline_total_heating_demand = \
+                self.baseline_HF_consumption * (1/constants.mmbtu_to_gal_HF) +\
+                self.baseline_wood_consumption * (1/constants.mmbtu_to_cords) +\
+                self.baseline_gas_consumption * (1/constants.mmbtu_to_Mcf) +\
+                self.baseline_kWh_consumption * (1/constants.mmbtu_to_kWh) +\
+                self.baseline_LP_consumption * (1/constants.mmbtu_to_gal_LP)
+        
 
     def calc_baseline_fuel_cost (self):
         """
@@ -322,7 +339,7 @@ def test ():
     """
     tests the class using the manley data.
     """
-    manley_data = CommunityData("../data","../test_case/manley_data.yaml")
+    manley_data = CommunityData("../test_case/input_data/","../test_case/baseline_results/config_used.yaml")
     
     fc = Forecast(manley_data)
     t = ResidentialBuildings(manley_data,fc)

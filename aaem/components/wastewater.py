@@ -14,6 +14,7 @@ from annual_savings import AnnualSavings
 from community_data import CommunityData
 from forecast import Forecast
 from diagnostics import diagnostics
+import constants
 
 class WaterWastewaterSystems (AnnualSavings):
     """
@@ -164,6 +165,13 @@ class WaterWastewaterSystems (AnnualSavings):
         
         self.forecast.set_www_HF_fuel_forecast(self.baseline_HF_consumption, 
                                                 self.start_year)
+        years = range(self.start_year,self.end_year)
+        self.forecast.add_output_column("heating_fuel_water-wastewater_consumed [gallons/year]",
+                                 years, self.baseline_HF_consumption)
+        self.forecast.add_output_column("heating_fuel_water-wastewater_consumed [mmbtu/year]",
+                                 years, self.baseline_HF_consumption/constants.mmbtu_to_gal_HF)
+        self.forecast.add_output_column("heat_energy_demand_water-wastewater [mmbtu/year]",
+                                 years, self.baseline_HF_consumption/constants.mmbtu_to_gal_HF)
         
         if self.cd["model financial"]:
             self.calc_capital_costs()

@@ -44,6 +44,7 @@ from annual_savings import AnnualSavings
 from community_data import CommunityData
 from forecast import Forecast
 from diagnostics import diagnostics
+import constants
 
 class CommunityBuildings (AnnualSavings):
     """
@@ -99,6 +100,14 @@ class CommunityBuildings (AnnualSavings):
         
         self.forecast.set_com_HF_fuel_forecast(self.pre_retrofit_HF_use, 
                                                 self.start_year)
+                                                
+        years = range(self.start_year,self.end_year)
+        self.forecast.add_output_column("heating_fuel_non-residential_consumed [gallons/year]",
+                                 years, self.baseline_HF_consumption)
+        self.forecast.add_output_column("heating_fuel_non-residential_consumed [mmbtu/year]",
+                                 years, self.baseline_HF_consumption/constants.mmbtu_to_gal_HF)
+        self.forecast.add_output_column("heat_energy_demand_non-residential [mmbtu/year]",
+                                 years, self.baseline_HF_consumption/constants.mmbtu_to_gal_HF)
         
         if self.cd["model financial"]:
             self.get_diesel_prices()
