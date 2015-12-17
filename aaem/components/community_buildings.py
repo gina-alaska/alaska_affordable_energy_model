@@ -140,6 +140,11 @@ class CommunityBuildings (AnnualSavings):
             adds additional buildings to the building dataframe 
         (self.comp_specs['com building data'])
         
+        pre:
+            self.additional_buildings and num_not_heated are integers
+        where self.additional_buildings > num_not_heated
+        post:
+            self.comp_specs['com building data'] extra buildings
         """
         l = []
         for i in range(self.additional_buildings - num_not_heated):
