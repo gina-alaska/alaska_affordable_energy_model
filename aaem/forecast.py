@@ -300,7 +300,7 @@ class Forecast (object):
         post:
             saves a file
         """
-       
+        path += self.cd.get_item("community","name").replace(" ", "-") + "_"
         self.save_electirc(path)
         self.save_heat_demand(path)
         self.save_heating_fuel(path)
