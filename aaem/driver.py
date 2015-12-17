@@ -6,6 +6,10 @@ driver.py
 from community_data import CommunityData
 from forecast import Forecast
 from diagnostics import diagnostics
+from preprocessor import preprocess
+import defaults
+
+
 
 from components.residential_buildings import ResidentialBuildings
 from components.community_buildings import CommunityBuildings
@@ -200,5 +204,75 @@ def run_batch (config):
         r_val = run_model(config[key])
         communities[key] = {"model": r_val[0], "directory": r_val[1]}
     return communities
+    
+
+def setup (community, data_repo, model_directory):
+    """ Function doc """
+    directory = os.path.abspath(model_directory)
+    try:
+        os.makedirs(os.path.join(directory,"config"))
+    except OSError:
+        while True:
+            resp = raw_input("The directory "+ directory + " already exists" +\
+                             " would you like to over right any model data" +\
+                             " in it? (y or n): ")
+            if resp.lower() == "y":
+                break
+            elif resp.lower() == "n":
+                return
+            else:
+                pass
+                
+    config_text = "community:\n  name: " + community +\
+                  " # community provided by user\n"
+    config_file = open(os.path.join(directory, "config",
+                                    "community_data.yaml"), 'w')
+    config_file.write(config_text)
+    config_file.close()
+    def_file = open(os.path.join(directory, "config", 
+                                    "test_defaults.yaml"), 'w')
+    def_file.write(defaults.for_setup)
+    def_file.close()
+    
+    driver_text =  'overrides: ' + os.path.join(directory,"config",
+                                                "community_data.yaml") + '\n'
+    driver_text += 'defaults: ' + os.path.join(directory,"config",
+                                                "test_defaults.yaml") + '\n'
+    driver_text += 'data directory: ' + os.path.join(directory,
+                                                "input_data") + '\n'
+    driver_text += 'output directory path: ' + os.path.join(directory,
+                                                 "results") + '\n'
+    driver_text += 'output directory suffix: NONE # TIMESTAMP|NONE|<str>\n'
+    
+    driver_file = open(os.path.join(directory, 
+                       community.replace(" ", "_") + "_driver.yaml"), 'w')
+    driver_file.write(driver_text)
+    driver_file.close()
+    
+    preprocess(data_repo,os.path.join(directory,"input_data"),community)
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
