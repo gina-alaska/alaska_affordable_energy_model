@@ -128,7 +128,8 @@ class Preprocessor (object):
         non_res = data.sum(1) - res
         data = DataFrame({"year":res.keys(),
                    "residential":res.values,
-                   "non-residential":non_res.values}).set_index("year")
+                   "non-residential":non_res.values,
+                   "total":res.values+non_res.values}).set_index("year")
 
             
             
