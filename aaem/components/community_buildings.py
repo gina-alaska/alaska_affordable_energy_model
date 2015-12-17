@@ -39,6 +39,7 @@ GLOSSARY:
 """
 import numpy as np
 from math import isnan
+from pandas import DataFrame
 
 from annual_savings import AnnualSavings
 from community_data import CommunityData
@@ -72,10 +73,7 @@ class CommunityBuildings (AnnualSavings):
         self.set_project_life_details(self.comp_specs["start year"],
                                       self.comp_specs["lifetime"])
                                       
-        #~ self.additional_buildings = self.comp_specs["com num buildings"] - \
-                            #~ np.sum(self.comp_specs['com building data']\
-                            #~ [['Number Of Building Type']].values) - 2
-        #~ self.additional_buildings = self.additional_buildings.values[0]
+        
         
     def run (self):
         """
@@ -124,14 +122,43 @@ class CommunityBuildings (AnnualSavings):
         post:
             a warning may be added to self.diagnostics 
         """
+        self.additional_buildings = self.comp_specs["number buildings"] - \
+                            len(self.comp_specs['com building data']) 
+
         if len(self.comp_specs['com building data']) != \
                 self.comp_specs["number buildings"]:
-            self.diagnostics.add_warning(self.component_name, 
+            self.diagnostics.add_note(self.component_name, 
             "# buildings estimated does not match # buildings actual. "+\
             "Estimated: " + str(self.comp_specs["number buildings"]) +\
             ". Actual: " + str(len(self.comp_specs['com building data'])) + ".")
-    
-    
+            
+            if len(self.comp_specs['com building data']) < \
+                self.comp_specs["number buildings"]:
+                
+                self.add_additional_buildigns()
+                
+            
+    def add_additional_buildigns (self, num_not_heated = 2):
+        """
+            adds additional buildings to the building dataframe 
+        (self.comp_specs['com building data'])
+        
+        pre:
+            self.additional_buildings and num_not_heated are integers
+        where self.additional_buildings > num_not_heated
+        post:
+            self.comp_specs['com building data'] extra buildings,
+            a diagnostic message is added
+        """
+        l = []
+        for i in range(self.additional_buildings - num_not_heated):
+            l.append(DataFrame({"Square Feet":np.nan,}, index = ["Average"]))
+        
+        self.comp_specs['com building data'] = self.comp_specs['com building data'].append(l)
+        
+        self.diagnostics.add_note(self.component_name, "Adding " + str(len(l))+\
+                          " additional buildings with average square footage. ") 
+        
     def calc_refit_values (self):
         """
         calculate the forecast input values related to refit buildings
