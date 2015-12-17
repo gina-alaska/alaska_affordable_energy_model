@@ -298,26 +298,32 @@ class Forecast (object):
         pre:
             everything needs to be foretasted
         post:
-            saves a file
+            saves 3 files
         """
         path += self.cd.get_item("community","name").replace(" ", "-") + "_"
-        self.save_electirc(path)
+        self.save_electric(path)
         self.save_heat_demand(path)
         self.save_heating_fuel(path)
 
     
     def add_heat_demand_column (self, key, year_col, data_col):
-        """ Function doc """
+        """ 
+        add a column to be saved with the heat demand forecast 
+        """
         self.heat_demand_cols.append(DataFrame({"year":year_col, 
                                            key:data_col}).set_index("year"))
                                            
     def add_heating_fuel_column (self, key, year_col, data_col):
-        """ Function doc """
+        """
+        add a column to be saved with the heating fuel forecast 
+        """
         self.heating_fuel_cols.append(DataFrame({"year":year_col, 
                                            key:data_col}).set_index("year"))
     
-    def save_electirc (self, path):
-        """ Function doc """
+    def save_electric (self, path):
+        """ 
+        save the electric forecast
+        """
         f_name = path + "electricity_forecast.csv"
         
         kWh_con = self.consumption
@@ -351,7 +357,9 @@ class Forecast (object):
     
     
     def save_heat_demand (self, path):
-        """ Function doc """
+        """
+        save the heat demand forecast
+        """
         f_name = path + "heat_demand_forecast.csv"
         data = concat([self.population.round().astype(int), self.p_map] + \
 												self.heat_demand_cols,axis=1)
@@ -386,7 +394,9 @@ class Forecast (object):
         
     
     def save_heating_fuel (self, path):
-        """ Function doc """
+        """
+        save the heating fuel 
+        """
         f_name = path + "heating_fuel_forecast.csv"
         data = concat([self.population.round().astype(int), self.p_map] + \
                                                 self.heating_fuel_cols, axis=1)
