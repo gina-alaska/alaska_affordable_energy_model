@@ -65,8 +65,9 @@ class Forecast (object):
         self.forecast_generation()
         self.forecast_average_kW()
         self.forecast_households()
-        self.output_cols = []
-        
+        self.heat_demand_cols = []
+        self.heating_fuel_cols = [] 
+        self.electric_columns = []
         
     def merge_real_and_proj (self):
         """ 
@@ -456,10 +457,14 @@ class Forecast (object):
         dff.to_csv(f_file, index_label="year",mode = "a")
         
     
-    def add_output_column (self, key, year_col, data_col):
+    def add_heat_demand_column (self, key, year_col, data_col):
         """ Function doc """
         self.output_cols.append(DataFrame({"year":year_col, 
                                            key:data_col}).set_index("year"))
+    
+    def save_heat_demand_function ():
+        """ Function doc """
+        pass
     
     def save_fc_2 (self, path):
         """ Function doc """
