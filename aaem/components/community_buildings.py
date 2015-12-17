@@ -97,17 +97,18 @@ class CommunityBuildings (AnnualSavings):
         self.calc_post_refit_use()
         self.post_retrofit_HF_use = np.zeros(self.project_life) + \
                                                     self.refit_HF_consumption   
-        
-        self.forecast.set_com_HF_fuel_forecast(self.pre_retrofit_HF_use, 
-                                                self.start_year)
                                                 
         years = range(self.start_year,self.end_year)
-        #~ self.forecast.add_output_column("heating_fuel_non-residential_consumed [gallons/year]",
-                                 #~ years, self.baseline_HF_consumption)
-        #~ self.forecast.add_output_column("heating_fuel_non-residential_consumed [mmbtu/year]",
-                                 #~ years, self.baseline_HF_consumption/constants.mmbtu_to_gal_HF)
-        self.forecast.add_heat_demand_column("heat_energy_demand_non-residential [mmbtu/year]",
-                                 years, self.baseline_HF_consumption/constants.mmbtu_to_gal_HF)
+        self.forecast.add_heating_fuel_column(\
+                        "heating_fuel_non-residential_consumed [gallons/year]",
+                        years, self.baseline_HF_consumption)
+        self.forecast.add_heating_fuel_column(\
+                    "heating_fuel_non-residential_consumed [mmbtu/year]", years,
+                     self.baseline_HF_consumption/constants.mmbtu_to_gal_HF)
+        
+        self.forecast.add_heat_demand_column(\
+                    "heat_energy_demand_non-residential [mmbtu/year]",
+                 years, self.baseline_HF_consumption/constants.mmbtu_to_gal_HF)
         
         if self.cd["model financial"]:
             self.get_diesel_prices()

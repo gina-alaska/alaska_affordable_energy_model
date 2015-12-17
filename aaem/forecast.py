@@ -292,84 +292,6 @@ class Forecast (object):
             return self.households.ix[start].T.values[0]
         return self.households.ix[start:end-1].T.values[0]
         
-    def set_res_HF_fuel_forecast (self, fc, start_year):
-        """
-        set the residential HF consumption forecast
-        
-        pre: 
-        """
-        #~ start_pad = np.zeros(start_year - self.start_year)
-        end_pad = np.zeros(self.end_year - (start_year + len(fc))+1) + fc[-1]
-        self.res_HF = np.append(fc, end_pad)
-        years = (self.end_year - np.arange(len(self.res_HF)))[::-1]
-        self.res_HF = DataFrame({'year': years,
-                                'consumption': self.res_HF}).set_index('year')
-    
-    def set_com_HF_fuel_forecast (self, fc, start_year):
-        """
-        set the residential HF consumption forecast
-        
-        pre: 
-        """
-        #~ start_pad = np.zeros(start_year - self.start_year)
-        end_pad = np.zeros(self.end_year - (start_year + len(fc))+1) + fc[-1]
-        self.com_HF = np.append(fc, end_pad)
-        years = (self.end_year - np.arange(len(self.com_HF)))[::-1]
-        self.com_HF = DataFrame({'year': years,
-                                'consumption': self.com_HF}).set_index('year')
-        
-    def set_www_HF_fuel_forecast (self, fc, start_year):
-        """
-        set the residential HF consumption forecast
-        
-        pre: 
-        """
-        #~ start_pad = np.zeros(start_year - self.start_year)
-        end_pad = np.zeros(self.end_year - (start_year + len(fc) )+1) + fc[-1]
-        self.www_HF = np.append( fc, end_pad)
-        years = (self.end_year - np.arange(len(self.www_HF)))[::-1]
-        self.www_HF = DataFrame({'year': years,
-                                'consumption': self.www_HF}).set_index('year')
-        
-    def calc_total_HF_forecast(self):
-        """
-        calculates the forecast totals
-        """
-        try:
-            r = self.res_HF
-        except AttributeError:
-            r = np.zeros(self.end_year - self.start_year) + np.nan
-            years = (self.end_year - np.arange(len(r)))[::-1]
-            self.res_HF = DataFrame({'year': years,
-                                   'consumption': r}).set_index('year')
-        try:
-            c = self.com_HF 
-        except AttributeError:
-            c = np.zeros(self.end_year - self.start_year) + np.nan
-            years = (self.end_year - np.arange(len(c)))[::-1]
-            self.com_HF = DataFrame({'year': years,
-                                   'consumption': c}).set_index('year')
-        try:
-            w = self.www_HF
-        except AttributeError:
-            w = np.zeros(self.end_year - self.start_year) + np.nan 
-            years = (self.end_year - np.arange(len(w)))[::-1]
-            self.www_HF = DataFrame({'year': years,
-                                   'consumption': w}).set_index('year')
-
-        total = self.res_HF.fillna(0).values.T[0] + \
-                        self.com_HF.fillna(0).values.T[0] + \
-                        self.www_HF.fillna(0).values.T[0]
-
-        if np.isnan(self.res_HF.values).all() and \
-           np.isnan(self.com_HF.values).all() and \
-           np.isnan(self.www_HF.values).all():
-               total += np.nan
-        
-        years = years = (self.end_year - np.arange(len(total)))[::-1]
-        self.total_HF = DataFrame({'year': years,
-                            'total fuel consumption': total}).set_index('year')
-        
     def save_forecast (self, path):
         """
         save the forecast to a csv
@@ -378,124 +300,75 @@ class Forecast (object):
         post:
             saves a file
         """
-        
-        # change col headers and change units
-        res_gal = self.res_HF
-        res_gal.columns = ["heating_fuel_residential_consumed [gallons/year]"]
-        res_mmbtu = self.res_HF / constants.mmbtu_to_gal_HF
-        res_mmbtu.columns = ["heating_fuel_residential_consumed [mmbtu/year]"]
-        
-        com_gal = self.com_HF
-        com_gal.columns = \
-                        ["heating_fuel_non-residential_consumed [gallons/year]"]
-        com_mmbtu = self.com_HF / constants.mmbtu_to_gal_HF
-        com_mmbtu.columns = \
-                        ["heating_fuel_non-residential_consumed [mmbtu/year]"]
-        
-        ww_gal = self.www_HF
-        ww_gal.columns = \
-                       ["heating_fuel_water-wastewater_consumed [gallons/year]"]
-        ww_mmbtu = self.www_HF / constants.mmbtu_to_gal_HF
-        ww_mmbtu.columns = \
-                       ["heating_fuel_water-wastewater_consumed [mmbtu/year]"]
-        
-        total_gal = self.total_HF
-        total_gal.columns = ["heating_fuel_total_consumed [gallons/year]"]
-        total_mmbtu = self.total_HF / constants.mmbtu_to_gal_HF
-        total_mmbtu.columns = ["heating_fuel_total_consumed [mmbtu/year]"]
+       
+        self.save_electirc(path)
+        self.save_heat_demand(path)
+        self.save_heating_fuel(path)
+
+    
+    def add_heat_demand_column (self, key, year_col, data_col):
+        """ Function doc """
+        self.heat_demand_cols.append(DataFrame({"year":year_col, 
+                                           key:data_col}).set_index("year"))
+                                           
+    def add_heating_fuel_column (self, key, year_col, data_col):
+        """ Function doc """
+        self.heating_fuel_cols.append(DataFrame({"year":year_col, 
+                                           key:data_col}).set_index("year"))
+    
+    def save_electirc (self, path):
+        """ Function doc """
+        f_name = path + "electricity_forecast.csv"
         
         kWh_con = self.consumption
         kWh_con.columns = ["total_electricity_consumed [kWh/year]"]
-        self.c_map.columns = ["total_electricity_consumed_qualifier"]
+        c_map = self.c_map
+        c_map.columns = ["total_electricity_consumed_qualifier"]
         
         kWh_gen = self.generation
         kWh_gen.columns = ["total_electricity_generation [kWh/year]"]
+        g_map = c_map.replace("M","P")
+        g_map.columns = ["total_electricity_generation_qualifier"]
         
-        # make a data frames
-        dfe = concat([self.population.round().astype(int), self.p_map, 
-                      self.consumption.round(), self.c_map, 
-                      self.generation.round()],axis=1)
-                     
-        dff = concat([self.population.round().astype(int), self.p_map,
-                      res_gal.round(), res_mmbtu.round(),
-                      com_gal.round(), com_mmbtu.round(),
-                      ww_gal.round(), ww_mmbtu.round(),
-                      total_gal.round(),
-                      total_mmbtu.round()],axis=1)
+        data = concat([self.population.round().astype(int), self.p_map, 
+                       kWh_con.round().astype(int), c_map, 
+                       kWh_gen.round().astype(int), g_map] ,axis=1)
         
-        # fix the index
-        dfe.index = dfe.index.values.astype(int)
-        dff.index = dff.index.values.astype(int)
-        #file names
-        e_file = path + "electricity_forecast.csv"
-        f_file = path + "heating_fuel_forecast.csv"
         
-        # save e_file
-        # add the file header
-        fd = open(e_file ,"w")
+        
+        
+        fd = open(f_name ,"w")
         fd.write("# Electricity Forecast for " + \
                                     self.cd.get_item("community","name") + "\n")
         fd.write("# Qualifier info: \n")
         fd.write("#   M indicates a measured value \n")
         fd.write("#   P indicates a projected value \n")
+        
         fd.close()
-        
-        # save
-        dfe.to_csv(e_file, index_label="year",mode = "a")
-        
-        # save f_file
-        # add the file header
-        fd = open(f_file ,"w")
-        fd.write("# Heating Fuel Forecast for " + \
-                                    self.cd.get_item("community","name") + "\n")
-        fd.write("# Qualifier info: \n")
-        fd.write("#   M indicates a measured value \n")
-        fd.write("#   P indicates a projected value \n")
-        fd.close()
-        
-        # save
-        dff.to_csv(f_file, index_label="year",mode = "a")
-        
+            
+        data.index = data.index.values.astype(int)
+        data.to_csv(f_name, index_label="year", mode = 'a')
     
-    def add_heat_demand_column (self, key, year_col, data_col):
-        """ Function doc """
-        self.head_demand_colss.append(DataFrame({"year":year_col, 
-                                           key:data_col}).set_index("year"))
     
-    def save_heat_demand_function (self, path):
+    def save_heat_demand (self, path):
         """ Function doc """
         f_name = path + "heat_demand_forecast.csv"
         data = concat([self.population.round().astype(int), self.p_map] + \
 												self.heat_demand_cols,axis=1)
-												
-		
-    
-    def save_fc_2 (self, path):
-        """ Function doc """
-        f_name = path + "heating_fuel_forecast.csv"
-        data = concat([self.population.round().astype(int), self.p_map] + self.output_cols,axis=1)
-
-        demand_idx = ['heat_energy_demand_' in s for s in data.keys()]
-        hf_gal_idx = ['heating_fuel' in s for s in data.keys()] and ['gallons' in s for s in data.keys()]
-        hf_btu_idx = ['heating_fuel' in s for s in data.keys()] and ['mmbtu' in s for s in data.keys()]
-
-        total_gal = DataFrame(data[data.keys()[hf_gal_idx]].sum(1))
-        total_gal.columns = ["heating_fuel_total_consumed [gallons/year]"]
-        
-        total_btu = DataFrame(data[data.keys()[hf_btu_idx]].sum(1))
-        total_btu.columns = ["heating_fuel_total_consumed [mmbtu/year]"]
-        
-        total_demand = DataFrame(data[data.keys()[demand_idx]].sum(1))
+              
+        idx = ['mmbtu' in s for s in data.keys()]
+        total_demand = DataFrame(data[data.keys()[idx]].sum(1))
         total_demand.columns = ["heat_energy_demand_total [mmbtu/year]"]
-        
-        data = concat([data,total_gal,total_btu,total_demand],axis=1)
+
+        data = concat([data, total_demand], axis=1)
         
         fd = open(f_name ,"w")
-        fd.write("# Heating Fuel Forecast for " + \
+        fd.write("# Heat Demand Forecast for " + \
                                     self.cd.get_item("community","name") + "\n")
         fd.write("# Qualifier info: \n")
         fd.write("#   M indicates a measured value \n")
         fd.write("#   P indicates a projected value \n")
+        
         fd.close()
         
         for key in data.keys():
@@ -504,12 +377,54 @@ class Forecast (object):
                 lv = col[np.logical_not(col.apply(np.isnan))].tail(1).values[0]
                 yr = col[np.logical_not(col.apply(np.isnan))].tail(1).index[0]
                 col[col.index > yr] = lv
+                data[key] = col.round()
             except TypeError:
                 pass
-        
-        data.to_csv(f_name, index_label="year", mode = 'a')
+            
         data.index = data.index.values.astype(int)
-        #~ return data
+        data.to_csv(f_name, index_label="year", mode = 'a')
+        
+    
+    def save_heating_fuel (self, path):
+        """ Function doc """
+        f_name = path + "heating_fuel_forecast.csv"
+        data = concat([self.population.round().astype(int), self.p_map] + \
+                                                self.heating_fuel_cols, axis=1)
+
+        hf_gal_idx = ['heating_fuel' in s for s in data.keys()] and \
+                                          ['gallons' in s for s in data.keys()]
+        hf_btu_idx = ['heating_fuel' in s for s in data.keys()] and \
+                                          ['mmbtu' in s for s in data.keys()]
+
+        total_gal = DataFrame(data[data.keys()[hf_gal_idx]].sum(1)).round()
+        total_gal.columns = ["heating_fuel_total_consumed [gallons/year]"]
+        
+        total_btu = DataFrame(data[data.keys()[hf_btu_idx]].sum(1)).round()
+        total_btu.columns = ["heating_fuel_total_consumed [mmbtu/year]"]
+        
+        
+        data = concat([data,total_gal,total_btu],axis=1)
+        
+        fd = open(f_name ,"w")
+        fd.write("# Heating Fuel Forecast for " + \
+                                    self.cd.get_item("community","name") + "\n")
+        fd.write("# Qualifier info: \n")
+        fd.write("#   M indicates a measured value \n")
+        fd.write("#   P indicates a projected value \n")
+        fd.close()
+        for key in data.keys():
+            try:
+                col = data[key]
+                lv = col[np.logical_not(col.apply(np.isnan))].tail(1).values[0]
+                yr = col[np.logical_not(col.apply(np.isnan))].tail(1).index[0]
+                col[col.index > yr] = lv
+                data[key] = col.round()
+            except TypeError:
+                pass
+            except AttributeError:
+                pass
+        data.index = data.index.values.astype(int)
+        data.to_csv(f_name, index_label="year", mode = 'a')
         
 def test ():
     """ Function doc """
@@ -518,6 +433,5 @@ def test ():
     
                             
     fc = Forecast(manley_data)
-    fc.calc_total_HF_forecast()
 
     return fc

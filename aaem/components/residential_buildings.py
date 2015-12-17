@@ -67,17 +67,7 @@ class ResidentialBuildings(AnnualSavings):
         
         self.calc_refit_fuel_consumption()
         
-        
-        self.forecast.set_res_HF_fuel_forecast(self.baseline_HF_consumption,
-                                                self.start_year)
-        
-        years = range(self.start_year,self.end_year)
-        #~ self.forecast.add_output_column("heating_fuel_residential_consumed [gallons/year]",
-                                 #~ years, self.baseline_HF_consumption)
-        #~ self.forecast.add_output_column("heating_fuel_residential_consumed [mmbtu/year]",
-                                 #~ years, self.baseline_HF_consumption/constants.mmbtu_to_gal_HF)
-        self.forecast.add_heat_demand_column("heat_energy_demand_residential [mmbtu/year]",
-                                 years, self.baseline_total_heating_demand)
+        self.set_forecast_columns()
         
         if self.cd["model financial"]:
             self.get_diesel_prices()
@@ -333,28 +323,49 @@ class ResidentialBuildings(AnnualSavings):
         self.annual_heating_savings = self.baseline_HF_cost - \
                                       self.refit_HF_cost
                                       
-    def save_2(self):
+    def set_forecast_columns (self):
+        """ Function doc """
+        years = range(self.start_year,self.end_year)
+        self.forecast.add_heating_fuel_column(\
+                            "heating_fuel_residential_consumed [gallons/year]",
+                                 years, self.baseline_HF_consumption)
+        self.forecast.add_heating_fuel_column(\
+                        "heating_fuel_residential_consumed [mmbtu/year]", years,
+                        self.baseline_HF_consumption/constants.mmbtu_to_gal_HF)
         
-        lib = { "year":range(self.start_year,self.end_year),
-                "population":self.forecast.get_population(self.start_year,self.end_year),
-                "heating_fuel [gallons/year]": self.baseline_HF_consumption,
-                "wood [cords/year]": self.baseline_wood_consumption,
-                "gas [Mcf/year]":self.baseline_gas_consumption,
-                "electricity [kWh/year]":self.baseline_kWh_consumption,
-                "propane [gallons/year]":self.baseline_LP_consumption,
-                "heating_fuel [mmbtu/year]": self.baseline_HF_consumption * (1/constants.mmbtu_to_gal_HF),
-                "wood [mmbtu/year]":self.baseline_wood_consumption * (1/constants.mmbtu_to_cords),
-                "gas [mmbtu/year]":self.baseline_gas_consumption * (1/constants.mmbtu_to_Mcf),
-                "electricity[mmbtu/year]":self.baseline_kWh_consumption * (1/constants.mmbtu_to_kWh),
-                "propane [mmbtu/year]":self.baseline_LP_consumption * (1/constants.mmbtu_to_gal_LP),
-                "total [mmbtu/year]":self.baseline_total_heating_demand}
-        return DataFrame(lib).set_index("year")[["population",
-                        "heating_fuel [gallons/year]", "wood [cords/year]",
-                        "gas [Mcf/year]", "electricity [kWh/year]",
-                        "propane [gallons/year]","heating_fuel [mmbtu/year]",
-                        "wood [mmbtu/year]","gas [mmbtu/year]",
-                        "electricity[mmbtu/year]","propane [mmbtu/year]",
-                        "total [mmbtu/year]"]]
+        self.forecast.add_heating_fuel_column(\
+                                "cords_wood_residential_consumed [cords/year]",
+                                 years, self.baseline_wood_consumption)
+        self.forecast.add_heating_fuel_column(\
+                        "cords_wood_residential_consumed [mmbtu/year]", years, 
+                        self.baseline_wood_consumption/constants.mmbtu_to_cords)
+        
+        self.forecast.add_heating_fuel_column(\
+                                 "gas_residential_consumed [Mcf/year]",
+                                 years, self.baseline_gas_consumption)
+        self.forecast.add_heating_fuel_column(\
+                          "gas_residential_consumed [mmbtu/year]", years,
+                          self.baseline_gas_consumption/constants.mmbtu_to_Mcf)
+                                 
+        self.forecast.add_heating_fuel_column(\
+                                 "electric_residential_consumed [kWh/year]",
+                                 years, self.baseline_kWh_consumption)
+        self.forecast.add_heating_fuel_column(\
+                        "electric_residential_consumed [mmbtu/year]", years,
+                        self.baseline_kWh_consumption/constants.mmbtu_to_kWh)
+        
+        self.forecast.add_heating_fuel_column(\
+                                "propane_residential_consumed [gallons/year]",
+                                 years, self.baseline_LP_consumption)
+        self.forecast.add_heating_fuel_column(\
+                            "propane_residential_consumed [mmbtu/year]", years,
+                        self.baseline_LP_consumption/constants.mmbtu_to_gal_LP)
+        
+        
+        self.forecast.add_heat_demand_column(\
+                                 "heat_energy_demand_residential [mmbtu/year]",
+                                 years, self.baseline_total_heating_demand)
+                                      
         
 
 component = ResidentialBuildings

@@ -68,17 +68,7 @@ class Driver (object):
                                                                 self.di)
             component.run()
             self.comps_used[comp] = component
-        
-    def update_forecast (self):
-        """
-        update the forecast totals
-        pre:
-            residential buildings,community buildings, and water and wastewater
-        components need to have been run
-        post:
-            the forecast totals are up to date
-        """
-        self.fc.calc_total_HF_forecast()
+
     
     def get_component (self, comp_name):
         """
@@ -189,8 +179,6 @@ def run_model (config_file):
     model = Driver(data_dir, overrides, defaults)
     model.load_comp_lib()
     model.run_components()
-    model.update_forecast()
-    # save functionality needs to be written at component level
     model.save_components_output(out_dir)
     model.save_forecast_output(out_dir)
     model.save_input_files(out_dir)
