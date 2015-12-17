@@ -1,3 +1,4 @@
 timestamp,module,type,text
-2015-12-15 14:02:49,residential buildings,NOTE,99.0 of residential fuel sources accounted for
-2015-12-15 14:02:49,community buildings,WARNING,# buildings estimated does not match # buildings actual. Estimated: 21. Actual: 13.
+2015-12-17 13:37:20,residential buildings,NOTE,99.0 of residential fuel sources accounted for
+2015-12-17 13:37:20,community buildings,NOTE,# buildings estimated does not match # buildings actual. Estimated: 21. Actual: 13.
+2015-12-17 13:37:20,community buildings,NOTE,Adding 6 additional buildings with average square footage. 
