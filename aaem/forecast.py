@@ -459,17 +459,21 @@ class Forecast (object):
     
     def add_heat_demand_column (self, key, year_col, data_col):
         """ Function doc """
-        self.output_cols.append(DataFrame({"year":year_col, 
+        self.head_demand_colss.append(DataFrame({"year":year_col, 
                                            key:data_col}).set_index("year"))
     
-    def save_heat_demand_function ():
+    def save_heat_demand_function (self, path):
         """ Function doc """
-        pass
+        f_name = path + "heat_demand_forecast.csv"
+        data = concat([self.population.round().astype(int), self.p_map] + \
+												self.heat_demand_cols,axis=1)
+												
+		
     
     def save_fc_2 (self, path):
         """ Function doc """
         f_name = path + "heating_fuel_forecast.csv"
-        data = concat([self.population.round().astype(int), self.p_map]  + self.output_cols,axis=1)
+        data = concat([self.population.round().astype(int), self.p_map] + self.output_cols,axis=1)
 
         demand_idx = ['heat_energy_demand_' in s for s in data.keys()]
         hf_gal_idx = ['heating_fuel' in s for s in data.keys()] and ['gallons' in s for s in data.keys()]
