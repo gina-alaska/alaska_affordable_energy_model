@@ -7,6 +7,7 @@ created 2015/09/30
 """
 import numpy as np
 from math import isnan
+from pandas import DataFrame
 
 from annual_savings import AnnualSavings
 from community_data import CommunityData
@@ -331,6 +332,29 @@ class ResidentialBuildings(AnnualSavings):
         """
         self.annual_heating_savings = self.baseline_HF_cost - \
                                       self.refit_HF_cost
+                                      
+    def save_2(self):
+        
+        lib = { "year":range(self.start_year,self.end_year),
+                "population":self.forecast.get_population(self.start_year,self.end_year),
+                "heating_fuel [gallons/year]": self.baseline_HF_consumption,
+                "wood [cords/year]": self.baseline_wood_consumption,
+                "gas [Mcf/year]":self.baseline_gas_consumption,
+                "electricity [kWh/year]":self.baseline_kWh_consumption,
+                "propane [gallons/year]":self.baseline_LP_consumption,
+                "heating_fuel [mmbtu/year]": self.baseline_HF_consumption * (1/constants.mmbtu_to_gal_HF),
+                "wood [mmbtu/year]":self.baseline_wood_consumption * (1/constants.mmbtu_to_cords),
+                "gas [mmbtu/year]":self.baseline_gas_consumption * (1/constants.mmbtu_to_Mcf),
+                "electricity[mmbtu/year]":self.baseline_kWh_consumption * (1/constants.mmbtu_to_kWh),
+                "propane [mmbtu/year]":self.baseline_LP_consumption * (1/constants.mmbtu_to_gal_LP),
+                "total [mmbtu/year]":self.baseline_total_heating_demand}
+        return DataFrame(lib).set_index("year")[["population",
+                        "heating_fuel [gallons/year]", "wood [cords/year]",
+                        "gas [Mcf/year]", "electricity [kWh/year]",
+                        "propane [gallons/year]","heating_fuel [mmbtu/year]",
+                        "wood [mmbtu/year]","gas [mmbtu/year]",
+                        "electricity[mmbtu/year]","propane [mmbtu/year]",
+                        "total [mmbtu/year]"]]
         
 
 component = ResidentialBuildings
