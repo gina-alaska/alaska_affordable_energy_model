@@ -360,12 +360,32 @@ class Forecast (object):
         f_name = path + "heat_demand_forecast.csv"
         data = concat([self.population.round().astype(int), self.p_map] + \
 												self.heat_demand_cols,axis=1)
-              
+          
+          
+        for key in data.keys():
+            try:
+                col = data[key]
+                lv = col[np.logical_not(col.apply(np.isnan))].tail(1).values[0]
+                yr = col[np.logical_not(col.apply(np.isnan))].tail(1).index[0]
+                col[col.index > yr] = lv
+                data[key] = col
+            except TypeError:
+                pass
+            
+            
         idx = ['mmbtu' in s for s in data.keys()]
         total_demand = DataFrame(data[data.keys()[idx]].sum(1))
         total_demand.columns = ["heat_energy_demand_total [mmbtu/year]"]
 
         data = concat([data, total_demand], axis=1)
+        
+        for key in data.keys():
+            try:
+                col = data[key]
+                data[key] = col.round()
+            except (TypeError, AttributeError):
+                pass
+        
         
         fd = open(f_name ,"w")
         fd.write("# Heat Demand Forecast for " + \
@@ -376,15 +396,7 @@ class Forecast (object):
         
         fd.close()
         
-        for key in data.keys():
-            try:
-                col = data[key]
-                lv = col[np.logical_not(col.apply(np.isnan))].tail(1).values[0]
-                yr = col[np.logical_not(col.apply(np.isnan))].tail(1).index[0]
-                col[col.index > yr] = lv
-                data[key] = col.round()
-            except TypeError:
-                pass
+        
             
         data.index = data.index.values.astype(int)
         data.to_csv(f_name, index_label="year", mode = 'a')
@@ -397,6 +409,17 @@ class Forecast (object):
         f_name = path + "heating_fuel_forecast.csv"
         data = concat([self.population.round().astype(int), self.p_map] + \
                                                 self.heating_fuel_cols, axis=1)
+
+
+        for key in data.keys():
+            try:
+                col = data[key]
+                lv = col[np.logical_not(col.apply(np.isnan))].tail(1).values[0]
+                yr = col[np.logical_not(col.apply(np.isnan))].tail(1).index[0]
+                col[col.index > yr] = lv
+                data[key] = col
+            except TypeError:
+                pass
 
         hf_gal_idx = ['heating_fuel' in s for s in data.keys()] and \
                                           ['gallons' in s for s in data.keys()]
@@ -411,6 +434,13 @@ class Forecast (object):
         
         
         data = concat([data,total_gal,total_btu],axis=1)
+        
+        for key in data.keys():
+            try:
+                col = data[key]
+                data[key] = col.round()
+            except (TypeError, AttributeError):
+                pass
         
         fd = open(f_name ,"w")
         fd.write("# Heating Fuel Forecast for " + \
