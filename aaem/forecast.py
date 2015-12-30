@@ -448,15 +448,20 @@ class Forecast (object):
             except TypeError:
                 pass
 
-        hf_gal_idx = ['heating_fuel' in s for s in data.keys()] and \
-                                          ['gallons' in s for s in data.keys()]
-        hf_btu_idx = ['heating_fuel' in s for s in data.keys()] and \
-                                          ['mmbtu' in s for s in data.keys()]
+        #~ hf_gal_idx = ['heating_fuel' in s for s in data.keys()] and \
+        hf_gal_idx = data.keys()[['gallons' in s for s in data.keys()]]
+        hf_gal_idx =  hf_gal_idx[['heating_fuel' in s for s in hf_gal_idx]]
+        #~ hf_gal_idx = hf_gal_idx[['heating_fuel' in s for s in hf_gal_idx]]
+        #~ print data[hf_gal_idx]
+                                         
+        #~ hf_btu_idx = ['heating_fuel' in s for s in data.keys()] and \
+        hf_btu_idx = data.keys()[['mmbtu' in s for s in data.keys()]]
+        hf_btu_idx =  hf_btu_idx[['heating_fuel' in s for s in hf_btu_idx]]
 
-        total_gal = DataFrame(data[data.keys()[hf_gal_idx]].sum(1)).round()
+        total_gal = DataFrame(data[hf_gal_idx].sum(1)).round()
         total_gal.columns = ["heating_fuel_total_consumed [gallons/year]"]
         
-        total_btu = DataFrame(data[data.keys()[hf_btu_idx]].sum(1)).round()
+        total_btu = DataFrame(data[hf_btu_idx].sum(1)).round()
         total_btu.columns = ["heating_fuel_total_consumed [mmbtu/year]"]
         
         data = concat([data,total_gal,total_btu],axis=1)
