@@ -353,7 +353,7 @@ class Preprocessor (object):
                                         "2013-add-power-cost-equalization-pce-data.csv"),
                                                                         out_dir,
                                                                         com_id)
-            self.electricity_genneration(os.path.join(data_dir,
+            self.electricity_generation(os.path.join(data_dir,
                                         "2013-add-power-cost-equalization-pce-data.csv"), 
                                                                         out_dir,
                                                                         com_id)
@@ -375,7 +375,8 @@ class Preprocessor (object):
                        os.path.join(data_dir, "com_building_estimates.csv"),
                        os.path.join(data_dir,"com_num_buildings.csv"),
                        out_dir, com_id, base_pop)
-
+        
+        self.yearly_generation(os.path.join(data_dir, "2013-add-power-cost-equalization-pce-data.csv") ,out_dir,com_id)
     
     def electricity_prices (self, in_file, out_dir, com_id):
         """
@@ -422,9 +423,62 @@ class Preprocessor (object):
         fd.write("elec non-fuel cost," + str(elec_nonFuel_cost) + "\n")
         fd.close()
         
+    def yearly_generation (self, in_file, out_dir, com_id):
+        """
+        pre process kwh generation by year 
+        """
+        data = read_csv(in_file, index_col=1, comment = "#").ix[com_id]
+        data = data[["year","diesel_kwh_generated",
+                     "powerhouse_consumption_kwh","hydro_kwh_generated",
+                     "other_1_kwh_generated","other_2_kwh_generated",
+                     "fuel_used_gal","residential_kwh_sold",
+                                         "commercial_kwh_sold",
+                                         "community_kwh_sold",
+                                         "government_kwh_sold",
+                                         "unbilled_kwh"]]
+                     
+        sums = []
+        for year in set(data["year"].values):
+            if len(data[data["year"] == year]) != 12:
+                continue
+            temp = data[data["year"] == year].sum()
+            temp["year"] = int(year)
+            temp['generation'] = temp[['diesel_kwh_generated',
+                                        "powerhouse_consumption_kwh",
+                                        "hydro_kwh_generated",
+                                        "other_1_kwh_generated",
+                                        "other_2_kwh_generated"]].sum()
+            temp['consumption'] = temp[["residential_kwh_sold",
+                                         "commercial_kwh_sold",
+                                         "community_kwh_sold",
+                                         "government_kwh_sold",
+                                         "unbilled_kwh"]].sum().sum()
+            temp['net generation'] = temp['generation'] - \
+                                     temp["powerhouse_consumption_kwh"]
+            temp['fuel used'] = temp['fuel_used_gal']
+            temp['line loss'] = 1.0 - temp['consumption']/temp['generation']
+            temp['efficiency'] = temp['generation'] / temp['fuel_used_gal']
+            sums.append(temp)
         
-                                
-    def electricity_genneration (self, in_file, out_dir, com_id):
+        df = DataFrame(sums)[['year','generation','consumption','fuel used',
+                              'efficiency', 'line loss', 'net generation']].set_index("year")
+        
+        out_file = os.path.join(out_dir, "yearly_generation.csv")
+        fd = open(out_file,'w')
+        fd.write("# " + com_id + " kWh Generation data\n")
+        fd.write("# generation (kWh/yr) gross generation\n")
+        fd.write("# consumption(kWh/yr) kwh sold\n")
+        fd.write("# fuel used(gal/yr) fuel used in generation\n")
+        fd.write('# efficiency (kwh/gal) efficiency of generator/year\n')
+        fd.write('# line loss (% as decimal) kwh lost from transmission\n')
+        fd.write("# net generation(kWh/yr) generation-powerhouse consumption\n")
+        fd.write("#### #### #### #### ####\n")
+        fd.close()
+        df.to_csv(out_file,mode="a")
+        
+        
+        
+    def electricity_generation (self, in_file, out_dir, com_id):
         """
         pre process kwh generation 
         """
