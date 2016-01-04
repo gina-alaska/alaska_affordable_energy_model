@@ -512,7 +512,7 @@ class Preprocessor (object):
             temp['net generation'] = temp['generation'] - \
                                      temp["powerhouse_consumption_kwh"]
             temp['fuel used'] = temp['fuel_used_gal']
-            temp['line loss'] = 1.0 - temp['consumption']/temp['generation']
+            temp['line loss'] = 1.0 - temp['consumption']/temp['net generation']
             temp['efficiency'] = temp['generation'] / temp['fuel_used_gal']
             sums.append(temp)
         
@@ -555,10 +555,11 @@ class Preprocessor (object):
         fd.write("# fuel used(gal/yr) fuel used in generation\n")
         fd.write('# efficiency (kwh/gal) efficiency of generator/year\n')
         fd.write('# line loss (% as decimal) kwh lost from transmission\n')
-        fd.write("# net generation(kWh/yr) generation-powerhouse consumption\n")
+        fd.write("# net generation(kWh/yr) generation with powerhouse consumption\n")
         fd.write("# consumption residential (kWh/yr) residential kwh sold\n")
         fd.write("# consumption non-residential (kWh/yr) non-residential " + \
                                                                 "kwh sold\n")
+        fd.write("# generation <fuel source> (kWh/yr) generation from source\n")
         fd.write("#### #### #### #### ####\n")
         fd.close()
         df.to_csv(out_file,mode="a")
