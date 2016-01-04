@@ -376,7 +376,8 @@ class Preprocessor (object):
                        os.path.join(data_dir,"com_num_buildings.csv"),
                        out_dir, com_id, base_pop)
         
-        self.yearly_generation(os.path.join(data_dir, "2013-add-power-cost-equalization-pce-data.csv") ,out_dir,com_id)
+        self.yearly_generation(os.path.join(data_dir, "2013-add-power-cost-equalization-pce-data.csv"),
+                               os.path.join(data_dir, "purchased_power_lib.csv"),out_dir,com_id)
     
     def electricity_prices (self, in_file, out_dir, com_id):
         """
@@ -422,21 +423,50 @@ class Preprocessor (object):
         fd.write("res non-PCE elec cost,"+ str(res_nonPCE_price) + "\n")
         fd.write("elec non-fuel cost," + str(elec_nonFuel_cost) + "\n")
         fd.close()
-        
-    def yearly_generation (self, in_file, out_dir, com_id):
+    
+    def yearly_generation (self, in_file, lib_file, out_dir, com_id):
         """
         pre process kwh generation by year 
         """
+        try:
+            lib = read_csv(lib_file, index_col=0, comment = '#').ix[com_id]
+        except:
+            pass
         data = read_csv(in_file, index_col=1, comment = "#").ix[com_id]
         data = data[["year","diesel_kwh_generated",
                      "powerhouse_consumption_kwh","hydro_kwh_generated",
-                     "other_1_kwh_generated","other_2_kwh_generated",
+                     "other_1_kwh_generated","other_1_kwh_type",
+                     "other_2_kwh_generated","other_2_kwh_type",
+                     'purchased_from','kwh_purchased',
                      "fuel_used_gal","residential_kwh_sold",
                                          "commercial_kwh_sold",
                                          "community_kwh_sold",
                                          "government_kwh_sold",
                                          "unbilled_kwh"]]
-                     
+        #~ print data
+        try:
+            p_key = data[data["purchased_from"].notnull()]\
+                                                ["purchased_from"].values[0]
+            p_key = lib[lib['purchased_from'] == p_key]\
+                                        ['Energy Source'].values[0].lower()
+        except:
+            p_key = None
+        try:
+            o1_key = data[data["other_1_kwh_type"].notnull()]\
+                                        ["other_1_kwh_type"].values[0].lower()
+            if o1_key not in ('diesel', 'natural gas','wind', 'solar'):                        
+                o1_key = None
+        except:
+            o1_key = None
+        
+        try:
+            o2_key = data[data["other_2_kwh_type"].notnull()]\
+                                         ["other_2_kwh_type"].values[0].lower()
+            if o2_key not in ('diesel', 'natural gas','wind', 'solar'):                        
+                o2_key = None
+        except:
+            o2_key = None
+        
         sums = []
         for year in set(data["year"].values):
             if len(data[data["year"] == year]) != 12:
@@ -448,6 +478,28 @@ class Preprocessor (object):
                                         "hydro_kwh_generated",
                                         "other_1_kwh_generated",
                                         "other_2_kwh_generated"]].sum()
+            
+            temp['generation diesel'] = temp['diesel_kwh_generated']
+            temp['generation hydro'] = temp['hydro_kwh_generated']
+            
+            
+            if np.isreal(temp["other_1_kwh_generated"]) and o1_key is not None:
+                val = temp["other_1_kwh_generated"]
+                if o1_key == "diesel":
+                    temp['generation diesel'] = temp['generation diesel'] + val
+                temp['generation ' + o1_key] = val
+            if np.isreal(temp["other_1_kwh_generated"]) and o2_key is not None:
+                val =  temp["other_1_kwh_generated"]
+                if o2_key == "diesel":
+                    temp['generation diesel'] = temp['generation diesel'] + val
+                temp['generation ' + o2_key] = val
+            if np.isreal(temp["other_1_kwh_generated"]) and p_key is not None:
+                val = temp['kwh_purchased']
+                if p_key == "diesel":
+                    temp['generation diesel'] = temp['generation diesel'] + val
+                temp['generation ' + p_key] = val
+            
+            
             temp['consumption'] = temp[["residential_kwh_sold",
                                          "commercial_kwh_sold",
                                          "community_kwh_sold",
@@ -464,12 +516,36 @@ class Preprocessor (object):
             temp['efficiency'] = temp['generation'] / temp['fuel_used_gal']
             sums.append(temp)
         
+        df_diesel = DataFrame(sums)[["year",'generation diesel']].set_index('year')
+        df_hydro = DataFrame(sums)[["year",'generation hydro']].set_index('year')
+
+        try:
+            df_gas = DataFrame(sums)[["year",'generation natural gas']].set_index('year')
+        except KeyError:
+            df_gas = DataFrame({"year":(2003,2004),
+                                "generation natural gas":(np.nan,np.nan)}).set_index('year')
+        try:
+            df_wind = DataFrame(sums)[["year",'generation wind']].set_index('year')
+        except KeyError:
+            df_wind = DataFrame({"year":(2003,2004),
+                                "generation wind":(np.nan,np.nan)}).set_index('year')
+        try:
+            df_solar = DataFrame(sums)[["year",'generation solar']].set_index('year')
+        except KeyError:
+            df_solar = DataFrame({"year":(2003,2004),
+                                "generation solar":(np.nan,np.nan)}).set_index('year')
+        try:
+            df_biomass = DataFrame(sums)[["year",'biomass']].set_index('year')
+        except KeyError:
+            df_biomass = DataFrame({"year":(2003,2004),
+                                "generation biomass":(np.nan,np.nan)}).set_index('year')
+
         df = DataFrame(sums)[['year','generation','consumption','fuel used',
                               'efficiency', 'line loss', 'net generation', 
                               'consumption residential', 
                               'consumption non-residential']].set_index("year")
         
-        print df
+        df = concat([df,df_diesel,df_hydro,df_gas,df_wind,df_solar,df_biomass], axis = 1)
         
         out_file = os.path.join(out_dir, "yearly_generation.csv")
         fd = open(out_file,'w')
