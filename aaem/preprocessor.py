@@ -453,6 +453,10 @@ class Preprocessor (object):
                                          "community_kwh_sold",
                                          "government_kwh_sold",
                                          "unbilled_kwh"]].sum().sum()
+            temp['consumption residential'] = temp["residential_kwh_sold"].sum()
+            temp['consumption non-residential'] = temp['consumption'] - \
+                                                 temp['consumption residential']
+            
             temp['net generation'] = temp['generation'] - \
                                      temp["powerhouse_consumption_kwh"]
             temp['fuel used'] = temp['fuel_used_gal']
@@ -461,22 +465,27 @@ class Preprocessor (object):
             sums.append(temp)
         
         df = DataFrame(sums)[['year','generation','consumption','fuel used',
-                              'efficiency', 'line loss', 'net generation']].set_index("year")
+                              'efficiency', 'line loss', 'net generation', 
+                              'consumption residential', 
+                              'consumption non-residential']].set_index("year")
+        
+        print df
         
         out_file = os.path.join(out_dir, "yearly_generation.csv")
         fd = open(out_file,'w')
         fd.write("# " + com_id + " kWh Generation data\n")
         fd.write("# generation (kWh/yr) gross generation\n")
-        fd.write("# consumption(kWh/yr) kwh sold\n")
+        fd.write("# consumption(kWh/yr) total kwh sold\n")
         fd.write("# fuel used(gal/yr) fuel used in generation\n")
         fd.write('# efficiency (kwh/gal) efficiency of generator/year\n')
         fd.write('# line loss (% as decimal) kwh lost from transmission\n')
         fd.write("# net generation(kWh/yr) generation-powerhouse consumption\n")
+        fd.write("# consumption residential (kWh/yr) residential kwh sold\n")
+        fd.write("# consumption non-residential (kWh/yr) non-residential " + \
+                                                                "kwh sold\n")
         fd.write("#### #### #### #### ####\n")
         fd.close()
         df.to_csv(out_file,mode="a")
-        
-        
         
     def electricity_generation (self, in_file, out_dir, com_id):
         """
