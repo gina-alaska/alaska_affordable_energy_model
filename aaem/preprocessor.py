@@ -555,7 +555,8 @@ class Preprocessor (object):
         fd.write("# fuel used(gal/yr) fuel used in generation\n")
         fd.write('# efficiency (kwh/gal) efficiency of generator/year\n')
         fd.write('# line loss (% as decimal) kwh lost from transmission\n')
-        fd.write("# net generation(kWh/yr) generation with powerhouse consumption\n")
+        fd.write("# net generation(kWh/yr) generation without " +\
+                                                    "powerhouse consumption\n")
         fd.write("# consumption residential (kWh/yr) residential kwh sold\n")
         fd.write("# consumption non-residential (kWh/yr) non-residential " + \
                                                                 "kwh sold\n")
