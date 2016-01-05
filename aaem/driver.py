@@ -10,11 +10,6 @@ from preprocessor import preprocess
 import defaults
 
 
-
-from components.residential_buildings import ResidentialBuildings
-from components.community_buildings import CommunityBuildings
-from components.wastewater import WaterWastewaterSystems
-
 from pandas import DataFrame, read_pickle, read_csv
 import numpy as np
 
