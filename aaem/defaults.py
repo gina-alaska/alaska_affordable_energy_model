@@ -15,7 +15,6 @@ for_setup = """community:
   
   #do these come from community profiles?
   #consumption kWh: 384000.00 # kWh consumed/year <float> 12345.00
-  line losses: .1210 #rate as decimal <float> (ex. .1210)
 
 forecast:
   end year: 2040 # end year <int>

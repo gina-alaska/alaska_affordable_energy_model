@@ -479,7 +479,8 @@ class Preprocessor (object):
                                         "powerhouse_consumption_kwh",
                                         "hydro_kwh_generated",
                                         "other_1_kwh_generated",
-                                        "other_2_kwh_generated"]].sum()
+                                        "other_2_kwh_generated",
+                                        "kwh_purchased"]].sum()
             
             temp['generation diesel'] = temp['diesel_kwh_generated']
             temp['generation hydro'] = temp['hydro_kwh_generated']

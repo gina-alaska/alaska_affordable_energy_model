@@ -21,7 +21,7 @@ community:
 
   consumption HF: IMPORT # gallons HF consumed/year <float> 12345.00
 
-  line losses: ABSOLUTE DEFAULT #rate as decimal <float> (ex. .1210)
+  line losses: IMPORT #rate as decimal <float> (ex. .1210)
 
   res non-PCE elec cost: IMPORT # $cost/kWh <float> (ex. .83)
   elec non-fuel cost: IMPORT # $cost/kWh <float> (ex. .83)
