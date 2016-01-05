@@ -304,6 +304,18 @@ class CommunityData (object):
             self.set_item('community buildings','number buildings',
                 int(self.load_pp_csv("com_num_buildings.csv").ix["Buildings"]))
 
+        try:
+            generation2 = self.load_pp_csv("yearly_generation.csv")
+        except IOError:
+            #~ if self.get_item('community',"generation") == "IMPORT" \
+              #~ and self.get_item('community',"consumption HF") == "IMPORT":
+            raise IOError, "Generation 2 not found"
+            
+        if self.get_item('community','diesel generation efficiency')== "IMPORT":
+            self.set_item('community','diesel generation efficiency', 
+                          np.float(generation2['efficiency'].values[-1]))
+        
+        
                          
     def load_pp_csv(self, f_name):
         """
