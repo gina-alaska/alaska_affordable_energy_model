@@ -46,8 +46,8 @@ class CommunityData (object):
         """
         # TODO: 1 is 100% need to change to a calculation
         # TODO: update generation efficiency
-        generation_eff = self.get_item("community","generation")/\
-                         self.get_item("community","consumption HF")
+        generation_eff = self.get_item("community",
+                                            "diesel generation efficiency")
         price = self.get_item("community","elec non-fuel cost") +\
             1.00 * self.get_item("community","diesel prices").projected_prices/\
                             generation_eff
