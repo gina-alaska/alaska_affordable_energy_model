@@ -324,25 +324,31 @@ class CommunityData (object):
         try:
             generation2 = self.load_pp_csv("yearly_generation.csv")
         except IOError:
-            #~ if self.get_item('community',"generation") == "IMPORT" \
-              #~ and self.get_item('community',"consumption HF") == "IMPORT":
-            raise IOError, "Generation 2 not found"
+            if self.get_item('community',"line losses") == "IMPORT" \
+              and self.get_item('community',"diesel generation efficiency") \
+                                        == "IMPORT":
+                raise IOError, "Generation 2 not found"
            
         if self.get_item('community',"line losses") == "IMPORT":
             self.set_item('community',"line losses", 
             np.float(generation2["line loss"][-3:].mean()))
 
-        if self.get_item('community','generation numbers') == "IMPORT":
-            self.set_item('community','generation numbers', 
-                          generation2[['generation diesel', 'generation hydro',
-                                       'generation natural gas',
-                                       'generation wind', 'generation solar',
-                                       'generation biomass']])
+
 
         if self.get_item('community','diesel generation efficiency')== "IMPORT":
             self.set_item('community','diesel generation efficiency', 
                           np.float(generation2['efficiency'].values[-1]))
-        
+        try:
+            if self.get_item('community','generation numbers') == "IMPORT":
+                self.set_item('community','generation numbers', 
+                              generation2[['generation diesel', 'generation hydro',
+                                           'generation natural gas',
+                                           'generation wind', 'generation solar',
+                                           'generation biomass']])
+        except:
+            #~ self.diagnostics.add_warning("Community Data", 
+                            #~ "Generation data not available by energy type")
+            print "Generation data not available by energy type"
         
     def load_pp_csv(self, f_name):
         """

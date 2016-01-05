@@ -376,10 +376,13 @@ class Preprocessor (object):
                        os.path.join(data_dir,"com_num_buildings.csv"),
                        out_dir, com_id, base_pop)
         
-        self.yearly_generation(os.path.join(data_dir, 
-                            "2013-add-power-cost-equalization-pce-data.csv"),
-                               os.path.join(data_dir, 
-                            "purchased_power_lib.csv"),out_dir,com_id)
+        try:
+            self.yearly_generation(os.path.join(data_dir, 
+                                "2013-add-power-cost-equalization-pce-data.csv"),
+                                   os.path.join(data_dir, 
+                                "purchased_power_lib.csv"),out_dir,com_id)
+        except KeyError:
+            print "is this an EIA community?"
     
     def electricity_prices (self, in_file, out_dir, com_id):
         """
