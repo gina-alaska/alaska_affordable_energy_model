@@ -276,7 +276,8 @@ def create_generation_forecast (models, path):
                 'generation biomass'):
         try:
             last = gen_fc[gen_fc[col].notnull()]\
-                                [col].values[-1]
+                                [col].values[-3:]
+            last =  np.mean(last)
             #~ print last
             last_idx = gen_fc[gen_fc[col].notnull()]\
                                 [col].index[-1]
