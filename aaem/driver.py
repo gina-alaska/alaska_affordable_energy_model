@@ -9,13 +9,8 @@ from diagnostics import diagnostics
 from preprocessor import preprocess
 import defaults
 
+from pandas import DataFrame, read_csv, concat
 
-
-from components.residential_buildings import ResidentialBuildings
-from components.community_buildings import CommunityBuildings
-from components.wastewater import WaterWastewaterSystems
-
-from pandas import DataFrame, read_pickle, read_csv, concat
 import numpy as np
 
 import yaml
