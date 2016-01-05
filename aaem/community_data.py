@@ -313,7 +313,7 @@ class CommunityData (object):
 
         if self.get_item('community',"line losses") == "IMPORT":
             self.set_item('community',"line losses", 
-            np.float(generation2["line loss"].mean()))
+            np.float(generation2["line loss"][-3:].mean()))
                          
     def load_pp_csv(self, f_name):
         """
