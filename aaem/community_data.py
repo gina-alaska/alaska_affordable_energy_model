@@ -304,7 +304,20 @@ class CommunityData (object):
             self.set_item('community buildings','number buildings',
                 int(self.load_pp_csv("com_num_buildings.csv").ix["Buildings"]))
 
-                         
+        try:
+            generation2 = self.load_pp_csv("yearly_generation.csv")
+        except IOError:
+            #~ if self.get_item('community',"generation") == "IMPORT" \
+              #~ and self.get_item('community',"consumption HF") == "IMPORT":
+            raise IOError, "Generation 2 not found"
+            
+        if self.get_item('community','generation numbers') == "IMPORT":
+            self.set_item('community','generation numbers', 
+                          generation2[['generation diesel', 'generation hydro',
+                                       'generation natural gas',
+                                       'generation wind', 'generation solar',
+                                       'generation biomass']])
+        
     def load_pp_csv(self, f_name):
         """
         load a preprocessed csv file
@@ -351,6 +364,9 @@ class CommunityData (object):
             a valid .yaml config file is created
         """
         ## save work around 
+        import copy
+        copy = copy.deepcopy(self.model_inputs)
+        
         self.set_item('residential buildings','data', "IMPORT")
         self.set_item('community buildings','com building data', "IMPORT")
         self.set_item('community buildings',"com building estimates", "IMPORT")
@@ -360,7 +376,7 @@ class CommunityData (object):
         self.set_item('forecast', "population", "IMPORT")
         self.set_item('water wastewater', "data", "IMPORT")
         self.set_item("community","electric non-fuel prices","IMPORT")
-        
+        self.set_item("community","generation numbers","IMPORT")
 
         
         fd = open(fname, 'w')
@@ -368,3 +384,5 @@ class CommunityData (object):
         fd.write(text)
         fd.close()
 
+        del self.model_inputs
+        self.model_inputs = copy
