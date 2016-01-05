@@ -449,14 +449,37 @@ class Preprocessor (object):
         try:
             p_key = data[data["purchased_from"].notnull()]\
                                                 ["purchased_from"].values[0]
+            sources = data[data["purchased_from"].notnull()]\
+                                                ["purchased_from"].values
+            self.diagnostics.add_note("preprocessor",
+                        "purchased energy utility list " + str(sources) + \
+                        "using  " + str(p_key) + \
+                        "as it is the first item on the list")
+            
             p_key = lib[lib['purchased_from'] == p_key]\
                                         ['Energy Source'].values[0].lower()
+                                        
+            self.diagnostics.add_note("preprocessor",
+                         str(p_key) + " - purchased energy type")                           
         except:
             p_key = None
         try:
             o1_key = data[data["other_1_kwh_type"].notnull()]\
                                         ["other_1_kwh_type"].values[0].lower()
+            
+            sources = data[data["other_1_kwh_type"].notnull()]\
+                                        ["other_1_kwh_type"].values
+                                        
+            self.diagnostics.add_note("preprocessor",
+                        "other energy 1 type list " + str(sources) + \
+                        "sorting values into " + str(o1_key) + \
+                        "as it is the first item on the list")
+            
+            
             if o1_key not in ('diesel', 'natural gas','wind', 'solar'):                        
+                self.diagnostics.add_warning("preprocessor", 
+                "energy source key " + str(o1_key) + \
+                                    " not recognized. dropping values" )
                 o1_key = None
         except:
             o1_key = None
@@ -464,7 +487,19 @@ class Preprocessor (object):
         try:
             o2_key = data[data["other_2_kwh_type"].notnull()]\
                                          ["other_2_kwh_type"].values[0].lower()
-            if o2_key not in ('diesel', 'natural gas','wind', 'solar'):                        
+                                         
+            sources = data[data["other_2_kwh_type"].notnull()]\
+                                        ["other_2_kwh_type"].values
+                                        
+            self.diagnostics.add_note("preprocessor",
+                        "other energy 2 type list " + str(sources) + \
+                        "sorting values into " + str(o2_key) + \
+                        "as it is the first item on the list")
+            
+            if o2_key not in ('diesel', 'natural gas','wind', 'solar'):     
+                self.diagnostics.add_warning("preprocessor", 
+                "energy source key " + str(o2_key) + \
+                                    " not recognized. dropping values" )                   
                 o2_key = None
         except:
             o2_key = None

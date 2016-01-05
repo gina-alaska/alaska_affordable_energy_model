@@ -15,7 +15,7 @@ from components.residential_buildings import ResidentialBuildings
 from components.community_buildings import CommunityBuildings
 from components.wastewater import WaterWastewaterSystems
 
-from pandas import DataFrame, read_pickle, read_csv
+from pandas import DataFrame, read_pickle, read_csv, concat
 import numpy as np
 
 import yaml
@@ -255,6 +255,56 @@ def setup (community, data_repo, model_directory):
     
     
     
+def create_generation_forecast (models, path):
+    """ Function doc """
+    gen_fc = None
+    nat_gas = False
+    
+    for idx in range(len(models)):
+        if idx == 0:
+            gen_fc = concat([models[idx].fc.generation, 
+                             models[idx].cd.get_item('community',
+                                                  'generation numbers')], 
+                                                                    axis = 1)
+            continue
+        gen_fc = gen_fc + models[idx].cd.get_item('community',
+                                                 'generation numbers')
+    
+   
+    for col in ('generation hydro', 'generation natural gas',
+                'generation wind', 'generation solar',
+                'generation biomass'):
+        try:
+            last = gen_fc[gen_fc[col].notnull()]\
+                                [col].values[-3:]
+            last =  np.mean(last)
+            #~ print last
+            last_idx = gen_fc[gen_fc[col].notnull()]\
+                                [col].index[-1]
+                                
+                                
+            col_idx = np.logical_and(gen_fc[col].isnull(), 
+                                     gen_fc[col].index > last_idx)
+                                     
+            gen_fc[col][col_idx] = last
+        except IndexError:
+            pass
+                
+                                    
+    last_idx = gen_fc[gen_fc['generation diesel'].notnull()]\
+                            ['generation diesel'].index[-1]
+
+    col = gen_fc[gen_fc.index>last_idx]\
+                                ['total_electricity_generation [kWh/year]']\
+          - gen_fc[gen_fc.index>last_idx][['generation hydro', 
+                                           'generation natural gas',
+                                        'generation wind', 'generation solar',
+                                         'generation biomass']].sum(1)
+    
+    gen_fc.loc[gen_fc.index>last_idx,'generation diesel'] = col
+    
+        
+    gen_fc.to_csv(os.path.join(path, "generation_forecast.csv"))   
     
     
     
