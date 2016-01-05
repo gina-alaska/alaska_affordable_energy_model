@@ -13,7 +13,7 @@ community:
   # fuel repairs: 500 # price/yr <float> TODO: still used??
   # fuel o&m: 1000 # # price/yr <float> TODO: still used??
   # diesel generator o&m: 84181 # price/yr <float> TODO: still used??
-  diesel generation efficiency: 10.802351555 # kWh/gal <float>
+  diesel generation efficiency: IMPORT #10.802351555 # kWh/gal <float>
 
   #do these come from community profiles?
   generation: IMPORT # kWh generated/yr  <float> 123456.00
