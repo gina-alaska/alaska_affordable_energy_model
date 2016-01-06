@@ -48,7 +48,7 @@ class Preprocessor (object):
     
         population.ix[new_years[0]+15:] =\
                                     np.float64(population.ix[new_years[0]+15])
-        
+        population = population.astype(int)
         ###############
         pops = DataFrame([years,pops],["year","population"]).T.set_index("year")
         p_map = concat(\
