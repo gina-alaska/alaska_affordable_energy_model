@@ -8,6 +8,7 @@ from forecast import Forecast
 from diagnostics import diagnostics
 from preprocessor import preprocess
 import defaults
+from constants import mmbtu_to_kWh 
 
 from pandas import DataFrame, read_csv, concat
 
@@ -196,7 +197,7 @@ def run_batch (config):
         pass
     communities = {}
     for key in config:
-        r_val = run_model(config[key])
+        r_val = run_model_no_intertie(config[key])
         communities[key] = {"model": r_val[0], "directory": r_val[1]}
     return communities
     
@@ -251,16 +252,28 @@ def setup (community, data_repo, model_directory):
     
     
 def create_generation_forecast (models, path):
-    """ Function doc """
+    """  
+    creates the generation forecast file
+    pre:
+        models: a list of driver objects, the generation total from models[0] is
+    used as the total
+        path: path to an existing directory
+    post:
+        a file is saved in path's directory
+    """
     gen_fc = None
     nat_gas = False
     
     for idx in range(len(models)):
         if idx == 0:
+            
             gen_fc = concat([models[idx].fc.generation, 
                              models[idx].cd.get_item('community',
                                                   'generation numbers')], 
                                                                     axis = 1)
+            gen_fc["generation total"] = \
+                               gen_fc['total_electricity_generation [kWh/year]']
+            del gen_fc['total_electricity_generation [kWh/year]']
             continue
         gen_fc = gen_fc + models[idx].cd.get_item('community',
                                                  'generation numbers')
@@ -289,8 +302,9 @@ def create_generation_forecast (models, path):
     last_idx = gen_fc[gen_fc['generation diesel'].notnull()]\
                             ['generation diesel'].index[-1]
 
+
     col = gen_fc[gen_fc.index>last_idx]\
-                                ['total_electricity_generation [kWh/year]']\
+                                ['generation total']\
           - gen_fc[gen_fc.index>last_idx][['generation hydro', 
                                            'generation natural gas',
                                         'generation wind', 'generation solar',
@@ -298,13 +312,53 @@ def create_generation_forecast (models, path):
     
     gen_fc.loc[gen_fc.index>last_idx,'generation diesel'] = col
     
-        
-    gen_fc.to_csv(os.path.join(path, "generation_forecast.csv"))   
+    
+    for col in ['generation total', 'generation diesel', 'generation hydro', 
+                'generation natural gas', 'generation wind', 
+                'generation solar', 'generation biomass']:
+        gen_fc[col.replace(" ", "_") + " [kWh/year]"] = \
+                                    gen_fc[col].fillna(0).round().astype(int)
+        gen_fc[col.replace(" ", "_") + " [mmbtu/year]"] = \
+                    (gen_fc[col] / mmbtu_to_kWh).fillna(0).round().astype(int)
+        del gen_fc[col]
     
     
+    gen_fc.index = gen_fc.index.values.astype(int)
+    gen_fc = gen_fc.fillna(0).ix[2003:]
+    
+    out_file = os.path.join(path, "generation_forecast.csv")
+    fd = open(out_file, 'w')
+    fd.write("# Generation forecast\n")
+    fd.write("# projections start in " + str(int(last_idx+1)) + "\n")
+    fd.close()
+    gen_fc.to_csv(out_file, index_label="year", mode = 'a')   
+    return gen_fc
     
     
-    
+def run_model_no_intertie (config_file):
+    """
+    run the model given an input file
+    pre:
+        config_file is the absolute path to a yaml file with this format:
+            |------ config example -------------
+            |overrides: # a path (ex:"..test_case/manley_data.yaml")
+            |defaults: # blank or a path
+            |output directory path: # a path
+            |output directory suffix: TIMESTAMP # TIMESTAMP|NONE|<string>
+            |-------------------------------------
+    post:
+        The model will have been run, and outputs saved.
+    """
+    model, out_dir = run_model(config_file)
+    try:
+        create_generation_forecast([model],out_dir)
+    except TypeError:
+        out_file = os.path.join(out_dir, "generation_forecast.csv")
+        fd = open(out_file, 'w')
+        fd.write("# Generation forecast cannot be generated at this time for" +\
+                 " communities with EIA generation data\n")
+        fd.close()
+    return model, out_dir
     
     
     
