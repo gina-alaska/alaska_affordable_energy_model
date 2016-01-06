@@ -9,12 +9,14 @@ import shutil
 import os.path
 from diagnostics import diagnostics
 import numpy as np
+from forecast import growth
 
 class Preprocessor (object):
     def __init__ (self):
         self.diagnostics = diagnostics()
     
-    def population (self, in_file, out_dir, com_id, threshold = 20):
+    def population (self, in_file, out_dir, com_id, threshold = 20,
+                                                    end_year = 2040):
         """
         create the population input file
         
@@ -31,6 +33,32 @@ class Preprocessor (object):
         if (pops < threshold).any():
             self.diagnostics.add_warning("preprocessor","population < 20")
         
+        ##########
+        if len(pops) < 10:
+            msg = "the data range is < 10 for input population "\
+                  "check population.csv in the models data directory"
+            self.diagnostics.add_warning("preprocessor", msg)
+        
+        #~ population = self.fc_specs["population"].T.values.astype(float)
+        #~ years = self.fc_specs["population"].T.keys().values.astype(int)
+        new_years = np.array(range(years[-1]+1,end_year+1))
+        
+        population = DataFrame({"year":new_years, 
+             "population":growth(years,pops,new_years)}).set_index("year")
+    
+        population.ix[new_years[0]+15:] =\
+                                    np.float64(population.ix[new_years[0]+15])
+        
+        ###############
+        pops = DataFrame([years,pops],["year","population"]).T.set_index("year")
+        p_map = concat(\
+                     [pops - pops,
+                      population]).astype(bool).astype(str).\
+                      replace("True", "P").\
+                      replace("False", "M")
+        p_map.columns  = [p_map.columns[0] + "_qualifier"]
+        population = concat([pops,population])
+        
         
         out_file = os.path.join(out_dir,"population.csv")
         fd = open(out_file,'w')
@@ -40,7 +68,7 @@ class Preprocessor (object):
         fd.close()
         
         
-        df = DataFrame([years,pops],["year","population"]).T.set_index("year")
+        df = concat([population,p_map],axis = 1)
         df.to_csv(out_dir+"population.csv",mode="a")
         return df
         
@@ -360,21 +388,21 @@ class Preprocessor (object):
         year = self.residential(os.path.join(data_dir,"res_fuel_source.csv"), 
                          os.path.join(data_dir,"res_model_data.csv"),
                     out_dir, com_id)
-        base_pop = np.float(pop.ix[year])
+        base_pop = np.float(pop.ix[year]["population"])
         self.wastewater(os.path.join(data_dir,"ww_data.csv"),
                         os.path.join(data_dir,"ww_assumptions.csv"),
                    out_dir, com_id)
         try:
             self.electricity(os.path.join(data_dir,
-                                        "2013-add-power-cost-equalization-pce-data.csv"), 
+                            "2013-add-power-cost-equalization-pce-data.csv"), 
                                                                         out_dir,
                                                                         com_id)
             self.electricity_prices(os.path.join(data_dir,
-                                        "2013-add-power-cost-equalization-pce-data.csv"),
+                            "2013-add-power-cost-equalization-pce-data.csv"),
                                                                         out_dir,
                                                                         com_id)
             self.electricity_generation(os.path.join(data_dir,
-                                        "2013-add-power-cost-equalization-pce-data.csv"), 
+                            "2013-add-power-cost-equalization-pce-data.csv"), 
                                                                         out_dir,
                                                                         com_id)
         except KeyError:
@@ -582,36 +610,42 @@ class Preprocessor (object):
             temp['efficiency'] = temp['generation'] / temp['fuel_used_gal']
             sums.append(temp)
         
-        df_diesel = DataFrame(sums)[["year",'generation diesel']].set_index('year')
-        df_hydro = DataFrame(sums)[["year",'generation hydro']].set_index('year')
+        df_diesel = DataFrame(sums)[["year",
+                                        'generation diesel']].set_index('year')
+        df_hydro = DataFrame(sums)[["year",
+                                    'generation hydro']].set_index('year')
 
         try:
-            df_gas = DataFrame(sums)[["year",'generation natural gas']].set_index('year')
+            df_gas = DataFrame(sums)[["year",
+                                    'generation natural gas']].set_index('year')
         except KeyError:
             df_gas = DataFrame({"year":(2003,2004),
-                                "generation natural gas":(np.nan,np.nan)}).set_index('year')
+                    "generation natural gas":(np.nan,np.nan)}).set_index('year')
         try:
-            df_wind = DataFrame(sums)[["year",'generation wind']].set_index('year')
+            df_wind = DataFrame(sums)[["year",
+                                       'generation wind']].set_index('year')
         except KeyError:
             df_wind = DataFrame({"year":(2003,2004),
-                                "generation wind":(np.nan,np.nan)}).set_index('year')
+                        "generation wind":(np.nan,np.nan)}).set_index('year')
         try:
-            df_solar = DataFrame(sums)[["year",'generation solar']].set_index('year')
+            df_solar = DataFrame(sums)[["year",
+                                        'generation solar']].set_index('year')
         except KeyError:
             df_solar = DataFrame({"year":(2003,2004),
-                                "generation solar":(np.nan,np.nan)}).set_index('year')
+                        "generation solar":(np.nan,np.nan)}).set_index('year')
         try:
             df_biomass = DataFrame(sums)[["year",'biomass']].set_index('year')
         except KeyError:
             df_biomass = DataFrame({"year":(2003,2004),
-                                "generation biomass":(np.nan,np.nan)}).set_index('year')
+                        "generation biomass":(np.nan,np.nan)}).set_index('year')
 
         df = DataFrame(sums)[['year','generation','consumption','fuel used',
                               'efficiency', 'line loss', 'net generation', 
                               'consumption residential', 
                               'consumption non-residential']].set_index("year")
         
-        df = concat([df,df_diesel,df_hydro,df_gas,df_wind,df_solar,df_biomass], axis = 1)
+        df = concat([df,df_diesel,df_hydro,df_gas,df_wind,df_solar,df_biomass], 
+                                                                       axis = 1)
         
         out_file = os.path.join(out_dir, "yearly_generation.csv")
         fd = open(out_file,'w')
@@ -796,10 +830,13 @@ def preprocess(data_dir, out_dir, com_id, intertied = False):
     pp.diagnostics.save_messages(os.path.join(out_dir,
                                             "preprocessor_diagnostis.csv"))
     if intertied == True:
-        com_ids = read_csv(out_dir+"interties.csv",index_col=0, comment = "#").T.values[0]
+        com_ids = read_csv(out_dir+"interties.csv",index_col=0, 
+                                                    comment = "#").T.values[0]
         com_ids = list(com_ids)
         com_ids.append(com_id)
         com_ids = list(set(com_ids).symmetric_difference({"''",}))
         it_population(os.path.join(data_dir,"population.csv"),
                                                             out_dir,com_ids)
+
+    return pp
     
