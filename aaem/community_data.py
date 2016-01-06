@@ -31,6 +31,23 @@ class CommunityData (object):
                       data_dir))
         self.calc_non_fuel_electricty_price ()
         self.check_auto_disable_conditions ()
+        self.update_project_lifetime ()
+        
+    def update_project_lifetime (self):
+        """ 
+        updates the project lifetime to be until the end of the forecast period
+        
+        pre:
+            self.model_inputs should be initilized
+        post:
+            project lifetimes are integers > 0
+        """
+        end = self.get_item('forecast', 'end year')
+        for each in self.model_inputs:
+            if 'lifetime' in self.model_inputs[each].keys():
+                start = self.get_item(each, 'start year')
+                self.set_item(each, 'lifetime', end - start)
+        
     
     def check_auto_disable_conditions  (self):
         """
@@ -46,8 +63,8 @@ class CommunityData (object):
         """
         # TODO: 1 is 100% need to change to a calculation
         # TODO: update generation efficiency
-        generation_eff = self.get_item("community","generation")/\
-                         self.get_item("community","consumption HF")
+        generation_eff = self.get_item("community",
+                                            "diesel generation efficiency")
         price = self.get_item("community","elec non-fuel cost") +\
             1.00 * self.get_item("community","diesel prices").projected_prices/\
                             generation_eff
@@ -226,9 +243,9 @@ class CommunityData (object):
         #~ if self.get_item('community buildings','com benchmark data')== "IMPORT":
             #~ self.set_item('community buildings','com benchmark data',
                                             #~ self.load_csv('com benchmark data'))
-        if self.get_item('community buildings',"com num buildings")== "IMPORT":
-            self.set_item('community buildings',"com num buildings",
-                                            self.load_csv("com num buildings"))
+        #~ if self.get_item('community buildings',"com num buildings")== "IMPORT":
+            #~ self.set_item('community buildings',"com num buildings",
+                                            #~ self.load_csv("com num buildings"))
                                             
         if self.get_item('community',"HDD") == "IMPORT":
             self.set_item('community',"HDD", int(self.load_csv("hdd")))
@@ -296,11 +313,43 @@ class CommunityData (object):
             self.set_item('community buildings',"com building estimates",
                            self.load_pp_csv("com_building_estimates.csv"))
                            
-        if self.get_item('community buildings','com benchmark data')== "IMPORT":
-            self.set_item('community buildings','com benchmark data',
+        if self.get_item('community buildings','com building data')== "IMPORT":
+            self.set_item('community buildings','com building data',
                                     self.load_pp_csv("community_buildings.csv"))
+                                    
+        if self.get_item('community buildings','number buildings')== "IMPORT":
+            self.set_item('community buildings','number buildings',
+                int(self.load_pp_csv("com_num_buildings.csv").ix["Buildings"]))
+                
+        try:
+            generation2 = self.load_pp_csv("yearly_generation.csv")
+        except IOError:
+            if self.get_item('community',"line losses") == "IMPORT" \
+              and self.get_item('community',"diesel generation efficiency") \
+                                        == "IMPORT":
+                raise IOError, "Generation 2 not found"
+           
+        if self.get_item('community',"line losses") == "IMPORT":
+            self.set_item('community',"line losses", 
+            np.float(generation2["line loss"][-3:].mean()))
 
-                         
+
+
+        if self.get_item('community','diesel generation efficiency')== "IMPORT":
+            self.set_item('community','diesel generation efficiency', 
+                          np.float(generation2['efficiency'].values[-1]))
+        try:
+            if self.get_item('community','generation numbers') == "IMPORT":
+                self.set_item('community','generation numbers', 
+                              generation2[['generation diesel', 'generation hydro',
+                                           'generation natural gas',
+                                           'generation wind', 'generation solar',
+                                           'generation biomass']])
+        except:
+            #~ self.diagnostics.add_warning("Community Data", 
+                            #~ "Generation data not available by energy type")
+            print "Generation data not available by energy type"
+        
     def load_pp_csv(self, f_name):
         """
         load a preprocessed csv file
@@ -347,9 +396,11 @@ class CommunityData (object):
             a valid .yaml config file is created
         """
         ## save work around 
+        import copy
+        copy = copy.deepcopy(self.model_inputs)
+        
         self.set_item('residential buildings','data', "IMPORT")
-        self.set_item('community buildings','com benchmark data', "IMPORT")
-        self.set_item('community buildings',"com num buildings", "IMPORT")
+        self.set_item('community buildings','com building data', "IMPORT")
         self.set_item('community buildings',"com building estimates", "IMPORT")
 
         self.set_item('community', "diesel prices", "IMPORT")
@@ -357,7 +408,7 @@ class CommunityData (object):
         self.set_item('forecast', "population", "IMPORT")
         self.set_item('water wastewater', "data", "IMPORT")
         self.set_item("community","electric non-fuel prices","IMPORT")
-        
+        self.set_item("community","generation numbers","IMPORT")
 
         
         fd = open(fname, 'w')
@@ -365,3 +416,5 @@ class CommunityData (object):
         fd.write(text)
         fd.close()
 
+        del self.model_inputs
+        self.model_inputs = copy

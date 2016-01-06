@@ -7,6 +7,7 @@ created 2015/09/30
 """
 import numpy as np
 from math import isnan
+from pandas import DataFrame
 
 from annual_savings import AnnualSavings
 from community_data import CommunityData
@@ -66,9 +67,7 @@ class ResidentialBuildings(AnnualSavings):
         
         self.calc_refit_fuel_consumption()
         
-        
-        self.forecast.set_res_HF_fuel_forecast(self.baseline_HF_consumption,
-                                                self.start_year)
+        self.set_forecast_columns()
         
         if self.cd["model financial"]:
             self.get_diesel_prices()
@@ -229,6 +228,15 @@ class ResidentialBuildings(AnnualSavings):
         #~ self.baseline_coal_consumption
         #~ self.baseline_solar_consumption
         #~ self.baseline_other_consumption
+        
+        
+        self.baseline_total_heating_demand = \
+                self.baseline_HF_consumption * (1/constants.mmbtu_to_gal_HF) +\
+                self.baseline_wood_consumption * (1/constants.mmbtu_to_cords) +\
+                self.baseline_gas_consumption * (1/constants.mmbtu_to_Mcf) +\
+                self.baseline_kWh_consumption * (1/constants.mmbtu_to_kWh) +\
+                self.baseline_LP_consumption * (1/constants.mmbtu_to_gal_LP)
+        
 
     def calc_baseline_fuel_cost (self):
         """
@@ -314,6 +322,50 @@ class ResidentialBuildings(AnnualSavings):
         """
         self.annual_heating_savings = self.baseline_HF_cost - \
                                       self.refit_HF_cost
+                                      
+    def set_forecast_columns (self):
+        """ Function doc """
+        years = range(self.start_year,self.end_year)
+        self.forecast.add_heating_fuel_column(\
+                            "heating_fuel_residential_consumed [gallons/year]",
+                                 years, self.baseline_HF_consumption)
+        self.forecast.add_heating_fuel_column(\
+                        "heating_fuel_residential_consumed [mmbtu/year]", years,
+                        self.baseline_HF_consumption/constants.mmbtu_to_gal_HF)
+        
+        self.forecast.add_heating_fuel_column(\
+                                "cords_wood_residential_consumed [cords/year]",
+                                 years, self.baseline_wood_consumption)
+        self.forecast.add_heating_fuel_column(\
+                        "cords_wood_residential_consumed [mmbtu/year]", years, 
+                        self.baseline_wood_consumption/constants.mmbtu_to_cords)
+        
+        self.forecast.add_heating_fuel_column(\
+                                 "gas_residential_consumed [Mcf/year]",
+                                 years, self.baseline_gas_consumption)
+        self.forecast.add_heating_fuel_column(\
+                          "gas_residential_consumed [mmbtu/year]", years,
+                          self.baseline_gas_consumption/constants.mmbtu_to_Mcf)
+                                 
+        self.forecast.add_heating_fuel_column(\
+                                 "electric_residential_consumed [kWh/year]",
+                                 years, self.baseline_kWh_consumption)
+        self.forecast.add_heating_fuel_column(\
+                        "electric_residential_consumed [mmbtu/year]", years,
+                        self.baseline_kWh_consumption/constants.mmbtu_to_kWh)
+        
+        self.forecast.add_heating_fuel_column(\
+                                "propane_residential_consumed [gallons/year]",
+                                 years, self.baseline_LP_consumption)
+        self.forecast.add_heating_fuel_column(\
+                            "propane_residential_consumed [mmbtu/year]", years,
+                        self.baseline_LP_consumption/constants.mmbtu_to_gal_LP)
+        
+        
+        self.forecast.add_heat_demand_column(\
+                                 "heat_energy_demand_residential [mmbtu/year]",
+                                 years, self.baseline_total_heating_demand)
+                                      
         
 
 component = ResidentialBuildings
@@ -322,7 +374,7 @@ def test ():
     """
     tests the class using the manley data.
     """
-    manley_data = CommunityData("../data","../test_case/manley_data.yaml")
+    manley_data = CommunityData("../test_case/input_data/","../test_case/baseline_results/config_used.yaml")
     
     fc = Forecast(manley_data)
     t = ResidentialBuildings(manley_data,fc)

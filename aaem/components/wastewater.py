@@ -14,6 +14,7 @@ from annual_savings import AnnualSavings
 from community_data import CommunityData
 from forecast import Forecast
 from diagnostics import diagnostics
+import constants
 
 class WaterWastewaterSystems (AnnualSavings):
     """
@@ -161,9 +162,18 @@ class WaterWastewaterSystems (AnnualSavings):
         
         self.calc_savings_kWh_consumption()
         self.calc_savings_HF_consumption()
+
+        years = range(self.start_year,self.end_year)
+        self.forecast.add_heating_fuel_column(\
+                        "heating_fuel_water-wastewater_consumed [gallons/year]",
+                                 years, self.baseline_HF_consumption)
+        self.forecast.add_heating_fuel_column(\
+                   "heating_fuel_water-wastewater_consumed [mmbtu/year]", years,
+                    self.baseline_HF_consumption/constants.mmbtu_to_gal_HF)
         
-        self.forecast.set_www_HF_fuel_forecast(self.baseline_HF_consumption, 
-                                                self.start_year)
+        self.forecast.add_heat_demand_column(\
+                    "heat_energy_demand_water-wastewater [mmbtu/year]",
+                 years, self.baseline_HF_consumption/constants.mmbtu_to_gal_HF)
         
         if self.cd["model financial"]:
             self.calc_capital_costs()
@@ -334,10 +344,5 @@ def test ():
     fc = Forecast(manley_data)
     ww = WaterWastewaterSystems(manley_data, fc)
     ww.run()
-    print ""
-    print round(ww.benefit_npv,0)
-    print round(ww.cost_npv,0)
-    print round(ww.benefit_cost_ratio ,2)
-    print round(ww.net_npv,0)
     return ww, fc # return the object for further testing
 

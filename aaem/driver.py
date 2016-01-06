@@ -6,12 +6,11 @@ driver.py
 from community_data import CommunityData
 from forecast import Forecast
 from diagnostics import diagnostics
+from preprocessor import preprocess
+import defaults
 
-from components.residential_buildings import ResidentialBuildings
-from components.community_buildings import CommunityBuildings
-from components.wastewater import WaterWastewaterSystems
+from pandas import DataFrame, read_csv, concat
 
-from pandas import DataFrame, read_pickle, read_csv
 import numpy as np
 
 import yaml
@@ -49,7 +48,6 @@ class Driver (object):
         """
         fd = open("comp_lib.yaml", 'r')
         self.comp_lib = yaml.load(fd)
-        #~ print self.comp_lib
         fd.close()
         
     def run_components (self):
@@ -64,26 +62,12 @@ class Driver (object):
         for comp in self.comp_lib:
             if self.cd.get_item(comp,"enabled") == False:
                 continue
-            #~ print comp
             component = self.get_component(self.comp_lib[comp])(self.cd,
                                                                 self.fc,
                                                                 self.di)
             component.run()
             self.comps_used[comp] = component
-        
-    def update_forecast (self):
-        """
-        update the forecast totals
-        pre:
-            residential buildings,community buildings, and water and wastewater
-        components need to have been run
-        post:
-            the forecast totals are up to date
-        """
-        #~ self.fc.forecast_consumption()
-        #~ self.fc.forecast_generation()
-        #~ self.fc.forecast_average_kW()
-        self.fc.calc_total_HF_forecast()
+
     
     def get_component (self, comp_name):
         """
@@ -174,9 +158,7 @@ def run_model (config_file):
     out_dir = config['output directory path']
     
     out_dir = out_dir[:-1] if out_dir[-1] == '/' else out_dir 
-    print out_dir
     out_dir = os.path.abspath(out_dir)
-    print out_dir
     suffix = config['output directory suffix']
     if suffix == "TIMESTAMP":
         timestamp = datetime.strftime(datetime.now(),"%Y%m%d%H%M%S")
@@ -186,7 +168,6 @@ def run_model (config_file):
     else:
         out_dir+= '/'
 
-    print out_dir
     try:
         os.makedirs(out_dir)
     except OSError:
@@ -197,11 +178,146 @@ def run_model (config_file):
     model = Driver(data_dir, overrides, defaults)
     model.load_comp_lib()
     model.run_components()
-    model.update_forecast()
-    # save functionality needs to be written at component level
     model.save_components_output(out_dir)
     model.save_forecast_output(out_dir)
     model.save_input_files(out_dir)
     model.save_diagnostics(out_dir)
     return model, out_dir
 
+
+
+def run_batch (config):
+    """ Function doc """
+    try:
+        fd = open(config, 'r')
+        config = yaml.load(fd)
+        fd.close()
+    except:
+        pass
+    communities = {}
+    for key in config:
+        r_val = run_model(config[key])
+        communities[key] = {"model": r_val[0], "directory": r_val[1]}
+    return communities
+    
+
+def setup (community, data_repo, model_directory):
+    """ Function doc """
+    directory = os.path.abspath(model_directory)
+    try:
+        os.makedirs(os.path.join(directory,"config"))
+    except OSError:
+        while True:
+            resp = raw_input("The directory "+ directory + " already exists" +\
+                             " would you like to over right any model data" +\
+                             " in it? (y or n): ")
+            if resp.lower() == "y":
+                break
+            elif resp.lower() == "n":
+                return
+            else:
+                pass
+                
+    config_text = "community:\n  name: " + community +\
+                  " # community provided by user\n"
+    config_file = open(os.path.join(directory, "config",
+                                    "community_data.yaml"), 'w')
+    config_file.write(config_text)
+    config_file.close()
+    def_file = open(os.path.join(directory, "config", 
+                                    "test_defaults.yaml"), 'w')
+    def_file.write(defaults.for_setup)
+    def_file.close()
+    
+    driver_text =  'overrides: ' + os.path.join(directory,"config",
+                                                "community_data.yaml") + '\n'
+    driver_text += 'defaults: ' + os.path.join(directory,"config",
+                                                "test_defaults.yaml") + '\n'
+    driver_text += 'data directory: ' + os.path.join(directory,
+                                                "input_data") + '\n'
+    driver_text += 'output directory path: ' + os.path.join(directory,
+                                                 "results") + '\n'
+    driver_text += 'output directory suffix: NONE # TIMESTAMP|NONE|<str>\n'
+    
+    driver_file = open(os.path.join(directory, 
+                       community.replace(" ", "_") + "_driver.yaml"), 'w')
+    driver_file.write(driver_text)
+    driver_file.close()
+    
+    preprocess(data_repo,os.path.join(directory,"input_data"),community)
+    
+    
+    
+    
+    
+def create_generation_forecast (models, path):
+    """ Function doc """
+    gen_fc = None
+    nat_gas = False
+    
+    for idx in range(len(models)):
+        if idx == 0:
+            gen_fc = concat([models[idx].fc.generation, 
+                             models[idx].cd.get_item('community',
+                                                  'generation numbers')], 
+                                                                    axis = 1)
+            continue
+        gen_fc = gen_fc + models[idx].cd.get_item('community',
+                                                 'generation numbers')
+    
+   
+    for col in ('generation hydro', 'generation natural gas',
+                'generation wind', 'generation solar',
+                'generation biomass'):
+        try:
+            last = gen_fc[gen_fc[col].notnull()]\
+                                [col].values[-3:]
+            last =  np.mean(last)
+            #~ print last
+            last_idx = gen_fc[gen_fc[col].notnull()]\
+                                [col].index[-1]
+                                
+                                
+            col_idx = np.logical_and(gen_fc[col].isnull(), 
+                                     gen_fc[col].index > last_idx)
+                                     
+            gen_fc[col][col_idx] = last
+        except IndexError:
+            pass
+                
+                                    
+    last_idx = gen_fc[gen_fc['generation diesel'].notnull()]\
+                            ['generation diesel'].index[-1]
+
+    col = gen_fc[gen_fc.index>last_idx]\
+                                ['total_electricity_generation [kWh/year]']\
+          - gen_fc[gen_fc.index>last_idx][['generation hydro', 
+                                           'generation natural gas',
+                                        'generation wind', 'generation solar',
+                                         'generation biomass']].sum(1)
+    
+    gen_fc.loc[gen_fc.index>last_idx,'generation diesel'] = col
+    
+        
+    gen_fc.to_csv(os.path.join(path, "generation_forecast.csv"))   
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
