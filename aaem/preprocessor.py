@@ -106,7 +106,6 @@ class Preprocessor (object):
         except IndexError:
             pass
         del data["notes"]
-        #~ print data
         sums = []
         for year in set(data["year"].values):
             if len(data[data["year"] == year]) != 12:
@@ -115,8 +114,7 @@ class Preprocessor (object):
             temp["year"] = int(year)
             sums.append(temp)
             
-        #~ return sums
-        #~ print DataFrame(sums).set_index("year")
+
         df = DataFrame(sums).set_index("year")
         for key in df.keys():
             df[key.split('_')[0]] = df[key]
@@ -158,9 +156,6 @@ class Preprocessor (object):
         """
         try:
             data = self.pce_electricity (in_file, com_id)
-            #~ print data
-            #~ data = DataFrame(data).set_index("year")
-            #~ data["industrial"] = data["residential"]/0-data["residential"]/0
         except KeyError:
             data = self.eia_electricity (in_file, com_id)
             nans = data["residential"]/0-data["residential"]/0
@@ -433,7 +428,6 @@ class Preprocessor (object):
                                 "2013-add-power-cost-equalization-pce-data.csv"),
                                    os.path.join(data_dir, 
                                 "purchased_power_lib.csv"),out_dir,com_id)
-            print com_id
         except KeyError:
             print "is this an EIA community?"
     
@@ -512,7 +506,6 @@ class Preprocessor (object):
                                          "community_kwh_sold",
                                          "government_kwh_sold",
                                          "unbilled_kwh"]]
-        #~ print data
         try:
             p_key = data[data["purchased_from"].notnull()]\
                                                 ["purchased_from"].values[0]
@@ -743,7 +736,9 @@ class Preprocessor (object):
         fd.write("#### #### #### #### ####\n")
         fd.close()
         data.to_csv(out_file, mode = 'a')
+        self.it_ids = data 
         return data
+        
 
     def buildings (self, in_file, est_file, count_file, out_dir, com_id, pop):
         """ Function doc """
@@ -838,15 +833,37 @@ def it_population (in_file, out_dir, com_ids, threshold = 20):
     #~ return df
     
 
+def preprocess (data_dir, out_dir, com_id):
+    """ Function doc """
+    pp = preprocess_no_intertie(data_dir, os.path.join(out_dir,com_id), com_id)
+    
+    try:
+        if pp.it_ids["Plant Intertied"].lower() == "yes":
+            ids = pp.it_ids[['Other Community on Intertie', 
+                             'Other Community on Intertie.1',
+                             'Other Community on Intertie.2',
+                             'Other Community on Intertie.3',
+                             'Other Community on Intertie.4',
+                             'Other Community on Intertie.5',
+                             'Other Community on Intertie.6'
+                           ]].values
+            ids = ids[ids != "''"].tolist()
+            pp = preprocess_intertie(data_dir, out_dir, [com_id] + ids)
+    except:
+        pass
+    return pp
+    
 
-def preprocess(data_dir, out_dir, com_id):
+
+
+def preprocess_no_intertie (data_dir, out_dir, com_id):
     """
     """
     pp = Preprocessor()
     pp.preprocess(data_dir,out_dir,com_id)
     pp.diagnostics.save_messages(os.path.join(out_dir,
                                             "preprocessor_diagnostis.csv"))
-    
+    return pp
     
 def preprocess_intertie (data_dir, out_dir, com_ids):
     """ Function doc """
@@ -900,7 +917,7 @@ def preprocess_intertie (data_dir, out_dir, com_ids):
             pass
     generation['line loss'] = 1.0 - \
                         generation['consumption']/generation['net generation']
-    #~ print generation
+
     
     
     
