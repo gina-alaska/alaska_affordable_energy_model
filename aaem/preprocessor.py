@@ -12,8 +12,10 @@ import numpy as np
 from forecast import growth
 
 class Preprocessor (object):
-    def __init__ (self):
-        self.diagnostics = diagnostics()
+    def __init__ (self, diag = None):
+        if diag == None:
+            self.diagnostics = diagnostics()
+        self.diagnostics = diag    
     
     def population (self, in_file, out_dir, com_id, threshold = 20,
                                                     end_year = 2040):
@@ -802,43 +804,20 @@ class Preprocessor (object):
         df = df.T
         
         df.to_csv(out_file,mode="a", header = False)
-        
-        
-        
 
-
-def it_population (in_file, out_dir, com_ids, threshold = 20):
-    """
-    preprocess intertied population
-    """
-    pop_data = read_csv(in_file, index_col = 1) # update to GNIS
-    pops = pop_data.ix[com_ids].T.ix["2003":"2014"].sum(1)
-    
-    if (pops < threshold).any():
-        self.diagnostics.add_warning("preprocessor","population < 20")
-    
-    
-    out_file = os.path.join(out_dir,"population.csv")
-    fd = open(out_file,'w')
-    fd.write("# " + str(com_ids) + "combined population\n")
-    fd.write("# recorded(summed for each community)" +\
-             "population in a given year\n")
-    fd.write("#### #### #### #### ####\n")
-    fd.write("year,population\n")
-    fd.close()
-    
-    
-    #~ df = DataFrame([years,pops],["year","population"]).T.set_index("year")
-    pops.to_csv(out_dir+"population.csv",mode="a")
-    #~ return df
     
 
 def preprocess (data_dir, out_dir, com_id):
     """ Function doc """
-    pp = preprocess_no_intertie(data_dir, os.path.join(out_dir,com_id), com_id)
+    
+    diag = diagnostics()
+    
+    pp = preprocess_no_intertie(data_dir, os.path.join(out_dir,com_id), com_id, 
+                                                                    diag)
     
     try:
         if pp.it_ids["Plant Intertied"].lower() == "yes":
+            diag = diagnostics()
             ids = pp.it_ids[['Other Community on Intertie', 
                              'Other Community on Intertie.1',
                              'Other Community on Intertie.2',
@@ -848,33 +827,35 @@ def preprocess (data_dir, out_dir, com_id):
                              'Other Community on Intertie.6'
                            ]].values
             ids = ids[ids != "''"].tolist()
-            pp = preprocess_intertie(data_dir, out_dir, [com_id] + ids)
+            diag.add_note("preprocessor",
+                                 "Includes dianostis for " + str(ids))
+            pp = preprocess_intertie(data_dir, out_dir, [com_id] + ids, 
+                                                                    diag)
     except:
         pass
+        
+    diag.save_messages(os.path.join(out_dir, 
+                                            str(com_id) + "_diagnostis.csv"))
     return pp
     
 
 
 
-def preprocess_no_intertie (data_dir, out_dir, com_id):
+def preprocess_no_intertie (data_dir, out_dir, com_id, diagnostics):
     """
     """
-    pp = Preprocessor()
+    pp = Preprocessor(diagnostics)
     pp.preprocess(data_dir,out_dir,com_id)
-    pp.diagnostics.save_messages(os.path.join(out_dir,
-                                            "preprocessor_diagnostis.csv"))
     return pp
     
-def preprocess_intertie (data_dir, out_dir, com_ids):
+def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
     """ Function doc """
     parent = com_ids[0]
     pp_data = []
     parent_dir = os.path.join(out_dir, parent)
     for com in com_ids:
-        pp = Preprocessor()
+        pp = Preprocessor(diagnostics)
         pp.preprocess(data_dir, os.path.join(out_dir, com), com)
-        pp.diagnostics.save_messages(os.path.join(out_dir,
-                                            "preprocessor_diagnostis.csv"))
         pp_data.append(pp)
     
     # make Deep copy of parent city
