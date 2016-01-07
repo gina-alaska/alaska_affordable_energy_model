@@ -70,6 +70,7 @@ class Preprocessor (object):
         
         df = concat([population,p_map],axis = 1)
         df.to_csv(out_dir+"population.csv",mode="a")
+        self.population = df
         return df
         
     def pce_electricity (self, in_file, com_id):
@@ -99,9 +100,11 @@ class Preprocessor (object):
                                          "community_kwh_sold",
                                          "government_kwh_sold",
                                          "unbilled_kwh","notes"]]
-                                         
-        self.diagnostics.add_note("preprocessor", 
+        try:
+            self.diagnostics.add_note("preprocessor", 
                 "notes from pce data: " + str(data["notes"].tail(1)[0]))
+        except IndexError:
+            pass
         del data["notes"]
         #~ print data
         sums = []
@@ -188,6 +191,7 @@ class Preprocessor (object):
         fd.close()    
         try:
             data.to_csv(out_file, mode="a")
+            self.consumption = data
         except UnboundLocalError:
             pass # i don't know why this is needed this exception is raised
                  # but it the code still works
@@ -429,6 +433,7 @@ class Preprocessor (object):
                                 "2013-add-power-cost-equalization-pce-data.csv"),
                                    os.path.join(data_dir, 
                                 "purchased_power_lib.csv"),out_dir,com_id)
+            print com_id
         except KeyError:
             print "is this an EIA community?"
     
@@ -490,7 +495,13 @@ class Preprocessor (object):
             lib = read_csv(lib_file, index_col=0, comment = '#').ix[com_id]
         except:
             pass
-        data = read_csv(in_file, index_col=1, comment = "#").ix[com_id]
+            
+        data = read_csv(in_file, index_col=1, comment = "#")
+        try:
+            data = data.loc[com_id]
+        except KeyError:
+            data = data.loc[[com_id + ',' in s for s in data.index]]
+        
         data = data[["year","diesel_kwh_generated",
                      "powerhouse_consumption_kwh","hydro_kwh_generated",
                      "other_1_kwh_generated","other_1_kwh_type",
@@ -514,7 +525,7 @@ class Preprocessor (object):
             
             p_key = lib[lib['purchased_from'] == p_key]\
                                         ['Energy Source'].values[0].lower()
-                                        
+            
             self.diagnostics.add_note("preprocessor",
                          str(p_key) + " - purchased energy type")                           
         except:
@@ -581,17 +592,20 @@ class Preprocessor (object):
                 val = temp["other_1_kwh_generated"]
                 if o1_key == "diesel":
                     temp['generation diesel'] = temp['generation diesel'] + val
-                temp['generation ' + o1_key] = val
+                else:
+                    temp['generation ' + o1_key] = val
             if np.isreal(temp["other_1_kwh_generated"]) and o2_key is not None:
                 val =  temp["other_1_kwh_generated"]
                 if o2_key == "diesel":
                     temp['generation diesel'] = temp['generation diesel'] + val
-                temp['generation ' + o2_key] = val
+                else:
+                    temp['generation ' + o2_key] = val
             if np.isreal(temp["other_1_kwh_generated"]) and p_key is not None:
                 val = temp['kwh_purchased']
                 if p_key == "diesel":
                     temp['generation diesel'] = temp['generation diesel'] + val
-                temp['generation ' + p_key] = val
+                else:
+                    temp['generation ' + p_key] = val
             
             
             temp['consumption'] = temp[["residential_kwh_sold",
@@ -639,11 +653,12 @@ class Preprocessor (object):
             df_biomass = DataFrame({"year":(2003,2004),
                         "generation biomass":(np.nan,np.nan)}).set_index('year')
 
+        
         df = DataFrame(sums)[['year','generation','consumption','fuel used',
                               'efficiency', 'line loss', 'net generation', 
                               'consumption residential', 
-                              'consumption non-residential']].set_index("year")
-        
+                              'consumption non-residential',
+                              "kwh_purchased"]].set_index("year")
         df = concat([df,df_diesel,df_hydro,df_gas,df_wind,df_solar,df_biomass], 
                                                                        axis = 1)
         
@@ -664,6 +679,8 @@ class Preprocessor (object):
         fd.write("#### #### #### #### ####\n")
         fd.close()
         df.to_csv(out_file,mode="a")
+        self.generation = df
+        self.purchase_type = p_key
         
     def electricity_generation (self, in_file, out_dir, com_id):
         """
@@ -822,21 +839,134 @@ def it_population (in_file, out_dir, com_ids, threshold = 20):
     
 
 
-def preprocess(data_dir, out_dir, com_id, intertied = False):
+def preprocess(data_dir, out_dir, com_id):
     """
     """
     pp = Preprocessor()
     pp.preprocess(data_dir,out_dir,com_id)
     pp.diagnostics.save_messages(os.path.join(out_dir,
                                             "preprocessor_diagnostis.csv"))
-    if intertied == True:
-        com_ids = read_csv(out_dir+"interties.csv",index_col=0, 
-                                                    comment = "#").T.values[0]
-        com_ids = list(com_ids)
-        com_ids.append(com_id)
-        com_ids = list(set(com_ids).symmetric_difference({"''",}))
-        it_population(os.path.join(data_dir,"population.csv"),
-                                                            out_dir,com_ids)
-
-    return pp
+    
+    
+def preprocess_intertie (data_dir, out_dir, com_ids):
+    """ Function doc """
+    parent = com_ids[0]
+    pp_data = []
+    parent_dir = os.path.join(out_dir, parent)
+    for com in com_ids:
+        pp = Preprocessor()
+        pp.preprocess(data_dir, os.path.join(out_dir, com), com)
+        pp.diagnostics.save_messages(os.path.join(out_dir,
+                                            "preprocessor_diagnostis.csv"))
+        pp_data.append(pp)
+    
+    # make Deep copy of parent city
+    population = pp_data[0].population.copy(True)
+    generation = pp_data[0].generation.copy(True)
+    
+    for idx in range(len(pp_data)):
+        if idx == 0:
+            continue
+            
+        population['population'] = population['population'] + \
+                                        pp_data[idx].population['population']
+        
+        #   try, except for communities that don't exist on their own such as 
+        # oscarville, which is bethel,oscarville 
+        try:
+            temp = pp_data[idx].generation
+            generation['generation'] = generation['generation'].fillna(0) +\
+                (temp['generation'].fillna(0) - temp['kwh_purchased'].fillna(0))
+            generation['net generation'] = \
+                        generation['net generation'].fillna(0) +\
+                            (temp['net generation'].fillna(0) - \
+                                temp['kwh_purchased'].fillna(0))
+            for key in ['consumption', 'consumption residential',
+                        'consumption non-residential', 'generation diesel',
+                        'generation hydro', 'generation natural gas',
+                        'generation wind', 'generation solar',
+                        'generation biomass', 
+                       ]:
+                try:
+                    if pp_data[idx].purchase_type == key.split(' ')[1]:
+                        generation[key] = generation[key].fillna(0) + \
+                            (temp[key].fillna(0) - \
+                                temp['kwh_purchased'].fillna(0))
+                        continue
+                except IndexError:
+                    generation[key] = generation[key].fillna(0) + \
+                                                            temp[key].fillna(0)
+        except AttributeError:
+            pass
+    generation['line loss'] = 1.0 - \
+                        generation['consumption']/generation['net generation']
+    #~ print generation
+    
+    
+    
+    
+    
+    out_dir = os.path.join(out_dir,com_ids[0] +'_intertie')
+    try:
+            os.makedirs(out_dir)
+    except OSError:
+            pass
+            
+    out_file = os.path.join(out_dir,'population.csv')
+    population.to_csv(out_file)        
+    
+    out_file = os.path.join(out_dir,'yearly_generation.csv')
+    generation.to_csv(out_file)
+    
+    out_file = os.path.join(out_dir,'electricity.csv')
+    df = generation[['consumption residential','consumption non-residential', 
+                                                    'consumption',]].copy(True)
+    df['residential'] = df['consumption residential']
+    del df['consumption residential']
+    df['non-residential'] = df['consumption non-residential']
+    del df['consumption non-residential']
+    df['total'] = df['consumption']
+    del df['consumption']
+    df.to_csv(out_file)
+    
+    
+    out_file = os.path.join(out_dir,'generation.csv')
+    fd = open(out_file,'w')
+    fd.write("key,value\n")
+    fd.write("generation," + str(generation['generation'].values[-1]) + "\n")
+    fd.write("net_generation," + \
+                        str(generation['net generation'].values[-1]) + "\n")
+    fd.write("consumption HF," + str(generation['fuel used'].values[-1]) + "\n")
+    fd.close()
+    
+    shutil.copy(os.path.join(parent_dir,"diesel_fuel_prices.csv"), out_dir)
+    shutil.copy(os.path.join(parent_dir,"hdd.csv"), out_dir)
+    shutil.copy(os.path.join(parent_dir,"cpi.csv"), out_dir)
+    shutil.copy(os.path.join(parent_dir,"com_building_estimates.csv"), out_dir)
+    shutil.copy(os.path.join(parent_dir,"community_buildings.csv"), out_dir)
+    shutil.copy(os.path.join(parent_dir,"com_num_buildings.csv"), out_dir)
+    shutil.copy(os.path.join(parent_dir,"interties.csv"), out_dir)
+    shutil.copy(os.path.join(parent_dir,"prices.csv"), out_dir)
+    shutil.copy(os.path.join(parent_dir,"region.csv"), out_dir)
+    shutil.copy(os.path.join(parent_dir,"residential_data.csv"), out_dir)
+    shutil.copy(os.path.join(parent_dir,"wastewater_data.csv"), out_dir)
+    
+    
+    return pp_data
+    
+    
+        
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
