@@ -1,0 +1,48 @@
+#!/usr/bin/env python
+
+import pycommand
+import sys
+
+class SetupCommand(pycommand.CommandBase):
+    usagestr = 'usage: setup [directory]'
+    description = 'Set up directory for running AAEM Models'
+
+    def run(self):
+        print('Python version ' + sys.version.split()[0])
+    
+class RunCommand(pycommand.CommandBase):
+    usagestr = 'usage: run [community ...]'
+    description = 'Run model for given communities. (default = all communities)'
+
+    def run(self):
+        print('Running Stuff')
+
+
+class AaemCommand(pycommand.CommandBase):
+    usagestr = 'usage: aaem <command>'
+    description = (
+        'Commands:\n',
+        '  setup        Set up workspace for running aaem models\n',
+        '  run          Run aaem model'
+    )
+
+    commands = {
+        'setup': SetupCommand,
+        'run':   RunCommand        }
+
+    def run(self):
+        try:
+            cmd = super(AaemCommand, self).run()
+        except pycommand.CommandExit as e:
+            return e.err
+
+        if cmd.error:
+            print('aaem {cmd}: {error}'
+                  .format(cmd=self.args[0], error=cmd.error))
+            return 1
+        else:
+            return cmd.run()
+
+if __name__ == '__main__':
+    # Shortcut for reading from sys.argv[1:] and sys.exit(status)
+    pycommand.run_and_exit(AaemCommand)
