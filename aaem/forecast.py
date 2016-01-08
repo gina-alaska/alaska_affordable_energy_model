@@ -114,7 +114,7 @@ class Forecast (object):
                   "check electricity.csv in the models data directory"
             self.diagnostics.add_warning("forecast", msg)
    
-        print 
+
         start = self.p_map[self.p_map == "M"].T.keys().values[0] \
                 if self.p_map[self.p_map == "M"].T.keys().values[0] > \
                 self.yearly_kWh_totals.T.keys().values[0] \
@@ -139,6 +139,8 @@ class Forecast (object):
                   "in the models data directory")
         
         # get slope(m),intercept(b)
+        #~ print population
+        #~ print consumption
         m, b = np.polyfit(population,consumption,1) 
         
         fc_consumption = m * self.population + b

@@ -199,6 +199,7 @@ def run_batch (config):
         pass
     communities = {}
     for key in config:
+        print key
         r_val = run_model_no_intertie(config[key])
         communities[key] = {"model": r_val[0], "directory": r_val[1]}
     return communities

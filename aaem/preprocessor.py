@@ -233,8 +233,16 @@ class Preprocessor (object):
         
             ww_d = read_csv(data_file, comment = '#', index_col = 0).ix[com_id]
         except KeyError:
-            raise StandardError, str(com_id) + " is not in " + data_file
-        
+            #~ raise StandardError, str(com_id) + " is not in " + data_file
+            self.diagnostics.add_warning("preprocessor",
+                                         "wastewater system not found, " + \
+                                         "assuming zeros")
+            ww_d = read_csv(data_file, comment = '#', index_col = 0).ix[-1]
+            ww_d[:] = 0
+            ww_d["System Type"] = "UNKNOWN"
+            ww_d["HR Installed"] = False
+            
+            
         ## system type mapping From Neil
         ##Circulating/Gravity: Circulating/Gravity, Circulating/Pressure,
         ##                     Circulating/ST/DF
@@ -488,7 +496,11 @@ class Preprocessor (object):
         pre process kwh generation by year 
         """
         try:
-            lib = read_csv(lib_file, index_col=0, comment = '#').ix[com_id]
+            lib = read_csv(lib_file, index_col=0, comment = '#')
+            try:
+                lib = lib.ix[com_id]
+            except KeyError:
+                lib = lib.loc[[com_id+',' in s for s in lib.index]]
         except:
             pass
             
@@ -497,6 +509,7 @@ class Preprocessor (object):
             data = data.loc[com_id]
         except KeyError:
             data = data.loc[[com_id + ',' in s for s in data.index]]
+        
         
         data = data[["year","diesel_kwh_generated",
                      "powerhouse_consumption_kwh","hydro_kwh_generated",
@@ -508,9 +521,11 @@ class Preprocessor (object):
                                          "community_kwh_sold",
                                          "government_kwh_sold",
                                          "unbilled_kwh"]]
+        
         try:
             p_key = data[data["purchased_from"].notnull()]\
                                                 ["purchased_from"].values[0]
+                
             sources = data[data["purchased_from"].notnull()]\
                                                 ["purchased_from"].values
             self.diagnostics.add_note("preprocessor",
@@ -744,29 +759,33 @@ class Preprocessor (object):
 
     def buildings (self, in_file, est_file, count_file, out_dir, com_id, pop):
         """ Function doc """
-        data = read_csv(in_file, index_col=0, comment = "#").ix[com_id]
+        try:
+            data = read_csv(in_file, index_col=0, comment = "#").ix[com_id]
         
-        l = ["Square Feet",
-             "implementation cost", "Electric", "Electric Post", "Fuel Oil",
-             "Fuel Oil Post", "HW District", "HW District Post", "Natural Gas", 
-             "Natural Gas Post", "Propane", "Propane Post"]
-        data[l] = data[l].replace(r'\s+', np.nan, regex=True)
-        
-        
-        out_file = os.path.join(out_dir, "community_buildings.csv")
-        fd = open(out_file,'w')
-        fd.write("# " + com_id + " non-res buildigns\n")
-        fd.close()
-       
+            l = ["Square Feet",
+                 "implementation cost", "Electric", "Electric Post", "Fuel Oil",
+                 "Fuel Oil Post", "HW District", "HW District Post", "Natural Gas", 
+                 "Natural Gas Post", "Propane", "Propane Post"]
+            data[l] = data[l].replace(r'\s+', np.nan, regex=True)
             
-       
-        c = ["Building Type", "Square Feet", "Audited", "Retrofits Done",
-             "implementation cost", "Electric", "Electric Post", "Fuel Oil",
-             "Fuel Oil Post", "HW District", "HW District Post", "Natural Gas", 
-             "Natural Gas Post", "Propane", "Propane Post"]
-        data.to_csv(out_file, columns = c, mode="a", index=False)
-        
-        
+            
+            out_file = os.path.join(out_dir, "community_buildings.csv")
+            fd = open(out_file,'w')
+            fd.write("# " + com_id + " non-res buildigns\n")
+            fd.close()
+           
+                
+           
+            c = ["Building Type", "Square Feet", "Audited", "Retrofits Done",
+                 "implementation cost", "Electric", "Electric Post", "Fuel Oil",
+                 "Fuel Oil Post", "HW District", "HW District Post", "Natural Gas", 
+                 "Natural Gas Post", "Propane", "Propane Post"]
+            data[c].to_csv(out_file, mode="a", index=False)
+            
+        except KeyError: 
+            self.diagnostics.add_warning("preprocessor: Building Inventory", 
+                                    "Community not found - skiping" )
+
         out_file = os.path.join(out_dir, "com_num_buildings.csv")
         fd = open(out_file,'w')
         fd.write("# " + com_id + " estimated number of buildings\n")
@@ -774,11 +793,19 @@ class Preprocessor (object):
         fd.write("key,value\n")
         fd.close()
         
-        data = read_csv(count_file ,comment = "#", index_col = 0,
+        
+        try:
+            data = read_csv(count_file ,comment = "#", index_col = 0,
                                                  header = 0).ix[com_id]
-        data.to_csv(out_file,mode="a", header = False)
+            data.to_csv(out_file,mode="a", header = False)
         
-        
+        except KeyError:
+            self.diagnostics.add_note("preprocessor: Building Count", 
+                                    "Community not found - using 0 for count" )
+            fd = open(out_file,'a')
+            fd.write("Buildings,0\n")
+            fd.close()
+            
         
         
         out_file = out_file = os.path.join(out_dir, 
@@ -865,7 +892,6 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
     # make Deep copy of parent city
     population = pp_data[0].population.copy(True)
     generation = pp_data[0].generation.copy(True)
-    
     for idx in range(len(pp_data)):
         if idx == 0:
             continue
