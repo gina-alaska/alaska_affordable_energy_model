@@ -96,12 +96,15 @@ class Preprocessor (object):
                                          "government_kwh_sold",
                                          "unbilled_kwh","notes"]]
         except KeyError:
-            data = indata.loc[[com_id + ',' in s for s in indata.index]]\
+            try:
+                data = indata.loc[[com_id + ',' in s for s in indata.index]]\
                                         [["year","residential_kwh_sold",
                                          "commercial_kwh_sold",
                                          "community_kwh_sold",
                                          "government_kwh_sold",
                                          "unbilled_kwh","notes"]]
+            except TypeError:
+                raise KeyError, "EIA FILE?"
         try:
             self.diagnostics.add_note("preprocessor", 
                 "notes from pce data: " + str(data["notes"].tail(1)[0]))
@@ -144,6 +147,7 @@ class Preprocessor (object):
                               "commercial","industrial"])
         df['year'] /= 1000
         df = df.set_index("year")
+
         return df
         
     def electricity (self, in_file, out_dir, com_id):
@@ -167,7 +171,6 @@ class Preprocessor (object):
         except TypeError:
             pass # i don't know why this is needed this exception is raised
                  # but it the code still works
-        
         try:
             res = data['residential']
             non_res = data.sum(1) - res
