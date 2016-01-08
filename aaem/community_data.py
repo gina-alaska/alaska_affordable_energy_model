@@ -301,9 +301,6 @@ class CommunityData (object):
               and self.get_item('community',"consumption HF") == "IMPORT":
                 raise IOError, "Generation not found"
         
-        if self.get_item('community',"generation") == "IMPORT":
-            self.set_item('community',"generation", 
-            np.float(generation.ix["generation"]))
         if self.get_item('community',"consumption HF") == "IMPORT":
             self.set_item('community',"consumption HF", 
             np.float(generation.ix["consumption HF"]))
@@ -333,12 +330,13 @@ class CommunityData (object):
             self.set_item('community',"line losses", 
             np.float(generation2["line loss"][-3:].mean()))
 
-
-
         if self.get_item('community','diesel generation efficiency')== "IMPORT":
             self.set_item('community','diesel generation efficiency', 
                           np.float(generation2['efficiency'].values[-1]))
         try:
+            if self.get_item('community',"generation") == "IMPORT":
+                self.set_item('community',"generation", 
+                                generation2["net generation"])
             if self.get_item('community','generation numbers') == "IMPORT":
                 self.set_item('community','generation numbers', 
                               generation2[['generation diesel', 'generation hydro',
@@ -409,7 +407,7 @@ class CommunityData (object):
         self.set_item('water wastewater', "data", "IMPORT")
         self.set_item("community","electric non-fuel prices","IMPORT")
         self.set_item("community","generation numbers","IMPORT")
-
+        self.set_item("community","generation","IMPORT")
         
         fd = open(fname, 'w')
         text = yaml.dump(self.model_inputs, default_flow_style=False) 

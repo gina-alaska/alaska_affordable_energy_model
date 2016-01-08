@@ -214,6 +214,18 @@ class Forecast (object):
                     (1.0-self.cd.get_item('community','line losses'))
         self.generation = generation.apply(np.round, args=(-3,))
         
+        
+        try:
+            real = self.cd.get_item('community',"generation")[2003:]
+            idx = real.index.values.tolist()
+            df = DataFrame(real.ix[idx])
+            df.columns = ['consumption kWh']
+            self.generation.ix[idx] = df.ix[idx]
+        except:
+            pass
+        
+        
+        
         self.generation.columns = ["kWh generation"]
         
     def forecast_average_kW (self):
