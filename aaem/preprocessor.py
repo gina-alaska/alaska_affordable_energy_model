@@ -812,7 +812,8 @@ def preprocess (data_dir, out_dir, com_id):
     
     diag = diagnostics()
     
-    pp = preprocess_no_intertie(data_dir, os.path.join(out_dir,com_id), com_id, 
+    pp = preprocess_no_intertie(data_dir, 
+                        os.path.join(out_dir,com_id.replace(" ","_")), com_id, 
                                                                     diag)
     
     try:
@@ -829,10 +830,13 @@ def preprocess (data_dir, out_dir, com_id):
             ids = ids[ids != "''"].tolist()
             diag.add_note("preprocessor",
                                  "Includes dianostis for " + str(ids))
-            pp = preprocess_intertie(data_dir, out_dir, [com_id] + ids, 
-                                                                    diag)
-    except:
-        pass
+            ids = [com_id] + ids
+            pp = preprocess_intertie(data_dir, out_dir, ids, diag)
+            pp = ids
+        else:
+            pp = [com_id]
+    except AttributeError:
+        pp = [com_id]
         
     diag.save_messages(os.path.join(out_dir, 
                                             str(com_id) + "_diagnostis.csv"))

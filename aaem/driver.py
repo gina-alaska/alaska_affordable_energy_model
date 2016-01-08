@@ -169,6 +169,8 @@ def run_model (config_file):
     else:
         out_dir+= '/'
 
+    out_dir = os.path.join(out_dir,config['name'])
+    out_dir+= '/'
     try:
         os.makedirs(out_dir)
     except OSError:
@@ -218,35 +220,62 @@ def setup (community, data_repo, model_directory):
                 return
             else:
                 pass
-                
-    config_text = "community:\n  name: " + community +\
-                  " # community provided by user\n"
-    config_file = open(os.path.join(directory, "config",
-                                    "community_data.yaml"), 'w')
-    config_file.write(config_text)
-    config_file.close()
+    ids = preprocess(data_repo,os.path.join(directory,"input_data"),community)
+    
+    if len(ids) > 1 :
+        ids = [ids[0] + " intertie"] + ids
+    
+    for com_id in ids:
+        config_text = "community:\n  name: " + com_id.replace(" intertie","") +\
+                      " # community provided by user\n"
+
+        try:
+            os.makedirs(os.path.join(directory, "config", 
+                                                com_id.replace(" ","_")))
+        except OSError:
+            pass
+        config_file = open(os.path.join(directory, "config", 
+                                        com_id.replace(" ","_"),
+                                        "community_data.yaml"), 'w')
+        config_file.write(config_text)
+        config_file.close()
+        
+        
     def_file = open(os.path.join(directory, "config", 
                                     "test_defaults.yaml"), 'w')
     def_file.write(defaults.for_setup)
     def_file.close()
     
-    driver_text =  'overrides: ' + os.path.join(directory,"config",
+    batch = {}
+    
+    for com_id in ids:
+        driver_text = 'name: ' + com_id.replace(" ","_") + '\n'
+        driver_text +=  'overrides: ' + os.path.join(directory,"config", com_id.replace(" ","_"),
                                                 "community_data.yaml") + '\n'
-    driver_text += 'defaults: ' + os.path.join(directory,"config",
+        driver_text += 'defaults: ' + os.path.join(directory,"config",
                                                 "test_defaults.yaml") + '\n'
-    driver_text += 'data directory: ' + os.path.join(directory,
-                                                "input_data") + '\n'
-    driver_text += 'output directory path: ' + os.path.join(directory,
-                                                 "results") + '\n'
-    driver_text += 'output directory suffix: NONE # TIMESTAMP|NONE|<str>\n'
+        driver_text += 'data directory: ' + os.path.join(directory,
+                                                    "input_data",com_id.replace(" ","_")) + '\n'
+        driver_text += 'output directory path: ' + os.path.join(directory,
+                                                     "results") + '\n'
+        driver_text += 'output directory suffix: NONE # TIMESTAMP|NONE|<str>\n'
+        
+        
+        driver_path = os.path.join(directory,"config", com_id.replace(" ","_"),
+                           com_id.replace(" ", "_") + "_driver.yaml")
+        batch[com_id] = driver_path
+        
+        driver_file = open(driver_path, 'w')
+        driver_file.write(driver_text)
+        driver_file.close()
     
-    driver_file = open(os.path.join(directory, 
-                       community.replace(" ", "_") + "_driver.yaml"), 'w')
-    driver_file.write(driver_text)
-    driver_file.close()
-    
-    preprocess(data_repo,os.path.join(directory,"input_data"),community)
-    
+    fd = open(os.path.join(directory,community.replace(" ", "_") + "_driver.yaml"), 'w')
+    text = yaml.dump(batch, default_flow_style=False) 
+    fd.write("#batch  driver for communities tied to bethel\n")
+    fd.write(text)
+    fd.close()
+
+
     
     
     
@@ -277,14 +306,17 @@ def create_generation_forecast (models, path):
             continue
         gen_fc = gen_fc + models[idx].cd.get_item('community',
                                                  'generation numbers')
-    
+    #~ print gen_fc
    
     for col in ('generation hydro', 'generation natural gas',
                 'generation wind', 'generation solar',
                 'generation biomass'):
         try:
+            #~ print col
+            #~ print gen_fc[col]
             last = gen_fc[gen_fc[col].notnull()]\
                                 [col].values[-3:]
+            #~ print last
             last =  np.mean(last)
             #~ print last
             last_idx = gen_fc[gen_fc[col].notnull()]\
@@ -308,7 +340,7 @@ def create_generation_forecast (models, path):
           - gen_fc[gen_fc.index>last_idx][['generation hydro', 
                                            'generation natural gas',
                                         'generation wind', 'generation solar',
-                                         'generation biomass']].sum(1)
+                                         'generation biomass']].fillna(0).sum(1)
     
     gen_fc.loc[gen_fc.index>last_idx,'generation diesel'] = col
     
@@ -361,7 +393,9 @@ def run_model_no_intertie (config_file):
     return model, out_dir
     
     
-    
+def run (batch_file):
+    """ Function doc """
+    return run_batch(batch_file)
     
     
     
