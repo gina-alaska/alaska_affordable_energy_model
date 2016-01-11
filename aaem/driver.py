@@ -272,7 +272,7 @@ def setup (community, data_repo, model_directory):
     
     fd = open(os.path.join(directory,community.replace(" ", "_") + "_driver.yaml"), 'w')
     text = yaml.dump(batch, default_flow_style=False) 
-    fd.write("#batch  driver for communities tied to bethel\n")
+    fd.write("#batch  driver for communities tied to " + community +"\n")
     fd.write(text)
     fd.close()
 
