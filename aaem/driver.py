@@ -389,7 +389,7 @@ def run_model_no_intertie (config_file):
         out_file = os.path.join(out_dir, "generation_forecast.csv")
         fd = open(out_file, 'w')
         fd.write("# Generation forecast cannot be generated at this time for" +\
-                 " communities with EIA generation data\n")
+                 " communities without generation data\n")
         fd.close()
     return model, out_dir
     
