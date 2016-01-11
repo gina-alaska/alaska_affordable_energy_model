@@ -14,7 +14,7 @@ from forecast import growth
 class Preprocessor (object):
     def __init__ (self, com_id, data_dir, out_dir, diag = None):
         if diag == None:
-            self.diagnostics = diagnostics()
+            diag = diagnostics()
         self.diagnostics = diag   
         self.header_data_divide = "#### #### #### #### ####\n"
         self.com_id = com_id # will be ID #
@@ -38,7 +38,8 @@ class Preprocessor (object):
         """
         return "# " + self.com_id + " kWh Generation data\n" + \
                "# Data Source: " + source + "\n" +\
-               "# generation (kWh/yr) gross generation\n" + \
+               "# generation (kWh/yr) gross generation "+\
+                                                "(net generation for EIA)\n" + \
                "# consumption(kWh/yr) total kwh sold\n" + \
                "# fuel used(gal/yr) fuel used in generation\n" + \
                '# efficiency (kwh/gal) efficiency of generator/year\n' + \
@@ -411,7 +412,7 @@ class Preprocessor (object):
         fd.close()
     
         
-    def preprocess (self, data_dir, out_dir, com_id):
+    def preprocess (self):
         """
         preprocess data in to data dir 
         
@@ -425,8 +426,9 @@ class Preprocessor (object):
         """
         
          # join makes it a directory not a file 
-        data_dir = os.path.join(os.path.abspath(data_dir),"")
-        out_dir = os.path.join(os.path.abspath(out_dir),"")
+        data_dir = self.data_dir
+        out_dir = self.out_dir
+        com_id = self.com_id
         try:
             os.makedirs(out_dir)
         except OSError:
@@ -451,23 +453,8 @@ class Preprocessor (object):
         self.wastewater(os.path.join(data_dir,"ww_data.csv"),
                         os.path.join(data_dir,"ww_assumptions.csv"),
                    out_dir, com_id)
-        try:
-            self.electricity(os.path.join(data_dir,
-                            "2013-add-power-cost-equalization-pce-data.csv"), 
-                                                                        out_dir,
-                                                                        com_id)
-            self.electricity_prices(os.path.join(data_dir,
-                            "2013-add-power-cost-equalization-pce-data.csv"),
-                                                                        out_dir,
-                                                                        com_id)
-            self.electricity_generation(os.path.join(data_dir,
-                            "2013-add-power-cost-equalization-pce-data.csv"), 
-                                                                        out_dir,
-                                                                        com_id)
-        except KeyError:
-            self.electricity(os.path.join(data_dir,"EIA.csv"), out_dir, com_id)
-            self.diagnostics.add_note("preprocessor","no $/kWh estimates")
-            self.diagnostics.add_note("preprocessor","no generation estimates")
+
+        
             
 
         try:
@@ -486,8 +473,18 @@ class Preprocessor (object):
         try:
             print com_id
             self.pce_electricity_process()
+            self.electricity_prices(os.path.join(data_dir,
+                            "2013-add-power-cost-equalization-pce-data.csv"),
+                                                                        out_dir,
+                                                                        com_id)
         except KeyError:
-            print "is this an EIA community?"
+            try:
+                print "sitka"
+                self.eia_electricity_process()
+            except KeyError:
+                self.diagnostics.add_warning("Electricity", 
+                        "Generation and Sales for " + str(self.com_id) +\
+                        " data not in PCE or EIA")
     
     def electricity_prices (self, in_file, out_dir, com_id):
         """
@@ -539,9 +536,142 @@ class Preprocessor (object):
         fd.write("elec non-fuel cost," + str(elec_nonFuel_cost) + "\n")
         fd.close()
     
+    def eia_electricity_process (self):
+        """
+        pre process EIA electricity related values(generation, consumption, ...)
+        """
+        gen_file = os.path.join(self.data_dir, "eia_generation.csv" )
+        con_file = os.path.join(self.data_dir, "eia_sales.csv")
+        
+        
+        try:
+            generation = read_csv(gen_file, comment = "#", index_col=3)\
+                                        .loc[self.com_id] \
+                                        [['Reported Fuel Type Code',
+                                          'TOTAL FUEL CONSUMPTION QUANTITY',
+                                          'ELECTRIC FUEL CONSUMPTION QUANTITY',
+                                          'TOTAL FUEL CONSUMPTION MMBTUS',
+                                          'ELEC FUEL CONSUMPTION MMBTUS',
+                                          'NET GENERATION (megawatthours)',
+                                          'Year']]
+        
+            
+
+            sales = read_csv(con_file, comment = "#", index_col=2)\
+                                                    .loc[self.com_id]\
+                                                  [["Data Year",
+                                                    "Residential Megawatthours",
+                                                    "Total Megawatthours"]]
+        except KeyError:
+            raise KeyError, "Community not in EIA data"
+
+        # TODO add other fuel sources These two are from sitka example
+        power_type_lib = {"WAT":"hydro",
+                          "DFO":"diesel",}
+        
+        
+        gen_types = list(set(generation['Reported Fuel Type Code']))
+        l = []
+        for t in gen_types:
+            temp = generation[generation['Reported Fuel Type Code'] == t].\
+                                                          groupby('Year').sum()
+            temp['generation ' + power_type_lib[t]] = \
+                                temp['NET GENERATION (megawatthours)'] * 1000.0
+            
+            temp2 = DataFrame(temp['generation ' + power_type_lib[t]])
+            if power_type_lib[t] == "diesel":
+                temp2["fuel used"] = temp['TOTAL FUEL CONSUMPTION QUANTITY'] *\
+                                                                            42.0 
+            l.append(temp2)
+        fuel_types = concat(l, axis =1 )
+        
+        
+        try:
+            df_diesel = fuel_types[['generation diesel',"fuel used"]]
+        except KeyError:
+            df_diesel = DataFrame({"year":(2003,2004),
+                    "generation diesel":(np.nan,np.nan),
+                    "fuel used":(np.nan,np.nan)}).set_index('year')
+        try:
+            df_hydro = fuel_types[['generation hydro']]
+        except KeyError:
+            df_hydro = DataFrame({"year":(2003,2004),
+                    "generation hydro":(np.nan,np.nan)}).set_index('year')
+        try:
+            df_gas = fuel_types[['generation natural gas']]
+        except KeyError:
+            df_gas = DataFrame({"year":(2003,2004),
+                    "generation natural gas":(np.nan,np.nan)}).set_index('year')
+        try:
+            df_wind = fuel_types[['generation wind']]
+        except KeyError:
+            df_wind = DataFrame({"year":(2003,2004),
+                        "generation wind":(np.nan,np.nan)}).set_index('year')
+        try:
+            df_solar = fuel_types[['generation solar']]
+        except KeyError:
+            df_solar = DataFrame({"year":(2003,2004),
+                        "generation solar":(np.nan,np.nan)}).set_index('year')
+        try:
+            df_biomass = fuel_types[['generation biomass']].set_index('year')
+        except KeyError:
+            df_biomass = DataFrame({"year":(2003,2004),
+                        "generation biomass":(np.nan,np.nan)}).set_index('year')
+        
+        total_generation = DataFrame(generation.groupby('Year').sum()\
+                                    ['NET GENERATION (megawatthours)'])* 1000.0
+        total_generation["generation"] = \
+                              total_generation['NET GENERATION (megawatthours)']
+        total_generation["net generation"] = \
+                                                 total_generation["generation"]
+        
+        
+        sales["consumption"] = sales["Total Megawatthours"] * 1000
+        sales['consumption residential'] = sales["Residential Megawatthours"] *\
+                                                                            1000
+        sales['consumption non-residential'] = sales['consumption'] - \
+                                                sales['consumption residential']
+        sales['year'] = sales["Data Year"]
+        sales = sales[['year',"consumption",
+                       'consumption residential',
+                       'consumption non-residential']].set_index('year')
+        
+        electricity = concat([total_generation,sales,df_diesel,df_hydro,
+                                            df_gas,df_wind,df_solar,df_biomass], 
+                                                                       axis = 1)
+        
+        electricity['line loss'] = 1.0 - electricity['consumption']/\
+                                                electricity['net generation']
+        electricity['efficiency'] = electricity['generation diesel'] / \
+                                                    electricity['fuel used']
+        # I want some zeros
+        electricity['kwh_purchased'] = electricity['generation'] -\
+                                                electricity['generation']
+        
+        
+        self.electricity = electricity[['generation','consumption','fuel used',
+                                        'efficiency','line loss',
+                                        'net generation',
+                                        'consumption residential',
+                                        'consumption non-residential',
+                                        'kwh_purchased','generation diesel',
+                                        'generation hydro',
+                                        'generation natural gas',
+                                        'generation wind','generation solar',
+                                        'generation biomass']]
+                                        
+        out_file = os.path.join(self.out_dir, "yearly_electricity_summary.csv")
+        
+        fd = open(out_file,'w')
+        fd.write(self.electricity_header("EIA"))
+        fd.close()
+        
+        self.electricity.to_csv(out_file,mode="a")
+
+    
     def pce_electricity_process (self):
         """
-        pre process electricity related values (generation, consumption, ...)
+        pre process PCE electricity related values(generation, consumption, ...)
         """
         ## set up files
         lib_file = os.path.join(self.data_dir, "purchased_power_lib.csv")
@@ -552,7 +682,10 @@ class Preprocessor (object):
         try:
             data = data.loc[self.com_id]
         except KeyError:
-            data = data.loc[[self.com_id + ',' in s for s in data.index]]
+            try:
+                data = data.loc[[self.com_id + ',' in s for s in data.index]]
+            except KeyError:
+                raise KeyError, "Community not in PCE data"
         data = data[["year","diesel_kwh_generated",
                      "powerhouse_consumption_kwh",
                      "hydro_kwh_generated",
@@ -751,7 +884,8 @@ class Preprocessor (object):
             df_solar = DataFrame({"year":(2003,2004),
                         "generation solar":(np.nan,np.nan)}).set_index('year')
         try:
-            df_biomass = DataFrame(sums)[["year",'biomass']].set_index('year')
+            df_biomass = DataFrame(sums)[["year",'generation biomass']]\
+                                                            .set_index('year')
         except KeyError:
             df_biomass = DataFrame({"year":(2003,2004),
                         "generation biomass":(np.nan,np.nan)}).set_index('year')
@@ -961,7 +1095,7 @@ def preprocess_no_intertie (data_dir, out_dir, com_id, diagnostics):
     """
     """
     pp = Preprocessor(com_id, data_dir,out_dir, diagnostics)
-    pp.preprocess(data_dir,out_dir,com_id)
+    pp.preprocess()
     return pp
     
 def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
@@ -971,7 +1105,7 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
     parent_dir = os.path.join(out_dir, parent)
     for com in com_ids:
         pp = Preprocessor(com_id, data_dir,out_dir, diagnostics)
-        pp.preprocess(data_dir, os.path.join(out_dir, com), com)
+        pp.preprocess()
         pp_data.append(pp)
     
     # make Deep copy of parent city
