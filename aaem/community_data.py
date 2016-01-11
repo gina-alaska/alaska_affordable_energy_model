@@ -331,7 +331,7 @@ class CommunityData (object):
         try:
             if self.get_item('community',"generation") == "IMPORT":
                 self.set_item('community',"generation", 
-                                generation2["net generation"])
+                                elec_summary["net generation"])
             if self.get_item('community','generation numbers') == "IMPORT":
                 self.set_item('community','generation numbers', 
                               elec_summary[['generation diesel', 'generation hydro',
@@ -341,6 +341,17 @@ class CommunityData (object):
         except:
             #~ self.diagnostics.add_warning("Community Data", 
                             #~ "Generation data not available by energy type")
+                        #~ temp = elec_summary[['generation']]
+            #~ temp['generation diesel'] = temp['generation']
+            #~ temp['generation hydro'] = temp['generation'] - temp['generation']
+            #~ temp['generation natural gas'] = temp['generation'] - \
+                                                            #~ temp['generation']
+            #~ temp['generation wind'] = temp['generation'] - temp['generation']
+            #~ temp['generation solar'] = temp['generation'] - temp['generation']
+            #~ temp['generation biomass'] = temp['generation'] - temp['generation']
+    
+            
+            #~ self.set_item('community','generation numbers', temp )
             print "Generation data not available by energy type"
         
     def load_pp_csv(self, f_name):

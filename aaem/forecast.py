@@ -329,7 +329,7 @@ class Forecast (object):
         
         kWh_gen = self.generation
         kWh_gen.columns = ["total_electricity_generation [kWh/year]"]
-        g_map = c_map.replace("M","P")
+        g_map = c_map
         g_map.columns = ["total_electricity_generation_qualifier"]
         
         data = concat([self.population.round().astype(int), self.p_map, 
