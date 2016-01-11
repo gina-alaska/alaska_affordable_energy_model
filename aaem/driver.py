@@ -293,7 +293,7 @@ def create_generation_forecast (models, path):
     """
     gen_fc = None
     nat_gas = False
-    
+    name = models[0].cd.get_item('community', 'name')
     for idx in range(len(models)):
         if idx == 0:
             
@@ -359,7 +359,7 @@ def create_generation_forecast (models, path):
     gen_fc.index = gen_fc.index.values.astype(int)
     gen_fc = gen_fc.fillna(0).ix[2003:]
     
-    out_file = os.path.join(path, "generation_forecast.csv")
+    out_file = os.path.join(path, name + "_generation_forecast.csv")
     fd = open(out_file, 'w')
     fd.write("# Generation forecast\n")
     fd.write("# projections start in " + str(int(last_idx+1)) + "\n")
@@ -385,8 +385,9 @@ def run_model_no_intertie (config_file):
     model, out_dir = run_model(config_file)
     try:
         create_generation_forecast([model],out_dir)
-    except TypeError:
-        out_file = os.path.join(out_dir, "generation_forecast.csv")
+    except IndexError:
+        name = model.cd.get_item('community', 'name')
+        out_file = os.path.join(out_dir, name + "_generation_forecast.csv")
         fd = open(out_file, 'w')
         fd.write("# Generation forecast cannot be generated at this time for" +\
                  " communities without generation data\n")
