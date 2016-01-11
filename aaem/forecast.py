@@ -79,7 +79,7 @@ class Forecast (object):
         kWh = self.fc_specs["electricity"]
         years = kWh.T.keys().values
         self.yearly_kWh_totals = DataFrame({"year":years,
-                                "total":kWh['total'].values}).set_index("year")
+                          "total":kWh['consumption'].values}).set_index("year")
 
     def forecast_population (self):
         """

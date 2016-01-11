@@ -120,129 +120,129 @@ class Preprocessor (object):
         self.population = df
         return df
         
-    def pce_electricity (self, in_file, com_id):
-        """
-        parse PCE electricity data 
+    #~ def pce_electricity (self, in_file, com_id):
+        #~ """
+        #~ parse PCE electricity data 
         
-        pre:
-            in_file is the most current PCE file in the data-repo
-        com_id is a string ex "Adak"
+        #~ pre:
+            #~ in_file is the most current PCE file in the data-repo
+        #~ com_id is a string ex "Adak"
         
-        post: 
-           a data frame is returned
-        """
-        indata = read_csv(in_file, index_col = 1, comment = "#", header = 0) # update to GNIS
+        #~ post: 
+           #~ a data frame is returned
+        #~ """
+        #~ indata = read_csv(in_file, index_col = 1, comment = "#", header = 0) # update to GNIS
         
-        try:
-            data = indata.loc[com_id]\
-                                        [["year","residential_kwh_sold",
-                                         "commercial_kwh_sold",
-                                         "community_kwh_sold",
-                                         "government_kwh_sold",
-                                         "unbilled_kwh","notes"]]
-        except KeyError:
-            try:
-                data = indata.loc[[com_id + ',' in s for s in indata.index]]\
-                                        [["year","residential_kwh_sold",
-                                         "commercial_kwh_sold",
-                                         "community_kwh_sold",
-                                         "government_kwh_sold",
-                                         "unbilled_kwh","notes"]]
-            except TypeError:
-                raise KeyError, "EIA FILE?"
-        try:
-            self.diagnostics.add_note("preprocessor", 
-                "notes from pce data: " + str(data["notes"].tail(1)[0]))
-        except IndexError:
-            pass
-        del data["notes"]
-        sums = []
-        for year in set(data["year"].values):
-            if len(data[data["year"] == year]) != 12:
-                continue
-            temp = data[data["year"] == year].sum()
-            temp["year"] = int(year)
-            sums.append(temp)
+        #~ try:
+            #~ data = indata.loc[com_id]\
+                                        #~ [["year","residential_kwh_sold",
+                                         #~ "commercial_kwh_sold",
+                                         #~ "community_kwh_sold",
+                                         #~ "government_kwh_sold",
+                                         #~ "unbilled_kwh","notes"]]
+        #~ except KeyError:
+            #~ try:
+                #~ data = indata.loc[[com_id + ',' in s for s in indata.index]]\
+                                        #~ [["year","residential_kwh_sold",
+                                         #~ "commercial_kwh_sold",
+                                         #~ "community_kwh_sold",
+                                         #~ "government_kwh_sold",
+                                         #~ "unbilled_kwh","notes"]]
+            #~ except TypeError:
+                #~ raise KeyError, "EIA FILE?"
+        #~ try:
+            #~ self.diagnostics.add_note("preprocessor", 
+                #~ "notes from pce data: " + str(data["notes"].tail(1)[0]))
+        #~ except IndexError:
+            #~ pass
+        #~ del data["notes"]
+        #~ sums = []
+        #~ for year in set(data["year"].values):
+            #~ if len(data[data["year"] == year]) != 12:
+                #~ continue
+            #~ temp = data[data["year"] == year].sum()
+            #~ temp["year"] = int(year)
+            #~ sums.append(temp)
             
 
-        df = DataFrame(sums).set_index("year")
-        for key in df.keys():
-            df[key.split('_')[0]] = df[key]
-            del(df[key])
-        return df
+        #~ df = DataFrame(sums).set_index("year")
+        #~ for key in df.keys():
+            #~ df[key.split('_')[0]] = df[key]
+            #~ del(df[key])
+        #~ return df
         
-    def eia_electricity (self, in_file, com_id):
-        """
-        parse EIA electricity data 
+    #~ def eia_electricity (self, in_file, com_id):
+        #~ """
+        #~ parse EIA electricity data 
         
-        pre:
-            in_file is the most current PCE file in the data-repo
-        com_id is a string ex "Sitka"
+        #~ pre:
+            #~ in_file is the most current PCE file in the data-repo
+        #~ com_id is a string ex "Sitka"
         
-        post: 
-           a data frame is returned
-        """
-        df = read_csv(in_file, index_col = 0, comment='#')
-        data = df.ix[com_id][['Data Year','Sum - Residential Megawatthours',
-                'Sum - Commercial Megawatthours',
-                'Sum - Industrial Megawatthours']].values.astype(int)*1000
+        #~ post: 
+           #~ a data frame is returned
+        #~ """
+        #~ df = read_csv(in_file, index_col = 0, comment='#')
+        #~ data = df.ix[com_id][['Data Year','Sum - Residential Megawatthours',
+                #~ 'Sum - Commercial Megawatthours',
+                #~ 'Sum - Industrial Megawatthours']].values.astype(int)*1000
         
-        df = DataFrame(data,
-                     columns=["year","residential",
-                              "commercial","industrial"])
-        df['year'] /= 1000
-        df = df.set_index("year")
+        #~ df = DataFrame(data,
+                     #~ columns=["year","residential",
+                              #~ "commercial","industrial"])
+        #~ df['year'] /= 1000
+        #~ df = df.set_index("year")
 
-        return df
+        #~ return df
         
-    def electricity (self, in_file, out_dir, com_id):
-        """
-        create the electricity input file
+    #~ def electricity (self, in_file, out_dir, com_id):
+        #~ """
+        #~ create the electricity input file
         
-        pre:
-            in_file is the most current PCE file in the data-repo
-            out dir is a path, com_id is a string ex "Adak"
-        post: 
-            a file is saved, and the data frame it was generated from is returned
-        """
-        try:
-            data = self.pce_electricity (in_file, com_id)
-        except KeyError:
-            try:
-                data = self.eia_electricity (in_file, com_id)
-                nans = data["residential"]/0-data["residential"]/0
-                data["community"] = nans
-                data["government"] = nans
-                data["unbilled"] = nan
-            except KeyError:
-                return
-        except TypeError:
-            pass # i don't know why this is needed this exception is raised
-                 # but it the code still works
-        try:
-            res = data['residential']
-            non_res = data.sum(1) - res
-            data = DataFrame({"year":res.keys(),
-                   "residential":res.values,
-                   "non-residential":non_res.values,
-                   "total":res.values+non_res.values}).set_index("year")
-        except UnboundLocalError:
-            pass # i don't know why this is needed this exception is raised
-                 # but it the code still works
+        #~ pre:
+            #~ in_file is the most current PCE file in the data-repo
+            #~ out dir is a path, com_id is a string ex "Adak"
+        #~ post: 
+            #~ a file is saved, and the data frame it was generated from is returned
+        #~ """
+        #~ try:
+            #~ data = self.pce_electricity (in_file, com_id)
+        #~ except KeyError:
+            #~ try:
+                #~ data = self.eia_electricity (in_file, com_id)
+                #~ nans = data["residential"]/0-data["residential"]/0
+                #~ data["community"] = nans
+                #~ data["government"] = nans
+                #~ data["unbilled"] = nan
+            #~ except KeyError:
+                #~ return
+        #~ except TypeError:
+            #~ pass # i don't know why this is needed this exception is raised
+                 #~ # but it the code still works
+        #~ try:
+            #~ res = data['residential']
+            #~ non_res = data.sum(1) - res
+            #~ data = DataFrame({"year":res.keys(),
+                   #~ "residential":res.values,
+                   #~ "non-residential":non_res.values,
+                   #~ "total":res.values+non_res.values}).set_index("year")
+        #~ except UnboundLocalError:
+            #~ pass # i don't know why this is needed this exception is raised
+                 #~ # but it the code still works
             
             
-        out_file = os.path.join(out_dir,"electricity.csv")
-        fd = open(out_file,'w')
-        fd.write("# " + com_id + " electricity consumption\n")
-        fd.write("# all units are in kWh/year for a given year and category\n")
-        fd.write("#### #### #### #### ####\n")
-        fd.close()    
-        try:
-            data.to_csv(out_file, mode="a")
-            self.consumption = data
-        except UnboundLocalError:
-            pass # i don't know why this is needed this exception is raised
-                 # but it the code still works
+        #~ out_file = os.path.join(out_dir,"electricity.csv")
+        #~ fd = open(out_file,'w')
+        #~ fd.write("# " + com_id + " electricity consumption\n")
+        #~ fd.write("# all units are in kWh/year for a given year and category\n")
+        #~ fd.write("#### #### #### #### ####\n")
+        #~ fd.close()    
+        #~ try:
+            #~ data.to_csv(out_file, mode="a")
+            #~ self.consumption = data
+        #~ except UnboundLocalError:
+            #~ pass # i don't know why this is needed this exception is raised
+                 #~ # but it the code still works
         #~ return data
     
     def wastewater (self, data_file, assumptions_file, out_dir, com_id):
@@ -471,7 +471,6 @@ class Preprocessor (object):
                        out_dir, com_id, base_pop)
         
         try:
-            print com_id
             self.pce_electricity_process()
             self.electricity_prices(os.path.join(data_dir,
                             "2013-add-power-cost-equalization-pce-data.csv"),
@@ -479,7 +478,6 @@ class Preprocessor (object):
                                                                         com_id)
         except KeyError:
             try:
-                print "sitka"
                 self.eia_electricity_process()
             except KeyError:
                 self.diagnostics.add_warning("Electricity", 
@@ -1104,7 +1102,7 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
     pp_data = []
     parent_dir = os.path.join(out_dir, parent)
     for com in com_ids:
-        pp = Preprocessor(com_id, data_dir,out_dir, diagnostics)
+        pp = Preprocessor(com, data_dir,os.path.join(out_dir,com), diagnostics)
         pp.preprocess()
         pp_data.append(pp)
     
@@ -1162,29 +1160,10 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
     out_file = os.path.join(out_dir,'population.csv')
     population.to_csv(out_file)        
     
-    out_file = os.path.join(out_dir,'yearly_generation.csv')
+    out_file = os.path.join(out_dir,'yearly_electricity_summary.csv')
     electricity.to_csv(out_file)
     
-    out_file = os.path.join(out_dir,'electricity.csv')
-    df = electricity[['consumption residential','consumption non-residential', 
-                                                    'consumption',]].copy(True)
-    df['residential'] = df['consumption residential']
-    del df['consumption residential']
-    df['non-residential'] = df['consumption non-residential']
-    del df['consumption non-residential']
-    df['total'] = df['consumption']
-    del df['consumption']
-    df.to_csv(out_file)
     
-    
-    out_file = os.path.join(out_dir,'generation.csv')
-    fd = open(out_file,'w')
-    fd.write("key,value\n")
-    fd.write("generation," + str(electricity['generation'].values[-1]) + "\n")
-    fd.write("net_generation," + \
-                        str(electricity['net generation'].values[-1]) + "\n")
-    fd.write("consumption HF," + str(electricity['fuel used'].values[-1]) + "\n")
-    fd.close()
     
     shutil.copy(os.path.join(parent_dir,"diesel_fuel_prices.csv"), out_dir)
     shutil.copy(os.path.join(parent_dir,"hdd.csv"), out_dir)
