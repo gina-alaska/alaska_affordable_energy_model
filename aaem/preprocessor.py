@@ -12,10 +12,54 @@ import numpy as np
 from forecast import growth
 
 class Preprocessor (object):
-    def __init__ (self, diag = None):
+    def __init__ (self, com_id, data_dir, out_dir, diag = None):
         if diag == None:
             self.diagnostics = diagnostics()
-        self.diagnostics = diag    
+        self.diagnostics = diag   
+        self.header_data_divide = "#### #### #### #### ####\n"
+        self.com_id = com_id # will be ID #
+        self.community = com_id # will be name
+        # join add ensure the path is a directory 
+        self.data_dir = os.path.join(os.path.abspath(data_dir),"")
+        self.out_dir = os.path.join(os.path.abspath(out_dir),"")
+        
+    def population_header (self):
+        """
+        returns the population file header
+        """
+        # TODO: find original source (ADEG & TotalPopulationPlace2014.xls??)
+        return "# " + self.com_id + " population\n" + \
+               "# Data Source: (DATA REPO)\n" +\
+               "# recorded population in a given year\n" + \
+               self.header_data_divide
+               
+    def electricity_header (self, source = "PCE"):
+        """
+        """
+        return "# " + self.com_id + " kWh Generation data\n" + \
+               "# Data Source: " + source + "\n" +\
+               "# generation (kWh/yr) gross generation\n" + \
+               "# consumption(kWh/yr) total kwh sold\n" + \
+               "# fuel used(gal/yr) fuel used in generation\n" + \
+               '# efficiency (kwh/gal) efficiency of generator/year\n' + \
+               '# line loss (% as decimal) kwh lost from transmission\n' + \
+               "# net generation(kWh/yr) generation without " + \
+                                                  "powerhouse consumption\n" + \
+               "# consumption residential (kWh/yr) residential kwh sold\n" + \
+               "# consumption non-residential (kWh/yr) non-residential " + \
+                                                                "kwh sold\n" + \
+               "# generation <fuel source> (kWh/yr) generation from source\n"+ \
+               "# Data Source: (DATA REPO)\n" +\
+               self.header_data_divide
+    
+    def prices_header (self, source = "PCE"):
+        """ Function doc """
+        return "# " + self.com_id + " electricity consumption\n" + \
+               "# Data Source: " + source + "\n" +\
+               "# all units are in $/kWh \n" + \
+               self.header_data_divide
+               
+
     
     def population (self, in_file, out_dir, com_id, threshold = 20,
                                                     end_year = 2040):
@@ -163,11 +207,14 @@ class Preprocessor (object):
         try:
             data = self.pce_electricity (in_file, com_id)
         except KeyError:
-            data = self.eia_electricity (in_file, com_id)
-            nans = data["residential"]/0-data["residential"]/0
-            data["community"] = nans
-            data["government"] = nans
-            data["unbilled"] = nans
+            try:
+                data = self.eia_electricity (in_file, com_id)
+                nans = data["residential"]/0-data["residential"]/0
+                data["community"] = nans
+                data["government"] = nans
+                data["unbilled"] = nan
+            except KeyError:
+                return
         except TypeError:
             pass # i don't know why this is needed this exception is raised
                  # but it the code still works
@@ -437,10 +484,8 @@ class Preprocessor (object):
                        out_dir, com_id, base_pop)
         
         try:
-            self.yearly_generation(os.path.join(data_dir, 
-                                "2013-add-power-cost-equalization-pce-data.csv"),
-                                   os.path.join(data_dir, 
-                                "purchased_power_lib.csv"),out_dir,com_id)
+            print com_id
+            self.pce_electricity_process()
         except KeyError:
             print "is this an EIA community?"
     
@@ -494,102 +539,142 @@ class Preprocessor (object):
         fd.write("elec non-fuel cost," + str(elec_nonFuel_cost) + "\n")
         fd.close()
     
-    def yearly_generation (self, in_file, lib_file, out_dir, com_id):
+    def pce_electricity_process (self):
         """
-        pre process kwh generation by year 
+        pre process electricity related values (generation, consumption, ...)
         """
-        try:
-            lib = read_csv(lib_file, index_col=0, comment = '#')
-            try:
-                lib = lib.ix[com_id]
-            except KeyError:
-                lib = lib.loc[[com_id+',' in s for s in lib.index]]
-        except:
-            pass
-            
+        ## set up files
+        lib_file = os.path.join(self.data_dir, "purchased_power_lib.csv")
+        in_file = os.path.join(self.data_dir, 
+                                "2013-add-power-cost-equalization-pce-data.csv")
+        ## Load Data 
         data = read_csv(in_file, index_col=1, comment = "#")
         try:
-            data = data.loc[com_id]
+            data = data.loc[self.com_id]
         except KeyError:
-            data = data.loc[[com_id + ',' in s for s in data.index]]
-        
-        
+            data = data.loc[[self.com_id + ',' in s for s in data.index]]
         data = data[["year","diesel_kwh_generated",
-                     "powerhouse_consumption_kwh","hydro_kwh_generated",
+                     "powerhouse_consumption_kwh",
+                     "hydro_kwh_generated",
                      "other_1_kwh_generated","other_1_kwh_type",
                      "other_2_kwh_generated","other_2_kwh_type",
                      'purchased_from','kwh_purchased',
-                     "fuel_used_gal","residential_kwh_sold",
-                                         "commercial_kwh_sold",
-                                         "community_kwh_sold",
-                                         "government_kwh_sold",
-                                         "unbilled_kwh"]]
-        
+                     "fuel_used_gal",
+                     "residential_kwh_sold",
+                     "commercial_kwh_sold",
+                     "community_kwh_sold",
+                     "government_kwh_sold",
+                     "unbilled_kwh"]]
+         
+         ## Load Purchased from library            
         try:
-            p_key = data[data["purchased_from"].notnull()]\
-                                                ["purchased_from"].values[0]
-                
-            sources = data[data["purchased_from"].notnull()]\
-                                                ["purchased_from"].values
-            self.diagnostics.add_note("preprocessor",
-                        "purchased energy utility list " + str(sources) + \
-                        "using  " + str(p_key) + \
-                        "as it is the first item on the list")
+            lib = read_csv(lib_file, index_col=0, comment = '#')
+            try:
+                lib = lib.ix[self.com_id]
+            except KeyError:
+                lib = lib.loc[[self.com_id+',' in s for s in lib.index]]
+        except:
+             self.diagnostics.add_note("PCE Electricity", 
+             "Reading purchased from no utilities listed for community")
+        
+        ## Determine if and what kind of power is purchased
+        try:
+            sources = sorted(set(data[data["purchased_from"].notnull()]\
+                                                ["purchased_from"].values))
             
-            p_key = lib[lib['purchased_from'] == p_key]\
+            self.diagnostics.add_note("PCE Electricity",
+                        "Utility list (alphabetized) for purchased power" + \
+                        str(sources) + "using " + str(sources[0]) + \
+                        "as default provider of purchased power")
+        
+            p_key = lib[lib['purchased_from'] == sources[0]]\
                                         ['Energy Source'].values[0].lower()
             
-            self.diagnostics.add_note("preprocessor",
-                         str(p_key) + " - purchased energy type")                           
+            self.diagnostics.add_note("PCE Electricity",
+                          "Purchased energy type: " + str(p_key))                           
         except:
+            l = len(data["purchased_from"][data["purchased_from"].notnull()])
+            if l != 0:
+                self.diagnostics.add_warning("PCE Electricity", 
+                        "Power was found to be purchased, " + \
+                        "but the source or type of power could not be found")
+            else: 
+               self.diagnostics.add_note("PCE Electricity", 
+                                                "No Purchased Power")
             p_key = None
+            
+        ## Determine if and what kind of power is other_1
         try:
-            o1_key = data[data["other_1_kwh_type"].notnull()]\
-                                        ["other_1_kwh_type"].values[0].lower()
-            
-            sources = data[data["other_1_kwh_type"].notnull()]\
-                                        ["other_1_kwh_type"].values
-                                        
-            self.diagnostics.add_note("preprocessor",
-                        "other energy 1 type list " + str(sources) + \
-                        "sorting values into " + str(o1_key) + \
-                        "as it is the first item on the list")
-            
+            sources = list(data[data["other_1_kwh_type"].notnull()]\
+                                        ["other_1_kwh_type"].values)
+            s_set = sorted(set(sources))
+            if len(s_set) == 1:
+                o1_key = sources[0]
+                self.diagnostics.add_note("PCE Electricity",
+                        "other energy 1 type: " + str(o1_key) )
+            elif len(s_set) > 1:
+                o1_key = sources[0].lower()
+                l = len([i for i, x in enumerate(sources) if x == o1_key])
+                for k in s_set:
+                    if len([i for i, x in enumerate(sources) if x == k]) > l:
+                        o1_key = k.lower()
+                
+                self.diagnostics.add_warning("PCE Electricity",
+                        "other energy 1 type: " + str(o1_key) + \
+                        ", as it wasthe most common energy source amoung " + \
+                        str(s_set) )
+                
             
             if o1_key not in ('diesel', 'natural gas','wind', 'solar'):                        
-                self.diagnostics.add_warning("preprocessor", 
+                self.diagnostics.add_warning("PCE Electricity", 
                 "energy source key " + str(o1_key) + \
-                                    " not recognized. dropping values" )
+                                    " not recognized. Ignoring")
                 o1_key = None
         except:
             o1_key = None
-        
-        try:
-            o2_key = data[data["other_2_kwh_type"].notnull()]\
-                                         ["other_2_kwh_type"].values[0].lower()
-                                         
-            sources = data[data["other_2_kwh_type"].notnull()]\
-                                        ["other_2_kwh_type"].values
-                                        
-            self.diagnostics.add_note("preprocessor",
-                        "other energy 2 type list " + str(sources) + \
-                        "sorting values into " + str(o2_key) + \
-                        "as it is the first item on the list")
             
-            if o2_key not in ('diesel', 'natural gas','wind', 'solar'):     
-                self.diagnostics.add_warning("preprocessor", 
+        ## Determine if and what kind of power is in other_2
+        try:
+            sources = list(data[data["other_2_kwh_type"].notnull()]\
+                                        ["other_2_kwh_type"].values)
+            s_set = sorted(set(sources))
+            if len(s_set) == 1:
+                o2_key = sources[0]
+                self.diagnostics.add_note("PCE Electricity",
+                        "other energy 1 type: " + str(o2_key) )
+            elif len(s_set) > 1:
+                o2_key = sources[0].lower()
+                l = len([i for i, x in enumerate(sources) if x == o2_key])
+                for k in s_set:
+                    if len([i for i, x in enumerate(sources) if x == k]) > l:
+                        o2_key = k.lower()
+                
+                self.diagnostics.add_warning("PCE Electricity",
+                        "other energy 1 type: " + str(o2_key) + \
+                        ", as it wasthe most common energy source amoung " + \
+                        str(s_set) )
+                
+            
+            if o2_key not in ('diesel', 'natural gas','wind', 'solar'):                        
+                self.diagnostics.add_warning("PCE Electricity", 
                 "energy source key " + str(o2_key) + \
-                                    " not recognized. dropping values" )                   
+                                    " not recognized. Ignoring")
                 o2_key = None
         except:
             o2_key = None
         
+        
+        ## create yearly summaries
         sums = []
         for year in set(data["year"].values):
+            #take full years only
             if len(data[data["year"] == year]) != 12:
                 continue
+            ## sum of every value for the year
             temp = data[data["year"] == year].sum()
+            ## get year as int 
             temp["year"] = int(year)
+            ## get gross generation
             temp['generation'] = temp[['diesel_kwh_generated',
                                         "powerhouse_consumption_kwh",
                                         "hydro_kwh_generated",
@@ -597,51 +682,56 @@ class Preprocessor (object):
                                         "other_2_kwh_generated",
                                         "kwh_purchased"]].sum()
             
+            ## get generation by fuel type
             temp['generation diesel'] = temp['diesel_kwh_generated']
             temp['generation hydro'] = temp['hydro_kwh_generated']
-            
-            
+            ## for other 1
             if np.isreal(temp["other_1_kwh_generated"]) and o1_key is not None:
                 val = temp["other_1_kwh_generated"]
                 if o1_key == "diesel":
                     temp['generation diesel'] = temp['generation diesel'] + val
                 else:
                     temp['generation ' + o1_key] = val
-            if np.isreal(temp["other_1_kwh_generated"]) and o2_key is not None:
-                val =  temp["other_1_kwh_generated"]
+            ## for other 2
+            if np.isreal(temp["other_2_kwh_generated"]) and o2_key is not None:
+                val =  temp["other_2_kwh_generated"]
                 if o2_key == "diesel":
                     temp['generation diesel'] = temp['generation diesel'] + val
                 else:
                     temp['generation ' + o2_key] = val
-            if np.isreal(temp["other_1_kwh_generated"]) and p_key is not None:
+            ## for purchased
+            if np.isreal(temp["kwh_purchased"]) and p_key is not None:
                 val = temp['kwh_purchased']
                 if p_key == "diesel":
                     temp['generation diesel'] = temp['generation diesel'] + val
                 else:
                     temp['generation ' + p_key] = val
             
-            
+            ## get consumption (sales) total & by type
             temp['consumption'] = temp[["residential_kwh_sold",
-                                         "commercial_kwh_sold",
-                                         "community_kwh_sold",
-                                         "government_kwh_sold",
-                                         "unbilled_kwh"]].sum().sum()
+                                        "commercial_kwh_sold",
+                                        "community_kwh_sold",
+                                        "government_kwh_sold",
+                                        "unbilled_kwh"]].sum().sum()
             temp['consumption residential'] = temp["residential_kwh_sold"].sum()
             temp['consumption non-residential'] = temp['consumption'] - \
                                                  temp['consumption residential']
-            
+            ## net generation
             temp['net generation'] = temp['generation'] - \
                                      temp["powerhouse_consumption_kwh"]
+            
+            ## other values
             temp['fuel used'] = temp['fuel_used_gal']
             temp['line loss'] = 1.0 - temp['consumption']/temp['net generation']
             temp['efficiency'] = temp['generation'] / temp['fuel_used_gal']
             sums.append(temp)
         
+        ## pull out diesel & hydro
         df_diesel = DataFrame(sums)[["year",
                                         'generation diesel']].set_index('year')
         df_hydro = DataFrame(sums)[["year",
                                     'generation hydro']].set_index('year')
-
+        ## pull out or create, other fuel sources
         try:
             df_gas = DataFrame(sums)[["year",
                                     'generation natural gas']].set_index('year')
@@ -665,8 +755,8 @@ class Preprocessor (object):
         except KeyError:
             df_biomass = DataFrame({"year":(2003,2004),
                         "generation biomass":(np.nan,np.nan)}).set_index('year')
-
         
+        ## data frame for all values 
         df = DataFrame(sums)[['year','generation','consumption','fuel used',
                               'efficiency', 'line loss', 'net generation', 
                               'consumption residential', 
@@ -675,24 +765,16 @@ class Preprocessor (object):
         df = concat([df,df_diesel,df_hydro,df_gas,df_wind,df_solar,df_biomass], 
                                                                        axis = 1)
         
-        out_file = os.path.join(out_dir, "yearly_generation.csv")
+        ## save
+        out_file = os.path.join(self.out_dir, "yearly_electricity_summary.csv")
+        
         fd = open(out_file,'w')
-        fd.write("# " + com_id + " kWh Generation data\n")
-        fd.write("# generation (kWh/yr) gross generation\n")
-        fd.write("# consumption(kWh/yr) total kwh sold\n")
-        fd.write("# fuel used(gal/yr) fuel used in generation\n")
-        fd.write('# efficiency (kwh/gal) efficiency of generator/year\n')
-        fd.write('# line loss (% as decimal) kwh lost from transmission\n')
-        fd.write("# net generation(kWh/yr) generation without " +\
-                                                    "powerhouse consumption\n")
-        fd.write("# consumption residential (kWh/yr) residential kwh sold\n")
-        fd.write("# consumption non-residential (kWh/yr) non-residential " + \
-                                                                "kwh sold\n")
-        fd.write("# generation <fuel source> (kWh/yr) generation from source\n")
-        fd.write("#### #### #### #### ####\n")
+        fd.write(self.electricity_header())
         fd.close()
+        
         df.to_csv(out_file,mode="a")
-        self.generation = df
+        
+        self.electricity = df
         self.purchase_type = p_key
         
     def electricity_generation (self, in_file, out_dir, com_id):
@@ -878,7 +960,7 @@ def preprocess (data_dir, out_dir, com_id):
 def preprocess_no_intertie (data_dir, out_dir, com_id, diagnostics):
     """
     """
-    pp = Preprocessor(diagnostics)
+    pp = Preprocessor(com_id, data_dir,out_dir, diagnostics)
     pp.preprocess(data_dir,out_dir,com_id)
     return pp
     
@@ -888,13 +970,13 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
     pp_data = []
     parent_dir = os.path.join(out_dir, parent)
     for com in com_ids:
-        pp = Preprocessor(diagnostics)
+        pp = Preprocessor(com_id, data_dir,out_dir, diagnostics)
         pp.preprocess(data_dir, os.path.join(out_dir, com), com)
         pp_data.append(pp)
     
     # make Deep copy of parent city
     population = pp_data[0].population.copy(True)
-    generation = pp_data[0].generation.copy(True)
+    electricity = pp_data[0].electricity.copy(True)
     for idx in range(len(pp_data)):
         if idx == 0:
             continue
@@ -905,11 +987,11 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
         #   try, except for communities that don't exist on their own such as 
         # oscarville, which is bethel,oscarville 
         try:
-            temp = pp_data[idx].generation
-            generation['generation'] = generation['generation'].fillna(0) +\
+            temp = pp_data[idx].electricity
+            electricity['electricity'] = electricity['generation'].fillna(0) +\
                 (temp['generation'].fillna(0) - temp['kwh_purchased'].fillna(0))
-            generation['net generation'] = \
-                        generation['net generation'].fillna(0) +\
+            electricity['net generation'] = \
+                        electricity['net generation'].fillna(0) +\
                             (temp['net generation'].fillna(0) - \
                                 temp['kwh_purchased'].fillna(0))
             for key in ['consumption', 'consumption residential',
@@ -920,17 +1002,17 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
                        ]:
                 try:
                     if pp_data[idx].purchase_type == key.split(' ')[1]:
-                        generation[key] = generation[key].fillna(0) + \
+                        electricity[key] = electricity[key].fillna(0) + \
                             (temp[key].fillna(0) - \
                                 temp['kwh_purchased'].fillna(0))
                         continue
                 except IndexError:
-                    generation[key] = generation[key].fillna(0) + \
+                    electricity[key] = electricity[key].fillna(0) + \
                                                             temp[key].fillna(0)
         except AttributeError:
             pass
-    generation['line loss'] = 1.0 - \
-                        generation['consumption']/generation['net generation']
+    electricity['line loss'] = 1.0 - \
+                        electricity['consumption']/electricity['net generation']
 
     
     
@@ -947,10 +1029,10 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
     population.to_csv(out_file)        
     
     out_file = os.path.join(out_dir,'yearly_generation.csv')
-    generation.to_csv(out_file)
+    electricity.to_csv(out_file)
     
     out_file = os.path.join(out_dir,'electricity.csv')
-    df = generation[['consumption residential','consumption non-residential', 
+    df = electricity[['consumption residential','consumption non-residential', 
                                                     'consumption',]].copy(True)
     df['residential'] = df['consumption residential']
     del df['consumption residential']
@@ -964,10 +1046,10 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
     out_file = os.path.join(out_dir,'generation.csv')
     fd = open(out_file,'w')
     fd.write("key,value\n")
-    fd.write("generation," + str(generation['generation'].values[-1]) + "\n")
+    fd.write("generation," + str(electricity['generation'].values[-1]) + "\n")
     fd.write("net_generation," + \
-                        str(generation['net generation'].values[-1]) + "\n")
-    fd.write("consumption HF," + str(generation['fuel used'].values[-1]) + "\n")
+                        str(electricity['net generation'].values[-1]) + "\n")
+    fd.write("consumption HF," + str(electricity['fuel used'].values[-1]) + "\n")
     fd.close()
     
     shutil.copy(os.path.join(parent_dir,"diesel_fuel_prices.csv"), out_dir)
