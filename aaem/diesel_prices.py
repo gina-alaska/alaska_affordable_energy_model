@@ -24,13 +24,18 @@ class DieselProjections (object):
             self.projected_prices will contain the projected prices, and 
         the start year is configred based off of it 
         """
-        df = read_csv(data_dir+"/diesel_fuel_prices.csv", 
+        df = read_csv(os.path.join(data_dir,"diesel_fuel_prices.csv"), 
                         index_col=3, comment="#", header=1)
         
         # 3 is the first column that has a year as the name/index
         self.start_year = int(df.keys()[3])
-        self.projected_prices = np.array(df.T[community][3:].values, 
+        try:
+            self.projected_prices = np.array(df.T[community][3:].values, 
                                                             dtype = np.float64)
+        except KeyError:
+            self.projected_prices = np.array(df.mean()[3:].values, 
+                                                            dtype = np.float64)
+            self.msg = "average used"
  
     def get_projected_prices (self, start_year, end_year):
         """
