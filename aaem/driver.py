@@ -19,6 +19,12 @@ import os.path
 from importlib import import_module
 from datetime import datetime
 
+comp_lib = {
+    "residential buildings": "residential_buildings",
+    "community buildings": "community_buildings",
+    "water wastewater": "wastewater",
+        }
+
 class Driver (object):
     """ 
     Driver for the AAEM.
@@ -47,9 +53,10 @@ class Driver (object):
             self.comp_lib is a dictonarey the maps the names of components in
         absolute defaults, to the python modules. 
         """
-        fd = open("comp_lib.yaml", 'r')
-        self.comp_lib = yaml.load(fd)
-        fd.close()
+        #~ fd = open("comp_lib.yaml", 'r')
+        #~ self.comp_lib = yaml.load(fd)
+        #~ fd.close()
+        self.comp_lib = comp_lib
         
     def run_components (self):
         """
@@ -78,7 +85,7 @@ class Driver (object):
         post:
             returns imported module
         """
-        return import_module("components." + comp_name).component
+        return import_module("aaem.components." + comp_name).component
         
     def save_components_output (self, directory):
         """

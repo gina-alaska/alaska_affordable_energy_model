@@ -15,7 +15,7 @@ import numpy as np
 ## fc - forecast
 ## com - community buildings 
 from diesel_prices import DieselProjections
-
+from defaults import absolute
 
 
 PATH = os.path.join
@@ -120,8 +120,9 @@ class CommunityData (object):
             self.valid keys is a dict of sections with lists of keys as values
         ex. {section1:{key1,key2,key3}, section2:{keyA,keyB,keyC}}
         """
-        absolutes = os.path.join("absolute_defaults.yaml")
-        lib = self.read_config(absolutes)
+        #~ absolutes = os.path.join("absolute_defaults.yaml")
+        #~ lib = self.read_config(absolutes)
+        lib = yaml.load(absolute)
         keys = {}
         for section in lib:
             temp = []
@@ -141,13 +142,13 @@ class CommunityData (object):
         """
         cwd = os.path.dirname(os.getcwd())
         
-        absolutes = os.path.join("absolute_defaults.yaml")
+        #~ absolutes = os.path.join("absolute_defaults.yaml")
         defaults = defaults_file
         overrides = community_file
         
         
-        absolute_defaults = self.read_config(absolutes)
-        
+        #~ absolute_defaults = self.read_config(absolutes)
+        absolute_defaults = yaml.load(absolute)
         if defaults_file == "defaults":
             client_defaults = absolute_defaults
         else:
