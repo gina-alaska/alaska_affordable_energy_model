@@ -248,7 +248,6 @@ def setup (community, data_repo, model_directory):
     def_file.close()
     
     batch = {}
-    
     for com_id in ids:
         driver_text = 'name: ' + com_id.replace(" ","_") + '\n'
         driver_text +=  'overrides: ' + os.path.join(directory,"config", com_id.replace(" ","_"),
