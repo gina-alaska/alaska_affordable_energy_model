@@ -113,6 +113,15 @@ class Preprocessor (object):
                         "Coal; Wood; Solar; Other; No Fuel Used: " +\
                                         "% of heating fuel types\n"+\
                 self.header_data_divide
+                
+    def buildings_count_header (self):
+        pass
+        
+    def buildings_estimates_header (self):
+        pass
+        
+    def buildigns_inventory_header (self):
+        pass
 
     def population (self, in_file, out_dir, com_id, threshold = 20,
                                                     end_year = 2040):
@@ -864,6 +873,22 @@ class Preprocessor (object):
         self.it_ids = data
         return data
 
+
+    def buildings_estimates(self):
+        """
+        """
+        pass
+    
+    def buildings_count (self):
+        """ 
+        Function doc 
+        """
+        pass
+        
+    def buidlings_inventory (self):
+        """
+        """
+        pass
 
     def buildings (self, in_file, est_file, count_file, out_dir, com_id, pop):
         """ Function doc """
