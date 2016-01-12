@@ -177,8 +177,7 @@ class Preprocessor (object):
                 "# Propane Post: Gal propane used if refit\n" +\
                 self.comments_dataframe_divide
 
-    def population (self, in_file, out_dir, com_id, threshold = 20,
-                                                    end_year = 2040):
+    def population (self, threshold = 20, end_year = 2040):
         """
         create the population input file
 
@@ -186,15 +185,16 @@ class Preprocessor (object):
             in_file is the most current population file in the data-repo
             out dir is a path, com_id is a string ex "Adak"
         post:
-            a file is saved, and the data frame it was generated from is returned
+            a file is saved, and the data frame it was generated from isreturned
         """
+        in_file = os.path.join(self.data_dir,"population.csv")
+        
         pop_data = read_csv(in_file, index_col = 1) # update to GNIS
-        pops = pop_data.ix[com_id]["2003":"2014"].values
-        years = pop_data.ix[com_id]["2003":"2014"].keys().values.astype(int)
-
+        pops = pop_data.ix[self.com_id]["2003":"2014"].values
+        years = pop_data.ix[self.com_id]["2003":"2014"]\
+                                                    .keys().values.astype(int)
         if (pops < threshold).any():
             self.diagnostics.add_warning("preprocessor","population < 20")
-
         ##########
         if len(pops) < 10:
             msg = "the data range is < 10 for input population "\
@@ -212,6 +212,7 @@ class Preprocessor (object):
                                     np.float64(population.ix[new_years[0]+15])
         population = population.astype(int)
         ###############
+        
         pops = DataFrame([years,pops],["year","population"]).T.set_index("year")
         p_map = concat(\
                      [pops - pops,
@@ -222,16 +223,16 @@ class Preprocessor (object):
         population = concat([pops,population])
 
 
-        out_file = os.path.join(out_dir,"population.csv")
+        out_file = os.path.join(self.out_dir,"population.csv")
         fd = open(out_file,'w')
         fd.write(self.population_header())
         fd.close()
 
 
         df = concat([population,p_map],axis = 1)
-        df.to_csv(out_dir+"population.csv",mode="a")
+        df.to_csv(out_file,mode="a")
         self.population_data = df
-        return df
+        #~ return df
 
 
     def wastewater (self):
@@ -315,7 +316,7 @@ class Preprocessor (object):
         df.to_csv(out_file, mode = 'a')
         self.wastewater_data = df
 
-    def residential (self, fuel_file, data_file, out_dir, com_id):
+    def residential (self):
         """
         preprocess the residential data
         pre:
@@ -325,16 +326,19 @@ class Preprocessor (object):
         post:
             residential data is in a file the model can use
         """
-        fuel = read_csv(fuel_file, index_col=0, comment = "#").ix[com_id]
+        data_file = os.path.join(self.data_dir, "res_model_data.csv")
+        fuel_file = os.path.join(self.data_dir, "res_fuel_source.csv")
+        
+        fuel = read_csv(fuel_file, index_col=0, comment = "#").ix[self.com_id]
         fuel = fuel.ix[["Total", "Utility Gas", "LP", "Electricity", "Fuel Oil",
                         "Coal", "Wood", "Solar", "Other", "No fuel used"]]
 
-        data = read_csv(data_file, index_col=0, comment = "#").ix[com_id]
+        data = read_csv(data_file, index_col=0, comment = "#").ix[self.com_id]
 
         df = concat([data,fuel])
         del df.T["energy_region"]
         
-        out_file = out_dir + "residential_data.csv"
+        out_file = os.path.join(self.out_dir, "residential_data.csv")
         fd = open(out_file,'w')
         fd.write(self.residential_header())
         fd.write("key,value\n")
@@ -399,11 +403,8 @@ class Preprocessor (object):
         self.region(os.path.join(data_dir,"res_model_data.csv"),
                os.path.join(data_dir,"heating_fuel_premium.csv"),out_dir,com_id)
 
-        self.population(os.path.join(data_dir,"population.csv"),
-                                                            out_dir,com_id)
-        self.residential(os.path.join(data_dir,"res_fuel_source.csv"),
-                         os.path.join(data_dir,"res_model_data.csv"),
-                    out_dir, com_id)
+        self.population()
+        self.residential()
         
         base_pop = np.float(self.population_data.ix\
                             [self.residential_data.ix['year']]["population"])
