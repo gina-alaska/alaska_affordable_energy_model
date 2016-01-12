@@ -10,13 +10,14 @@ import os.path
 from diagnostics import diagnostics
 import numpy as np
 from forecast import growth
+from datetime import datetime
 
 class Preprocessor (object):
     def __init__ (self, com_id, data_dir, out_dir, diag = None):
         if diag == None:
             diag = diagnostics()
         self.diagnostics = diag
-        self.header_data_divide = "#### #### #### #### ####\n"
+        self.comments_dataframe_divide = "#### #### #### #### ####\n"
         self.com_id = com_id # will be ID #
         self.community = com_id # will be name
         # join add ensure the path is a directory
@@ -29,14 +30,16 @@ class Preprocessor (object):
         """
         # TODO: find original source (ADEG & TotalPopulationPlace2014.xls??)
         return "# " + self.com_id + " population\n" + \
+               "# generated: " + str(datetime.now()).split('.')[0] +"\n" +\
                "# Data Source: (DATA REPO)\n" +\
                "# recorded population in a given year\n" + \
-               self.header_data_divide
+               self.comments_dataframe_divide
 
     def electricity_header (self, source = "PCE"):
         """
         """
         return "# " + self.com_id + " kWh Generation data\n" + \
+               "# generated: " + str(datetime.now()).split('.')[0] +"\n" +\
                "# Data Source: " + source + "\n" +\
                "# generation (kWh/yr) gross generation "+\
                                                 "(net generation for EIA)\n" + \
@@ -51,22 +54,26 @@ class Preprocessor (object):
                                                                 "kwh sold\n" + \
                "# generation <fuel source> (kWh/yr) generation from source\n"+ \
                "# Data Source: (DATA REPO)\n" +\
-               self.header_data_divide
+               self.comments_dataframe_divide
 
     def prices_header (self, source = "PCE"):
         """
         Function doc
         """
         return "# " + self.com_id + " electricity consumption\n" + \
+               "# generated: " + str(datetime.now()).split('.')[0] +"\n" +\
                "# Data Source: " + source + "\n" +\
                "# all units are in $/kWh \n" + \
-               self.header_data_divide
+               self.comments_dataframe_divide
 
     def wastewater_header (self):
         """
         """
         #TODO find what assumptions mean
+        #TODO check sources 
         return  "# " + self.com_id + " wastewater data\n"+ \
+                "# generated: " + str(datetime.now()).split('.')[0] +"\n" +\
+                "# source: wastewater_data.csv" +\
                 "# System Type: The system type \n"+ \
                 "# SQFT: system square feet  \n"+ \
                 "# HF Used: gal/yr Heating fuel used pre-retrofit\n"+ \
@@ -76,16 +83,21 @@ class Preprocessor (object):
                 "# Implementation Cost: cost to refit \n"+ \
                 "# HR: heat recovery (units ???) \n"+ \
                 "# Steam District: ??? \n"+ \
+                "# -----------------------------" +\
+                "# source: wastewater_assumptions.csv (AEA)" +\
                 "# HDD kWh: assumption ??? \n"+ \
                 "# HDD HF: an assumption ??? \n"+ \
                 "# pop kWh: an assumption ??? \n"+ \
                 "# pop HF: an assumption ??? \n"+ \
-                self.header_data_divide
+                self.comments_dataframe_divide
 
     def residential_header (self):
         """
         """
+        ## original source is ss_model. where is that from?
         return  "# " + self.com_id + " residential data\n"+\
+                "# generated: " + str(datetime.now()).split('.')[0] +"\n" +\
+                "# Data Source: residential_data.csv"+\
                 "# energy_region: region used by model \n"+\
                 "# year: year of data  collected \n"+\
                 "# total_occupied: # houses occupied \n"+\
@@ -112,16 +124,58 @@ class Preprocessor (object):
                 "# Total; Utility Gas; LP; Electricity; Fuel Oil; "+\
                         "Coal; Wood; Solar; Other; No Fuel Used: " +\
                                         "% of heating fuel types\n"+\
-                self.header_data_divide
+                self.comments_dataframe_divide
                 
     def buildings_count_header (self):
-        pass
+        """
+        """
+        ## original source is AEA?
+        return  "# " + self.com_id + " non-residential building count\n" + \
+                "# generated: " + str(datetime.now()).split('.')[0] +"\n" +\
+                "# Data Source: com_num_buildings.csv \n" +\
+                self.comments_dataframe_divide
+
         
-    def buildings_estimates_header (self):
-        pass
+    def buildings_estimates_header (self, pop):
+        """
+        """
+        # original source is AEA
+        # what is HDD
+        return  "# " + self.com_id + " non-residential building estimates\n" +\
+                "# generated: " + str(datetime.now()).split('.')[0] +"\n" +\
+                "# Data Source: com_building_estimates.csv \n" +\
+                "# Population used for estimates " + str(pop) + "\n"+\
+                "# building type: index \n" +\
+                "# kWh/sf: estimate kWh/sf used for building type\n" +\
+                "# Gal/sf: estimate Gal/sf Heating fuel for building type\n" +\
+                "# HDD: estimate Heating Degree Day\n" +\
+                "# Sqft: estimate square footage for building type\n" +\
+                self.comments_dataframe_divide
         
-    def buildigns_inventory_header (self):
-        pass
+    def buildings_inventory_header (self):
+        """
+        """
+        # original source compiled by AEA
+        # find units for fuel sources
+        return  "# " + self.com_id + " non-residential building inventory\n" +\
+                "# generated: " + str(datetime.now()).split('.')[0] +"\n" +\
+                "# Data Source: non_res_buildings.csv \n" +\
+                "# building type: index \n" +\
+                "# Square Feet: Measured Square Footage of building\n" +\
+                "# Audited: True or False \n" +\
+                "# Retrofits Done: True or False \n" +\
+                "# implementation cost: Cost to refit \n" +\
+                "# Electric: kWh used \n" +\
+                "# Electric Post: kWh used if refit\n" +\
+                "# Fuel Oil: Gal fuel oil used \n" +\
+                "# Fuel Oil Post: Gal fuel oil used if refit\n" +\
+                "# HW District: HW  used \n" +\
+                "# HW District Post: HW  used if refit\n" +\
+                "# Narural Gas: natural gas used \n" +\
+                "# Narural Gas Post: natural gas used if refit\n" +\
+                "# Propane: Gal propane used \n" +\
+                "# Propane Post: Gal propane used if refit\n" +\
+                self.comments_dataframe_divide
 
     def population (self, in_file, out_dir, com_id, threshold = 20,
                                                     end_year = 2040):
@@ -350,8 +404,11 @@ class Preprocessor (object):
         self.residential(os.path.join(data_dir,"res_fuel_source.csv"),
                          os.path.join(data_dir,"res_model_data.csv"),
                     out_dir, com_id)
-        base_pop = np.float(self.population_data.ix[self.residential_data.ix['year']]["population"])
-
+        
+        base_pop = np.float(self.population_data.ix\
+                            [self.residential_data.ix['year']]["population"])
+        self.buildings(base_pop)
+        
         self.wastewater()
 
 
@@ -365,10 +422,7 @@ class Preprocessor (object):
                                                     "no intertie on community")
 
 
-        self.buildings(os.path.join(data_dir, "non_res_buildings.csv"),
-                       os.path.join(data_dir, "com_building_estimates.csv"),
-                       os.path.join(data_dir,"com_num_buildings.csv"),
-                       out_dir, com_id, base_pop)
+        
 
         try:
             self.pce_electricity_process()
@@ -873,81 +927,37 @@ class Preprocessor (object):
         self.it_ids = data
         return data
 
-
-    def buildings_estimates(self):
-        """
-        """
-        pass
-    
     def buildings_count (self):
         """ 
         Function doc 
         """
-        pass
+        count_file = os.path.join(self.data_dir,"com_num_buildings.csv")
+        try:
+            data = int(read_csv(count_file ,comment = "#", index_col = 0,
+                                                 header = 0).ix[self.com_id])
+
+        except KeyError:
+            data = 0
+            self.diagnostics.add_note("buildigns(count)",
+                        "Community " + self.community + \
+                        " does not have an entry in the input data, using 0")
         
-    def buidlings_inventory (self):
+        out_file = os.path.join(self.out_dir, "com_num_buildings.csv")
+        fd = open(out_file,'w')
+        fd.write(self.buildings_count_header())
+        fd.write("key, value" + str(data) +"\n")
+        fd.write("Buildings," + str(data) +"\n")
+        fd.close()
+        
+        self.buildigns_count_data = data
+
+
+    def buildings_estimates(self, pop):
         """
         """
-        pass
-
-    def buildings (self, in_file, est_file, count_file, out_dir, com_id, pop):
-        """ Function doc """
-        try:
-            data = read_csv(in_file, index_col=0, comment = "#").ix[com_id]
-
-            l = ["Square Feet",
-                 "implementation cost", "Electric", "Electric Post", "Fuel Oil",
-                 "Fuel Oil Post", "HW District", "HW District Post", "Natural Gas",
-                 "Natural Gas Post", "Propane", "Propane Post"]
-            data[l] = data[l].replace(r'\s+', np.nan, regex=True)
-
-
-            out_file = os.path.join(out_dir, "community_buildings.csv")
-            fd = open(out_file,'w')
-            fd.write("# " + com_id + " non-res buildigns\n")
-            fd.close()
-
-
-
-            c = ["Building Type", "Square Feet", "Audited", "Retrofits Done",
-                 "implementation cost", "Electric", "Electric Post", "Fuel Oil",
-                 "Fuel Oil Post", "HW District", "HW District Post", "Natural Gas",
-                 "Natural Gas Post", "Propane", "Propane Post"]
-            data[c].to_csv(out_file, mode="a", index=False)
-
-        except KeyError:
-            self.diagnostics.add_warning("preprocessor: Building Inventory",
-                                    "Community not found - skiping" )
-
-        out_file = os.path.join(out_dir, "com_num_buildings.csv")
-        fd = open(out_file,'w')
-        fd.write("# " + com_id + " estimated number of buildings\n")
-        fd.write("#### #### #### #### ####\n")
-        fd.write("key,value\n")
-        fd.close()
-
-
-        try:
-            data = read_csv(count_file ,comment = "#", index_col = 0,
-                                                 header = 0).ix[com_id]
-            data.to_csv(out_file,mode="a", header = False)
-
-        except KeyError:
-            self.diagnostics.add_note("preprocessor: Building Count",
-                                    "Community not found - using 0 for count" )
-            fd = open(out_file,'a')
-            fd.write("Buildings,0\n")
-            fd.close()
-
-
-
-        out_file = out_file = os.path.join(out_dir,
-                                                "com_building_estimates.csv")
-        fd = open(out_file,'w')
-        fd.write("# " + com_id + " community building estimates\n")
-        fd.close()
-
+        est_file = os.path.join(self.data_dir,"com_building_estimates.csv")
         data = read_csv(est_file ,comment = u"#",index_col = 0, header = 0)
+        
         units = set(data.ix["Estimate units"])
         l = []
         for itm in units:
@@ -957,13 +967,64 @@ class Preprocessor (object):
                           [data.ix["Estimate units"] == itm]\
                           [(data.T[data.ix["Estimate units"] == itm]\
                           ["Upper Limit"].astype(float) > pop)])
-        df = concat(l)
+        
+        df = concat(l).set_index("Estimate units") 
         del(df["Lower Limit"])
         del(df["Upper Limit"])
         #~ del(df["Estimate units"])
         df = df.T
 
-        df.to_csv(out_file,mode="a", header = False)
+        out_file = os.path.join(self.out_dir, "com_building_estimates.csv")
+        fd = open(out_file,'w')
+        fd.write(self.buildings_estimates_header(pop))
+        fd.close()
+        df.to_csv(out_file,mode="a",index_label="building type")
+        self.buildings_estimates_data = df
+        
+    def buildings_inventory (self):
+        """
+        """
+        in_file = os.path.join(self.data_dir,"non_res_buildings.csv")
+        try:
+            data = read_csv(in_file, index_col=0, comment = "#").ix[self.com_id]
+
+            l = ["Square Feet","implementation cost", 
+                 "Electric", "Electric Post", 
+                 "Fuel Oil", "Fuel Oil Post",
+                 "HW District", "HW District Post", 
+                 "Natural Gas", "Natural Gas Post",
+                 "Propane", "Propane Post"]
+            data[l] = data[l].replace(r'\s+', np.nan, regex=True)
+
+
+            
+            c = ["Building Type", "Square Feet", 
+                 "Audited", "Retrofits Done",
+                 "implementation cost", 
+                 "Electric", "Electric Post", 
+                 "Fuel Oil", "Fuel Oil Post", 
+                 "HW District", "HW District Post", 
+                 "Natural Gas", "Natural Gas Post", 
+                 "Propane", "Propane Post"]
+            out_file = os.path.join(self.out_dir, "community_buildings.csv")
+            fd = open(out_file,'w')
+            fd.write(self.buildings_inventory_header())
+            fd.close()
+            data[c].to_csv(out_file, mode="a", index=False)
+            self.buildings_inventory_data = data[c]
+        except KeyError:
+            self.diagnostics.add_error("buildings(inventory)",
+                                "Community " + self.community + \
+                                " does not have an entry in the input data" +\
+                                " cannot generate model input file "+\
+                                "'community_buildings.csv'" )
+            self.buildings_inventory_data = None
+
+    def buildings (self, population):
+        """ Function doc """
+        self.buildings_count()
+        self.buildings_estimates(population)
+        self.buildings_inventory()
 
 
 
