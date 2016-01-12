@@ -23,7 +23,52 @@ class Preprocessor (object):
         # join add ensure the path is a directory
         self.data_dir = os.path.join(os.path.abspath(data_dir),"")
         self.out_dir = os.path.join(os.path.abspath(out_dir),"")
+    
+    def preprocess (self):
+        """
+        preprocess data in to data dir
 
+        pre:
+            data dir: path to the data files from the AAEM-data dir
+            out_dir: save location
+            com_id: community id("Name")
+        post:
+            all of the files necessary to run the model are in out_dir, if out_dir
+        dose not it exist it is created
+        """
+
+         # join makes it a directory not a file
+        data_dir = self.data_dir
+        out_dir = self.out_dir
+        com_id = self.com_id
+        try:
+            os.makedirs(out_dir)
+        except OSError:
+            pass
+
+        ### copy files that still need their own preprocessor function yet
+        shutil.copy(os.path.join(data_dir,"diesel_fuel_prices.csv"), out_dir)
+        shutil.copy(os.path.join(data_dir,"hdd.csv"), out_dir)
+        shutil.copy(os.path.join(data_dir,"cpi.csv"), out_dir)
+
+        ###
+        self.population()
+        self.electricity()
+        self.region()
+        self.interties()
+        
+        self.residential()
+        base_pop = np.float(self.population_data.ix\
+                            [self.residential_data.ix['year']]["population"])
+        self.buildings(base_pop)
+        self.wastewater()
+    
+        
+
+
+        
+                                                    
+    ## HEADER FUNCTIONS ########################################################
     def population_header (self):
         """
         returns the population file header
@@ -56,7 +101,7 @@ class Preprocessor (object):
                "# Data Source: (DATA REPO)\n" +\
                self.comments_dataframe_divide
 
-    def prices_header (self, source = "PCE"):
+    def electricity_prices_header (self, source = "PCE"):
         """
         Function doc
         """
@@ -176,7 +221,29 @@ class Preprocessor (object):
                 "# Propane: Gal propane used \n" +\
                 "# Propane Post: Gal propane used if refit\n" +\
                 self.comments_dataframe_divide
+    
+    def interties_header (self):
+        """
+        """
+        # original source compiled by AEA
+        return  "# " + self.com_id + " intertied communities\n" +\
+                "# generated: " + str(datetime.now()).split('.')[0] +"\n" +\
+                "# Data Source: interties.csv \n" +\
+                self.comments_dataframe_divide
+    
+    def region_header (self):
+        """
+        """
+        # original sources?
+        return  "# " + self.com_id + " regional information\n" +\
+                "# generated: " + str(datetime.now()).split('.')[0] +"\n" +\
+                "# Data Source: residenatial_data.csv \n" +\
+                "# region: region used by model \n" +\
+                "# Data Source: heating_fuel_premiums.csv\n" +\
+                "# premium: heating fuel premium for region \n" +\
+                self.comments_dataframe_divide
 
+    ## PROCESS FUNCTIONS #######################################################
     def population (self, threshold = 20, end_year = 2040):
         """
         create the population input file
@@ -232,7 +299,6 @@ class Preprocessor (object):
         df = concat([population,p_map],axis = 1)
         df.to_csv(out_file,mode="a")
         self.population_data = df
-        #~ return df
 
 
     def wastewater (self):
@@ -347,7 +413,7 @@ class Preprocessor (object):
         df.to_csv(out_file,mode="a")
         self.residential_data = df
 
-    def region (self, data_file, premium_file, out_dir, com_id):
+    def region (self):
         """
         preprocess the regional input items
         pre:
@@ -355,106 +421,66 @@ class Preprocessor (object):
         post:
             regional related items are in a file the model can read
         """
+        data_file = os.path.join(self.data_dir,"res_model_data.csv")
+        premium_file = os.path.join(self.data_dir,"heating_fuel_premium.csv")
+        
         region = read_csv(data_file, index_col=0,
-                                            comment='#').energy_region[com_id]
+                                        comment='#').energy_region[self.com_id]
         premium = read_csv(premium_file, index_col=0,
                                             comment='#').premium[region]
 
-        out_file = os.path.join(out_dir, "region.csv")
+        out_file = os.path.join(self.out_dir, "region.csv")
         fd = open(out_file,'w')
-        fd.write("# " + com_id + " residential data\n")
-        fd.write("# region: region used by model \n")
-        fd.write("#### #### #### #### ####\n")
+        fd.write(self.region_header())
         fd.write("key,value \n")
         fd.write("region,"+ str(region) + "\n")
         fd.write("premium," + str(premium) + "\n")
         fd.close()
 
 
-    def preprocess (self):
-        """
-        preprocess data in to data dir
-
-        pre:
-            data dir: path to the data files from the AAEM-data dir
-            out_dir: save location
-            com_id: community id("Name")
-        post:
-            all of the files necessary to run the model are in out_dir, if out_dir
-        dose not it exist it is created
-        """
-
-         # join makes it a directory not a file
-        data_dir = self.data_dir
-        out_dir = self.out_dir
-        com_id = self.com_id
-        try:
-            os.makedirs(out_dir)
-        except OSError:
-            pass
-
-        ### copy files that still need their own preprocessor function yet
-        shutil.copy(os.path.join(data_dir,"diesel_fuel_prices.csv"), out_dir)
-        shutil.copy(os.path.join(data_dir,"hdd.csv"), out_dir)
-        shutil.copy(os.path.join(data_dir,"cpi.csv"), out_dir)
-
-        ###
-
-        self.region(os.path.join(data_dir,"res_model_data.csv"),
-               os.path.join(data_dir,"heating_fuel_premium.csv"),out_dir,com_id)
-
-        self.population()
-        self.residential()
-        
-        base_pop = np.float(self.population_data.ix\
-                            [self.residential_data.ix['year']]["population"])
-        
-        self.electricity()
-        self.buildings(base_pop)
-        self.wastewater()
-    
-
-
-
-        try:
-            self.interties(os.path.join(data_dir,"interties.csv"),
-                                                                out_dir,com_id)
-        except KeyError:
-            self.diagnostics.add_note("preprocessor",
-                                                    "no intertie on community")
-
-
-        
-        
-        
     def electricity(self):
         """
         """
         try:
             self.electricity_process_pce()
-            self.electricity_prices(os.path.join(self.data_dir,
-                            "2013-add-power-cost-equalization-pce-data.csv"),
-                                                                self.out_dir,
-                                                                self.com_id)
+            self.electricity_prices_pce()
         except KeyError:
             try:
                 self.electricity_process_eia()
+                self.electricity_prices_eia()
             except KeyError:
                 self.diagnostics.add_error("Electricity",
                         "Generation and Sales for " + str(self.com_id) +\
                         " data not in PCE or EIA")
 
 
+    def electricity_prices_eia (self):
+        """
+        fuel prices EIA
+        """
+        # TODO: find a way to calculate this
+        con_file = os.path.join(self.data_dir, "eia_sales.csv")
+        self.diagnostics.add_note("Electricity Prices (EIA)",
+                                "they need to be input in community data")        
+        #~ out_file = os.path.join(self.out_dir, "prices.csv")
+        #~ fd = open(out_file,'w')
+        #~ fd.write(self.electricity_prices_header("PCE"))
+        #~ fd.write("key,value \n")
+        #~ fd.write("res non-PCE elec cost,"+ str(res_nonPCE_price) + "\n")
+        #~ fd.write("elec non-fuel cost," + str(elec_nonFuel_cost) + "\n")
+        #~ fd.close()
 
-    def electricity_prices (self, in_file, out_dir, com_id):
+    def electricity_prices_pce (self):
         """
         pre process fuel prices
         """
-        data = read_csv(in_file, index_col=1, comment = "#")#.ix[com_id]
+        in_file = os.path.join(self.data_dir,
+                            "2013-add-power-cost-equalization-pce-data.csv")
+        data = read_csv(in_file, index_col=1, comment = "#")
         try:
-            data = data.ix[com_id]
+            data = data.ix[self.com_id]
         except KeyError:
-            data = data.loc[[com_id+',' in s for s in data.index]]
+            data = data.loc[[self.com_id+',' in s for s in data.index]]
 
         data = data[["year","month","residential_rate",
                      "pce_rate","effective_rate","residential_kwh_sold",
@@ -486,11 +512,9 @@ class Preprocessor (object):
                                     "calculated elec non-fuel cost: " + \
                                     str(elec_nonFuel_cost))
 
-        out_file = os.path.join(out_dir, "prices.csv")
+        out_file = os.path.join(self.out_dir, "prices.csv")
         fd = open(out_file,'w')
-        fd.write("# " + com_id + " electricity consumption\n")
-        fd.write("# all units are in $/kWh \n")
-        fd.write("#### #### #### #### ####\n")
+        fd.write(self.electricity_prices_header("PCE"))
         fd.write("key,value \n")
         fd.write("res non-PCE elec cost,"+ str(res_nonPCE_price) + "\n")
         fd.write("elec non-fuel cost," + str(elec_nonFuel_cost) + "\n")
@@ -609,16 +633,18 @@ class Preprocessor (object):
                                                 electricity['generation']
 
 
-        self.electricity = electricity[['generation','consumption','fuel used',
-                                        'efficiency','line loss',
-                                        'net generation',
-                                        'consumption residential',
-                                        'consumption non-residential',
-                                        'kwh_purchased','generation diesel',
-                                        'generation hydro',
-                                        'generation natural gas',
-                                        'generation wind','generation solar',
-                                        'generation biomass']]
+        self.electricity_data = electricity[['generation','consumption',
+                                             'fuel used', 'efficiency',
+                                             'line loss', 'net generation',
+                                             'consumption residential',
+                                             'consumption non-residential',
+                                             'kwh_purchased',
+                                             'generation diesel',
+                                             'generation hydro',
+                                             'generation natural gas',
+                                             'generation wind',
+                                             'generation solar',
+                                             'generation biomass']]
 
         out_file = os.path.join(self.out_dir, "yearly_electricity_summary.csv")
 
@@ -626,7 +652,7 @@ class Preprocessor (object):
         fd.write(self.electricity_header("EIA"))
         fd.close()
 
-        self.electricity.to_csv(out_file,mode="a")
+        self.electricity_data.to_csv(out_file,mode="a")
         self.p_key = None
 
     def electricity_process_pce (self):
@@ -868,10 +894,10 @@ class Preprocessor (object):
 
         df.to_csv(out_file,mode="a")
 
-        self.electricity = df
+        self.electricity_data = df
         self.purchase_type = p_key
 
-    def interties (self, in_file, out_dir, com_id):
+    def interties (self):
         """
         preprocess interties
 
@@ -882,16 +908,21 @@ class Preprocessor (object):
         post
             com_id's intertie data is saved to out_dir as interties.csv
         """
-        data = read_csv(in_file, index_col=0,
-                        comment = "#").ix[com_id].fillna("''")
-        out_file = os.path.join(out_dir, "interties.csv")
-        fd = open(out_file,'w')
-        fd.write("# " + com_id + " intertied communities\n")
-        fd.write("#### #### #### #### ####\n")
-        fd.close()
-        data.to_csv(out_file, mode = 'a')
-        self.it_ids = data
-        return data
+        try:
+            in_file = os.path.join(self.data_dir,"interties.csv")
+            data = read_csv(in_file, index_col=0,
+                            comment = "#").ix[self.com_id].fillna("''")
+            out_file = os.path.join(self.out_dir, "interties.csv")
+            fd = open(out_file,'w')
+            fd.write(self.interties_header())
+            fd.close()
+            data.to_csv(out_file, mode = 'a')
+            self.it_ids = data
+            return data
+        
+        except KeyError:
+            self.diagnostics.add_note("Interties",
+                                                    "no intertie on community")
 
     def buildings_count (self):
         """ 
