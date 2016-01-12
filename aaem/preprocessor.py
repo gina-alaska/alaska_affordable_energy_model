@@ -1033,7 +1033,6 @@ def preprocess (data_dir, out_dir, com_id):
     pp = preprocess_no_intertie(data_dir,
                         os.path.join(out_dir,com_id.replace(" ","_")), com_id,
                                                                     diag)
-
     try:
         if pp.it_ids["Plant Intertied"].lower() == "yes":
             diag = diagnostics()
@@ -1046,11 +1045,14 @@ def preprocess (data_dir, out_dir, com_id):
                              'Other Community on Intertie.6'
                            ]].values
             ids = ids[ids != "''"].tolist()
+            
             diag.add_note("preprocessor",
                                  "Includes dianostis for " + str(ids))
             ids = [com_id] + ids
             pp = preprocess_intertie(data_dir, out_dir, ids, diag)
+            
             pp = ids
+            
         else:
             pp = [com_id]
     except AttributeError:
@@ -1079,21 +1081,21 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
         pp = Preprocessor(com, data_dir,os.path.join(out_dir,com), diagnostics)
         pp.preprocess()
         pp_data.append(pp)
-
+    
     # make Deep copy of parent city
-    population = pp_data[0].population.copy(True)
-    electricity = pp_data[0].electricity.copy(True)
+    population = pp_data[0].population_data.copy(True)
+    electricity = pp_data[0].electricity_data.copy(True)
     for idx in range(len(pp_data)):
         if idx == 0:
             continue
 
         population['population'] = population['population'] + \
-                                        pp_data[idx].population['population']
+                                        pp_data[idx].population_data['population']
 
         #   try, except for communities that don't exist on their own such as
         # oscarville, which is bethel,oscarville
         try:
-            temp = pp_data[idx].electricity
+            temp = pp_data[idx].electricity_data
             electricity['electricity'] = electricity['generation'].fillna(0) +\
                 (temp['generation'].fillna(0) - temp['kwh_purchased'].fillna(0))
             electricity['net generation'] = \
