@@ -63,8 +63,8 @@ class CommunityData (object):
         """
         # TODO: 1 is 100% need to change to a calculation
         # TODO: update generation efficiency
-        generation_eff = self.get_item("community","generation")/\
-                         self.get_item("community","consumption HF")
+        generation_eff = self.get_item("community",
+                                            "diesel generation efficiency")
         price = self.get_item("community","elec non-fuel cost") +\
             1.00 * self.get_item("community","diesel prices").projected_prices/\
                             generation_eff
@@ -261,9 +261,9 @@ class CommunityData (object):
         if self.get_item('forecast', "population") == "IMPORT":
             self.set_item('forecast', "population", 
                           self.load_pp_csv("population.csv"))
-        if self.get_item('forecast', "electricity") == "IMPORT":
-            self.set_item('forecast', "electricity", 
-                          self.load_pp_csv("electricity.csv"))
+        #~ if self.get_item('forecast', "electricity") == "IMPORT":
+            #~ self.set_item('forecast', "electricity", 
+                          #~ self.load_pp_csv("electricity.csv"))
 
         if  self.get_item('residential buildings','data') == "IMPORT":
             self.set_item('residential buildings','data',
@@ -293,21 +293,7 @@ class CommunityData (object):
         if self.get_item('community',"elec non-fuel cost") == "IMPORT":
             self.set_item("community", "elec non-fuel cost",
                             np.float(prices.ix["elec non-fuel cost"]))
-    
-        try:
-            generation = self.load_pp_csv("generation.csv")
-        except IOError:
-            if self.get_item('community',"generation") == "IMPORT" \
-              and self.get_item('community',"consumption HF") == "IMPORT":
-                raise IOError, "Generation not found"
-        
-        if self.get_item('community',"generation") == "IMPORT":
-            self.set_item('community',"generation", 
-            np.float(generation.ix["generation"]))
-        if self.get_item('community',"consumption HF") == "IMPORT":
-            self.set_item('community',"consumption HF", 
-            np.float(generation.ix["consumption HF"]))
-        
+
         if self.get_item('community buildings',
                                         "com building estimates") == "IMPORT":
             self.set_item('community buildings',"com building estimates",
@@ -320,8 +306,54 @@ class CommunityData (object):
         if self.get_item('community buildings','number buildings')== "IMPORT":
             self.set_item('community buildings','number buildings',
                 int(self.load_pp_csv("com_num_buildings.csv").ix["Buildings"]))
+                
+        try:
+            elec_summary = self.load_pp_csv("yearly_electricity_summary.csv")
+        except IOError:
+            if self.get_item('community',"line losses") == "IMPORT" \
+              and self.get_item('community',"diesel generation efficiency") \
+                                        == "IMPORT":
+                raise IOError, "yearly electricity summary not found"
+        
+        if self.get_item('forecast', "electricity") == "IMPORT":
+            self.set_item('forecast', "electricity", elec_summary[["consumption",
+                                                "consumption residential",
+                                                "consumption non-residential"]])
+        
+        
+        if self.get_item('community',"line losses") == "IMPORT":
+            self.set_item('community',"line losses", 
+            np.float(elec_summary["line loss"][-3:].mean()))
 
-                         
+        if self.get_item('community','diesel generation efficiency')== "IMPORT":
+            self.set_item('community','diesel generation efficiency', 
+                          np.float(elec_summary['efficiency'].values[-1]))
+        try:
+            if self.get_item('community',"generation") == "IMPORT":
+                self.set_item('community',"generation", 
+                                elec_summary["net generation"])
+            if self.get_item('community','generation numbers') == "IMPORT":
+                self.set_item('community','generation numbers', 
+                              elec_summary[['generation diesel', 'generation hydro',
+                                           'generation natural gas',
+                                           'generation wind', 'generation solar',
+                                           'generation biomass']])
+        except:
+            #~ self.diagnostics.add_warning("Community Data", 
+                            #~ "Generation data not available by energy type")
+                        #~ temp = elec_summary[['generation']]
+            #~ temp['generation diesel'] = temp['generation']
+            #~ temp['generation hydro'] = temp['generation'] - temp['generation']
+            #~ temp['generation natural gas'] = temp['generation'] - \
+                                                            #~ temp['generation']
+            #~ temp['generation wind'] = temp['generation'] - temp['generation']
+            #~ temp['generation solar'] = temp['generation'] - temp['generation']
+            #~ temp['generation biomass'] = temp['generation'] - temp['generation']
+    
+            
+            #~ self.set_item('community','generation numbers', temp )
+            print "Generation data not available by energy type"
+        
     def load_pp_csv(self, f_name):
         """
         load a preprocessed csv file
@@ -368,6 +400,9 @@ class CommunityData (object):
             a valid .yaml config file is created
         """
         ## save work around 
+        import copy
+        copy = copy.deepcopy(self.model_inputs)
+        
         self.set_item('residential buildings','data', "IMPORT")
         self.set_item('community buildings','com building data', "IMPORT")
         self.set_item('community buildings',"com building estimates", "IMPORT")
@@ -377,11 +412,13 @@ class CommunityData (object):
         self.set_item('forecast', "population", "IMPORT")
         self.set_item('water wastewater', "data", "IMPORT")
         self.set_item("community","electric non-fuel prices","IMPORT")
-        
-
+        self.set_item("community","generation numbers","IMPORT")
+        self.set_item("community","generation","IMPORT")
         
         fd = open(fname, 'w')
         text = yaml.dump(self.model_inputs, default_flow_style=False) 
         fd.write(text)
         fd.close()
 
+        del self.model_inputs
+        self.model_inputs = copy

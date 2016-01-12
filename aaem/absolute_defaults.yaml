@@ -13,7 +13,7 @@ community:
   # fuel repairs: 500 # price/yr <float> TODO: still used??
   # fuel o&m: 1000 # # price/yr <float> TODO: still used??
   # diesel generator o&m: 84181 # price/yr <float> TODO: still used??
-  diesel generation efficiency: 10.802351555 # kWh/gal <float>
+  diesel generation efficiency: IMPORT #10.802351555 # kWh/gal <float>
 
   #do these come from community profiles?
   generation: IMPORT # kWh generated/yr  <float> 123456.00
@@ -21,7 +21,7 @@ community:
 
   consumption HF: IMPORT # gallons HF consumed/year <float> 12345.00
 
-  line losses: ABSOLUTE DEFAULT #rate as decimal <float> (ex. .1210)
+  line losses: IMPORT #rate as decimal <float> (ex. .1210)
 
   res non-PCE elec cost: IMPORT # $cost/kWh <float> (ex. .83)
   elec non-fuel cost: IMPORT # $cost/kWh <float> (ex. .83)
@@ -29,6 +29,8 @@ community:
   HDD: IMPORT
   diesel prices: IMPORT
   electric non-fuel prices: IMPORT
+  
+  generation numbers: IMPORT
 
 forecast:
   end year: ABSOLUTE DEFAULT  # end year <int>
