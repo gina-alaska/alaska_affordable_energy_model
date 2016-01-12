@@ -407,10 +407,11 @@ class Preprocessor (object):
         
         base_pop = np.float(self.population_data.ix\
                             [self.residential_data.ix['year']]["population"])
-        self.buildings(base_pop)
         
+        self.electricity()
+        self.buildings(base_pop)
         self.wastewater()
-
+    
 
 
 
@@ -423,20 +424,26 @@ class Preprocessor (object):
 
 
         
-
+        
+        
+    def electricity(self):
+        """
+        """
         try:
-            self.pce_electricity_process()
-            self.electricity_prices(os.path.join(data_dir,
+            self.electricity_process_pce()
+            self.electricity_prices(os.path.join(self.data_dir,
                             "2013-add-power-cost-equalization-pce-data.csv"),
-                                                                        out_dir,
-                                                                        com_id)
+                                                                self.out_dir,
+                                                                self.com_id)
         except KeyError:
             try:
-                self.eia_electricity_process()
+                self.electricity_process_eia()
             except KeyError:
-                self.diagnostics.add_warning("Electricity",
+                self.diagnostics.add_error("Electricity",
                         "Generation and Sales for " + str(self.com_id) +\
                         " data not in PCE or EIA")
+
+
 
     def electricity_prices (self, in_file, out_dir, com_id):
         """
@@ -488,7 +495,7 @@ class Preprocessor (object):
         fd.write("elec non-fuel cost," + str(elec_nonFuel_cost) + "\n")
         fd.close()
 
-    def eia_electricity_process (self):
+    def electricity_process_eia (self):
         """
         pre process EIA electricity related values(generation, consumption, ...)
         """
@@ -619,9 +626,9 @@ class Preprocessor (object):
         fd.close()
 
         self.electricity.to_csv(out_file,mode="a")
+        self.p_key = None
 
-
-    def pce_electricity_process (self):
+    def electricity_process_pce (self):
         """
         pre process PCE electricity related values(generation, consumption, ...)
         """
@@ -862,48 +869,6 @@ class Preprocessor (object):
 
         self.electricity = df
         self.purchase_type = p_key
-
-    def electricity_generation (self, in_file, out_dir, com_id):
-        """
-        pre process kwh generation
-        """
-        data = read_csv(in_file, index_col=1, comment = "#")
-        try:
-            data = data.ix[com_id]
-        except KeyError:
-            data = data.loc[[com_id+',' in s for s in data.index]]
-        data = data[["year","diesel_kwh_generated",
-                     "powerhouse_consumption_kwh","hydro_kwh_generated",
-                     "other_1_kwh_generated","other_2_kwh_generated",
-                     "fuel_used_gal"]]
-
-
-        last_year = data["year"].max()
-        while len(data[data["year"] == last_year]) != 12:
-            last_year -= 1
-
-        generation = data[data["year"]==last_year][["diesel_kwh_generated",
-                     "powerhouse_consumption_kwh","hydro_kwh_generated",
-                     "other_1_kwh_generated",
-                     "other_2_kwh_generated"]].sum().sum()
-
-        net_generation = generation - data[data["year"]==last_year][\
-                                        "powerhouse_consumption_kwh"].sum()
-
-        fuel_used = data[data["year"]==last_year]["fuel_used_gal"].sum()
-
-        out_file = os.path.join(out_dir, "generation.csv")
-        fd = open(out_file,'w')
-        fd.write("# " + com_id + " kWh Generation data\n")
-        fd.write("# generation (kWh/yr) gross generation\n")
-        fd.write("# net generation(kWh/yr) generation-powerhouse consumption\n")
-        fd.write("# consumption HF(gal/yr) heating fuel used in generation\n")
-        fd.write("#### #### #### #### ####\n")
-        fd.write("key,value\n")
-        fd.write("generation," + str(generation) + "\n")
-        fd.write("net_generation," + str(net_generation) + "\n")
-        fd.write("consumption HF," + str(fuel_used) + "\n")
-        fd.close()
 
     def interties (self, in_file, out_dir, com_id):
         """
