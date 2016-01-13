@@ -18,6 +18,8 @@ import yaml
 import os.path
 from importlib import import_module
 from datetime import datetime
+import warnings
+
 
 comp_lib = {
     "residential buildings": "residential_buildings",
@@ -402,10 +404,13 @@ def run_model_no_intertie (config_file):
     return model, out_dir
     
     
-def run (batch_file):
+def run (batch_file, dev = False):
     """ Function doc """
-    return run_batch(batch_file)
-    
+    if not dev:
+        warnings.filterwarnings("ignore")
+    stuff = run_batch(batch_file)
+    warnings.filterwarnings("default")
+    return stuff
     
     
     
