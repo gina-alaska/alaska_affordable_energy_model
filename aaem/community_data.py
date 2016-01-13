@@ -317,7 +317,7 @@ class CommunityData (object):
                 raise IOError, "yearly electricity summary not found"
         
         if self.get_item('forecast', "electricity") == "IMPORT":
-            self.set_item('forecast', "electricity", elec_summary[["consumption",
+            self.set_item('forecast', "electricity",elec_summary[["consumption",
                                                 "consumption residential",
                                                 "consumption non-residential"]])
         
