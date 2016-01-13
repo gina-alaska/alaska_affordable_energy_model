@@ -368,7 +368,7 @@ class Preprocessor (object):
             self.diagnostics.add_warning("wastewater",
                                          "system type unknown")
             ww_d["assumption type used"] = "UNKNOWN"
-            ww_d.to_csv(out_file, mode = 'a')
+            #~ ww_d.to_csv(out_file, mode = 'a')
 
             df = ww_d
 
@@ -378,7 +378,7 @@ class Preprocessor (object):
         fd.write("key,value\n")
         fd.close()
 
-        df = concat([ww_d,ww_a])
+        #~ df = concat([ww_d,ww_a])
         df.to_csv(out_file, mode = 'a')
         self.wastewater_data = df
 
@@ -934,8 +934,17 @@ class Preprocessor (object):
                                                  header = 0).ix[self.com_id])
 
         except KeyError:
-            data = 0
-            self.diagnostics.add_note("buildigns(count)",
+            try:
+                data = read_csv(count_file ,comment = "#", index_col = 0,
+                                                                    header = 0)
+                #~ print data.index.astype(str)
+                data = data.loc\
+                        [[self.com_id  in s for s in data.index.astype(str)]]
+                data = data.values[0][0]
+            except (KeyError, IndexError):
+                
+                data = 0
+                self.diagnostics.add_note("buildigns(count)",
                         "Community " + self.community + \
                         " does not have an entry in the input data, using 0")
         
