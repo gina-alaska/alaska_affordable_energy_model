@@ -4,7 +4,9 @@ Created by University of Alaska Fairbanks/GINA
 
 # extra python libraries used:
 numpy, scipy, pandas: info on those here: http://www.scipy.org/
+
 ipython: used for devlopen enviroment as opposed to regular python prompt, also at http://www.scipy.org/
+
 pyyaml: for reading yaml
 
 ## Installing dependencies
