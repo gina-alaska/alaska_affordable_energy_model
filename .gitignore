@@ -2,3 +2,4 @@
 *~
 *.DS_store
 /data/*
+*.egg-info
