@@ -244,7 +244,7 @@ class Preprocessor (object):
                 self.comments_dataframe_divide
 
     ## PROCESS FUNCTIONS #######################################################
-    def population (self, threshold = 20, end_year = 2040):
+    def population (self, threshold = 20, end_year = 2040, percent = .02):
         """
         create the population input file
 
@@ -256,50 +256,42 @@ class Preprocessor (object):
         """
         in_file = os.path.join(self.data_dir,"population.csv")
         
-        pop_data = read_csv(in_file, index_col = 1) # update to GNIS
-        pops = pop_data.ix[self.com_id]["2003":"2014"].values
-        years = pop_data.ix[self.com_id]["2003":"2014"]\
-                                                    .keys().values.astype(int)
-        if (pops < threshold).any():
-            self.diagnostics.add_warning("preprocessor","population < 20")
-        ##########
-        if len(pops) < 10:
-            msg = "the data range is < 10 for input population "\
-                  "check population.csv in the models data directory"
-            self.diagnostics.add_warning("preprocessor", msg)
-
-        #~ population = self.fc_specs["population"].T.values.astype(float)
-        #~ years = self.fc_specs["population"].T.keys().values.astype(int)
-        new_years = np.array(range(years[-1]+1,end_year+1))
-
-        population = DataFrame({"year":new_years,
-             "population":growth(years,pops,new_years)}).set_index("year")
-
-        population.ix[new_years[0]+15:] =\
-                                    np.float64(population.ix[new_years[0]+15])
-        population = population.astype(int)
-        ###############
+        pop_data = read_csv(in_file, index_col = 0) # update to GNIS
+        pops = DataFrame(pop_data.ix[self.com_id]["2003":str(end_year)])
         
-        pops = DataFrame([years,pops],["year","population"]).T.set_index("year")
+        if (pops.values < threshold).any():
+            self.diagnostics.add_warning("Population",
+                                            "population < " + str(thershold))
+
+        p = pops.T.values[0]
+        k = pops.T.keys().values
+        for idx in range(1,len(p)):
+            #~ print idx
+            hi = p[idx-1] * (1.0 + percent)
+            lo = p[idx-1] * (1.0 - percent)
+            if (p[idx] > hi or p[idx] < lo):
+                self.diagnostics.add_note("Population",
+                                            "population changes more than " +\
+                                            str(percent * 100) + "% from " +\
+                                            k[idx-1] +\
+                                            " to " + k[idx])
+
+        pops.columns  = ["population"]
         p_map = concat(\
-                     [pops - pops,
-                      population]).astype(bool).astype(str).\
+                     [pops - pops]).astype(bool).astype(str).\
                       replace("True", "P").\
-                      replace("False", "M")
+                      replace("False", "P")
         p_map.columns  = [p_map.columns[0] + "_qualifier"]
-        population = concat([pops,population])
-
-
         out_file = os.path.join(self.out_dir,"population.csv")
         fd = open(out_file,'w')
         fd.write(self.population_header())
         fd.close()
 
 
-        df = concat([population,p_map],axis = 1)
+        df = concat([pops,p_map],axis = 1)
         df.to_csv(out_file,mode="a")
         self.population_data = df
-
+        self.population_data.index = self.population_data.index.astype(int)
 
     def wastewater (self):
         """
