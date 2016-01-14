@@ -440,7 +440,48 @@ class Preprocessor (object):
             try:
                 self.electricity_process_eia()
                 self.electricity_prices_eia()
-            except KeyError:
+                # Valdez work around.
+                if self.com_id == "Valdez":
+                    val = os.path.join(self.data_dir,
+                                                   "valdez_kwh_consumption.csv")
+                    val = read_csv(val, comment = '#', index_col=0)
+                    val["Total"] = val.sum(1)
+                    val['non-res'] = val[['Commercial','Industrial']].sum(1)
+                    val = concat([self.electricity_data,val],axis = 1)
+                    
+                    val["consumption"] = val["Total"]
+                    val["consumption residential"] = \
+                                                              val["Residential"]
+                    val["consumption non-residential"] = \
+                                                              val["non-res"]
+                    val = val[['generation','consumption',
+                                             'fuel used', 'efficiency',
+                                             'line loss', 'net generation',
+                                             'consumption residential',
+                                             'consumption non-residential',
+                                             'kwh_purchased',
+                                             'generation diesel',
+                                             'generation hydro',
+                                             'generation natural gas',
+                                             'generation wind',
+                                             'generation solar',
+                                             'generation biomass']]
+                    self.electricity_data = val
+                    self.electricity_data["line loss"] = \
+                                    1.0 - self.electricity_data['consumption']/\
+                                         self.electricity_data['net generation']
+                    out_file = os.path.join(self.out_dir, 
+                                              "yearly_electricity_summary.csv")
+
+                    fd = open(out_file,'w')
+                    fd.write(self.electricity_header("EIA"))
+                    fd.close()
+            
+                    self.electricity_data.to_csv(out_file,mode="a")
+                    self.p_key = None
+                    self.diagnostics.add_note("Electricity",
+                                                      "Valdez sales data added")
+            except KeyError as e:
                 self.diagnostics.add_error("Electricity",
                         "Generation and Sales for " + str(self.com_id) +\
                         " data not in PCE or EIA")
@@ -497,10 +538,10 @@ class Preprocessor (object):
                                 last_year]["residential_rate"].mean()
         elec_nonFuel_cost = res_nonPCE_price - elec_fuel_cost
 
-        self.diagnostics.add_note("preprocessor",
+        self.diagnostics.add_note("Electricity Prices PCE",
                                 "calculated res non-PCE elec cost: " + \
                                  str(res_nonPCE_price))
-        self.diagnostics.add_note("preprocessor",
+        self.diagnostics.add_note("Electricity Prices PCE",
                                     "calculated elec non-fuel cost: " + \
                                     str(elec_nonFuel_cost))
 
@@ -530,87 +571,124 @@ class Preprocessor (object):
                                           'ELEC FUEL CONSUMPTION MMBTUS',
                                           'NET GENERATION (megawatthours)',
                                           'Year']]
+            g_bool = True
+        except KeyError:
+            self.diagnostics.add_warning("EIA Electricity",
+                                    "Generation Data not in EIA")
+            g_bool = False
 
-
-
+        try:
             sales = read_csv(con_file, comment = "#", index_col=2)\
                                                     .loc[self.com_id]\
                                                   [["Data Year",
                                                     "Residential Megawatthours",
                                                     "Total Megawatthours"]]
+            s_bool = True
         except KeyError:
-            raise KeyError, "Community not in EIA data"
+            self.diagnostics.add_warning("EIA Electricity",
+                                    "Consumption(sales) Data not in EIA")
+            s_bool = False
 
+        if not g_bool and not s_bool:
+            raise KeyError, "Community not in EIA Data"
+        
         # TODO add other fuel sources These two are from sitka example
         power_type_lib = {"WAT":"hydro",
-                          "DFO":"diesel",}
+                          "DFO":"diesel",
+                          "WO":"bla",}
 
+        if g_bool:
+            gen_types = list(set(generation['Reported Fuel Type Code']))
+            l = []
+            for t in gen_types:
+                temp = generation[generation['Reported Fuel Type Code'] == t].\
+                                                           groupby('Year').sum()
+                temp['generation ' + power_type_lib[t]] = \
+                                 temp['NET GENERATION (megawatthours)'] * 1000.0
+    
+                temp2 = DataFrame(temp['generation ' + power_type_lib[t]])
+                
+                if power_type_lib[t] == "diesel":
+                    temp2["fuel used"] = \
+                                  temp['TOTAL FUEL CONSUMPTION QUANTITY'] * 42.0
+  
+                l.append(temp2)
+            fuel_types = concat(l, axis =1 )
+    
+    
+            try:
+                df_diesel = fuel_types[['generation diesel',"fuel used"]]
+            except KeyError:
+                df_diesel = DataFrame({"year":(2003,2004),
+                        "generation diesel":(np.nan,np.nan),
+                        "fuel used":(np.nan,np.nan)}).set_index('year')
+            try:
+                df_hydro = fuel_types[['generation hydro']]
+            except KeyError:
+                df_hydro = DataFrame({"year":(2003,2004),
+                        "generation hydro":(np.nan,np.nan)}).set_index('year')
+            try:
+                df_gas = fuel_types[['generation natural gas']]
+            except KeyError:
+                df_gas = DataFrame({"year":(2003,2004),
+                    "generation natural gas":(np.nan,np.nan)}).set_index('year')
+            try:
+                df_wind = fuel_types[['generation wind']]
+            except KeyError:
+                df_wind = DataFrame({"year":(2003,2004),
+                        "generation wind":(np.nan,np.nan)}).set_index('year')
+            try:
+                df_solar = fuel_types[['generation solar']]
+            except KeyError:
+                df_solar = DataFrame({"year":(2003,2004),
+                        "generation solar":(np.nan,np.nan)}).set_index('year')
+            try:
+                df_biomass = fuel_types[['generation biomass']].\
+                                                               set_index('year')
+            except KeyError:
+                df_biomass = DataFrame({"year":(2003,2004),
+                        "generation biomass":(np.nan,np.nan)}).set_index('year')
+    
+            total_generation = DataFrame(generation.groupby('Year').sum()\
+                                     ['NET GENERATION (megawatthours)'])* 1000.0
+            total_generation["generation"] = \
+                              total_generation['NET GENERATION (megawatthours)']
+            total_generation["net generation"] = total_generation["generation"]
 
-        gen_types = list(set(generation['Reported Fuel Type Code']))
-        l = []
-        for t in gen_types:
-            temp = generation[generation['Reported Fuel Type Code'] == t].\
-                                                          groupby('Year').sum()
-            temp['generation ' + power_type_lib[t]] = \
-                                temp['NET GENERATION (megawatthours)'] * 1000.0
-
-            temp2 = DataFrame(temp['generation ' + power_type_lib[t]])
-            if power_type_lib[t] == "diesel":
-                temp2["fuel used"] = temp['TOTAL FUEL CONSUMPTION QUANTITY'] *\
-                                                                            42.0
-            l.append(temp2)
-        fuel_types = concat(l, axis =1 )
-
-
-        try:
-            df_diesel = fuel_types[['generation diesel',"fuel used"]]
-        except KeyError:
+        else:
+            total_generation = DataFrame({"year":(2003,2004),
+                    "generation":(np.nan,np.nan),
+                    "net generation":(np.nan,np.nan)}).set_index('year')
             df_diesel = DataFrame({"year":(2003,2004),
                     "generation diesel":(np.nan,np.nan),
                     "fuel used":(np.nan,np.nan)}).set_index('year')
-        try:
-            df_hydro = fuel_types[['generation hydro']]
-        except KeyError:
             df_hydro = DataFrame({"year":(2003,2004),
                     "generation hydro":(np.nan,np.nan)}).set_index('year')
-        try:
-            df_gas = fuel_types[['generation natural gas']]
-        except KeyError:
             df_gas = DataFrame({"year":(2003,2004),
                     "generation natural gas":(np.nan,np.nan)}).set_index('year')
-        try:
-            df_wind = fuel_types[['generation wind']]
-        except KeyError:
             df_wind = DataFrame({"year":(2003,2004),
-                        "generation wind":(np.nan,np.nan)}).set_index('year')
-        try:
-            df_solar = fuel_types[['generation solar']]
-        except KeyError:
+                    "generation wind":(np.nan,np.nan)}).set_index('year')
             df_solar = DataFrame({"year":(2003,2004),
-                        "generation solar":(np.nan,np.nan)}).set_index('year')
-        try:
-            df_biomass = fuel_types[['generation biomass']].set_index('year')
-        except KeyError:
+                    "generation solar":(np.nan,np.nan)}).set_index('year')
             df_biomass = DataFrame({"year":(2003,2004),
-                        "generation biomass":(np.nan,np.nan)}).set_index('year')
-
-        total_generation = DataFrame(generation.groupby('Year').sum()\
-                                    ['NET GENERATION (megawatthours)'])* 1000.0
-        total_generation["generation"] = \
-                              total_generation['NET GENERATION (megawatthours)']
-        total_generation["net generation"] = \
-                                                 total_generation["generation"]
-
-
-        sales["consumption"] = sales["Total Megawatthours"] * 1000
-        sales['consumption residential'] = sales["Residential Megawatthours"] *\
-                                                                            1000
-        sales['consumption non-residential'] = sales['consumption'] - \
+                    "generation biomass":(np.nan,np.nan)}).set_index('year')
+                            
+        if s_bool:
+            sales["consumption"] = sales["Total Megawatthours"] * 1000
+            sales['consumption residential'] = \
+                                       sales["Residential Megawatthours"] * 1000
+            sales['consumption non-residential'] = sales['consumption'] - \
                                                 sales['consumption residential']
-        sales['year'] = sales["Data Year"]
-        sales = sales[['year',"consumption",
-                       'consumption residential',
-                       'consumption non-residential']].set_index('year')
+            sales['year'] = sales["Data Year"]
+            sales = sales[['year',"consumption",
+                           'consumption residential',
+                           'consumption non-residential']].set_index('year')
+        else:
+            sales = DataFrame({"year":(2003,2004),
+                    "consumption":(np.nan,np.nan),
+                    "consumption residential":(np.nan,np.nan),
+                    "consumption non-residential":(np.nan,np.nan)})\
+                                                        .set_index('year')
 
         electricity = concat([total_generation,sales,df_diesel,df_hydro,
                                             df_gas,df_wind,df_solar,df_biomass],
@@ -618,12 +696,12 @@ class Preprocessor (object):
 
         electricity['line loss'] = 1.0 - electricity['consumption']/\
                                                 electricity['net generation']
+
         electricity['efficiency'] = electricity['generation diesel'] / \
                                                     electricity['fuel used']
         # I want some zeros
         electricity['kwh_purchased'] = electricity['generation'] -\
                                                 electricity['generation']
-
 
         self.electricity_data = electricity[['generation','consumption',
                                              'fuel used', 'efficiency',
@@ -637,7 +715,6 @@ class Preprocessor (object):
                                              'generation wind',
                                              'generation solar',
                                              'generation biomass']]
-
         out_file = os.path.join(self.out_dir, "yearly_electricity_summary.csv")
 
         fd = open(out_file,'w')
@@ -1036,7 +1113,7 @@ def preprocess (data_dir, out_dir, com_id):
                                                                     diag)
     try:
         if pp.it_ids["Plant Intertied"].lower() == "yes":
-            diag = diagnostics()
+
             ids = pp.it_ids[['Other Community on Intertie',
                              'Other Community on Intertie.1',
                              'Other Community on Intertie.2',
@@ -1047,13 +1124,15 @@ def preprocess (data_dir, out_dir, com_id):
                            ]].values
             ids = ids[ids != "''"].tolist()
             
-            diag.add_note("preprocessor",
-                                 "Includes dianostis for " + str(ids))
+            
             ids = [com_id] + ids
-            pp = preprocess_intertie(data_dir, out_dir, ids, diag)
+            if len(ids) >1 :
+                diag = diagnostics()
+                diag.add_note("preprocessor",
+                                 "Includes dianostis for " + str(ids))
+                pp = preprocess_intertie(data_dir, out_dir, ids, diag)
             
             pp = ids
-            
         else:
             pp = [com_id]
     except AttributeError:
