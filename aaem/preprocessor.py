@@ -470,7 +470,8 @@ class Preprocessor (object):
                     self.electricity_data["line loss"] = \
                                     1.0 - self.electricity_data['consumption']/\
                                          self.electricity_data['net generation']
-                    out_file = os.path.join(self.out_dir, "yearly_electricity_summary.csv")
+                    out_file = os.path.join(self.out_dir, 
+                                              "yearly_electricity_summary.csv")
 
                     fd = open(out_file,'w')
                     fd.write(self.electricity_header("EIA"))
@@ -478,6 +479,8 @@ class Preprocessor (object):
             
                     self.electricity_data.to_csv(out_file,mode="a")
                     self.p_key = None
+                    self.diagnostics.add_note("Electricity",
+                                                      "Valdez sales data added")
             except KeyError as e:
                 self.diagnostics.add_error("Electricity",
                         "Generation and Sales for " + str(self.com_id) +\
