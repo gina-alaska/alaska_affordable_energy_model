@@ -144,11 +144,16 @@ class Forecast (object):
         m, b = np.polyfit(population,consumption,1) 
         
         fc_consumption = m * self.population + b
-        start = self.measured_consumption.index[-1] + 1
+        start = int(self.measured_consumption.index[-1] + 1)
         
         years= self.population.index.values.astype(int)
+        #~ print (consumption-consumption).tolist()
+        #~ print fc_consumption.ix[start:].T.values[0].tolist()
+        #~ print fc_consumption.ix[start:]
         cons = (consumption-consumption).tolist() + \
-                                        fc_consumption[start:].values.tolist()
+                                  fc_consumption.ix[start:].T.values[0].tolist()
+        #~ print len(years)
+        #~ print len(cons)
         self.c_map = DataFrame({'year':years, 'consumption': cons}).\
                                                         set_index('year').\
                                                         astype(bool).\
@@ -157,7 +162,12 @@ class Forecast (object):
                                                         replace("False", "M")   
         self.c_map.columns  = [self.c_map.columns[0] + "_qualifier"]
         
-        cons = consumption.tolist() +fc_consumption[start:].values.T.tolist()[0]
+        #~ print consumption.tolist()
+        #~ print fc_consumption.ix[start:].values.T.tolist()[0]
+        cons = consumption.tolist() +\
+                                fc_consumption.ix[start:].values.T.tolist()[0]
+        #~ print len(years)
+        #~ print len(cons)
         consumption = DataFrame({'year':years, 
                                  'consumption': cons}).set_index('year')
         consumption.columns = ["consumption kWh"]

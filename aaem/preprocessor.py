@@ -511,7 +511,10 @@ class Preprocessor (object):
                             "2013-add-power-cost-equalization-pce-data.csv")
         data = read_csv(in_file, index_col=1, comment = "#")
         try:
-            data = data.ix[self.com_id]
+            if self.com_id == "Craig":
+                data = data.loc[["Craig","Craig, Klawock"]]
+            else:
+                data = data.ix[self.com_id]
         except KeyError:
             data = data.loc[[self.com_id+',' in s for s in data.index]]
 
@@ -735,10 +738,13 @@ class Preprocessor (object):
         ## Load Data
         data = read_csv(in_file, index_col=1, comment = "#")
         try:
-            data = data.loc[self.com_id]
+            if self.com_id == "Craig":
+                data = data.loc[["Craig","Craig, Klawock"]]
+            else:
+                data = data.loc[self.com_id]
         except KeyError:
             try:
-                data = data.loc[[self.com_id + ',' in s for s in data.index]]
+                data = data.loc[[self.com_id+',' in s for s in data.index]]
             except KeyError:
                 raise KeyError, "Community not in PCE data"
         data = data[["year","diesel_kwh_generated",
@@ -754,7 +760,7 @@ class Preprocessor (object):
                      "government_kwh_sold",
                      "unbilled_kwh"]]
 
-         ## Load Purchased from library
+        ## Load Purchased from library
         try:
             lib = read_csv(lib_file, index_col=0, comment = '#')
             try:
@@ -953,7 +959,6 @@ class Preprocessor (object):
                               "kwh_purchased"]].set_index("year")
         df = concat([df,df_diesel,df_hydro,df_gas,df_wind,df_solar,df_biomass],
                                                                        axis = 1)
-
         ## save
         out_file = os.path.join(self.out_dir, "yearly_electricity_summary.csv")
 
@@ -962,7 +967,7 @@ class Preprocessor (object):
         fd.close()
 
         df.to_csv(out_file,mode="a")
-
+        
         self.electricity_data = df
         self.purchase_type = p_key
 
