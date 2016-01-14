@@ -139,16 +139,14 @@ class Forecast (object):
                   "in the models data directory")
         
         # get slope(m),intercept(b)
-        #~ print population
-        #~ print consumption
         m, b = np.polyfit(population,consumption,1) 
         
         fc_consumption = m * self.population + b
-        start = self.measured_consumption.index[-1] + 1
+        start = int(self.measured_consumption.index[-1] + 1)
         
         years= self.population.index.values.astype(int)
         cons = (consumption-consumption).tolist() + \
-                                        fc_consumption[start:].values.tolist()
+                                  fc_consumption.ix[start:].T.values[0].tolist()
         self.c_map = DataFrame({'year':years, 'consumption': cons}).\
                                                         set_index('year').\
                                                         astype(bool).\
@@ -157,7 +155,8 @@ class Forecast (object):
                                                         replace("False", "M")   
         self.c_map.columns  = [self.c_map.columns[0] + "_qualifier"]
         
-        cons = consumption.tolist() +fc_consumption[start:].values.T.tolist()[0]
+        cons = consumption.tolist() +\
+                                fc_consumption.ix[start:].values.T.tolist()[0]
         consumption = DataFrame({'year':years, 
                                  'consumption': cons}).set_index('year')
         consumption.columns = ["consumption kWh"]
