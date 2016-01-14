@@ -759,12 +759,15 @@ class Preprocessor (object):
                      "community_kwh_sold",
                      "government_kwh_sold",
                      "unbilled_kwh"]]
-
+        #~ print data
         ## Load Purchased from library
         try:
             lib = read_csv(lib_file, index_col=0, comment = '#')
             try:
-                lib = lib.ix[self.com_id]
+                if self.com_id == "Craig":
+                    data = data.loc[["Craig","Craig, Klawock"]]
+                else:
+                    data = data.loc[self.com_id]
             except KeyError:
                 lib = lib.loc[[self.com_id+',' in s for s in lib.index]]
         except:
@@ -778,12 +781,20 @@ class Preprocessor (object):
 
             self.diagnostics.add_note("PCE Electricity",
                         "Utility list (alphabetized) for purchased power" + \
-                        str(sources) + "using " + str(sources[0]) + \
-                        "as default provider of purchased power")
-
-            p_key = lib[lib['purchased_from'] == sources[0]]\
+                        str(sources) )
+            #~ print sources
+            for s in sources:
+                try:
+                    p_key = lib[lib['purchased_from'] == s]\
                                         ['Energy Source'].values[0].lower()
-
+                    provider = s
+                except IndexError as e:
+                    self.diagnostics.add_warning("PCE Electricity", 
+                                            "Utility " + s + \
+                                            " not found in utility-power "+\
+                                            "source lib not using as provider")
+            self.diagnostics.add_note("PCE Electricity",
+                          "Purchased from utility: " + str(s))
             self.diagnostics.add_note("PCE Electricity",
                           "Purchased energy type: " + str(p_key))
         except:
