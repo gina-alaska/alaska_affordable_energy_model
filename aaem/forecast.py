@@ -57,11 +57,10 @@ class Forecast (object):
         self.end_year = self.fc_specs["end year"]
         self.base_pop = self.fc_specs['population'].ix\
                     [self.cd.get_item('residential buildings',
-                                            'data').ix['year']].values[0]
+                                            'data').ix['year']].values[0][0]
         self.cpi = self.cd.load_pp_csv("cpi.csv")
         self.forecast_population()
         self.forecast_consumption()
-        self.merge_real_and_proj() # merge pop and con
         self.forecast_generation()
         self.forecast_average_kW()
         self.forecast_households()
@@ -69,44 +68,6 @@ class Forecast (object):
         self.heating_fuel_cols = [] 
         self.electric_columns = []
         
-    def merge_real_and_proj (self):
-        """ 
-            joins the measured and projected population and kWh consumption 
-        dataframes.
-        
-        pre:
-            self.population, self.fc_specs["population"],
-        self.measured_consumption and self.consumption should be dataframs 
-        with years as indexs. 
-        post:
-            self.population and self.consumption contain the population and 
-        consumptions for a continuous period, containing the measured and 
-        projected values
-            self.p_map and self.c_map are dataframes of qualifiers on 
-        self.population and self.consumption
-        """
-        self.p_map = concat(\
-                     [self.fc_specs["population"] - self.fc_specs["population"],
-                      self.population]).astype(bool).astype(str).\
-                      replace("True", "P").\
-                      replace("False", "M")
-        self.p_map.columns  = [self.p_map.columns[0] + "_qualifier"]
-        
-        self.population = concat([self.fc_specs["population"],self.population])
-        real = self.measured_consumption
-        projected = self.consumption
-        real.columns = projected.columns
-        
-        self.population.index = self.population.index.values.astype(int)
-        
-        self.c_map = concat([real-real,projected]).astype(bool).astype(str).\
-                      replace("True", "P").\
-                      replace("False", "M")
-        
-        self.c_map.columns  = [self.c_map.columns[0] + "_qualifier"]
-        
-        self.consumption =  concat([real,projected])
-        self.consumption.index = self.consumption.index.values.astype(int)
 
     def calc_electricity_totals (self):
         """ 
@@ -118,7 +79,7 @@ class Forecast (object):
         kWh = self.fc_specs["electricity"]
         years = kWh.T.keys().values
         self.yearly_kWh_totals = DataFrame({"year":years,
-                                "total":kWh['total'].values}).set_index("year")
+                          "total":kWh['consumption'].values}).set_index("year")
 
     def forecast_population (self):
         """
@@ -128,22 +89,14 @@ class Forecast (object):
             self.population is a array of estimated populations for each 
         year between start and end
         """
-        if len(self.fc_specs["population"]) < 10:
+        # pop forecast is preprocessed now
+        self.p_map = DataFrame(self.fc_specs["population"]\
+                                            ["population_qualifier"])
+        self.population = DataFrame(self.fc_specs["population"]["population"])
+        if len(self.p_map[self.p_map == "M"] ) < 10:
             msg = "the data range is < 10 for input population "\
                   "check population.csv in the models data directory"
             self.diagnostics.add_warning("forecast", msg)
-        
-        population = self.fc_specs["population"].T.values.astype(float)
-        years = self.fc_specs["population"].T.keys().values.astype(int)
-        new_years = np.array(range(years[-1]+1,self.end_year+1))
-        
-        population = DataFrame({"year":new_years, 
-             "population":growth(years,population,new_years)}).set_index("year")
-    
-        population.ix[new_years[0]+15:] =\
-                                    np.float64(population.ix[new_years[0]+15])
-        
-        self.population = population
         
         
     def forecast_consumption (self):
@@ -160,21 +113,22 @@ class Forecast (object):
             msg = "the data range is < 10 for input consumption "\
                   "check electricity.csv in the models data directory"
             self.diagnostics.add_warning("forecast", msg)
-        #~ ### for fit version
-        start = self.fc_specs["population"].T.keys().values[0] \
-                if self.fc_specs["population"].T.keys().values[0] > \
+   
+
+        start = self.p_map[self.p_map == "M"].T.keys().values[0] \
+                if self.p_map[self.p_map == "M"].T.keys().values[0] > \
                 self.yearly_kWh_totals.T.keys().values[0] \
                 else self.yearly_kWh_totals.T.keys().values[0]
              
         start = int(start)
         
-        end = self.fc_specs["population"].T.keys().values[-1] \
-                if self.fc_specs["population"].T.keys().values[-1] < \
+        end = self.p_map[self.p_map == "M"].T.keys().values[-1] \
+                if self.p_map[self.p_map == "M"].T.keys().values[-1] < \
                 self.yearly_kWh_totals.T.keys().values[-1] \
                 else self.yearly_kWh_totals.T.keys().values[-1]
         end = int(end)
-        population = self.fc_specs["population"].ix[start:end].T.values[0]
         
+        population = self.population.ix[start:end].T.values[0]
         self.measured_consumption = self.yearly_kWh_totals.ix[start:end]
         consumption = self.measured_consumption.T.values[0]
         if len(population) < 10:
@@ -187,18 +141,28 @@ class Forecast (object):
         # get slope(m),intercept(b)
         m, b = np.polyfit(population,consumption,1) 
         
-        # forecast kWh where population is known
-        last_year = int(self.yearly_kWh_totals.T.keys()[-1])
-        fc_con_known_pop  = m * self.fc_specs["population"][last_year+1:] + b
-
-        #forecast with forecasted population 
-        fc_con_fc_pop = m * self.population + b
-
-        consumption = concat([fc_con_known_pop, fc_con_fc_pop])
-        consumption.columns = ["consumption kWh"]
+        fc_consumption = m * self.population + b
+        start = int(self.measured_consumption.index[-1] + 1)
         
+        years= self.population.index.values.astype(int)
+        cons = (consumption-consumption).tolist() + \
+                                  fc_consumption.ix[start:].T.values[0].tolist()
+        self.c_map = DataFrame({'year':years, 'consumption': cons}).\
+                                                        set_index('year').\
+                                                        astype(bool).\
+                                                        astype(str).\
+                                                        replace("True", "P").\
+                                                        replace("False", "M")   
+        self.c_map.columns  = [self.c_map.columns[0] + "_qualifier"]
+        
+        cons = consumption.tolist() +\
+                                fc_consumption.ix[start:].values.T.tolist()[0]
+        consumption = DataFrame({'year':years, 
+                                 'consumption': cons}).set_index('year')
+        consumption.columns = ["consumption kWh"]
         self.consumption = consumption
-        self.start_year = last_year
+        self.consumption.index = self.consumption.index.values.astype(int)
+        self.start_year = int(self.yearly_kWh_totals.T.keys()[-1])
         
     def forecast_generation (self):
         """
@@ -213,6 +177,18 @@ class Forecast (object):
         generation = self.consumption/\
                     (1.0-self.cd.get_item('community','line losses'))
         self.generation = generation.apply(np.round, args=(-3,))
+        
+        
+        try:
+            real = self.cd.get_item('community',"generation")[2003:]
+            idx = real.index.values.tolist()
+            df = DataFrame(real.ix[idx])
+            df.columns = ['consumption kWh']
+            self.generation.ix[idx] = df.ix[idx]
+        except:
+            pass
+        
+        
         
         self.generation.columns = ["kWh generation"]
         
@@ -352,7 +328,7 @@ class Forecast (object):
         
         kWh_gen = self.generation
         kWh_gen.columns = ["total_electricity_generation [kWh/year]"]
-        g_map = c_map.replace("M","P")
+        g_map = c_map
         g_map.columns = ["total_electricity_generation_qualifier"]
         
         data = concat([self.population.round().astype(int), self.p_map, 

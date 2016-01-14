@@ -11,10 +11,10 @@ created: 2015/09/09
 import numpy as np
 
 from annual_savings import AnnualSavings
-from community_data import CommunityData
-from forecast import Forecast
-from diagnostics import diagnostics
-import constants
+from aaem.community_data import CommunityData
+from aaem.forecast import Forecast
+from aaem.diagnostics import diagnostics
+import aaem.constants as constants
 
 class WaterWastewaterSystems (AnnualSavings):
     """

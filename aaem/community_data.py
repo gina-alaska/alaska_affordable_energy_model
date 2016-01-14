@@ -15,7 +15,7 @@ import numpy as np
 ## fc - forecast
 ## com - community buildings 
 from diesel_prices import DieselProjections
-
+from defaults import absolute
 
 
 PATH = os.path.join
@@ -120,8 +120,9 @@ class CommunityData (object):
             self.valid keys is a dict of sections with lists of keys as values
         ex. {section1:{key1,key2,key3}, section2:{keyA,keyB,keyC}}
         """
-        absolutes = os.path.join("absolute_defaults.yaml")
-        lib = self.read_config(absolutes)
+        #~ absolutes = os.path.join("absolute_defaults.yaml")
+        #~ lib = self.read_config(absolutes)
+        lib = yaml.load(absolute)
         keys = {}
         for section in lib:
             temp = []
@@ -141,13 +142,13 @@ class CommunityData (object):
         """
         cwd = os.path.dirname(os.getcwd())
         
-        absolutes = os.path.join("absolute_defaults.yaml")
+        #~ absolutes = os.path.join("absolute_defaults.yaml")
         defaults = defaults_file
         overrides = community_file
         
         
-        absolute_defaults = self.read_config(absolutes)
-        
+        #~ absolute_defaults = self.read_config(absolutes)
+        absolute_defaults = yaml.load(absolute)
         if defaults_file == "defaults":
             client_defaults = absolute_defaults
         else:
@@ -261,9 +262,9 @@ class CommunityData (object):
         if self.get_item('forecast', "population") == "IMPORT":
             self.set_item('forecast', "population", 
                           self.load_pp_csv("population.csv"))
-        if self.get_item('forecast', "electricity") == "IMPORT":
-            self.set_item('forecast', "electricity", 
-                          self.load_pp_csv("electricity.csv"))
+        #~ if self.get_item('forecast', "electricity") == "IMPORT":
+            #~ self.set_item('forecast', "electricity", 
+                          #~ self.load_pp_csv("electricity.csv"))
 
         if  self.get_item('residential buildings','data') == "IMPORT":
             self.set_item('residential buildings','data',
@@ -293,21 +294,7 @@ class CommunityData (object):
         if self.get_item('community',"elec non-fuel cost") == "IMPORT":
             self.set_item("community", "elec non-fuel cost",
                             np.float(prices.ix["elec non-fuel cost"]))
-    
-        try:
-            generation = self.load_pp_csv("generation.csv")
-        except IOError:
-            if self.get_item('community',"generation") == "IMPORT" \
-              and self.get_item('community',"consumption HF") == "IMPORT":
-                raise IOError, "Generation not found"
-        
-        if self.get_item('community',"generation") == "IMPORT":
-            self.set_item('community',"generation", 
-            np.float(generation.ix["generation"]))
-        if self.get_item('community',"consumption HF") == "IMPORT":
-            self.set_item('community',"consumption HF", 
-            np.float(generation.ix["consumption HF"]))
-        
+
         if self.get_item('community buildings',
                                         "com building estimates") == "IMPORT":
             self.set_item('community buildings',"com building estimates",
@@ -322,32 +309,50 @@ class CommunityData (object):
                 int(self.load_pp_csv("com_num_buildings.csv").ix["Buildings"]))
                 
         try:
-            generation2 = self.load_pp_csv("yearly_generation.csv")
+            elec_summary = self.load_pp_csv("yearly_electricity_summary.csv")
         except IOError:
             if self.get_item('community',"line losses") == "IMPORT" \
               and self.get_item('community',"diesel generation efficiency") \
                                         == "IMPORT":
-                raise IOError, "Generation 2 not found"
-           
+                raise IOError, "yearly electricity summary not found"
+        
+        if self.get_item('forecast', "electricity") == "IMPORT":
+            self.set_item('forecast', "electricity",elec_summary[["consumption",
+                                                "consumption residential",
+                                                "consumption non-residential"]])
+        
+        
         if self.get_item('community',"line losses") == "IMPORT":
             self.set_item('community',"line losses", 
-            np.float(generation2["line loss"][-3:].mean()))
-
-
+            np.float(elec_summary["line loss"][-3:].mean()))
 
         if self.get_item('community','diesel generation efficiency')== "IMPORT":
             self.set_item('community','diesel generation efficiency', 
-                          np.float(generation2['efficiency'].values[-1]))
+                          np.float(elec_summary['efficiency'].values[-1]))
         try:
+            if self.get_item('community',"generation") == "IMPORT":
+                self.set_item('community',"generation", 
+                                elec_summary["net generation"])
             if self.get_item('community','generation numbers') == "IMPORT":
                 self.set_item('community','generation numbers', 
-                              generation2[['generation diesel', 'generation hydro',
+                              elec_summary[['generation diesel', 'generation hydro',
                                            'generation natural gas',
                                            'generation wind', 'generation solar',
                                            'generation biomass']])
         except:
             #~ self.diagnostics.add_warning("Community Data", 
                             #~ "Generation data not available by energy type")
+                        #~ temp = elec_summary[['generation']]
+            #~ temp['generation diesel'] = temp['generation']
+            #~ temp['generation hydro'] = temp['generation'] - temp['generation']
+            #~ temp['generation natural gas'] = temp['generation'] - \
+                                                            #~ temp['generation']
+            #~ temp['generation wind'] = temp['generation'] - temp['generation']
+            #~ temp['generation solar'] = temp['generation'] - temp['generation']
+            #~ temp['generation biomass'] = temp['generation'] - temp['generation']
+    
+            
+            #~ self.set_item('community','generation numbers', temp )
             print "Generation data not available by energy type"
         
     def load_pp_csv(self, f_name):
@@ -409,7 +414,7 @@ class CommunityData (object):
         self.set_item('water wastewater', "data", "IMPORT")
         self.set_item("community","electric non-fuel prices","IMPORT")
         self.set_item("community","generation numbers","IMPORT")
-
+        self.set_item("community","generation","IMPORT")
         
         fd = open(fname, 'w')
         text = yaml.dump(self.model_inputs, default_flow_style=False) 

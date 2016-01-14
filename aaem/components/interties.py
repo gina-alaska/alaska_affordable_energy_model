@@ -14,8 +14,8 @@ from math import isnan
 # be done here
 
 from annual_savings import AnnualSavings
-from community_data import CommunityData
-from forecast import Forecast
+from aaem.community_data import CommunityData
+from aaem.forecast import Forecast
 
 
                         
