@@ -261,7 +261,7 @@ class Preprocessor (object):
         
         if (pops.values < threshold).any():
             self.diagnostics.add_warning("Population",
-                                            "population < " + str(thershold))
+                                            "population < " + str(threshold))
 
         p = pops.T.values[0]
         k = pops.T.keys().values
