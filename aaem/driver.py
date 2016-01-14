@@ -8,15 +8,24 @@ from forecast import Forecast
 from diagnostics import diagnostics
 from preprocessor import preprocess
 import defaults
+from constants import mmbtu_to_kWh 
 
+from pandas import DataFrame, read_csv, concat
 
-from pandas import DataFrame, read_pickle, read_csv
 import numpy as np
 
 import yaml
 import os.path
 from importlib import import_module
 from datetime import datetime
+import warnings
+
+
+comp_lib = {
+    "residential buildings": "residential_buildings",
+    "community buildings": "community_buildings",
+    "water wastewater": "wastewater",
+        }
 
 class Driver (object):
     """ 
@@ -46,9 +55,10 @@ class Driver (object):
             self.comp_lib is a dictonarey the maps the names of components in
         absolute defaults, to the python modules. 
         """
-        fd = open("comp_lib.yaml", 'r')
-        self.comp_lib = yaml.load(fd)
-        fd.close()
+        #~ fd = open("comp_lib.yaml", 'r')
+        #~ self.comp_lib = yaml.load(fd)
+        #~ fd.close()
+        self.comp_lib = comp_lib
         
     def run_components (self):
         """
@@ -77,7 +87,7 @@ class Driver (object):
         post:
             returns imported module
         """
-        return import_module("components." + comp_name).component
+        return import_module("aaem.components." + comp_name).component
         
     def save_components_output (self, directory):
         """
@@ -168,6 +178,8 @@ def run_model (config_file):
     else:
         out_dir+= '/'
 
+    out_dir = os.path.join(out_dir,config['name'])
+    out_dir+= '/'
     try:
         os.makedirs(out_dir)
     except OSError:
@@ -196,7 +208,8 @@ def run_batch (config):
         pass
     communities = {}
     for key in config:
-        r_val = run_model(config[key])
+        print key
+        r_val = run_model_no_intertie(config[key])
         communities[key] = {"model": r_val[0], "directory": r_val[1]}
     return communities
     
@@ -217,48 +230,186 @@ def setup (community, data_repo, model_directory):
                 return
             else:
                 pass
-                
-    config_text = "community:\n  name: " + community +\
-                  " # community provided by user\n"
-    config_file = open(os.path.join(directory, "config",
-                                    "community_data.yaml"), 'w')
-    config_file.write(config_text)
-    config_file.close()
+    ids = preprocess(data_repo,os.path.join(directory,"input_data"),community)
+    
+    if len(ids) > 1 :
+        ids = [ids[0] + " intertie"] + ids
+    
+    for com_id in ids:
+        config_text = "community:\n  name: " + com_id.replace(" intertie","") +\
+                      " # community provided by user\n"
+
+        try:
+            os.makedirs(os.path.join(directory, "config", 
+                                                com_id.replace(" ","_")))
+        except OSError:
+            pass
+        config_file = open(os.path.join(directory, "config", 
+                                        com_id.replace(" ","_"),
+                                        "community_data.yaml"), 'w')
+        config_file.write(config_text)
+        config_file.close()
+        
+        
     def_file = open(os.path.join(directory, "config", 
                                     "test_defaults.yaml"), 'w')
     def_file.write(defaults.for_setup)
     def_file.close()
     
-    driver_text =  'overrides: ' + os.path.join(directory,"config",
+    batch = {}
+    for com_id in ids:
+        driver_text = 'name: ' + com_id.replace(" ","_") + '\n'
+        driver_text +=  'overrides: ' + os.path.join(directory,"config", com_id.replace(" ","_"),
                                                 "community_data.yaml") + '\n'
-    driver_text += 'defaults: ' + os.path.join(directory,"config",
+        driver_text += 'defaults: ' + os.path.join(directory,"config",
                                                 "test_defaults.yaml") + '\n'
-    driver_text += 'data directory: ' + os.path.join(directory,
-                                                "input_data") + '\n'
-    driver_text += 'output directory path: ' + os.path.join(directory,
-                                                 "results") + '\n'
-    driver_text += 'output directory suffix: NONE # TIMESTAMP|NONE|<str>\n'
+        driver_text += 'data directory: ' + os.path.join(directory,
+                                                    "input_data",com_id.replace(" ","_")) + '\n'
+        driver_text += 'output directory path: ' + os.path.join(directory,
+                                                     "results") + '\n'
+        driver_text += 'output directory suffix: NONE # TIMESTAMP|NONE|<str>\n'
+        
+        
+        driver_path = os.path.join(directory,"config", com_id.replace(" ","_"),
+                           com_id.replace(" ", "_") + "_driver.yaml")
+        batch[com_id] = driver_path
+        
+        driver_file = open(driver_path, 'w')
+        driver_file.write(driver_text)
+        driver_file.close()
     
-    driver_file = open(os.path.join(directory, 
-                       community.replace(" ", "_") + "_driver.yaml"), 'w')
-    driver_file.write(driver_text)
-    driver_file.close()
-    
-    preprocess(data_repo,os.path.join(directory,"input_data"),community)
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    fd = open(os.path.join(directory,community.replace(" ", "_") + "_driver.yaml"), 'w')
+    text = yaml.dump(batch, default_flow_style=False) 
+    fd.write("#batch  driver for communities tied to " + community +"\n")
+    fd.write(text)
+    fd.close()
+
+
     
     
+    
+    
+def create_generation_forecast (models, path):
+    """  
+    creates the generation forecast file
+    pre:
+        models: a list of driver objects, the generation total from models[0] is
+    used as the total
+        path: path to an existing directory
+    post:
+        a file is saved in path's directory
+    """
+    gen_fc = None
+    nat_gas = False
+    name = models[0].cd.get_item('community', 'name')
+    for idx in range(len(models)):
+        if idx == 0:
+            
+            gen_fc = concat([models[idx].fc.generation, 
+                             models[idx].cd.get_item('community',
+                                                  'generation numbers')], 
+                                                                    axis = 1)
+            gen_fc["generation total"] = \
+                               gen_fc['total_electricity_generation [kWh/year]']
+            del gen_fc['total_electricity_generation [kWh/year]']
+            continue
+        gen_fc = gen_fc + models[idx].cd.get_item('community',
+                                                 'generation numbers')
+    #~ print gen_fc
+   
+    for col in ('generation hydro', 'generation natural gas',
+                'generation wind', 'generation solar',
+                'generation biomass'):
+        try:
+            #~ print col
+            #~ print gen_fc[col]
+            last = gen_fc[gen_fc[col].notnull()]\
+                                [col].values[-3:]
+            #~ print last
+            last =  np.mean(last)
+            #~ print last
+            last_idx = gen_fc[gen_fc[col].notnull()]\
+                                [col].index[-1]
+                                
+                                
+            col_idx = np.logical_and(gen_fc[col].isnull(), 
+                                     gen_fc[col].index > last_idx)
+                                     
+            gen_fc[col][col_idx] = last
+        except IndexError:
+            pass
+                
+                                    
+    last_idx = gen_fc[gen_fc['generation diesel'].notnull()]\
+                            ['generation diesel'].index[-1]
+
+
+    col = gen_fc[gen_fc.index>last_idx]\
+                                ['generation total']\
+          - gen_fc[gen_fc.index>last_idx][['generation hydro', 
+                                           'generation natural gas',
+                                        'generation wind', 'generation solar',
+                                         'generation biomass']].fillna(0).sum(1)
+    
+    gen_fc.loc[gen_fc.index>last_idx,'generation diesel'] = col
+    
+    
+    for col in ['generation total', 'generation diesel', 'generation hydro', 
+                'generation natural gas', 'generation wind', 
+                'generation solar', 'generation biomass']:
+        gen_fc[col.replace(" ", "_") + " [kWh/year]"] = \
+                                    gen_fc[col].fillna(0).round().astype(int)
+        gen_fc[col.replace(" ", "_") + " [mmbtu/year]"] = \
+                    (gen_fc[col] / mmbtu_to_kWh).fillna(0).round().astype(int)
+        del gen_fc[col]
+    
+    
+    gen_fc.index = gen_fc.index.values.astype(int)
+    gen_fc = gen_fc.fillna(0).ix[2003:]
+    
+    out_file = os.path.join(path, name + "_generation_forecast.csv")
+    fd = open(out_file, 'w')
+    fd.write("# Generation forecast\n")
+    fd.write("# projections start in " + str(int(last_idx+1)) + "\n")
+    fd.close()
+    gen_fc.to_csv(out_file, index_label="year", mode = 'a')   
+    return gen_fc
+    
+    
+def run_model_no_intertie (config_file):
+    """
+    run the model given an input file
+    pre:
+        config_file is the absolute path to a yaml file with this format:
+            |------ config example -------------
+            |overrides: # a path (ex:"..test_case/manley_data.yaml")
+            |defaults: # blank or a path
+            |output directory path: # a path
+            |output directory suffix: TIMESTAMP # TIMESTAMP|NONE|<string>
+            |-------------------------------------
+    post:
+        The model will have been run, and outputs saved.
+    """
+    model, out_dir = run_model(config_file)
+    try:
+        create_generation_forecast([model],out_dir)
+    except IndexError:
+        name = model.cd.get_item('community', 'name')
+        out_file = os.path.join(out_dir, name + "_generation_forecast.csv")
+        fd = open(out_file, 'w')
+        fd.write("# Generation forecast cannot be generated at this time for" +\
+                 " communities without generation data\n")
+        fd.close()
+    return model, out_dir
+    
+    
+def run (batch_file, dev = False):
+    """ Function doc """
+    if not dev:
+        warnings.filterwarnings("ignore")
+    stuff = run_batch(batch_file)
+    warnings.filterwarnings("default")
+    return stuff
     
     
     

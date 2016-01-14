@@ -2,15 +2,16 @@ community:
   HDD: 14593
   consumption HF: 35865.0
   current year: 2014
-  diesel generation efficiency: 10.802351555
+  diesel generation efficiency: 12.5389655653
   diesel prices: IMPORT
   discount rate: 0.03
   elec non-fuel cost: 0.545731747669
   electric non-fuel prices: IMPORT
   generation: 449710.0
+  generation numbers: IMPORT
   heating fuel premium: 1.5507921943
   interest rate: 0.05
-  line losses: 0.121
+  line losses: 0.18064132878058334
   model financial: true
   name: Manley Hot Springs
   region: Yukon-Koyukuk/Upper Tanana
@@ -21,7 +22,7 @@ community buildings:
   com building data: IMPORT
   com building estimates: IMPORT
   enabled: true
-  lifetime: 10
+  lifetime: 25
   number buildings: 21
   start year: 2015
 construction multipliers:
@@ -43,7 +44,7 @@ residential buildings:
   average refit cost: 11000
   data: IMPORT
   enabled: true
-  lifetime: 15
+  lifetime: 25
   start year: 2015
 water wastewater:
   audit cost: 10000
@@ -55,5 +56,5 @@ water wastewater:
     false: 1.0
     true: 0.5
   heating fuel refit reduction: 0.35
-  lifetime: 15
+  lifetime: 25
   start year: 2015
