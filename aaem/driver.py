@@ -203,7 +203,14 @@ def run_model (config_file, name = None, override_data = None,
     model.save_components_output(out_dir)
     model.save_forecast_output(out_dir)
     model.save_input_files(out_dir)
-    model.save_diagnostics(out_dir)
+    
+    try:
+        create_generation_forecast([model],out_dir)
+        
+    except IndexError:
+        model.diagnostics.add_waring("Generation Forecast", 
+                                        "Cannont Create File")
+    model.save_diagnostics(out_dir)  
     return model, out_dir
 
 
@@ -217,9 +224,10 @@ def run_batch (config):
     except:
         pass
     communities = {}
+    timestamp = datetime.strftime(datetime.now(),"%Y%m%d%H%M%S")
     for key in config:
         print key
-        r_val = run_model_no_intertie(config[key])
+        r_val = run_model(config[key], results_suffix = timestamp)
         communities[key] = {"model": r_val[0], "directory": r_val[1]}
     return communities
     
@@ -375,15 +383,8 @@ def write_config (com_id, root):
     if com_id in ["Valdez","Sitka"]:
         config_text += (
 "  # added to ensure model execution for weird communities (valdez & sitka) \n"
-"  generation: -9999 # kWh generated/yr  <float> 123456.00\n"
-"  consumption HF: -9999 # gallons HF consumed/year <float> 12345.00\n"
 "  res non-PCE elec cost: -9999 # $cost/kWh <float> (ex. .83)\n"
 "  elec non-fuel cost: -9999 # $cost/kWh <float> (ex. .83)\n"
-)
-    if com_id in ["Sitka"]:
-        config_text += (
-"  diesel generation efficiency: 2.80605962410888 # From EIA Data for 2015\n"
-"  line losses: .10 # 10% assumption\n"
 )
     #~ print config_text
     try:
@@ -482,33 +483,6 @@ def create_generation_forecast (models, path):
     fd.close()
     gen_fc.to_csv(out_file, index_label="year", mode = 'a')   
     return gen_fc
-    
-    
-def run_model_no_intertie (config_file):
-    """
-    run the model given an input file
-    pre:
-        config_file is the absolute path to a yaml file with this format:
-            |------ config example -------------
-            |overrides: # a path (ex:"..test_case/manley_data.yaml")
-            |defaults: # blank or a path
-            |output directory path: # a path
-            |output directory suffix: TIMESTAMP # TIMESTAMP|NONE|<string>
-            |-------------------------------------
-    post:
-        The model will have been run, and outputs saved.
-    """
-    model, out_dir = run_model(config_file)
-    try:
-        create_generation_forecast([model],out_dir)
-    except IndexError:
-        name = model.cd.get_item('community', 'name')
-        out_file = os.path.join(out_dir, name + "_generation_forecast.csv")
-        fd = open(out_file, 'w')
-        fd.write("# Generation forecast cannot be generated at this time for" +\
-                 " communities without generation data\n")
-        fd.close()
-    return model, out_dir
     
     
 def run (batch_file, dev = False):
