@@ -14,7 +14,8 @@ class AaemCommand(pycommand.CommandBase):
 
     commands = {
         'setup': SetupCommand,
-        'run':   RunCommand        }
+        'run':   RunCommand,
+        }
 
     def run(self):
         try:

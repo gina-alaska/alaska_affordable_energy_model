@@ -139,7 +139,9 @@ class Driver (object):
         
 
 
-def run_model (config_file):
+def run_model (config_file, name = None, override_data = None, 
+                            default_data = None, input_data = None,
+                            results_dir = None, results_suffix = None):
     """ 
     run the model given an input file
     pre:
@@ -157,13 +159,23 @@ def run_model (config_file):
     config = yaml.load(fd)
     fd.close()
     
+    if name:
+        config['name'] = name
+    if override_data:
+        config['overrides'] = override_data
+    if default_data:
+        config['defaults'] = default_data
+    if input_data:
+        config['data directory'] = input_data
+    if results_dir:
+        config['output directory path'] = results_dir
+    if results_suffix:
+        config['output directory suffix'] = results_suffix
     
     data_dir = os.path.abspath(config['data directory'])
     overrides = os.path.abspath(config['overrides'])
     defaults = "defaults" if config['defaults'] is None else\
                 os.path.abspath(config['defaults'])
-    
-    
     
     out_dir = config['output directory path']
     
@@ -184,8 +196,6 @@ def run_model (config_file):
         os.makedirs(out_dir)
     except OSError:
         pass
-    
-    
     
     model = Driver(data_dir, overrides, defaults)
     model.load_comp_lib()
@@ -285,8 +295,106 @@ def setup (community, data_repo, model_directory):
     fd.close()
 
 
+def setup_multi (coms, data_repo, model_root):
+    """
+    assumes directory structure exists
+    """
+    model_batch = {}
+    for com_id in coms:
+        it_batch = {}
+        ids = preprocess(data_repo,os.path.join(model_root,"input_data"),com_id)
+        if len(ids) == 1:
+            write_config(ids[0], model_root)
+            model_batch[ids[0]] = it_batch[ids[0]] = write_driver(ids[0], model_root)
+        
+        else:
+            ids = [ids[0] + " intertie"] + ids
+            for id in ids:
+                
+                if id.find("intertie") == -1:
+                    continue
+                
+                write_config(id, model_root)
+                model_batch[id] = it_batch[id] =write_driver(id, model_root)
+        fd = open(os.path.join(model_root,com_id.replace(" ", "_") + "_driver.yaml"), 'w')
+        text = yaml.dump(it_batch, default_flow_style=False) 
+        fd.write("#batch  driver for communities tied to " + com_id +"\n")
+        fd.write(text)
+        fd.close()
+    fd = open(os.path.join(model_root,"model_driver.yaml"), 'w')
+    text = yaml.dump(model_batch, default_flow_style=False) 
+    fd.write("#batch  driver for all communities\n")
+    fd.write(text)
+    fd.close()
+    write_defaults(model_root)
     
+def write_defaults(root, my_defaults = None):
+    """
+    """
+    #TODO use my defaults instead
+    def_file = open(os.path.join(root, "config", 
+                                    "test_defaults.yaml"), 'w')
+    def_file.write(defaults.for_setup)
+    def_file.close()
+                
+def write_driver (com_id, root):
+    """ Function doc """
+    driver_text = 'name: ' + com_id.replace(" ","_") + '\n'
+    driver_text +=  'overrides: ' + os.path.join(root,"config", com_id.replace(" ","_"),
+                                            "community_data.yaml") + '\n'
+    driver_text += 'defaults: ' + os.path.join(root,"config",
+                                            "test_defaults.yaml") + '\n'
+    driver_text += 'data directory: ' + os.path.join(root,
+                                                "input_data",com_id.replace(" ","_")) + '\n'
+    driver_text += 'output directory path: ' + os.path.join(root,
+                                                 "results") + '\n'
+    driver_text += 'output directory suffix: NONE # TIMESTAMP|NONE|<str>\n'
     
+    driver_path = os.path.join(root,"config", com_id.replace(" ","_"),
+                       com_id.replace(" ", "_") + "_driver.yaml")
+    
+    try:
+        os.makedirs(os.path.join(root, "config", com_id.replace(" ","_")))
+    except OSError:
+        pass
+    driver_file = open(driver_path, 'w')
+    driver_file.write(driver_text)
+    driver_file.close()
+    return driver_path
+    
+def write_config (com_id, root):
+    """ Function doc """
+    config_text = (
+"community:\n"
+"  name: " + com_id.replace(" intertie","") + " # community provided by user\n"
+"  model financial: False # The Financial portion of the model is disabled \n"
+)
+
+
+    #~ print config_text
+    if com_id in ["Valdez","Sitka"]:
+        config_text += (
+"  # added to ensure model execution for weird communities (valdez & sitka) \n"
+"  generation: -9999 # kWh generated/yr  <float> 123456.00\n"
+"  consumption HF: -9999 # gallons HF consumed/year <float> 12345.00\n"
+"  res non-PCE elec cost: -9999 # $cost/kWh <float> (ex. .83)\n"
+"  elec non-fuel cost: -9999 # $cost/kWh <float> (ex. .83)\n"
+)
+    if com_id in ["Sitka"]:
+        config_text += (
+"  diesel generation efficiency: 2.80605962410888 # From EIA Data for 2015\n"
+"  line losses: .10 # 10% assumption\n"
+)
+    #~ print config_text
+    try:
+        os.makedirs(os.path.join(root, "config", com_id.replace(" ","_")))
+    except OSError:
+        pass
+    config_file = open(os.path.join(root, "config", com_id.replace(" ","_"),
+                                                "community_data.yaml"), 'w')
+    config_file.write(config_text)
+    config_file.close()
+
     
     
 def create_generation_forecast (models, path):
