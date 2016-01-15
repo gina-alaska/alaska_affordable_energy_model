@@ -72,7 +72,7 @@ class SetupCommand(pycommand.CommandBase):
         coms = ["Bethel","Craig","Dillingham","Haines","Manley Hot Springs",
                 "Nome","Sand Point","Sitka","Tok","Yakutat","Valdez"]
         
-        driver.setup_multi(coms, raw, model_root)
+        driver.setup(coms, raw, model_root)
 
 if __name__ == '__main__':
     # Shortcut for reading from sys.argv[1:] and sys.exit(status)
