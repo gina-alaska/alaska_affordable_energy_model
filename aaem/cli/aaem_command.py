@@ -3,18 +3,21 @@ import sys
 
 from aaem.cli.run_command import RunCommand
 from aaem.cli.setup_command import SetupCommand
+from aaem.cli.copy_command import CopyCommand
 
 class AaemCommand(pycommand.CommandBase):
     usagestr = 'usage: aaem <command>'
     description = (
         'Commands:\n'
         '  setup        Set up workspace for running aaem models\n'
-        '  run          Run aaem model'
+        '  run          Run aaem model\n'
+        '  copy         Create a copy of a model run\n'
     )
 
     commands = {
         'setup': SetupCommand,
         'run':   RunCommand,
+        'copy':  CopyCommand,
         }
 
     def run(self):

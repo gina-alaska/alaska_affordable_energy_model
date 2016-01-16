@@ -5,7 +5,7 @@ import shutil
 from aaem import driver
 
 class SetupCommand(pycommand.CommandBase):
-    usagestr = 'usage: setup [data repo]'
+    usagestr = 'usage: setup -p<path to output> [data repo]'
     description = 'Set up directory for running AAEM Models'
     
     
@@ -17,7 +17,7 @@ class SetupCommand(pycommand.CommandBase):
     )
 
     def run(self):
-        print self.args
+        #~ print self.flags.path
         if self.args and os.path.exists(self.args[0]):
             repo = os.path.abspath(self.args[0])
         else:
@@ -29,9 +29,10 @@ class SetupCommand(pycommand.CommandBase):
         #~ print('Python version ' + sys.version.split()[0]))
         
         path = os.getcwd()
+        #~ print self.flags.path
         if self.flags.path:
             path = os.path.abspath(self.flags.path)
-            
+        #~ print path
         name = ""
         #~ if self.flags.name:
             #~ name = '_' + self.flags.name
@@ -39,16 +40,26 @@ class SetupCommand(pycommand.CommandBase):
         
         
         
+        model_root = os.path.join(path,"model" + name)
+        #~ print model_root
         try:
-            model_root = os.path.join(path,"model" + name)
-            os.makedirs(os.path.join(model_root, "raw_data"))
-            os.makedirs(os.path.join(model_root, "input_data"))
-            os.makedirs(os.path.join(model_root, "config"))
-            os.makedirs(os.path.join(model_root, "results"))
+            os.makedirs(os.path.join(model_root, 'setup',"raw_data"))
+        except OSError:
+            pass
+        try:
+            os.makedirs(os.path.join(model_root, 'setup',"input_data"))
+        except OSError:
+            pass
+        try:
+            os.makedirs(os.path.join(model_root, 'run_init', "config"))
+        except OSError:
+            pass
+        try:
+            os.makedirs(os.path.join(model_root, 'run_init', "results"))
         except OSError:
             pass
             
-        raw = os.path.join(model_root, "raw_data")
+        raw = os.path.join(model_root, 'setup', "raw_data")
         shutil.copy(os.path.join(repo, 
                         "2013-add-power-cost-equalization-pce-data.csv"), raw)
         shutil.copy(os.path.join(repo, "com_building_estimates.csv"), raw)
@@ -71,8 +82,12 @@ class SetupCommand(pycommand.CommandBase):
 
         coms = ["Bethel","Craig","Dillingham","Haines","Manley Hot Springs",
                 "Nome","Sand Point","Sitka","Tok","Yakutat","Valdez"]
+
+        #~ driver.setup(coms, raw, model_root)
         
-        driver.setup(coms, raw, model_root)
+        
+        driver.run(driver.setup(coms, raw, model_root), "")
+        
 
 if __name__ == '__main__':
     # Shortcut for reading from sys.argv[1:] and sys.exit(status)
