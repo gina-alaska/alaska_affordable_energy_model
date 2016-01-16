@@ -1,0 +1,9 @@
+#!/usr/bin/env python
+
+import pycommand
+import sys
+import aaem.cli
+
+if __name__ == '__main__':
+    # Shortcut for reading from sys.argv[1:] and sys.exit(status)
+    pycommand.run_and_exit(aaem.cli.AaemCommand)

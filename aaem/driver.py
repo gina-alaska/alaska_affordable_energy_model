@@ -9,7 +9,7 @@ from diagnostics import diagnostics
 from preprocessor import preprocess
 import defaults
 from constants import mmbtu_to_kWh 
-
+import shutil
 from pandas import DataFrame, read_csv, concat
 
 import numpy as np
@@ -105,7 +105,8 @@ class Driver (object):
             pass
     
         for comp in self.comps_used:
-            self.comps_used[comp].save_csv_outputs(directory + "model_outputs/")
+            self.comps_used[comp].save_csv_outputs(os.path.join(directory,
+                                                            "model_outputs/"))
     
     def save_forecast_output (self, directory):
         """
@@ -125,7 +126,7 @@ class Driver (object):
         post:
             the nputs used for each component are saved
         """
-        self.cd.save_model_inputs(directory+"config_used.yaml")
+        self.cd.save_model_inputs(os.path.join(directory,"config_used.yaml"))
     
     def save_diagnostics (self, directory):
         """ 
@@ -135,11 +136,13 @@ class Driver (object):
         post:
             diagnostics file is saved
         """
-        self.di.save_messages(directory+"diagnostics.csv")
+        self.di.save_messages(os.path.join(directory,"diagnostics.csv"))
         
 
 
-def run_model (config_file):
+def run_model (config_file, name = None, override_data = None, 
+                            default_data = None, input_data = None,
+                            results_dir = None, results_suffix = None):
     """ 
     run the model given an input file
     pre:
@@ -157,48 +160,117 @@ def run_model (config_file):
     config = yaml.load(fd)
     fd.close()
     
+    if name:
+        config['name'] = name
+    if override_data:
+        config['overrides'] = override_data
+    if default_data:
+        config['defaults'] = default_data
+    if input_data:
+        config['data directory'] = input_data
+    if results_dir:
+        config['output directory path'] = results_dir
+    if results_suffix:
+        config['output directory suffix'] = results_suffix
     
     data_dir = os.path.abspath(config['data directory'])
     overrides = os.path.abspath(config['overrides'])
     defaults = "defaults" if config['defaults'] is None else\
                 os.path.abspath(config['defaults'])
     
-    
-    
     out_dir = config['output directory path']
     
-    out_dir = out_dir[:-1] if out_dir[-1] == '/' else out_dir 
     out_dir = os.path.abspath(out_dir)
+
     suffix = config['output directory suffix']
     if suffix == "TIMESTAMP":
         timestamp = datetime.strftime(datetime.now(),"%Y%m%d%H%M%S")
-        out_dir+= "_" +timestamp + '/'
+        out_dir+= "_"  + timestamp 
     elif suffix != "NONE":
-        out_dir+= "_" + suffix + '/'
+        out_dir+= "_" + suffix 
     else:
-        out_dir+= '/'
+        pass
 
-    out_dir = os.path.join(out_dir,config['name'])
-    out_dir+= '/'
+    out_dir = os.path.join(out_dir,config['name'],"")
     try:
         os.makedirs(out_dir)
     except OSError:
         pass
     
-    
-    
     model = Driver(data_dir, overrides, defaults)
     model.load_comp_lib()
     model.run_components()
-    model.save_components_output(out_dir)
+    #model.save_components_output(out_dir)
+    shutil.copytree(data_dir,os.path.join(out_dir, "input_data"))
     model.save_forecast_output(out_dir)
     model.save_input_files(out_dir)
-    model.save_diagnostics(out_dir)
+    
+    try:
+        create_generation_forecast([model],out_dir)
+        
+    except IndexError:
+        model.diagnostics.add_waring("Generation Forecast", 
+                                        "Cannont Create File")
+    model.save_diagnostics(out_dir)  
     return model, out_dir
 
+def config_split (root, out):
+    """
+    """
+    root = os.path.abspath(root)
+    coms = os.listdir(root)
+    ymls = {}
+    for com in coms:
+        fd = open(os.path.join(root,com,"config_used.yaml"))
+        ymls[com] = yaml.load(fd)
+        fd.close()
+    
+    com0 = coms[0]
+    common = {}
+    for comp in ymls[com0]:
+        unit = {}
+        del_keys = []
+        for key in ymls[com0][comp]:
+            inall = True
+            for com in coms:
+                if com == com0:
+                    continue
+                if ymls[com][comp][key] != ymls[com0][comp][key]:
+                    inall = False
+                    break
+            if inall:
+                unit[key] = ymls[com0][comp][key]
+                del_keys.append(key)
+        for com in coms:
+            for key in del_keys:
+                #~ print key
+                del ymls[com][comp][key]
+        common[comp] = unit
+    
+    for com in coms:
+        del_comps = []
+        for comp in ymls[com]:
+            #~ print comp + "_" + str(len
+            if len(ymls[com][comp]) == 0:
+                del_comps.append(comp)
+        for comp in del_comps:
+            del ymls[com][comp]
+        
+    fd = open(os.path.join(out,"shared_config.yaml"), 'w')
+    text = yaml.dump(common, default_flow_style=False) 
+    fd.write(text)
+    fd.close()
+    
+    for com in coms:
+        fd = open(os.path.join(out,com,"community_data.yaml"), 'w')
+        text = yaml.dump(ymls[com], default_flow_style=False) 
+        fd.write(text)
+        fd.close()
+        
+    
 
 
-def run_batch (config):
+def run_batch (config, suffix = "TS"):
     """ Function doc """
     try:
         fd = open(config, 'r')
@@ -207,86 +279,136 @@ def run_batch (config):
     except:
         pass
     communities = {}
+    if suffix == "TS":
+        suffix = datetime.strftime(datetime.now(),"%Y%m%d%H%M%S")
     for key in config:
         print key
-        r_val = run_model_no_intertie(config[key])
+        r_val = run_model(config[key], results_suffix = suffix)
         communities[key] = {"model": r_val[0], "directory": r_val[1]}
     return communities
-    
 
-def setup (community, data_repo, model_directory):
-    """ Function doc """
-    directory = os.path.abspath(model_directory)
+def setup (coms, data_repo, model_root, save_bacth_files = False):
+    """
+    """
     try:
-        os.makedirs(os.path.join(directory,"config"))
+        os.makedirs(os.path.join(model_root, 'setup',"raw_data"))
     except OSError:
-        while True:
-            resp = raw_input("The directory "+ directory + " already exists" +\
-                             " would you like to over right any model data" +\
-                             " in it? (y or n): ")
-            if resp.lower() == "y":
-                break
-            elif resp.lower() == "n":
-                return
-            else:
-                pass
-    ids = preprocess(data_repo,os.path.join(directory,"input_data"),community)
+        pass
+    try:
+        os.makedirs(os.path.join(model_root, 'setup',"input_data"))
+    except OSError:
+        pass
+    try:
+        os.makedirs(os.path.join(model_root, 'run_init',"input_data"))
+    except OSError:
+        pass
+    try:
+        os.makedirs(os.path.join(model_root, 'run_init', "config"))
+    except OSError:
+        pass
+    try:
+        os.makedirs(os.path.join(model_root, 'run_init', "results"))
+    except OSError:
+        pass
     
-    if len(ids) > 1 :
-        ids = [ids[0] + " intertie"] + ids
+    model_batch = {}
+    for com_id in coms:
+        it_batch = {}
+        ids = preprocess(data_repo,os.path.join(model_root,
+                                                'setup',"input_data"),com_id)
+        if len(ids) == 1:
+            write_config(ids[0], os.path.join(model_root,"run_init"))
+            model_batch[ids[0]] = it_batch[ids[0]] = write_driver(ids[0], os.path.join(model_root,"run_init"))
+            shutil.copytree(os.path.join(model_root, 'setup',"input_data",ids[0].replace(" ", "_")),os.path.join(model_root, 'run_init',"input_data",ids[0].replace(" ", "_")))
+        else:
+            ids = [ids[0] + " intertie"] + ids
+            for id in ids:
+                
+                if id.find("intertie") == -1:
+                    continue
+                write_config(id, os.path.join(model_root,"run_init"))
+                model_batch[id] = it_batch[id] = write_driver(id, os.path.join(model_root,"run_init"))
+                shutil.copytree(os.path.join(model_root, 'setup',"input_data",id.replace(" ", "_")),os.path.join(model_root, 'run_init',"input_data",id.replace(" ", "_")))
+                
+        if save_bacth_files:
+            fd = open(os.path.join(model_root,
+                                com_id.replace(" ", "_") + "_driver.yaml"), 'w')
+            text = yaml.dump(it_batch, default_flow_style=False) 
+            fd.write("#batch  driver for communities tied to " + com_id +"\n")
+            fd.write(text)
+            fd.close()
+            
+    if save_bacth_files:
+        fd = open(os.path.join(model_root,"model_driver.yaml"), 'w')
+        text = yaml.dump(model_batch, default_flow_style=False) 
+        fd.write("#batch  driver for all communities\n")
+        fd.write(text)
+        fd.close()
+    write_defaults(os.path.join(model_root, 'run_init'))
+    return model_batch
     
-    for com_id in ids:
-        config_text = "community:\n  name: " + com_id.replace(" intertie","") +\
-                      " # community provided by user\n"
-
-        try:
-            os.makedirs(os.path.join(directory, "config", 
-                                                com_id.replace(" ","_")))
-        except OSError:
-            pass
-        config_file = open(os.path.join(directory, "config", 
-                                        com_id.replace(" ","_"),
-                                        "community_data.yaml"), 'w')
-        config_file.write(config_text)
-        config_file.close()
-        
-        
-    def_file = open(os.path.join(directory, "config", 
+def write_defaults(root, my_defaults = None):
+    """
+    """
+    #TODO use my defaults instead
+    def_file = open(os.path.join(root, "config", 
                                     "test_defaults.yaml"), 'w')
     def_file.write(defaults.for_setup)
     def_file.close()
+                
+def write_driver (com_id, root):
+    """ Function doc """
+    driver_text = 'name: ' + com_id.replace(" ","_") + '\n'
+    driver_text +=  'overrides: ' + os.path.join(root, "config",
+                                                 com_id.replace(" ","_"),
+                                                 "community_data.yaml") + '\n'
+    driver_text += 'defaults: ' + os.path.join(root,"config",
+                                            "test_defaults.yaml") + '\n'
+    driver_text += 'data directory: ' + os.path.join(root,
+                                                "input_data",
+                                                com_id.replace(" ","_")) + '\n'
+    driver_text += 'output directory path: ' + os.path.join(root,
+                                                 "results") + '\n'
+    driver_text += 'output directory suffix: NONE # TIMESTAMP|NONE|<str>\n'
     
-    batch = {}
-    for com_id in ids:
-        driver_text = 'name: ' + com_id.replace(" ","_") + '\n'
-        driver_text +=  'overrides: ' + os.path.join(directory,"config", com_id.replace(" ","_"),
-                                                "community_data.yaml") + '\n'
-        driver_text += 'defaults: ' + os.path.join(directory,"config",
-                                                "test_defaults.yaml") + '\n'
-        driver_text += 'data directory: ' + os.path.join(directory,
-                                                    "input_data",com_id.replace(" ","_")) + '\n'
-        driver_text += 'output directory path: ' + os.path.join(directory,
-                                                     "results") + '\n'
-        driver_text += 'output directory suffix: NONE # TIMESTAMP|NONE|<str>\n'
-        
-        
-        driver_path = os.path.join(directory,"config", com_id.replace(" ","_"),
-                           com_id.replace(" ", "_") + "_driver.yaml")
-        batch[com_id] = driver_path
-        
-        driver_file = open(driver_path, 'w')
-        driver_file.write(driver_text)
-        driver_file.close()
+    driver_path = os.path.join(root,"config", com_id.replace(" ","_"),
+                       com_id.replace(" ", "_") + "_driver.yaml")
     
-    fd = open(os.path.join(directory,community.replace(" ", "_") + "_driver.yaml"), 'w')
-    text = yaml.dump(batch, default_flow_style=False) 
-    fd.write("#batch  driver for communities tied to " + community +"\n")
-    fd.write(text)
-    fd.close()
+    try:
+        os.makedirs(os.path.join(root, "config", com_id.replace(" ","_")))
+    except OSError:
+        pass
+    driver_file = open(driver_path, 'w')
+    driver_file.write(driver_text)
+    driver_file.close()
+    return driver_path
+    
+def write_config (com_id, root):
+    """ Function doc """
+    config_text = (
+"community:\n"
+"  name: " + com_id.replace(" intertie","") + " # community provided by user\n"
+"  model financial: False # The Financial portion of the model is disabled \n"
+)
 
 
-    
-    
+    #~ print config_text
+    if com_id in ["Valdez","Sitka"]:
+        config_text += (
+"  # added to ensure model execution for weird communities (valdez & sitka) \n"
+"  res non-PCE elec cost: -9999 # $cost/kWh <float> (ex. .83)\n"
+"  elec non-fuel cost: -9999 # $cost/kWh <float> (ex. .83)\n"
+)
+    #~ print config_text
+    try:
+        os.makedirs(os.path.join(root, "config", com_id.replace(" ","_")))
+    except OSError:
+        pass
+    config_file = open(os.path.join(root, "config", com_id.replace(" ","_"),
+                                                "community_data.yaml"), 'w')
+    config_file.write(config_text)
+    config_file.close()
+
     
     
 def create_generation_forecast (models, path):
@@ -315,19 +437,15 @@ def create_generation_forecast (models, path):
             continue
         gen_fc = gen_fc + models[idx].cd.get_item('community',
                                                  'generation numbers')
-    #~ print gen_fc
    
     for col in ('generation hydro', 'generation natural gas',
                 'generation wind', 'generation solar',
                 'generation biomass'):
         try:
-            #~ print col
-            #~ print gen_fc[col]
+
             last = gen_fc[gen_fc[col].notnull()]\
                                 [col].values[-3:]
-            #~ print last
             last =  np.mean(last)
-            #~ print last
             last_idx = gen_fc[gen_fc[col].notnull()]\
                                 [col].index[-1]
                                 
@@ -376,38 +494,11 @@ def create_generation_forecast (models, path):
     return gen_fc
     
     
-def run_model_no_intertie (config_file):
-    """
-    run the model given an input file
-    pre:
-        config_file is the absolute path to a yaml file with this format:
-            |------ config example -------------
-            |overrides: # a path (ex:"..test_case/manley_data.yaml")
-            |defaults: # blank or a path
-            |output directory path: # a path
-            |output directory suffix: TIMESTAMP # TIMESTAMP|NONE|<string>
-            |-------------------------------------
-    post:
-        The model will have been run, and outputs saved.
-    """
-    model, out_dir = run_model(config_file)
-    try:
-        create_generation_forecast([model],out_dir)
-    except IndexError:
-        name = model.cd.get_item('community', 'name')
-        out_file = os.path.join(out_dir, name + "_generation_forecast.csv")
-        fd = open(out_file, 'w')
-        fd.write("# Generation forecast cannot be generated at this time for" +\
-                 " communities without generation data\n")
-        fd.close()
-    return model, out_dir
-    
-    
-def run (batch_file, dev = False):
+def run (batch_file, suffix = "TS", dev = False):
     """ Function doc """
     if not dev:
         warnings.filterwarnings("ignore")
-    stuff = run_batch(batch_file)
+    stuff = run_batch(batch_file, suffix)
     warnings.filterwarnings("default")
     return stuff
     
