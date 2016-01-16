@@ -2,6 +2,5 @@ numpy
 pandas
 ipython
 pyyaml
-ipython
 pycommand
 matplotlib
