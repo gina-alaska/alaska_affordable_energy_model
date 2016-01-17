@@ -200,7 +200,7 @@ def run_model (config_file, name = None, override_data = None,
     model = Driver(data_dir, overrides, defaults)
     model.load_comp_lib()
     model.run_components()
-    #model.save_components_output(out_dir)
+    model.save_components_output(out_dir)
     shutil.copytree(data_dir,os.path.join(out_dir, "input_data"))
     model.save_forecast_output(out_dir)
     model.save_input_files(out_dir)
@@ -388,12 +388,12 @@ def write_config (com_id, root):
     config_text = (
 "community:\n"
 "  name: " + com_id.replace(" intertie","") + " # community provided by user\n"
-"  model financial: False # The Financial portion of the model is disabled \n"
+"  model financial: True # The Financial portion of the model is disabled \n"
 )
 
 
     #~ print config_text
-    if com_id in ["Valdez","Sitka"]:
+    if com_id in ["Valdez"]:
         config_text += (
 "  # added to ensure model execution for weird communities (valdez & sitka) \n"
 "  res non-PCE elec cost: -9999 # $cost/kWh <float> (ex. .83)\n"
