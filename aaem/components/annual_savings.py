@@ -7,6 +7,7 @@ created: 2015/09/16
 each of the spread sheet tabs.
 """
 import numpy as np
+import os.path
 from abc import ABCMeta, abstractmethod
 from pandas import DataFrame
 
@@ -299,7 +300,42 @@ class AnnualSavings (object):
         self.save_heating_csv (directory)
         if self.cd["model financial"]:
             self.save_financial_csv (directory)
-    
+
+    def save_component_csv (self, directory):
+        """
+        """
+        years = np.array(range(self.project_life)) + self.start_year
+        df = DataFrame({"Heating Fuel Use Baseline": self.get_base_HF_use(),
+                        "Heating Fuel Use Retrofit": self.get_refit_HF_use(),
+                        "Heating Fuel Use Savings": self.get_base_HF_use() -\
+														self.get_refit_HF_use(), 
+                        "Heating Fuel Cost Baseline": self.get_base_HF_cost(),
+                        "Heating Fuel Cost Retrofit": self.get_refit_HF_cost(),
+                        "Heating Fuel Cost Savings": self.get_heating_savings_costs(),
+                        "Electricity Use Baseline": self.get_base_kWh_use(),
+                        "Electricity Use Retrofit": self.get_refit_kWh_use(),
+                        "Electricity Use Savings": self.get_base_kWh_use() -\
+														self.get_refit_kWh_use(), 
+                        "Electricity Cost Basline": self.get_base_kWh_cost(),
+                        "Electricity Cost Retrofit": self.get_refit_kWh_cost(),
+                        "Electricity Cost Savings": self.get_electric_savings_costs(),
+                        "Project Capital Cost": self.get_capital_costs(),
+                        "Total Cost Savings": self.get_total_savings_costs(),
+                        "Net Benefit": self.get_net_beneft(),
+                       }, years)
+        
+        ol = ["Heating Fuel Use Baseline", "Heating Fuel Use Retrofit", 
+              "Heating Fuel Use Savings", "Heating Fuel Cost Baseline",
+              "Heating Fuel Cost Retrofit", "Heating Fuel Cost Savings",
+              "Electricity Use Baseline", "Electricity Use Retrofit", 
+              "Electricity Use Savings", "Electricity Cost Basline",
+              "Electricity Cost Retrofit", "Electricity Cost Savings",
+              "Project Capital Cost", "Total Cost Savings", "Net Benefit"]
+        fname = os.path.join(directory,
+                                   self.component_name + "_output.csv")
+        fname = fname.replace(" ","_")
+        df[ol].to_csv(fname, index_label="year", mode = 'w')
+
     def save_electric_csv (self, directory):
         """
         save electric for cast values
