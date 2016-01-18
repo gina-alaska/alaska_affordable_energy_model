@@ -201,7 +201,10 @@ def run_model (config_file, name = None, override_data = None,
     model.load_comp_lib()
     model.run_components()
     #model.save_components_output(out_dir)
-    shutil.copytree(data_dir,os.path.join(out_dir, "input_data"))
+    try:
+        shutil.copytree(data_dir,os.path.join(out_dir, "input_data"))
+    except OSError:
+        pass
     model.save_forecast_output(out_dir)
     model.save_input_files(out_dir)
     
