@@ -296,33 +296,39 @@ class AnnualSavings (object):
         post:
             electric,heating, and finical csv files are saved
         """
-        self.save_electric_csv (directory)
-        self.save_heating_csv (directory)
-        if self.cd["model financial"]:
-            self.save_financial_csv (directory)
+        self.save_component_csv(directory)
+        #~ self.save_electric_csv (directory)
+        #~ self.save_heating_csv (directory)
+        #~ if self.cd["model financial"]:
+            #~ self.save_financial_csv (directory)
 
     def save_component_csv (self, directory):
         """
+        save the output from the component.
         """
         years = np.array(range(self.project_life)) + self.start_year
         df = DataFrame({"Heating Fuel Use Baseline": self.get_base_HF_use(),
                         "Heating Fuel Use Retrofit": self.get_refit_HF_use(),
                         "Heating Fuel Use Savings": self.get_base_HF_use() -\
-														self.get_refit_HF_use(), 
+                                                    self.get_refit_HF_use(), 
                         "Heating Fuel Cost Baseline": self.get_base_HF_cost(),
                         "Heating Fuel Cost Retrofit": self.get_refit_HF_cost(),
-                        "Heating Fuel Cost Savings": self.get_heating_savings_costs(),
+                        "Heating Fuel Cost Savings": 
+                                                self.get_heating_savings_costs(),
                         "Electricity Use Baseline": self.get_base_kWh_use(),
                         "Electricity Use Retrofit": self.get_refit_kWh_use(),
                         "Electricity Use Savings": self.get_base_kWh_use() -\
-														self.get_refit_kWh_use(), 
+                                                   self.get_refit_kWh_use(), 
                         "Electricity Cost Basline": self.get_base_kWh_cost(),
                         "Electricity Cost Retrofit": self.get_refit_kWh_cost(),
-                        "Electricity Cost Savings": self.get_electric_savings_costs(),
+                        "Electricity Cost Savings": 
+                                            self.get_electric_savings_costs(),
                         "Project Capital Cost": self.get_capital_costs(),
                         "Total Cost Savings": self.get_total_savings_costs(),
                         "Net Benefit": self.get_net_beneft(),
                        }, years)
+
+
         
         ol = ["Heating Fuel Use Baseline", "Heating Fuel Use Retrofit", 
               "Heating Fuel Use Savings", "Heating Fuel Cost Baseline",
@@ -334,7 +340,15 @@ class AnnualSavings (object):
         fname = os.path.join(directory,
                                    self.component_name + "_output.csv")
         fname = fname.replace(" ","_")
-        df[ol].to_csv(fname, index_label="year", mode = 'w')
+        
+        
+        fin_str = "Enabled" if self.cd["model financial"] else "Disabled"
+        fd = open(fname, 'w')
+        fd.write(("# " + self.component_name + " model outputs\n"
+                  "# Finacial Component: " + fin_str + '\n'
+                  "# needs more header\n")) 
+        fd.close()
+        df[ol].to_csv(fname, index_label="year", mode = 'a')
 
     def save_electric_csv (self, directory):
         """
