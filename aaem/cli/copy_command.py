@@ -1,3 +1,8 @@
+"""
+run_command.py
+
+    A commad for the cli to copy a model run
+"""
 import pycommand
 import shutil
 import os.path
@@ -5,18 +10,31 @@ from aaem import driver
 from datetime import datetime
 
 class CopyCommand(pycommand.CommandBase):
-    usagestr = 'usage: copy -t <tag> [old path]'
+    """
+    copy command class
+    """
+    usagestr = 'usage: copy [options] path_to_model_run_to_copy'
     description = 'set up a new model run based off an old one'
     
     optionList = (
            ('tag', ('t', "<name>", "tag for run directory")),
     )
+    description = ('Set up a new model run based off an old one\n\n'
+                   'options: \n'
+                   "  " + str([o[0] + ': ' + o[1][2] + '. Use: --' +\
+                   o[0] + ' (-'+o[1][0]+') ' +  (o[1][1] if o[1][1] else "")  +\
+                   '' for o in optionList]).replace('[','').\
+                   replace(']','').replace(',','\n ') 
+            )
 
     def run(self):
+        """
+        run the command
+        """
         if self.args and os.path.exists(self.args[0]):
             base = os.path.abspath(self.args[0])
         else:
-            print  "copy needs a directory"
+            print  "Copy Error: needs a existing run"
             return 0
     
         
@@ -29,14 +47,14 @@ class CopyCommand(pycommand.CommandBase):
         new = os.path.join(model_root,"run_" + tag)
         
         try:
-            shutil.copytree(os.path.join(base,"input_data"), os.path.join(new,"input_data"))
-            shutil.copytree(os.path.join(base,"config"), os.path.join(new,"config"))
+            shutil.copytree(os.path.join(base,"input_data"), 
+                                                os.path.join(new,"input_data"))
+            shutil.copytree(os.path.join(base,"config"), 
+                                                os.path.join(new,"config"))
         except OSError:
-            pass
+            print "Copy Error: This copy already exists"
+            return 0
         config = os.path.join(new,"config")
-        print config
         coms = [a for a in os.listdir(config) if '.' not in a]
-        print coms
         for com in coms:
-            print com
             driver.write_driver(com, new)
