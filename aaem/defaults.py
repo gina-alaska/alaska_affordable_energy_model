@@ -3,6 +3,8 @@ defaults.py
 
 this file contains default yaml file info as strings
 """
+
+### This is the absolute default yaml string used by the model
 absolute = """community: 
   name: ABSOLUTE DEFAULT NAME # community name <string>
   region: IMPORT # name <string>
@@ -111,15 +113,13 @@ construction multipliers:
 """
 
 
-
+### This is used as the model defaults uesd by set up in creating runs of the 
+### model
 for_setup = """community: 
   current year: 2014 #year to base npv calculations on <int>
   interest rate: .05 # rate as decimal <float> (ex. .05) 
   discount rate: .03 # rate as decimal <float> (ex. .03)
   model financial: True
-  
-  #do these come from community profiles?
-  #consumption kWh: 384000.00 # kWh consumed/year <float> 12345.00
 
 forecast:
   end year: 2040 # end year <int>
