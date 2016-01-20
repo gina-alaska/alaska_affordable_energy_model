@@ -196,7 +196,8 @@ class WaterWastewaterSystems (AnnualSavings):
             self.hdd, self.pop, self.population_fc should be as defined in 
         __init__
             self.comp_specs['data'] should have 'kWh/yr', 'HDD kWh', 
-        and 'pop kWh' as values (floats) with the units kWh/yr, ???, and ???, 
+        and 'pop kWh' as values (floats) with the units kWh/yr, kWh/HDD,
+         and KWh/person 
         
             NOTE: If known 'kWh/yr' is NaN or 0 an estimate will be created.
         post:
@@ -205,7 +206,9 @@ class WaterWastewaterSystems (AnnualSavings):
         """
         if not np.isnan(np.float64(self.comp_specs['data'].ix['kWh/yr'])) and \
                np.float64(self.comp_specs['data'].ix['kWh/yr']) != 0:
-            self.baseline_kWh_consumption = np.float64(self.comp_specs['data'].ix['kWh/yr'])
+            self.baseline_kWh_consumption =\
+                              np.float64(self.comp_specs['data'].ix['kWh/yr'])*\
+                            (self.population_fc/self.pop)
         else: #if not self.cd["w&ww_energy_use_known"]:
             hdd_coeff = np.float64(self.comp_specs['data'].ix['HDD kWh'])
             pop_coeff = np.float64(self.comp_specs['data'].ix['pop kWh'])
@@ -222,7 +225,7 @@ class WaterWastewaterSystems (AnnualSavings):
         __init__
             self.comp_specs['data'] should have 'HF Used',
         'heat recovery multiplier', 'HDD HF', and 'pop HF' as values (floats) 
-        with the units gal/yr, unitless, ???, and ??? 
+        with the units gal/yr, unitless, Gal/HDD, and Gal/person 
             self.comp_specs['data']'s 'HR Installed' is (True or False)(String)
             NOTE: If known 'gal/yr' is NaN or 0 an estimate will be created.
         post:
@@ -233,7 +236,8 @@ class WaterWastewaterSystems (AnnualSavings):
                 np.float64(self.comp_specs['data'].ix['HF Used']) != 0:
             self.baseline_HF_consumption = np.zeros(self.project_life)
             self.baseline_HF_consumption += \
-                            np.float64(self.comp_specs['data'].ix['HF Used'])
+                            np.float64(self.comp_specs['data'].ix['HF Used']) *\
+                            (self.population_fc/self.pop)
         else:
             hr_used = self.comp_specs['data'].ix["HR Installed"].values[0]
             hr_used = hr_used == True
