@@ -204,14 +204,15 @@ class WaterWastewaterSystems (AnnualSavings):
             self.baseline_kWh_consumption array of kWh/year values(floats) over
         the project lifetime
         """
+        hdd_coeff = np.float64(self.comp_specs['data'].ix['HDD kWh'])
+        pop_coeff = np.float64(self.comp_specs['data'].ix['pop kWh'])
         if not np.isnan(np.float64(self.comp_specs['data'].ix['kWh/yr'])) and \
                np.float64(self.comp_specs['data'].ix['kWh/yr']) != 0:
             self.baseline_kWh_consumption =\
-                              np.float64(self.comp_specs['data'].ix['kWh/yr'])*\
-                            (self.population_fc/self.pop)
+                             np.float64(self.comp_specs['data'].ix['kWh/yr'])+ \
+                            ((self.population_fc - self.pop) * pop_coeff)
         else: #if not self.cd["w&ww_energy_use_known"]:
-            hdd_coeff = np.float64(self.comp_specs['data'].ix['HDD kWh'])
-            pop_coeff = np.float64(self.comp_specs['data'].ix['pop kWh'])
+            
             
             self.baseline_kWh_consumption = \
                             (self.hdd * hdd_coeff + self.pop * pop_coeff) + \
@@ -232,18 +233,18 @@ class WaterWastewaterSystems (AnnualSavings):
             self.baseline_kWh_consumption array of kWh/year values(floats) over
         the project lifetime
         """
+        hdd_coeff = np.float64(self.comp_specs['data'].ix['HDD HF'])
+        pop_coeff = np.float64(self.comp_specs['data'].ix['pop HF'])
         if not np.isnan(np.float64(self.comp_specs['data'].ix['HF Used'])) and\
                 np.float64(self.comp_specs['data'].ix['HF Used']) != 0:
             self.baseline_HF_consumption = np.zeros(self.project_life)
             self.baseline_HF_consumption += \
-                            np.float64(self.comp_specs['data'].ix['HF Used']) *\
-                            (self.population_fc/self.pop)
+                            np.float64(self.comp_specs['data'].ix['HF Used']) +\
+                    ((self.population_fc - self.pop) * pop_coeff)
         else:
             hr_used = self.comp_specs['data'].ix["HR Installed"].values[0]
             hr_used = hr_used == True
             hr_coeff =  self.comp_specs['heat recovery multiplier'][hr_used]
-            hdd_coeff = np.float64(self.comp_specs['data'].ix['HDD HF'])
-            pop_coeff = np.float64(self.comp_specs['data'].ix['pop HF'])
             self.baseline_HF_consumption = \
                     ((self.hdd * hdd_coeff+ self.pop * pop_coeff) * hr_coeff) +\
                     ((self.population_fc - self.pop) * pop_coeff)

@@ -263,7 +263,7 @@ class Preprocessor (object):
         except KeyError:
             in_file = os.path.join(self.data_dir,"population_neil.csv")
             pop_data = read_csv(in_file, index_col = 0) # update to GNIS
-            pop_source = "Neil's Calculations" neil niel 
+            pop_source = "Neil's Calculations"
             pops = DataFrame(pop_data.ix[self.com_id]["2003":str(end_year)])
             
         if (pops.values < threshold).any():
