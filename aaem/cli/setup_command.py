@@ -87,6 +87,7 @@ class SetupCommand(pycommand.CommandBase):
         shutil.copy(os.path.join(repo, "interties.csv"), raw)
         shutil.copy(os.path.join(repo, "non_res_buildings.csv"), raw)
         shutil.copy(os.path.join(repo, "population.csv"), raw)
+        shutil.copy(os.path.join(repo, "population_niel.csv"), raw)
         shutil.copy(os.path.join(repo, "purchased_power_lib.csv"), raw)
         shutil.copy(os.path.join(repo, "res_fuel_source.csv"), raw)
         shutil.copy(os.path.join(repo, "res_model_data.csv"), raw)

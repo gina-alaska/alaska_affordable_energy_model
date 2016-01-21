@@ -69,14 +69,14 @@ class Preprocessor (object):
         
                                                     
     ## HEADER FUNCTIONS ########################################################
-    def population_header (self):
+    def population_header (self, source):
         """
         returns the population file header
         """
         # TODO: find original source (ADEG & TotalPopulationPlace2014.xls??)
         return "# " + self.com_id + " population\n" + \
                "# generated: " + str(datetime.now()).split('.')[0] +"\n" +\
-               "# Data Source: (DATA REPO)\n" +\
+               "# Data Source: " + source + "\n" +\
                "# recorded population in a given year\n" + \
                self.comments_dataframe_divide
 
@@ -257,8 +257,15 @@ class Preprocessor (object):
         in_file = os.path.join(self.data_dir,"population.csv")
         
         pop_data = read_csv(in_file, index_col = 0) # update to GNIS
-        pops = DataFrame(pop_data.ix[self.com_id]["2003":str(end_year)])
-        
+        pop_source = "ICER's population forecast"
+        try:
+            pops = DataFrame(pop_data.ix[self.com_id]["2003":str(end_year)])
+        except KeyError:
+            in_file = os.path.join(self.data_dir,"population_niel.csv")
+            pop_data = read_csv(in_file, index_col = 0) # update to GNIS
+            pop_source = "Niel's Calculations"
+            pops = DataFrame(pop_data.ix[self.com_id]["2003":str(end_year)])
+            
         if (pops.values < threshold).any():
             self.diagnostics.add_warning("Population",
                                             "population < " + str(threshold))
@@ -279,12 +286,12 @@ class Preprocessor (object):
         pops.columns  = ["population"]
         p_map = concat(\
                      [pops - pops]).astype(bool).astype(str).\
-                      replace("True", "P").\
-                      replace("False", "P")
+                      replace("True", "S").\
+                      replace("False", "S")
         p_map.columns  = [p_map.columns[0] + "_qualifier"]
         out_file = os.path.join(self.out_dir,"population.csv")
         fd = open(out_file,'w')
-        fd.write(self.population_header())
+        fd.write(self.population_header(pop_source))
         fd.close()
 
 
