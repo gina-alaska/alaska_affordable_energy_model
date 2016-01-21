@@ -22,6 +22,7 @@ class AaemCommand(pycommand.CommandBase):
         '  copy         Create a copy of a model run\n'
         '  help         See info on a given commands\n'
         '  list         List communites in a model run\n'
+        '  compare      compare the results of 2 model runs\n'
     )
 
     commands = {
