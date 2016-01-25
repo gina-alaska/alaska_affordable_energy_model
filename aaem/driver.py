@@ -148,11 +148,19 @@ def run_model (config_file, name = None, override_data = None,
     pre:
         config_file is the absolute path to a yaml file with this format:
             |------ config example -------------
+            |name: #community name
             |overrides: # a path (ex:"..test_case/manley_data.yaml")
             |defaults: # blank or a path
             |output directory path: # a path
             |output directory suffix: TIMESTAMP # TIMESTAMP|NONE|<string>
             |-------------------------------------
+            The Following will override the information in the config_file and 
+        are optional:
+            name: is a string (Community Name)
+            override_data: a communit_data.yaml file
+            default_data: a communit_data.yaml file
+            output directory path: path to where outputs should exist
+            output directory suffix: suffix to add to directory
     post:
         The model will have been run, and outputs saved.  
     """
@@ -201,7 +209,10 @@ def run_model (config_file, name = None, override_data = None,
     model.load_comp_lib()
     model.run_components()
     model.save_components_output(out_dir)
-    shutil.copytree(data_dir,os.path.join(out_dir, "input_data"))
+    try:
+        shutil.copytree(data_dir,os.path.join(out_dir, "input_data"))
+    except OSError:
+        pass
     model.save_forecast_output(out_dir)
     model.save_input_files(out_dir)
     
@@ -216,6 +227,14 @@ def run_model (config_file, name = None, override_data = None,
 
 def config_split (root, out):
     """
+    find all of the similarities in community data files and pull them out
+    pre:
+        root: the root of the config directory
+            root/
+            --comunity1
+            --comunity2
+              ...
+        out: output directory
     """
     root = os.path.abspath(root)
     coms = os.listdir(root)
@@ -271,7 +290,19 @@ def config_split (root, out):
 
 
 def run_batch (config, suffix = "TS"):
-    """ Function doc """
+    """
+    run a set of communities
+    
+    pre:
+        config: a library formated {"comunity1, <path to driver file>",
+                                    "comunity2, <path to driver file>",...}
+                or a .yaml file that would create that when read.
+        suffix:
+            suffix for the results directory
+    post:
+        model is run for the communities, and the outputs are saved in a common 
+    directory subdivided by community. 
+    """
     try:
         fd = open(config, 'r')
         config = yaml.load(fd)
@@ -289,6 +320,14 @@ def run_batch (config, suffix = "TS"):
 
 def setup (coms, data_repo, model_root, save_bacth_files = False):
     """
+        Set up a model run directory if it does not exist. This is for the first
+    time setup. Running it on a directory that exists is unsupported. 
+    pre:
+        coms: a list of communites
+        data_repo: path to the data repo
+        model_root: directory to set model up in
+        save_batch_files: save the files to run give batches, use full for 
+                          development or if running from python directly
     """
     try:
         os.makedirs(os.path.join(model_root, 'setup',"raw_data"))
@@ -318,8 +357,13 @@ def setup (coms, data_repo, model_root, save_bacth_files = False):
                                                 'setup',"input_data"),com_id)
         if len(ids) == 1:
             write_config(ids[0], os.path.join(model_root,"run_init"))
-            model_batch[ids[0]] = it_batch[ids[0]] = write_driver(ids[0], os.path.join(model_root,"run_init"))
-            shutil.copytree(os.path.join(model_root, 'setup',"input_data",ids[0].replace(" ", "_")),os.path.join(model_root, 'run_init',"input_data",ids[0].replace(" ", "_")))
+            model_batch[ids[0]] = it_batch[ids[0]] = write_driver(ids[0],
+                                            os.path.join(model_root,"run_init"))
+            shutil.copytree(os.path.join(model_root, 'setup',"input_data",
+                                         ids[0].replace(" ", "_")),
+                                         os.path.join(model_root, 
+                                            'run_init',"input_data",
+                                            ids[0].replace(" ", "_")))
         else:
             ids = [ids[0] + " intertie"] + ids
             for id in ids:
@@ -327,8 +371,14 @@ def setup (coms, data_repo, model_root, save_bacth_files = False):
                 if id.find("intertie") == -1:
                     continue
                 write_config(id, os.path.join(model_root,"run_init"))
-                model_batch[id] = it_batch[id] = write_driver(id, os.path.join(model_root,"run_init"))
-                shutil.copytree(os.path.join(model_root, 'setup',"input_data",id.replace(" ", "_")),os.path.join(model_root, 'run_init',"input_data",id.replace(" ", "_")))
+                model_batch[id] = it_batch[id] = write_driver(id, 
+                                            os.path.join(model_root,"run_init"))
+                shutil.copytree(os.path.join(model_root, 'setup',"input_data",
+                                             id.replace(" ", "_")),
+                                             os.path.join(model_root,
+                                                'run_init',
+                                                "input_data",
+                                                id.replace(" ", "_")))
                 
         if save_bacth_files:
             fd = open(os.path.join(model_root,
@@ -357,7 +407,14 @@ def write_defaults(root, my_defaults = None):
     def_file.close()
                 
 def write_driver (com_id, root):
-    """ Function doc """
+    """
+    write a drive file
+    pre:
+        com_id: the community id
+        root: the model root
+    post:
+        the driver file is saved
+    """
     driver_text = 'name: ' + com_id.replace(" ","_") + '\n'
     driver_text +=  'overrides: ' + os.path.join(root, "config",
                                                  com_id.replace(" ","_"),
@@ -384,7 +441,14 @@ def write_driver (com_id, root):
     return driver_path
     
 def write_config (com_id, root):
-    """ Function doc """
+    """
+    write community_data yaml for a community
+    pre:
+        com_id: the community id
+        root: the model root
+    post:
+        the community data file is saved
+    """
     config_text = (
 "community:\n"
 "  name: " + com_id.replace(" intertie","") + " # community provided by user\n"
@@ -495,7 +559,18 @@ def create_generation_forecast (models, path):
     
     
 def run (batch_file, suffix = "TS", dev = False):
-    """ Function doc """
+    """
+    run function
+    pre:
+        batch_file: a library formated {"comunity1, <path to driver file>",
+                                    "comunity2, <path to driver file>",...}
+                or a .yaml file that would create that when read.
+        suffix:
+            suffix for the results directory
+        dev: True if you want to see warnings
+    post:
+        model has been run
+    """
     if not dev:
         warnings.filterwarnings("ignore")
     stuff = run_batch(batch_file, suffix)

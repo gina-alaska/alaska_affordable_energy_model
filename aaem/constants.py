@@ -1,8 +1,13 @@
+"""
+constants.py
 
+    constants and conversion factors. 
+"""
 
-
+#kWh to ___
 kWh_to_mmbtu = 0.003412
 
+#mmbtu to ___
 mmbtu_to_gal_HF = 1/.138
 mmbtu_to_cords = 1/16.
 mmbtu_to_Mcf = 0.967

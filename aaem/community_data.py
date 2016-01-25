@@ -3,8 +3,7 @@ community_data.py
 ross spicer
 created: 2015/09/16
 
-    a place holder for an eventual community data module. the manley_data
-is here for testing
+     community data module
 """
 from pandas import read_csv, DataFrame
 import yaml
@@ -23,6 +22,30 @@ class CommunityData (object):
     """ Class doc """
     
     def __init__ (self, data_dir, override, default="defaults"):
+        """
+            set up the object
+        
+        pre-conditions:
+            data_dir: should be a directory 
+                it should contain:
+                    com_building_estimates.csv,
+                    community_buildings.csv,
+                    com_num_buildings.csv,
+                    cpi.csv,
+                    diesel_fuel_prices.csv,
+                    hdd.csv,
+                    interties.csv,
+                    population.csv,
+                    prices.csv,
+                    region.csv,
+                    residential.csv,
+                    wastewater_data.csv,
+                    yearly_electricity_summary.csv,
+            override: a community_data.yaml file
+            default: optionally a community_data.yaml file
+        post-conditions:
+            the community data object is initialized
+        """
         self.load_input(override, default)
         self.data_dir = os.path.abspath(data_dir)
         self.get_csv_data()
@@ -60,9 +83,18 @@ class CommunityData (object):
     
     def calc_non_fuel_electricty_price (self):
         """
+        calculate the electricity price
+        
+        pre:
+            community: diesel generation efficiency should be a numeric type
+                       > 0
+            community: elec non-fuel cost: is a floating point dollar value
+            community: diesel prices: is a diesel projections object. 
+        post:
+            community: electric non-fuel prices: is a data frame of dollar 
+                       values indexed by year
         """
         # TODO: 1 is 100% need to change to a calculation
-        # TODO: update generation efficiency
         generation_eff = self.get_item("community",
                                             "diesel generation efficiency")
         price = self.get_item("community","elec non-fuel cost") +\
@@ -236,7 +268,7 @@ class CommunityData (object):
         
         pre: 
             self.model_inputs exits
-            TODO: complete
+            files listed in __init__ shild be in the data_dir
         post:
             csvitems are in self.model_inputs 
         """
@@ -359,7 +391,10 @@ class CommunityData (object):
         """
         load a preprocessed csv file
         
-        
+        pre:
+            f_name must exist in self.data_dir
+        post:
+            returns a data frame from the file
         """
         return read_csv(os.path.join(self.data_dir, f_name),
                         comment = '#', index_col=0, header=0)
