@@ -7,13 +7,15 @@ import pycommand
 import sys
 import os.path
 import shutil
+import zipfile
 from aaem import driver
+from datetime import datetime
 
-class SetupCommand(pycommand.CommandBase):
+class RefreshCommand(pycommand.CommandBase):
     """
     help command class
     """
-    usagestr = 'usage: setup [options] data repo'
+    usagestr = 'usage: setup model_dir data_repo'
     optionList = (
            ('path', ('p', "<name>", "path to location to setup/run  model")),
            #~ ('name', ('n', "<name>", "name of model")),
@@ -32,48 +34,45 @@ class SetupCommand(pycommand.CommandBase):
         run the command
         """
         if self.args and os.path.exists(self.args[0]):
-            repo = os.path.abspath(self.args[0])
+            model_root = os.path.abspath(self.args[0])
         else:
-            print  "Setup Error: please provide a path to the aaem data repo"
+            print "Refresh Error: please provide a path to the model"
             return 0
-        
-        path = os.getcwd()
-        if self.flags.path:
-            path = os.path.abspath(self.flags.path)
-        
-        #add this later?
-        name = ""
-        #~ if self.flags.name:
-            #~ name = '_' + self.flags.name
+        if self.args and os.path.exists(self.args[1]):
+            repo = os.path.abspath(self.args[1])
+        else:
+            print "Refresh Error: please provide a path to the aaem data repo"
+            return 0
             
-        
-        
-        
-        model_root = os.path.join(path,"model" + name)
-        #~ print model_root
         try:
-            os.makedirs(os.path.join(model_root))
-        except OSError:
-            print "Setup Error: model already setup at provided location"
-            return 0
-        try:
-            os.makedirs(os.path.join(model_root, 'setup',"raw_data"))
-        except OSError:
-            pass
-        #~ try:
-            #~ os.makedirs(os.path.join(model_root, 'setup',"input_data"))
-        #~ except OSError:
-            #~ pass
-        #~ try:
-            #~ os.makedirs(os.path.join(model_root, 'run_init', "config"))
-        #~ except OSError:
-            #~ pass
-        #~ try:
-            #~ os.makedirs(os.path.join(model_root, 'run_init', "results"))
-        #~ except OSError:
-            #~ pass
+            fd = open(os.path.join(model_root,'setup','raw_data',"VERSION"),'r')
+            ver = fd.read().replace("\n","")
+            fd.close()
+        except IOError:
+            ver = "unknown_version_backup_"+ datetime.strftime(datetime.now(),
+                                                                    "%Y%m%d")
+        z = zipfile.ZipFile(os.path.join(model_root,
+                            "setup","data_"+ver+".zip"),"w")
+        for fn in os.listdir(os.path.join(model_root,"setup","raw_data")):
+            z.write(os.path.join(model_root,"setup","raw_data",fn),
+                                    os.path.join("raw_data",fn))
+        for fn in os.listdir(os.path.join(model_root,"setup","input_data")):
+            z.write(os.path.join(model_root,"setup","input_data",fn),
+                                    os.path.join("input_data",fn))
+            if os.path.isdir(os.path.join(model_root,"setup","input_data",fn)):
+                for fn2 in os.listdir(os.path.join(model_root,
+                                     "setup","input_data",fn)):
+                    z.write(os.path.join(model_root,"setup","input_data",
+                                    fn,fn2), os.path.join("input_data",fn,fn2))
+            
+                            
+        z.close()
+        
+        shutil.rmtree(os.path.join(model_root,"setup","raw_data"))
+        shutil.rmtree(os.path.join(model_root,"setup","input_data"))
             
         raw = os.path.join(model_root, 'setup', "raw_data")
+        os.makedirs(os.path.join(model_root, 'setup',"raw_data"))
         shutil.copy(os.path.join(repo, 
                         "2013-add-power-cost-equalization-pce-data.csv"), raw)
         shutil.copy(os.path.join(repo, "com_building_estimates.csv"), raw)
@@ -100,7 +99,16 @@ class SetupCommand(pycommand.CommandBase):
         coms = ["Bethel","Craig","Dillingham","Haines","Manley Hot Springs",
                 "Nome","Sand Point","Sitka","Tok","Yakutat","Valdez"]
         
-        driver.run(driver.setup(coms, raw, model_root), "")
+        try:
+            fd = open(os.path.join(model_root,'setup','raw_data',"VERSION"),'r')
+            ver = fd.read().replace("\n","")
+            fd.close()
+        except IOError:
+            ver = "unknown_version_created_"+ datetime.strftime(datetime.now(),
+                                                                    "%Y%m%d")
+        
+        driver.setup(coms, raw, model_root, run_name = "run_"+ver )
+        
         
 
 if __name__ == '__main__':

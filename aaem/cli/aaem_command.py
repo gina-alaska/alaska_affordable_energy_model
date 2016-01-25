@@ -7,6 +7,7 @@ from aaem.cli.copy_command import CopyCommand
 from aaem.cli.help_command import HelpCommand
 from aaem.cli.list_command import ListCommand
 from aaem.cli.compare_command import CompareCommand
+from aaem.cli.refresh_command import RefreshCommand
 
 
 # remove warnings in cli
@@ -23,6 +24,7 @@ class AaemCommand(pycommand.CommandBase):
         '  help         See info on a given commands\n'
         '  list         List communites in a model run\n'
         '  compare      compare the results of 2 model runs\n'
+        '  refresh      refresh the data in the model\n'
     )
 
     commands = {
@@ -32,6 +34,7 @@ class AaemCommand(pycommand.CommandBase):
         'help': HelpCommand,
         'list': ListCommand,
         'compare': CompareCommand,
+        'refresh': RefreshCommand,
         }
 
     def run(self):

@@ -318,7 +318,8 @@ def run_batch (config, suffix = "TS"):
         communities[key] = {"model": r_val[0], "directory": r_val[1]}
     return communities
 
-def setup (coms, data_repo, model_root, save_bacth_files = False):
+def setup (coms, data_repo, model_root, 
+           save_bacth_files = False, run_name = 'run_init'):
     """
         Set up a model run directory if it does not exist. This is for the first
     time setup. Running it on a directory that exists is unsupported. 
@@ -338,17 +339,17 @@ def setup (coms, data_repo, model_root, save_bacth_files = False):
     except OSError:
         pass
     try:
-        os.makedirs(os.path.join(model_root, 'run_init',"input_data"))
+        os.makedirs(os.path.join(model_root, run_name,"input_data"))
     except OSError:
         pass
     try:
-        os.makedirs(os.path.join(model_root, 'run_init', "config"))
+        os.makedirs(os.path.join(model_root, run_name, "config"))
     except OSError:
         pass
-    try:
-        os.makedirs(os.path.join(model_root, 'run_init', "results"))
-    except OSError:
-        pass
+    #~ try:
+        #~ os.makedirs(os.path.join(model_root, run_name, "results"))
+    #~ except OSError:
+        #~ pass
     
     model_batch = {}
     for com_id in coms:
@@ -356,13 +357,13 @@ def setup (coms, data_repo, model_root, save_bacth_files = False):
         ids = preprocess(data_repo,os.path.join(model_root,
                                                 'setup',"input_data"),com_id)
         if len(ids) == 1:
-            write_config(ids[0], os.path.join(model_root,"run_init"))
+            write_config(ids[0], os.path.join(model_root,run_name))
             model_batch[ids[0]] = it_batch[ids[0]] = write_driver(ids[0],
-                                            os.path.join(model_root,"run_init"))
+                                            os.path.join(model_root,run_name))
             shutil.copytree(os.path.join(model_root, 'setup',"input_data",
                                          ids[0].replace(" ", "_")),
                                          os.path.join(model_root, 
-                                            'run_init',"input_data",
+                                            run_name,"input_data",
                                             ids[0].replace(" ", "_")))
         else:
             ids = [ids[0] + " intertie"] + ids
@@ -370,13 +371,13 @@ def setup (coms, data_repo, model_root, save_bacth_files = False):
                 
                 if id.find("intertie") == -1:
                     continue
-                write_config(id, os.path.join(model_root,"run_init"))
+                write_config(id, os.path.join(model_root,run_name))
                 model_batch[id] = it_batch[id] = write_driver(id, 
-                                            os.path.join(model_root,"run_init"))
+                                            os.path.join(model_root,run_name))
                 shutil.copytree(os.path.join(model_root, 'setup',"input_data",
                                              id.replace(" ", "_")),
                                              os.path.join(model_root,
-                                                'run_init',
+                                                run_name,
                                                 "input_data",
                                                 id.replace(" ", "_")))
                 
@@ -394,7 +395,7 @@ def setup (coms, data_repo, model_root, save_bacth_files = False):
         fd.write("#batch  driver for all communities\n")
         fd.write(text)
         fd.close()
-    write_defaults(os.path.join(model_root, 'run_init'))
+    write_defaults(os.path.join(model_root, run_name))
     return model_batch
     
 def write_defaults(root, my_defaults = None):
