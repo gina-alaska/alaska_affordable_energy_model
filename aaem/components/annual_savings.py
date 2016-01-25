@@ -273,19 +273,31 @@ class AnnualSavings (object):
     ## NPVs
     def get_NPV_benefits (self): # ex: eff(res) C13
         """ return NPV benefits (float) """
-        return self.benefit_npv
+        try:
+            return self.benefit_npv
+        except AttributeError:
+            return "N/A"
     
     def get_NPV_costs (self): # ex: eff(res) C14
         """ return NPV costs (float) """
-        return self.cost_npv
+        try:
+            return self.cost_npv
+        except AttributeError:
+            return "N/A"
     
     def get_BC_ratio (self): # ex: eff(res) C15
         """ return NPV benefit/cost ratio (float) """
-        return self.benefit_cost_ratio
+        try:
+            return self.benefit_cost_ratio
+        except AttributeError:
+            return "N/A"
         
     def get_NPV_net_benefit (self): # ex: eff(res) C16
         """ return NPV net benefit (float) """
-        return self.net_npv
+        try:
+            return self.net_npv
+        except AttributeError:
+            return "N/A"
         
     ## save functions
     def save_csv_outputs (self, directory):
@@ -346,7 +358,33 @@ class AnnualSavings (object):
         fd = open(fname, 'w')
         fd.write(("# " + self.component_name + " model outputs\n"
                   "# Finacial Component: " + fin_str + '\n'
-                  "# needs more header\n")) 
+                  "# --- Cost Benefit Information ---\n"
+                  "# NPV Benefits: " + str(self.get_NPV_benefits()) + '\n'
+                  "# NPV Cost: " + str(self.get_NPV_costs()) + '\n'
+                  "# NPV Net Benefit: " + str(self.get_NPV_net_benefit()) + '\n'
+                  "# Benefit Cost Ratio: " + str(self.get_BC_ratio()) + '\n'
+                  "# --------------------------------\n"
+              "# year: year for projection \n"
+              "# Heating Fuel Use Baseline: Gallons Heating "
+                                            "Fuel used with no retrofits \n"
+              "# Heating Fuel Use Retrofit: Gallons Heating "
+                                            "Fuel used with retrofits \n"
+              "# Heating Fuel Use Savings: Gallons Heating Fuel savings \n"
+              "# Heating Fuel Cost Baseline: Cost Heating "
+                                            "Fuel used with no retrofits \n"
+              "# Heating Fuel Cost Retrofit: Cost Heating "
+                                            "Fuel used with retrofits \n"
+              "# Heating Fuel Cost Savings: Cost Heating Fuel savings \n"
+              "# Electricity Use Baseline: kWh used with no retrofits \n"
+              "# Electricity Use Retrofit: kWh used with retrofits \n"
+              "# Electricity Use Savings: kWh savings \n"
+              "# Electricity Cost Baseline: Cost kWh used with no retrofits\n"
+              "# Electricity Cost Retrofit: Cost kWh used with retrofits \n"
+              "# Electricity Cost Savings: Cost kWh savings \n"
+              "# Project Capital Cost: Cost of retrofits \n"
+              "# Total Cost Savings: savings from retrofits\n"
+              "# Net Benefit: benefit from retrofits\n"
+                  )) 
         fd.close()
         df[ol].to_csv(fname, index_label="year", mode = 'a')
 

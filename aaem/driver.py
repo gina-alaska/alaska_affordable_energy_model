@@ -452,7 +452,7 @@ def write_config (com_id, root):
     config_text = (
 "community:\n"
 "  name: " + com_id.replace(" intertie","") + " # community provided by user\n"
-"  model financial: False # The Financial portion of the model is disabled \n"
+"  model financial: True # The Financial portion of the model is disabled \n"
 )
 
 
