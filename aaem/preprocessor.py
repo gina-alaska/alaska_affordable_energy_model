@@ -498,17 +498,30 @@ class Preprocessor (object):
         """
         fuel prices EIA
         """
-        # TODO: find a way to calculate this
+        #~ # TODO: find a way to calculate this
         con_file = os.path.join(self.data_dir, "eia_sales.csv")
-        self.diagnostics.add_note("Electricity Prices (EIA)",
-                                "they need to be input in community data")        
-        #~ out_file = os.path.join(self.out_dir, "prices.csv")
-        #~ fd = open(out_file,'w')
-        #~ fd.write(self.electricity_prices_header("PCE"))
-        #~ fd.write("key,value \n")
-        #~ fd.write("res non-PCE elec cost,"+ str(res_nonPCE_price) + "\n")
-        #~ fd.write("elec non-fuel cost," + str(elec_nonFuel_cost) + "\n")
-        #~ fd.close()
+        try:
+		    con_data = read_csv(con_file, comment='#', 
+		                                 index_col=2).ix[self.com_id]
+        except KeyError:
+            self.diagnostics.add_note("Electricity Prices (EIA)",
+                                  "they need to be input in community data")  
+            return
+              
+        idx = con_data["Data Year"] == con_data["Data Year"].max()
+        res_nonPCE_price = float(con_data[idx]['Residential Thousand Dollars']) /\
+                           float(con_data[idx]['Residential Megawatthours'])
+                           
+        elec_nonFuel_cost = float(con_data[idx]['Total Thousand Dollars']) /\
+                           float(con_data[idx]['Total Megawatthours'])
+        
+        out_file = os.path.join(self.out_dir, "prices.csv")
+        fd = open(out_file,'w')
+        fd.write(self.electricity_prices_header("EIA"))
+        fd.write("key,value \n")
+        fd.write("res non-PCE elec cost,"+ str(res_nonPCE_price) + "\n")
+        fd.write("elec non-fuel cost," + str(elec_nonFuel_cost) + "\n")
+        fd.close()
 
     def electricity_prices_pce (self):
         """
