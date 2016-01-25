@@ -94,6 +94,7 @@ class SetupCommand(pycommand.CommandBase):
         shutil.copy(os.path.join(repo, "valdez_kwh_consumption.csv"), raw)
         shutil.copy(os.path.join(repo, "ww_assumptions.csv"), raw)
         shutil.copy(os.path.join(repo, "ww_data.csv"), raw)
+        shutil.copy(os.path.join(repo, "VERSION"), raw)
 
         #avaliable coms
         coms = ["Bethel","Craig","Dillingham","Haines","Manley Hot Springs",
