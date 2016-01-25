@@ -1,7 +1,7 @@
 """
-setup_command.py
+refresh_command.py
 
-    A commad for the cli to setup the model
+    A commad for the cli to refresh the data
 """
 import pycommand
 import sys
@@ -13,15 +13,16 @@ from datetime import datetime
 
 class RefreshCommand(pycommand.CommandBase):
     """
-    help command class
+    refesh command class
+    refesh command class
     """
     usagestr = 'usage: setup model_dir data_repo'
     optionList = (
-           ('path', ('p', "<name>", "path to location to setup/run  model")),
+           #~ ('path', ('p', "<name>", "path to location to setup/run  model")),
            #~ ('name', ('n', "<name>", "name of model")),
     )
     
-    description = ('Set up directory for running AAEM Models\n\n'
+    description = ('Refresh the data from the data repo\n\n'
                    'options: \n'
                    "  " + str([o[0] + ': ' + o[1][2] + '. Use: --' +\
                    o[0] + ' (-'+o[1][0]+') ' +  (o[1][1] if o[1][1] else "")  +\
@@ -111,6 +112,3 @@ class RefreshCommand(pycommand.CommandBase):
         
         
 
-if __name__ == '__main__':
-    # Shortcut for reading from sys.argv[1:] and sys.exit(status)
-    pycommand.run_and_exit(SetupCommand)
