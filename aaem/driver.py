@@ -396,6 +396,21 @@ def setup (coms, data_repo, model_root,
         fd.write(text)
         fd.close()
     write_defaults(os.path.join(model_root, run_name))
+    
+    try:
+        fd = open(os.path.join(model_root,'setup','raw_data',"VERSION"),'r')
+        data_ver = fd.read().replace("\n","")
+        fd.close()
+    except IOError:
+        data_ver = "unknown_version_created_"+ datetime.strftime(datetime.now(),
+                                                                "%Y%m%d")
+    
+    from aaem import __version__ as code_ver
+    fd = open(os.path.join(model_root, run_name, "version_metatdata.txt"),'w')
+    fd.write(("Code Version: " + str(code_ver) + '\n'
+              "Data Repo Version: " + str(data_ver) + '\n'))
+    
+    
     return model_batch
     
 def write_defaults(root, my_defaults = None):
