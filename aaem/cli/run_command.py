@@ -4,7 +4,7 @@ run_command.py
     A commad for the cli to run the model
 """
 import pycommand
-from aaem import driver, __version__
+from aaem import driver, __version__, __download_url__
 from datetime import datetime
 import os.path
 
@@ -43,6 +43,7 @@ class RunCommand(pycommand.CommandBase):
         fd.close()
         fd = open(os.path.join(base, "version_metatdata.txt"), 'w')
         fd.write(( "Code Version: "+ __version__ + "\n" 
+                   "Code URL: "+ __download_url__ + "\n" 
                    "" + lines[1] +'\n'
                 "Date Run: "+ datetime.strftime(datetime.now(),"%Y-%m-%d")+'\n'
                  ))
