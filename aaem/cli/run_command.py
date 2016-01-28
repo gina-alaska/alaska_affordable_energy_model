@@ -6,6 +6,7 @@ run_command.py
 import pycommand
 from aaem import driver
 import os.path
+import shutil
 
 class RunCommand(pycommand.CommandBase):
     """
@@ -34,5 +35,10 @@ class RunCommand(pycommand.CommandBase):
         batch = {}
         for com in coms:
             batch[com] = os.path.join(config,com,com+"_driver.yaml")
+        
+        try:
+            shutil.rmtree(os.path.join(base,'results'))
+        except OSError:
+            pass
         
         driver.run(batch, "")
