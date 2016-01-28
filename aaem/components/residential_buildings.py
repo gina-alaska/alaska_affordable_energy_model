@@ -55,6 +55,7 @@ class ResidentialBuildings(AnnualSavings):
             the model is run and the output values are available
         
         """
+        self.calc_avg_consumption()
         self.calc_init_HH()
         self.calc_savings_opportunities()
         self.calc_init_consumption()
@@ -84,6 +85,32 @@ class ResidentialBuildings(AnnualSavings):
             
             self.calc_npv(self.cd['discount rate'], self.cd['current year'])
     
+    def calc_avg_consumption (self, con_threshold = 6000.0):
+        """ 
+        get the average monthly consumption
+        
+        pre:
+        
+        post: 
+        """
+        #   500 average energy use, 12 months in a year. That's whrer the 6000.0
+        # comes from.
+        
+        yr = int(self.comp_specs['data'].ix['year'])
+        houses = int(self.comp_specs['data'].ix['total_occupied'])
+        r_con = self.forecast.base_res_consumption
+        avg_con = r_con/houses
+        #~ self.avg_monthly_consumption = ave_con/12
+        if avg_con < con_threshold:
+            avg_con = con_threshold
+        self.avg_consumption = avg_con
+        
+        self.diagnostics.add_note(self.component_name,
+                    "Average consumption was " + str(self.avg_consumption) +\
+                    " in " + str(yr))
+        
+        #~ print self.avg_consumption
+    
     def calc_init_HH (self):
         """
         estimate the # Housholds for the firet year o the project 
@@ -95,10 +122,6 @@ class ResidentialBuildings(AnnualSavings):
             self.init_HH is an integer # of houses.
         """
         val = self.forecast.get_population(self.start_year)
-        
-        #TODO:(2) do something with population, also HH
-        #  want somthing like pop = self.cd["base pop"]
-        # need to up date cd to get it 
         HH =self.comp_specs['data'].ix['total_occupied']
         pop = self.forecast.base_pop
                             
@@ -198,8 +221,8 @@ class ResidentialBuildings(AnnualSavings):
         
     def calc_consumption_by_fuel (self, fuel_amnt, total_consumption, HH, cf):
         """ Function doc """
-        # 500 average energy use, 12 months in a year
-        HH_consumption = HH * 500 * 12 * constants.kWh_to_mmbtu
+  
+        HH_consumption = HH * self.avg_consumption * constants.kWh_to_mmbtu
         return np.float64(fuel_amnt * (total_consumption - HH_consumption) * cf)
                             
     def calc_baseline_fuel_consumption (self):
