@@ -11,8 +11,8 @@ import aaem
 config = {
     'description': 'Alaska Affordable Energy Model',
     'author': 'GINA',
-    'url': 'https://github.com/gina-alaska/alaska_affordable_energy_model',
-    'download_url': 'TODO',
+    'url': aaem.__url__,
+    'download_url': aaem.__download_url__,
     'author_email': 'TODO',
     'version': aaem.__version__,
     'install_requires': ['numpy','scipy','pandas','pyyaml'],
