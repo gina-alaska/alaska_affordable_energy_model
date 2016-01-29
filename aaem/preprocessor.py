@@ -1193,10 +1193,26 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
     parent = com_ids[0]
     pp_data = []
     parent_dir = os.path.join(out_dir, parent)
+    print com_ids
     for com in com_ids:
         pp = Preprocessor(com, data_dir,os.path.join(out_dir,com), diagnostics)
         pp.preprocess()
         pp_data.append(pp)
+        
+        f_path = os.path.join(out_dir,com,"yearly_electricity_summary.csv")
+        if com != parent and not os.path.exists(f_path):
+            print com + " adding data"
+            shutil.copy(os.path.join(parent_dir,
+                                    "yearly_electricity_summary.csv")
+                                    ,os.path.join(out_dir,com))
+        
+        f_path = os.path.join(out_dir,com,"prices.csv")
+        if com != parent and not os.path.exists(f_path):
+            print com + " adding data"
+            shutil.copy(os.path.join(parent_dir,
+                                    "prices.csv")
+                                    ,os.path.join(out_dir,com))
+        
     
     # make Deep copy of parent city
     population = pp_data[0].population_data.copy(True)
