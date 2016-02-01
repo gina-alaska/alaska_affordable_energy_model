@@ -33,8 +33,8 @@ class Preprocessor (object):
             out_dir: save location
             com_id: community id("Name")
         post:
-            all of the files necessary to run the model are in out_dir, if out_dir
-        dose not it exist it is created
+            all of the files necessary to run the model are in out_dir, 
+        if out_dir dose not it exist it is created
         """
 
          # join makes it a directory not a file
@@ -48,10 +48,16 @@ class Preprocessor (object):
 
         ### copy files that still need their own preprocessor function yet
         shutil.copy(os.path.join(data_dir,"diesel_fuel_prices.csv"), out_dir)
-        shutil.copy(os.path.join(data_dir,"hdd.csv"), out_dir)
         shutil.copy(os.path.join(data_dir,"cpi.csv"), out_dir)
 
         ###
+        try:
+            self.hdd()
+        except KeyError:
+            self.diagnostics.add_warning("HDD (Heating Degree-Days)",
+                                ("" + self.com_id + " not found in input data"
+                                 " if interties parent community will be used"))
+        
         self.population()
         self.electricity()
         self.region()
@@ -242,6 +248,14 @@ class Preprocessor (object):
                 "# Data Source: heating_fuel_premiums.csv\n" +\
                 "# premium: heating fuel premium for region \n" +\
                 self.comments_dataframe_divide
+                
+    def hdd_header (self):
+        """ Function doc """
+        return ("# " + self.com_id + " Heating Degree Days\n"
+                "# generated: " + str(datetime.now()).split('.')[0] +"\n"
+                "# Data Source: hdd.csv\n"
+                "# HDD: heating degree-days per year for community (HDD/Yr)\n"
+                "" + self.comments_dataframe_divide + "" )
 
     ## PROCESS FUNCTIONS #######################################################
     def population (self, threshold = 20, end_year = 2040, percent = .02):
@@ -509,8 +523,9 @@ class Preprocessor (object):
             return
               
         idx = con_data["Data Year"] == con_data["Data Year"].max()
-        res_nonPCE_price = float(con_data[idx]['Residential Thousand Dollars']) /\
-                           float(con_data[idx]['Residential Megawatthours'])
+        res_nonPCE_price = \
+                        float(con_data[idx]['Residential Thousand Dollars']) /\
+                        float(con_data[idx]['Residential Megawatthours'])
                            
         elec_nonFuel_cost = float(con_data[idx]['Total Thousand Dollars']) /\
                            float(con_data[idx]['Total Megawatthours'])
@@ -1056,7 +1071,7 @@ class Preprocessor (object):
         out_file = os.path.join(self.out_dir, "com_num_buildings.csv")
         fd = open(out_file,'w')
         fd.write(self.buildings_count_header())
-        fd.write("key, value" + str(data) +"\n")
+        fd.write("key, value\n")
         fd.write("Buildings," + str(data) +"\n")
         fd.close()
         
@@ -1136,6 +1151,20 @@ class Preprocessor (object):
         self.buildings_count()
         self.buildings_estimates(population)
         self.buildings_inventory()
+        
+    def hdd (self):
+        """ Function doc """
+        in_file = os.path.join(self.data_dir, "hdd.csv")
+        hdd = read_csv(in_file, index_col=0,
+                       comment = "#", header=0).ix[self.com_id].values[0]
+        
+        out_file = os.path.join(self.out_dir, "hdd.csv")
+        fd = open(out_file,'w')
+        fd.write(self.hdd_header())
+        fd.write("key, value\n")
+        fd.write("HDD," + str(hdd) +"\n")
+        fd.close()
+
 
 
 
@@ -1201,18 +1230,36 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
         
         f_path = os.path.join(out_dir,com,"yearly_electricity_summary.csv")
         if com != parent and not os.path.exists(f_path):
-            print com + " adding data"
+            print com + " adding data - electricity"
             shutil.copy(os.path.join(parent_dir,
                                     "yearly_electricity_summary.csv")
                                     ,os.path.join(out_dir,com))
+            diagnostics.add_warning("Intertie update (electricity)", 
+                                    ("" + com + " is using it's "
+                                     "parents(" + parent + ""
+                                     ") yearly_electricity_summary"))
         
         f_path = os.path.join(out_dir,com,"prices.csv")
         if com != parent and not os.path.exists(f_path):
-            print com + " adding data"
+            print com + " adding data- prices"
             shutil.copy(os.path.join(parent_dir,
                                     "prices.csv")
                                     ,os.path.join(out_dir,com))
-        
+            diagnostics.add_warning("Intertie update (prices)", 
+                                    ("" + com + " is using it's "
+                                     "parents(" + parent + ""
+                                     ") prices"))
+                                    
+        f_path = os.path.join(out_dir,com,"hdd.csv")
+        if com != parent and not os.path.exists(f_path):
+            print com + " adding data- hdd"
+            shutil.copy(os.path.join(parent_dir,
+                                    "hdd.csv")
+                                    ,os.path.join(out_dir,com))
+            diagnostics.add_warning("Intertie update (HDD)", 
+                                    ("" + com + " is using it's "
+                                     "parents(" + parent + ""
+                                     ") Heating degree days "))
     
     # make Deep copy of parent city
     population = pp_data[0].population_data.copy(True)

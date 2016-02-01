@@ -280,8 +280,8 @@ class CommunityData (object):
             #~ self.set_item('community buildings',"com num buildings",
                                             #~ self.load_csv("com num buildings"))
                                             
-        if self.get_item('community',"HDD") == "IMPORT":
-            self.set_item('community',"HDD", int(self.load_csv("hdd")))
+        #~ if self.get_item('community',"HDD") == "IMPORT":
+            #~ self.set_item('community',"HDD", int(self.load_csv("hdd")))
         
         ## different type csv
         #~ if self.get_item('community buildings',
@@ -297,6 +297,10 @@ class CommunityData (object):
         #~ if self.get_item('forecast', "electricity") == "IMPORT":
             #~ self.set_item('forecast', "electricity", 
                           #~ self.load_pp_csv("electricity.csv"))
+    
+        if self.get_item('community',"HDD") == "IMPORT":
+            self.set_item('community',"HDD", 
+                          int(self.load_pp_csv("hdd.csv").values[0][0]))
 
         if  self.get_item('residential buildings','data') == "IMPORT":
             self.set_item('residential buildings','data',
