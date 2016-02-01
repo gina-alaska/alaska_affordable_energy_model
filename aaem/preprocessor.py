@@ -244,7 +244,8 @@ class Preprocessor (object):
                 self.comments_dataframe_divide
 
     ## PROCESS FUNCTIONS #######################################################
-    def population (self, threshold = 20, end_year = 2040, percent = .02):
+    def population (self, threshold = 20, end_year = 2040, 
+                          percent = .02, currnet_year = 2015):
         """
         create the population input file
 
@@ -284,10 +285,8 @@ class Preprocessor (object):
                                             " to " + k[idx])
 
         pops.columns  = ["population"]
-        p_map = concat(\
-                     [pops - pops]).astype(bool).astype(str).\
-                      replace("True", "S").\
-                      replace("False", "S")
+        p_map=concat([pops[:str(currnet_year-1)].astype(bool).replace(True, "M"),
+                      pops[str(currnet_year):].astype(bool).replace(True, "P")])
         p_map.columns  = [p_map.columns[0] + "_qualifier"]
         out_file = os.path.join(self.out_dir,"population.csv")
         fd = open(out_file,'w')
