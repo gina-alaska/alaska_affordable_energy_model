@@ -115,28 +115,29 @@ class Forecast (object):
         year between start and end
         """
         self.calc_electricity_totals()
-        
+        idx =  self.yearly_kWh_totals.index.values.astype(int).tolist()
+
         if len(self.yearly_kWh_totals) < 10:
             msg = "the data range is < 10 for input consumption "\
                   "check electricity.csv in the models data directory"
             self.diagnostics.add_warning("forecast", msg)
-   
-
-        start = self.p_map[self.p_map == "M"].T.keys().values[0] \
-                if self.p_map[self.p_map == "M"].T.keys().values[0] > \
-                self.yearly_kWh_totals.T.keys().values[0] \
-                else self.yearly_kWh_totals.T.keys().values[0]
-             
-        start = int(start)
+        population = self.population.ix[idx]
+        if any(population.isnull()):
+            v= population.isnull().values.T.tolist()[0]
+            for year in population[v].index.values.tolist():
+                idx.remove(year)
         
-        end = self.p_map[self.p_map == "M"].T.keys().values[-1] \
-                if self.p_map[self.p_map == "M"].T.keys().values[-1] < \
-                self.yearly_kWh_totals.T.keys().values[-1] \
-                else self.yearly_kWh_totals.T.keys().values[-1]
-        end = int(end)
+        if any(self.yearly_kWh_totals.isnull()):
+            v = self.yearly_kWh_totals.isnull().values.T.tolist()[0]
+            for year in self.yearly_kWh_totals[v].index.values.tolist():
+                idx.remove(year)
         
-        population = self.population.ix[start:end].T.values[0]
-        self.measured_consumption = self.yearly_kWh_totals.ix[start:end]
+        self.diagnostics.add_note("forecast", 
+           "years with measured consumption and population " + str(idx) +\
+        ". List used to generate fit function")
+        population = self.population.ix[idx]
+        population = self.population.ix[idx].T.values[0]
+        self.measured_consumption = self.yearly_kWh_totals.ix[idx]
         consumption = self.measured_consumption.T.values[0]
         if len(population) < 10:
             self.diagnostics.add_warning("forecast", 
@@ -144,16 +145,15 @@ class Forecast (object):
                   "population and consumption "\
                   "check population.csv and electricity.csv "\
                   "in the models data directory")
-        
         # get slope(m),intercept(b)
         m, b = np.polyfit(population,consumption,1) 
         
         fc_consumption = m * self.population + b
         start = int(self.measured_consumption.index[-1] + 1)
-        
-        years= self.population.index.values.astype(int)
+        years= idx +self.population.ix[start:].index.values.astype(int).tolist()
         cons = (consumption-consumption).tolist() + \
                                   fc_consumption.ix[start:].T.values[0].tolist()
+                                  
         self.c_map = DataFrame({'year':years, 'consumption': cons}).\
                                                         set_index('year').\
                                                         astype(bool).\
