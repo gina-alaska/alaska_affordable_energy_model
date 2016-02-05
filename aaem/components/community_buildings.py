@@ -161,9 +161,12 @@ class CommunityBuildings (AnnualSavings):
             a diagnostic message is added
         """
         l = []
+        if self.additional_buildings <= num_not_heated:
+            self.diagnostics.add_note(self.component_name, 
+                            "Not adding additional buildings")
+            return
         for i in range(self.additional_buildings - num_not_heated):
             l.append(DataFrame({"Square Feet":np.nan,}, index = ["Average"]))
-        
         self.comp_specs['com building data'] = \
                                 self.comp_specs['com building data'].append(l)
         

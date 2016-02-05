@@ -1112,7 +1112,9 @@ class Preprocessor (object):
         """
         in_file = os.path.join(self.data_dir,"non_res_buildings.csv")
         try:
-            data = read_csv(in_file, index_col=0, comment = "#").ix[self.com_id]
+            data = read_csv(in_file, index_col=0, comment = "#")
+            #~ print 
+            data = data[data.index == self.com_id]
 
             l = ["Square Feet","implementation cost", 
                  "Electric", "Electric Post", 
@@ -1145,6 +1147,16 @@ class Preprocessor (object):
                                 " cannot generate model input file "+\
                                 "'community_buildings.csv'" )
             self.buildings_inventory_data = None
+            out_file = os.path.join(self.out_dir, "community_buildings.csv")
+            fd = open(out_file,'w')
+            fd.write(self.buildings_inventory_header())
+            fd.write('"Building Type","Square Feet","Audited",'
+                     '"Retrofits Done","implementation cost","Electric",'
+                     '"Electric Post","Fuel Oil","Fuel Oil Post",'
+                     '"HW District","HW District Post","Natural Gas",'
+                     '"Natural Gas Post","Propane","Propane Post"\n')
+            fd.close()
+
 
     def buildings (self, population):
         """ Function doc """
@@ -1170,7 +1182,7 @@ class Preprocessor (object):
 
 def preprocess (data_dir, out_dir, com_id):
     """ Function doc """
-
+    #print com_id
     diag = diagnostics()
 
     pp = preprocess_no_intertie(data_dir,
@@ -1224,13 +1236,14 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
     parent_dir = os.path.join(out_dir, parent)
     print com_ids
     for com in com_ids:
+        print com
         pp = Preprocessor(com, data_dir,os.path.join(out_dir,com), diagnostics)
         pp.preprocess()
         pp_data.append(pp)
         
         f_path = os.path.join(out_dir,com,"yearly_electricity_summary.csv")
         if com != parent and not os.path.exists(f_path):
-            print com + " adding data - electricity"
+            #print com + " adding data - electricity"
             shutil.copy(os.path.join(parent_dir,
                                     "yearly_electricity_summary.csv")
                                     ,os.path.join(out_dir,com))
@@ -1241,7 +1254,7 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
         
         f_path = os.path.join(out_dir,com,"prices.csv")
         if com != parent and not os.path.exists(f_path):
-            print com + " adding data- prices"
+            #print com + " adding data- prices"
             shutil.copy(os.path.join(parent_dir,
                                     "prices.csv")
                                     ,os.path.join(out_dir,com))
@@ -1252,7 +1265,7 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
                                     
         f_path = os.path.join(out_dir,com,"hdd.csv")
         if com != parent and not os.path.exists(f_path):
-            print com + " adding data- hdd"
+            #print com + " adding data- hdd"
             shutil.copy(os.path.join(parent_dir,
                                     "hdd.csv")
                                     ,os.path.join(out_dir,com))
