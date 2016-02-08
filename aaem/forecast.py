@@ -338,6 +338,7 @@ class Forecast (object):
         g_map = c_map
         g_map.columns = ["total_electricity_generation_qualifier"]
         
+
         data = concat([self.population.round().astype(int), self.p_map, 
                        kWh_con.round().astype(int), c_map, 
                        kWh_gen.round().astype(int), g_map] ,axis=1)
@@ -369,7 +370,7 @@ class Forecast (object):
         f_name = path + "heat_demand_forecast.csv"
         data = concat([self.population.round().astype(int), self.p_map] + \
 												self.heat_demand_cols,axis=1)
-          
+
         for key in data.keys():
             try:
                 col = data[key]
@@ -377,7 +378,7 @@ class Forecast (object):
                 yr = col[np.logical_not(col.apply(np.isnan))].tail(1).index[0]
                 col[col.index > yr] = lv
                 data[key] = col
-            except TypeError:
+            except (TypeError, IndexError):
                 pass
             
         idx = ['mmbtu' in s for s in data.keys()]
@@ -428,7 +429,8 @@ class Forecast (object):
                 yr = col[np.logical_not(col.apply(np.isnan))].tail(1).index[0]
                 col[col.index > yr] = lv
                 data[key] = col
-            except TypeError:
+            except (TypeError, IndexError):
+                
                 pass
 
         #~ hf_gal_idx = ['heating_fuel' in s for s in data.keys()] and \
@@ -470,7 +472,7 @@ class Forecast (object):
                 yr = col[np.logical_not(col.apply(np.isnan))].tail(1).index[0]
                 col[col.index > yr] = lv
                 data[key] = col.round()
-            except TypeError:
+            except (TypeError, IndexError):
                 pass
             except AttributeError:
                 pass

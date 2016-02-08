@@ -258,7 +258,8 @@ class Preprocessor (object):
                 "" + self.comments_dataframe_divide + "" )
 
     ## PROCESS FUNCTIONS #######################################################
-    def population (self, threshold = 20, end_year = 2040, percent = .02):
+    def population (self, threshold = 20, end_year = 2040, 
+                          percent = .02, currnet_year = 2015):
         """
         create the population input file
 
@@ -298,10 +299,8 @@ class Preprocessor (object):
                                             " to " + k[idx])
 
         pops.columns  = ["population"]
-        p_map = concat(\
-                     [pops - pops]).astype(bool).astype(str).\
-                      replace("True", "S").\
-                      replace("False", "S")
+        p_map=concat([pops[:str(currnet_year-1)].astype(bool).replace(True, "M"),
+                      pops[str(currnet_year):].astype(bool).replace(True, "P")])
         p_map.columns  = [p_map.columns[0] + "_qualifier"]
         out_file = os.path.join(self.out_dir,"population.csv")
         fd = open(out_file,'w')
@@ -503,6 +502,7 @@ class Preprocessor (object):
                     self.diagnostics.add_note("Electricity",
                                                       "Valdez sales data added")
             except KeyError as e:
+                print e
                 self.diagnostics.add_error("Electricity",
                         "Generation and Sales for " + str(self.com_id) +\
                         " data not in PCE or EIA")
@@ -521,7 +521,7 @@ class Preprocessor (object):
             self.diagnostics.add_note("Electricity Prices (EIA)",
                                   "they need to be input in community data")  
             return
-              
+        
         idx = con_data["Data Year"] == con_data["Data Year"].max()
         res_nonPCE_price = \
                         float(con_data[idx]['Residential Thousand Dollars']) /\
@@ -629,10 +629,11 @@ class Preprocessor (object):
 
         if not g_bool and not s_bool:
             raise KeyError, "Community not in EIA Data"
-        
+
         # TODO add other fuel sources These two are from sitka example
         power_type_lib = {"WAT":"hydro",
                           "DFO":"diesel",
+                          "WND":"wind",
                           "WO":"bla",}
 
         if g_bool:
@@ -1233,20 +1234,21 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
     """ Function doc """
     parent = com_ids[0]
     pp_data = []
-    parent_dir = os.path.join(out_dir, parent)
+    parent_dir = os.path.join(out_dir, parent.replace(" ","_"))
     print com_ids
     for com in com_ids:
+        
         print com
-        pp = Preprocessor(com, data_dir,os.path.join(out_dir,com), diagnostics)
+        pp = Preprocessor(com, data_dir,os.path.join(out_dir,com.replace(" ","_")), diagnostics)
         pp.preprocess()
         pp_data.append(pp)
         
-        f_path = os.path.join(out_dir,com,"yearly_electricity_summary.csv")
+        f_path = os.path.join(out_dir,com.replace(" ","_"),"yearly_electricity_summary.csv")
         if com != parent and not os.path.exists(f_path):
             #print com + " adding data - electricity"
             shutil.copy(os.path.join(parent_dir,
                                     "yearly_electricity_summary.csv")
-                                    ,os.path.join(out_dir,com))
+                                    ,os.path.join(out_dir,com.replace(" ","_")))
             diagnostics.add_warning("Intertie update (electricity)", 
                                     ("" + com + " is using it's "
                                      "parents(" + parent + ""
@@ -1257,7 +1259,7 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
             #print com + " adding data- prices"
             shutil.copy(os.path.join(parent_dir,
                                     "prices.csv")
-                                    ,os.path.join(out_dir,com))
+                                    ,os.path.join(out_dir,com.replace(" ","_")))
             diagnostics.add_warning("Intertie update (prices)", 
                                     ("" + com + " is using it's "
                                      "parents(" + parent + ""
@@ -1268,7 +1270,7 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
             #print com + " adding data- hdd"
             shutil.copy(os.path.join(parent_dir,
                                     "hdd.csv")
-                                    ,os.path.join(out_dir,com))
+                                    ,os.path.join(out_dir,com.replace(" ","_")))
             diagnostics.add_warning("Intertie update (HDD)", 
                                     ("" + com + " is using it's "
                                      "parents(" + parent + ""
@@ -1319,7 +1321,7 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
 
 
 
-    out_dir = os.path.join(out_dir,com_ids[0] +'_intertie')
+    out_dir = os.path.join(out_dir,com_ids[0].replace(" ","_") +'_intertie')
     try:
             os.makedirs(out_dir)
     except OSError:
