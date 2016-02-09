@@ -634,6 +634,7 @@ class Preprocessor (object):
         power_type_lib = {"WAT":"hydro",
                           "DFO":"diesel",
                           "WND":"wind",
+                          "NG": "natural gas",
                           "WO":"bla",}
 
         if g_bool:

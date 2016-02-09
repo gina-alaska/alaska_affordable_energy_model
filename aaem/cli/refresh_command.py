@@ -10,6 +10,7 @@ import shutil
 import zipfile
 from aaem import driver
 from datetime import datetime
+from pandas import read_csv
 
 class RefreshCommand(pycommand.CommandBase):
     """
@@ -95,10 +96,14 @@ class RefreshCommand(pycommand.CommandBase):
         shutil.copy(os.path.join(repo, "ww_assumptions.csv"), raw)
         shutil.copy(os.path.join(repo, "ww_data.csv"), raw)
         shutil.copy(os.path.join(repo, "VERSION"), raw)
+        shutil.copy(os.path.join(repo, "community_list.csv"), raw)
 
         #avaliable coms
         coms = ["Bethel","Craig","Dillingham","Haines","Manley Hot Springs",
                 "Nome","Sand Point","Sitka","Tok","Yakutat","Valdez"]
+        
+        coms = read_csv(os.path.join(raw,'community_list.csv'),
+                         comment="#",index_col=0).Community.tolist()
         
         try:
             fd = open(os.path.join(model_root,'setup','raw_data',"VERSION"),'r')

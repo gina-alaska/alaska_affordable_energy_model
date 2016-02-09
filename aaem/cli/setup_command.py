@@ -8,6 +8,7 @@ import sys
 import os.path
 import shutil
 from aaem import driver
+from pandas import read_csv
 
 class SetupCommand(pycommand.CommandBase):
     """
@@ -95,12 +96,20 @@ class SetupCommand(pycommand.CommandBase):
         shutil.copy(os.path.join(repo, "ww_assumptions.csv"), raw)
         shutil.copy(os.path.join(repo, "ww_data.csv"), raw)
         shutil.copy(os.path.join(repo, "VERSION"), raw)
-
+        shutil.copy(os.path.join(repo, "community_list.csv"), raw)
         #avaliable coms
         coms = ["Bethel","Craig","Dillingham","Haines","Manley Hot Springs",
                 "Nome","Sand Point","Sitka","Tok","Yakutat","Valdez"]
-        
-        driver.run(driver.setup(coms, raw, model_root), "")
+
+        coms = read_csv(os.path.join(raw,'community_list.csv'),
+                         comment="#",index_col=0).Community.tolist()
+                         
+        print "Setting up..."
+        config = driver.setup(coms, raw, model_root)
+        print "Running ..."
+        driver.run(config, "")
+
+
         
 
 if __name__ == '__main__':
