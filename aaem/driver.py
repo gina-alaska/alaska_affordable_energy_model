@@ -19,6 +19,7 @@ import os.path
 from importlib import import_module
 from datetime import datetime
 import warnings
+import sys
 
 
 comp_lib = {
@@ -42,8 +43,16 @@ class Driver (object):
             model is ready to be run
         """
         self.di= diagnostics()
-        self.cd = CommunityData(data_dir, overrides,defaults)
-        self.fc = Forecast(self.cd, self.di)
+        try:
+            self.cd = CommunityData(data_dir, overrides, defaults, self.di)
+        except IOError as e:
+            raise RuntimeError, \
+                ("A Fatal Error Has occurred, ("+ str(e) +")", self.di)
+        try:
+            self.fc = Forecast(self.cd, self.di)
+        except RuntimeError as e:
+            raise RuntimeError, \
+                    ("A Fatal Error Has occurred, ("+ str(e) +")", self.di)
         self.load_comp_lib()
         
     def load_comp_lib (self):
@@ -204,25 +213,31 @@ def run_model (config_file, name = None, override_data = None,
         os.makedirs(out_dir)
     except OSError:
         pass
-    
-    model = Driver(data_dir, overrides, defaults)
-    model.load_comp_lib()
-    model.run_components()
-    model.save_components_output(out_dir)
     try:
-        shutil.copytree(data_dir,os.path.join(out_dir, "input_data"))
-    except OSError:
-        pass
-    model.save_forecast_output(out_dir)
-    model.save_input_files(out_dir)
-    
-    try:
-        create_generation_forecast([model],out_dir)
+        model = Driver(data_dir, overrides, defaults)
+        model.load_comp_lib()
+        model.run_components()
+        model.save_components_output(out_dir)
+        try:
+            shutil.copytree(data_dir,os.path.join(out_dir, "input_data"))
+        except OSError:
+            pass
+        model.save_forecast_output(out_dir)
+        model.save_input_files(out_dir)
         
-    except IndexError:
-        model.diagnostics.add_waring("Generation Forecast", 
-                                        "Cannont Create File")
-    model.save_diagnostics(out_dir)  
+        try:
+            create_generation_forecast([model],out_dir)
+            
+        except IndexError:
+            model.di.add_warning("Generation Forecast", 
+                                            "Cannont Create File")
+        model.save_diagnostics(out_dir) 
+    except RuntimeError as e:
+        print "Fatal Error see Diagnostics"
+        d = e[1]
+        d.add_error("FATAL", str(e[0]))
+        d.save_messages(os.path.join(out_dir,"diagnostics.csv"))
+        model = None
     return model, out_dir
 
 def config_split (root, out):
@@ -303,6 +318,8 @@ def run_batch (config, suffix = "TS"):
         model is run for the communities, and the outputs are saved in a common 
     directory subdivided by community. 
     """
+    #~ log = open("Fail.log", 'w')
+    
     try:
         fd = open(config, 'r')
         config = yaml.load(fd)
@@ -314,8 +331,16 @@ def run_batch (config, suffix = "TS"):
         suffix = datetime.strftime(datetime.now(),"%Y%m%d%H%M%S")
     for key in config:
         print key
+        #~ try:
         r_val = run_model(config[key], results_suffix = suffix)
         communities[key] = {"model": r_val[0], "directory": r_val[1]}
+        #~ except StandardError as e :
+             #~ log.write("COMMUNITY: " + key + "\n\n")
+             #~ log.write( str(sys.exc_info()[0]) + "\n\n")
+             #~ log.write( str(e) + "\n\n")
+             #~ log.write("--------------------------------------\n\n")
+             
+    #~ log.close()
     return communities
 
 def setup (coms, data_repo, model_root, 
@@ -369,8 +394,8 @@ def setup (coms, data_repo, model_root,
             ids = [ids[0] + " intertie"] + ids
             for id in ids:
                 
-                if id.find("intertie") == -1:
-                    continue
+                #~ if id.find("intertie") == -1:
+                    #~ continue
                 write_config(id, os.path.join(model_root,run_name))
                 model_batch[id] = it_batch[id] = write_driver(id, 
                                             os.path.join(model_root,run_name))

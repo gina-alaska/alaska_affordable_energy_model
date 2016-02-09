@@ -146,7 +146,10 @@ class Forecast (object):
                   "check population.csv and electricity.csv "\
                   "in the models data directory")
         # get slope(m),intercept(b)
-        m, b = np.polyfit(population,consumption,1) 
+        try:
+            m, b = np.polyfit(population,consumption,1) 
+        except TypeError:
+            raise RuntimeError, "Known population & consumption do not overlap"
         
         fc_consumption = m * self.population + b
         start = int(self.measured_consumption.index[-1] + 1)
@@ -338,10 +341,16 @@ class Forecast (object):
         g_map = c_map
         g_map.columns = ["total_electricity_generation_qualifier"]
         
-
-        data = concat([self.population.round().astype(int), self.p_map, 
-                       kWh_con.round().astype(int), c_map, 
-                       kWh_gen.round().astype(int), g_map] ,axis=1)
+        try:
+            data = concat([self.population.round().astype(int), self.p_map, 
+                        kWh_con.round().astype(int), c_map, 
+                        kWh_gen.round().astype(int), g_map] ,axis=1)
+        except ValueError:
+            self.diagnostics.add_warning("Forecast", 
+                                ("when saving null values were found in "
+                                 "generation/consumption data. Electricity "
+                                 "forecast is suspect not saving summary"))
+            return
                        
         fd = open(f_name ,"w")
         fd.write("# Electricity Forecast for " + \

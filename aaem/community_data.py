@@ -15,13 +15,13 @@ import numpy as np
 ## com - community buildings 
 from diesel_prices import DieselProjections
 from defaults import absolute
-
+from diagnostics import diagnostics
 
 PATH = os.path.join
 class CommunityData (object):
     """ Class doc """
     
-    def __init__ (self, data_dir, override, default="defaults"):
+    def __init__ (self, data_dir, override, default="defaults", diag = None):
         """
             set up the object
         
@@ -46,6 +46,10 @@ class CommunityData (object):
         post-conditions:
             the community data object is initialized
         """
+        self.diagnostics = diag
+        if diag == None:
+            self.diagnostics = diagnostics()
+            
         self.load_input(override, default)
         self.data_dir = os.path.abspath(data_dir)
         self.get_csv_data()
@@ -299,8 +303,11 @@ class CommunityData (object):
                           #~ self.load_pp_csv("electricity.csv"))
     
         if self.get_item('community',"HDD") == "IMPORT":
-            self.set_item('community',"HDD", 
+            try:
+                self.set_item('community',"HDD", 
                           int(self.load_pp_csv("hdd.csv").values[0][0]))
+            except IOError:
+                raise IOError, "Heating Degree Days summary not found"
 
         if  self.get_item('residential buildings','data') == "IMPORT":
             self.set_item('residential buildings','data',
@@ -322,7 +329,13 @@ class CommunityData (object):
         except IOError:
             if self.get_item('community',"res non-PCE elec cost") == "IMPORT" \
               and self.get_item('community',"elec non-fuel cost") == "IMPORT":
-                raise IOError, "Prices not found"
+                #~ raise IOError, "Prices not found"
+                self.diagnostics.add_error("Community Data", 
+                        ("(reading csv) electricity prices not found."
+                         " Fixing by disabling financial modeling at runtime"))
+                self.set_item("community", "res non-PCE elec cost", False)
+                self.set_item("community", "elec non-fuel cost", False)
+                self.set_item("community", "model financial", False)
                 
         if self.get_item('community',"res non-PCE elec cost") == "IMPORT":
             self.set_item("community", "res non-PCE elec cost",
