@@ -592,7 +592,8 @@ def create_generation_forecast (models, path):
     gen_fc.index = gen_fc.index.values.astype(int)
     gen_fc = gen_fc.fillna(0).ix[2003:]
     
-    out_file = os.path.join(path, name + "_generation_forecast.csv")
+    out_file = os.path.join(path,
+                            name.replace(" ",'_') + "_generation_forecast.csv")
     fd = open(out_file, 'w')
     fd.write("# Generation forecast\n")
     fd.write("# projections start in " + str(int(last_idx+1)) + "\n")
