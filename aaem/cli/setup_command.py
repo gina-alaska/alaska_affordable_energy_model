@@ -9,14 +9,16 @@ import os.path
 import shutil
 from aaem import driver
 from pandas import read_csv
+from default_cases import __DEV_COMS__ 
 
 class SetupCommand(pycommand.CommandBase):
     """
-    help command class
+    setup command class
     """
     usagestr = 'usage: setup [options] data repo'
     optionList = (
            ('path', ('p', "<name>", "path to location to setup/run  model")),
+           ('dev', ('d', False, "use only development communities")),
            #~ ('name', ('n', "<name>", "name of model")),
     )
     
@@ -98,14 +100,18 @@ class SetupCommand(pycommand.CommandBase):
         shutil.copy(os.path.join(repo, "VERSION"), raw)
         shutil.copy(os.path.join(repo, "community_list.csv"), raw)
         #avaliable coms
-        coms = ["Bethel","Craig","Dillingham","Haines","Manley Hot Springs",
-                "Nome","Sand Point","Sitka","Tok","Yakutat","Valdez"]
-
-        coms = read_csv(os.path.join(raw,'community_list.csv'),
+        
+        if self.flags.dev:
+            coms = __DEV_COMS__
+            full = False
+        else:
+            coms = read_csv(os.path.join(raw,'community_list.csv'),
                          comment="#",index_col=0).Community.tolist()
+            full = True
+        
                          
         print "Setting up..."
-        config = driver.setup(coms, raw, model_root)
+        config = driver.setup(coms, raw, model_root, setup_intertie = full)
         print "Running ..."
         driver.run(config, "")
 

@@ -344,7 +344,8 @@ def run_batch (config, suffix = "TS"):
     return communities
 
 def setup (coms, data_repo, model_root, 
-           save_bacth_files = False, run_name = 'run_init'):
+           save_bacth_files = False, run_name = 'run_init',
+           setup_intertie = True):
     """
         Set up a model run directory if it does not exist. This is for the first
     time setup. Running it on a directory that exists is unsupported. 
@@ -394,8 +395,9 @@ def setup (coms, data_repo, model_root,
             ids = [ids[0] + " intertie"] + ids
             for id in ids:
                 
-                #~ if id.find("intertie") == -1:
-                    #~ continue
+                if not setup_intertie:
+                    if id.find("intertie") == -1:
+                        continue
                 write_config(id, os.path.join(model_root,run_name))
                 model_batch[id] = it_batch[id] = write_driver(id, 
                                             os.path.join(model_root,run_name))
@@ -431,7 +433,7 @@ def setup (coms, data_repo, model_root,
                                                                 "%Y%m%d")
     
     from aaem import __version__ as code_ver
-    fd = open(os.path.join(model_root, run_name, "version_metatdata.txt"),'w')
+    fd = open(os.path.join(model_root, run_name, "version_metadata.txt"),'w')
     fd.write(("Code Version: " + str(code_ver) + '\n'
               "Data Repo Version: " + str(data_ver) + '\n'))
     

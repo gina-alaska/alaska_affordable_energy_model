@@ -11,14 +11,17 @@ import zipfile
 from aaem import driver
 from datetime import datetime
 from pandas import read_csv
+from default_cases import __DEV_COMS__ 
+
 
 class RefreshCommand(pycommand.CommandBase):
     """
     refesh command class
     refesh command class
     """
-    usagestr = 'usage: setup model_dir data_repo'
+    usagestr = 'usage: refresh model_dir data_repo'
     optionList = (
+           ('dev', ('d', False, "use only development communities")),
            #~ ('path', ('p', "<name>", "path to location to setup/run  model")),
            #~ ('name', ('n', "<name>", "name of model")),
     )
@@ -53,25 +56,30 @@ class RefreshCommand(pycommand.CommandBase):
         except IOError:
             ver = "unknown_version_backup_"+ datetime.strftime(datetime.now(),
                                                                     "%Y%m%d")
-        z = zipfile.ZipFile(os.path.join(model_root,
-                            "setup","data_"+ver+".zip"),"w")
-        for fn in os.listdir(os.path.join(model_root,"setup","raw_data")):
-            z.write(os.path.join(model_root,"setup","raw_data",fn),
-                                    os.path.join("raw_data",fn))
-        for fn in os.listdir(os.path.join(model_root,"setup","input_data")):
-            z.write(os.path.join(model_root,"setup","input_data",fn),
-                                    os.path.join("input_data",fn))
-            if os.path.isdir(os.path.join(model_root,"setup","input_data",fn)):
-                for fn2 in os.listdir(os.path.join(model_root,
-                                     "setup","input_data",fn)):
-                    z.write(os.path.join(model_root,"setup","input_data",
+        try:
+            z = zipfile.ZipFile(os.path.join(model_root,
+                                "setup","data_"+ver+".zip"),"w")
+            for fn in os.listdir(os.path.join(model_root,"setup","raw_data")):
+                z.write(os.path.join(model_root,"setup","raw_data",fn),
+                                        os.path.join("raw_data",fn))
+            for fn in os.listdir(os.path.join(model_root,"setup","input_data")):
+                z.write(os.path.join(model_root,"setup","input_data",fn),
+                                        os.path.join("input_data",fn))
+                if os.path.isdir(os.path.join(model_root,"setup",
+                                                              "input_data",fn)):
+                    for fn2 in os.listdir(os.path.join(model_root,
+                                         "setup","input_data",fn)):
+                        z.write(os.path.join(model_root,"setup","input_data",
                                     fn,fn2), os.path.join("input_data",fn,fn2))
+            z.close()
+            shutil.rmtree(os.path.join(model_root,"setup","input_data"))
+        except OSError:
+            pass
             
-                            
-        z.close()
-        
-        shutil.rmtree(os.path.join(model_root,"setup","raw_data"))
-        shutil.rmtree(os.path.join(model_root,"setup","input_data"))
+        try:
+            shutil.rmtree(os.path.join(model_root,"setup","raw_data"))
+        except OSError:
+            pass
             
         raw = os.path.join(model_root, 'setup', "raw_data")
         os.makedirs(os.path.join(model_root, 'setup',"raw_data"))
@@ -99,10 +107,10 @@ class RefreshCommand(pycommand.CommandBase):
         shutil.copy(os.path.join(repo, "community_list.csv"), raw)
 
         #avaliable coms
-        coms = ["Bethel","Craig","Dillingham","Haines","Manley Hot Springs",
-                "Nome","Sand Point","Sitka","Tok","Yakutat","Valdez"]
-        
-        coms = read_csv(os.path.join(raw,'community_list.csv'),
+        if self.flags.dev:
+            coms = __DEV_COMS__
+        else:
+            coms = read_csv(os.path.join(raw,'community_list.csv'),
                          comment="#",index_col=0).Community.tolist()
         
         try:
