@@ -1217,7 +1217,7 @@ def preprocess (data_dir, out_dir, com_id):
         pp = [com_id]
 
     diag.save_messages(os.path.join(out_dir,
-                               str(com_id) + "_preprocessor_diagnostis.csv"))
+                               str(com_id.replace(" ","_")) + "_preprocessor_diagnostis.csv"))
     return pp
 
 

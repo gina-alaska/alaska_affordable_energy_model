@@ -39,7 +39,7 @@ class RunCommand(pycommand.CommandBase):
         
         batch = {}
         for com in coms:
-            batch[com] = os.path.join(config,com,com+"_driver.yaml")
+            batch[com] = os.path.join(config,com,com + "_driver.yaml")
         
         try:
             shutil.rmtree(os.path.join(base,'results'))
