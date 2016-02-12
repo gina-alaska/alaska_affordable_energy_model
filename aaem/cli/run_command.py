@@ -8,6 +8,7 @@ from aaem import driver, __version__, __download_url__
 from datetime import datetime
 import os.path
 import shutil
+import sys
 
 class RunCommand(pycommand.CommandBase):
     """
@@ -15,6 +16,9 @@ class RunCommand(pycommand.CommandBase):
     """
     usagestr = ('usage: run path_to_model_run '
                                     '[list_of_communities (with underscores)] ')
+    optionList = (
+           ('log', ('l', "<log_file>", "name/path of file to log outputs to")),
+    )
     description = 'Run model for given communities. (default = all communities)'
 
     def run(self):
@@ -41,13 +45,18 @@ class RunCommand(pycommand.CommandBase):
             shutil.rmtree(os.path.join(base,'results'))
         except OSError:
             pass
+        sout = sys.stdout
         
+        
+        if self.flags.log:
+            sys.stdout  = open(self.flags.log, 'w')
         driver.run(batch, "")
+        sys.stdout = sout
         
-        fd = open(os.path.join(base, "version_metatdata.txt"), 'r')
+        fd = open(os.path.join(base, "version_metadata.txt"), 'r')
         lines = fd.read().split("\n")
         fd.close()
-        fd = open(os.path.join(base, "version_metatdata.txt"), 'w')
+        fd = open(os.path.join(base, "version_metadata.txt"), 'w')
         fd.write(( "Code Version: "+ __version__ + "\n" 
                    "Code URL: "+ __download_url__ + "\n" 
                    "" + lines[1] +'\n'
