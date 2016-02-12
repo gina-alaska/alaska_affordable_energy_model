@@ -23,7 +23,7 @@ class RunCommand(pycommand.CommandBase):
     optionList = (
 
            ('dev', ('d', False, "use only development communities")),
-            'log', ('l', "<log_file>", "name/path of file to log outputs to"))
+            ('log', ('l', "<log_file>", "name/path of file to log outputs to")),
            )
     description =('Run model for given communities. (default = all communities)'
                     'options: \n'

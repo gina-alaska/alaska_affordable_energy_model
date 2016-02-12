@@ -415,11 +415,7 @@ def setup (coms, data_repo, model_root,
                 write_config(id, os.path.join(model_root,run_name))
                 model_batch[id] = it_batch[id] = write_driver(id, 
                                             os.path.join(model_root,run_name))
-                shutil.copytree(os.path.join(model_root, 'setup',"input_data",
-                                             id.replace(" ", "_")),
-                                             os.path.join(model_root,
-                                                run_name, "input_data",
-                                                id.replace(" ", "_")))
+
                 try:
                     shutil.copy(os.path.join(model_root, 'setup',"input_data",
                         id.replace(" ", "_") + "_preprocessor_diagnostis.csv"),
