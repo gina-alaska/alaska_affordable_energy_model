@@ -5,10 +5,14 @@ run_command.py
 """
 import pycommand
 from aaem import driver, __version__, __download_url__
+from default_cases import __DEV_COMS__ 
 from datetime import datetime
 import os.path
 import shutil
-from default_cases import __DEV_COMS__ 
+import sys
+
+
+
 
 class RunCommand(pycommand.CommandBase):
     """
@@ -17,7 +21,9 @@ class RunCommand(pycommand.CommandBase):
     usagestr = ('usage: run path_to_model_run '
                                     '[list_of_communities (with underscores)] ')
     optionList = (
+
            ('dev', ('d', False, "use only development communities")),
+            'log', ('l', "<log_file>", "name/path of file to log outputs to"))
            )
     description =('Run model for given communities. (default = all communities)'
                     'options: \n'
@@ -26,6 +32,7 @@ class RunCommand(pycommand.CommandBase):
                    '' for o in optionList]).replace('[','').\
                    replace(']','').replace(',','\n ') 
                 )
+                
     def run(self):
         """
         run the command
@@ -49,13 +56,19 @@ class RunCommand(pycommand.CommandBase):
         for com in coms:
             batch[com] = os.path.join(config, com.replace(" ","_"),
                                         com.replace(" ","_") + "_driver.yaml")
+
         
         try:
             shutil.rmtree(os.path.join(base,'results'))
         except OSError:
             pass
+        sout = sys.stdout
         
+        
+        if self.flags.log:
+            sys.stdout  = open(self.flags.log, 'w')
         driver.run(batch, "")
+        sys.stdout = sout
         
         fd = open(os.path.join(base, "version_metadata.txt"), 'r')
         lines = fd.read().split("\n")

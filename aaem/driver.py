@@ -145,7 +145,8 @@ class Driver (object):
         post:
             diagnostics file is saved
         """
-        self.di.save_messages(os.path.join(directory,"diagnostics.csv"))
+        self.di.save_messages(os.path.join(directory,
+            self.cd.get_item("community", 'name') +"_runtime_diagnostics.csv"))
         
 
 
@@ -220,6 +221,12 @@ def run_model (config_file, name = None, override_data = None,
         model.save_components_output(out_dir)
         try:
             shutil.copytree(data_dir,os.path.join(out_dir, "input_data"))
+            try:
+                shutil.copy(os.path.join(data_dir , '..', 
+             config['name'].replace(" ", "_") + "_preprocessor_diagnostis.csv"),
+                os.path.join(out_dir))
+            except IOError:
+                pass
         except OSError:
             pass
         model.save_forecast_output(out_dir)
@@ -357,15 +364,15 @@ def setup (coms, data_repo, model_root,
                           development or if running from python directly
     """
     try:
-        os.makedirs(os.path.join(model_root, 'setup',"raw_data"))
+        os.makedirs(os.path.join(model_root, 'setup', "raw_data"))
     except OSError:
         pass
     try:
-        os.makedirs(os.path.join(model_root, 'setup',"input_data"))
+        os.makedirs(os.path.join(model_root, 'setup', "input_data"))
     except OSError:
         pass
     try:
-        os.makedirs(os.path.join(model_root, run_name,"input_data"))
+        os.makedirs(os.path.join(model_root, run_name, "input_data"))
     except OSError:
         pass
     try:
@@ -391,6 +398,13 @@ def setup (coms, data_repo, model_root,
                                          os.path.join(model_root, 
                                             run_name,"input_data",
                                             ids[0].replace(" ", "_")))
+            try:
+                shutil.copy(os.path.join(model_root, 'setup',"input_data",
+                    ids[0].replace(" ", "_") + "_preprocessor_diagnostis.csv"),
+                                         os.path.join(model_root,
+                                            run_name, "input_data"))
+            except IOError:
+                pass
         else:
             ids = [ids[0] + " intertie"] + ids
             for id in ids:
@@ -404,9 +418,15 @@ def setup (coms, data_repo, model_root,
                 shutil.copytree(os.path.join(model_root, 'setup',"input_data",
                                              id.replace(" ", "_")),
                                              os.path.join(model_root,
-                                                run_name,
-                                                "input_data",
+                                                run_name, "input_data",
                                                 id.replace(" ", "_")))
+                try:
+                    shutil.copy(os.path.join(model_root, 'setup',"input_data",
+                        id.replace(" ", "_") + "_preprocessor_diagnostis.csv"),
+                                             os.path.join(model_root,
+                                                run_name, "input_data"))
+                except IOError:
+                    pass
                 
         if save_bacth_files:
             fd = open(os.path.join(model_root,

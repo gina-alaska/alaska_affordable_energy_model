@@ -502,7 +502,7 @@ class Preprocessor (object):
                     self.diagnostics.add_note("Electricity",
                                                       "Valdez sales data added")
             except KeyError as e:
-                print e
+                #~ print e
                 self.diagnostics.add_error("Electricity",
                         "Generation and Sales for " + str(self.com_id) +\
                         " data not in PCE or EIA")
@@ -923,7 +923,6 @@ class Preprocessor (object):
                                         "other_1_kwh_generated",
                                         "other_2_kwh_generated",
                                         "kwh_purchased"]].sum()
-
             ## get generation by fuel type
             temp['generation diesel'] = temp['diesel_kwh_generated']
             temp['generation hydro'] = temp['hydro_kwh_generated']
@@ -1218,7 +1217,7 @@ def preprocess (data_dir, out_dir, com_id):
         pp = [com_id]
 
     diag.save_messages(os.path.join(out_dir,
-                                            str(com_id) + "_diagnostis.csv"))
+                               str(com_id.replace(" ","_")) + "_preprocessor_diagnostis.csv"))
     return pp
 
 
@@ -1236,15 +1235,17 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
     parent = com_ids[0]
     pp_data = []
     parent_dir = os.path.join(out_dir, parent.replace(" ","_"))
-    print com_ids
+    #~ print com_ids
     for com in com_ids:
         
-        print com
-        pp = Preprocessor(com, data_dir,os.path.join(out_dir,com.replace(" ","_")), diagnostics)
+        #~ print com
+        pp = Preprocessor(com, data_dir,os.path.join(out_dir,
+                                            com.replace(" ","_")), diagnostics)
         pp.preprocess()
         pp_data.append(pp)
         
-        f_path = os.path.join(out_dir,com.replace(" ","_"),"yearly_electricity_summary.csv")
+        f_path = os.path.join(out_dir,com.replace(" ","_"),
+                                            "yearly_electricity_summary.csv")
         if com != parent and not os.path.exists(f_path):
             #print com + " adding data - electricity"
             shutil.copy(os.path.join(parent_dir,
@@ -1252,10 +1253,10 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
                                     ,os.path.join(out_dir,com.replace(" ","_")))
             diagnostics.add_warning("Intertie update (electricity)", 
                                     ("" + com + " is using it's "
-                                     "parents(" + parent + ""
+                                     "parent's (" + parent + ""
                                      ") yearly_electricity_summary"))
         
-        f_path = os.path.join(out_dir,com,"prices.csv")
+        f_path = os.path.join(out_dir, com, "prices.csv")
         if com != parent and not os.path.exists(f_path):
             #print com + " adding data- prices"
             shutil.copy(os.path.join(parent_dir,
@@ -1263,7 +1264,7 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
                                     ,os.path.join(out_dir,com.replace(" ","_")))
             diagnostics.add_warning("Intertie update (prices)", 
                                     ("" + com + " is using it's "
-                                     "parents(" + parent + ""
+                                     "parent's (" + parent + ""
                                      ") prices"))
                                     
         f_path = os.path.join(out_dir,com,"hdd.csv")
@@ -1274,9 +1275,21 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
                                     ,os.path.join(out_dir,com.replace(" ","_")))
             diagnostics.add_warning("Intertie update (HDD)", 
                                     ("" + com + " is using it's "
-                                     "parents(" + parent + ""
+                                     "parent's (" + parent + ""
                                      ") Heating degree days "))
     
+    # for intertie
+    #   generation = generation(parent) + 
+    #             (generation(child) - kWh_purchased(child)) for each child
+    #   net_generation = net_generation(parent) + 
+    #             (net_generation(child) - kWh_purchased(child)) for each child
+    #
+    #   for consumption[res, non-res, total] & generation by fuel type
+    #       field = field(parent) + 
+    #                   (field (child) - kWh_purchased(child)) for each child
+    #
+    #   line loss = consumption(intertie) / net generation(intertie)
+   
     # make Deep copy of parent city
     population = pp_data[0].population_data.copy(True)
     electricity = pp_data[0].electricity_data.copy(True)
@@ -1285,13 +1298,13 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
             continue
 
         population['population'] = population['population'] + \
-                                        pp_data[idx].population_data['population']
+                                    pp_data[idx].population_data['population']
 
         #   try, except for communities that don't exist on their own such as
         # oscarville, which is bethel,oscarville
         try:
             temp = pp_data[idx].electricity_data
-            electricity['electricity'] = electricity['generation'].fillna(0) +\
+            electricity['generation'] = electricity['generation'].fillna(0) +\
                 (temp['generation'].fillna(0) - temp['kwh_purchased'].fillna(0))
             electricity['net generation'] = \
                         electricity['net generation'].fillna(0) +\
@@ -1319,7 +1332,7 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
 
 
 
-
+    
 
 
     out_dir = os.path.join(out_dir,com_ids[0].replace(" ","_") +'_intertie')
@@ -1328,24 +1341,42 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
     except OSError:
             pass
 
-    out_file = os.path.join(out_dir,'population.csv')
+
+    diagnostics.add_note("Intertie (population)", 
+        "the intertie population is the sum of all populations on intertie")
+    out_file = os.path.join(out_dir, 'population.csv')
     population.to_csv(out_file)
 
+    diagnostics.add_note("Intertie(yearly_electricity_summary)", 
+        ("for generation and consumption values in intertie: "
+         "value = value(parent) + (value(child) - "
+         "kWh_purchased(child)) for each child"))
+    diagnostics.add_note("Intertie(yearly_electricity_summary)", 
+        "Line Loss is recalulated from new totals")    
     out_file = os.path.join(out_dir,'yearly_electricity_summary.csv')
     electricity.to_csv(out_file)
 
-
-
+    diagnostics.add_note("Intertie(diesel_fuel_prices)", "from parent")    
     shutil.copy(os.path.join(parent_dir,"diesel_fuel_prices.csv"), out_dir)
+    diagnostics.add_note("Intertie(hdd)", "from parent")  
     shutil.copy(os.path.join(parent_dir,"hdd.csv"), out_dir)
+    diagnostics.add_note("Intertie(cpi)", "from parent (constant for state)")  
     shutil.copy(os.path.join(parent_dir,"cpi.csv"), out_dir)
+    diagnostics.add_note("Intertie(com_bulding_estimates)", "from parent")  
     shutil.copy(os.path.join(parent_dir,"com_building_estimates.csv"), out_dir)
+    diagnostics.add_note("Intertie(community_buildigns)", "from parent")  
     shutil.copy(os.path.join(parent_dir,"community_buildings.csv"), out_dir)
+    diagnostics.add_note("Intertie(com_num_buildings)", "from parent")  
     shutil.copy(os.path.join(parent_dir,"com_num_buildings.csv"), out_dir)
+    diagnostics.add_note("Intertie(interties)", "from parent")  
     shutil.copy(os.path.join(parent_dir,"interties.csv"), out_dir)
+    diagnostics.add_note("Intertie(prices)", "from parent")  
     shutil.copy(os.path.join(parent_dir,"prices.csv"), out_dir)
+    diagnostics.add_note("Intertie(region)", "from parent")  
     shutil.copy(os.path.join(parent_dir,"region.csv"), out_dir)
+    diagnostics.add_note("Intertie(residential_dat)", "from parent")  
     shutil.copy(os.path.join(parent_dir,"residential_data.csv"), out_dir)
+    diagnostics.add_note("Intertie(wastewater_data)", "from parent")  
     shutil.copy(os.path.join(parent_dir,"wastewater_data.csv"), out_dir)
 
 
