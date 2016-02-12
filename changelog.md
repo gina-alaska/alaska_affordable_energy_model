@@ -3,10 +3,12 @@
 ## [0.2.0]
 ### Changed
 - '-' to '_' in file names
+
 ### Added
 - delompment flag for run, setup & refresh
 - ability to log run out put to file
 - more diagnostic messages in the preprocessor
+
 ### Fixed
 - bug in setup where intertied directories were failing if they existed
 - typo in metadata file name
@@ -19,6 +21,7 @@
 - run clears old results first
 - fatal errors are logged instead of causing the model to crash
 - P & M are used as tags in population file again
+
 ### Added
 - added '_' for spaces in all output names
 - more version info to meta data
