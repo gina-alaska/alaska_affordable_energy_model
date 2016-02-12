@@ -427,7 +427,22 @@ def setup (coms, data_repo, model_root,
                                                 run_name, "input_data"))
                 except IOError:
                     pass
+
                 
+                for fname in ["diesel_fuel_prices.csv", "hdd.csv", "cpi.csv",
+                             "com_building_estimates.csv",
+                             "community_buildings.csv", "com_num_buildings.csv",
+                             "interties.csv", "prices.csv", "region.csv",
+                             "residential_data.csv", "wastewater_data.csv",
+                             'population.csv','yearly_electricity_summary.csv']:
+                    try:
+                        shutil.copy(os.path.join(model_root, 'setup',
+                                    "input_data",id.replace(" ", "_"),fname),
+                                os.path.join(model_root,run_name,"input_data",
+                                             id.replace(" ", "_"),fname))
+                    except IOError:
+                        pass
+
         if save_bacth_files:
             fd = open(os.path.join(model_root,
                                 com_id.replace(" ", "_") + "_driver.yaml"), 'w')
