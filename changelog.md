@@ -1,5 +1,17 @@
 #Change Log
 
+## [0.2.0]
+### Changed
+- '-' to '_' in file names
+### Added
+- delompment flag for run, setup & refresh
+- ability to log run out put to file
+- more diagnostic messages in the preprocessor
+### Fixed
+- bug in setup where intertied directories were failing if they existed
+- typo in metadata file name
+- added the rest of the underscores to paths and names
+
 
 ## [0.1.2]
 ### Changed
