@@ -406,25 +406,26 @@ def setup (coms, data_repo, model_root,
             except IOError:
                 pass
         else:
-            ids = [ids[0] + " intertie"] + ids
-            for id in ids:
-                
+            ids = [ids[0] + "_intertie"] + ids
+            for id in ids: 
                 if not setup_intertie:
                     if id.find("intertie") == -1:
                         continue
+                        
                 write_config(id, os.path.join(model_root,run_name))
                 model_batch[id] = it_batch[id] = write_driver(id, 
                                             os.path.join(model_root,run_name))
 
                 try:
                     shutil.copy(os.path.join(model_root, 'setup',"input_data",
-                        id.replace(" ", "_") + "_preprocessor_diagnostis.csv"),
+                        ids[1].replace(" ", "_") + "_preprocessor_diagnostis.csv"),
                                              os.path.join(model_root,
                                                 run_name, "input_data"))
                 except IOError:
                     pass
 
-                
+                os.makedirs(os.path.join(model_root,run_name,
+                                    "input_data",id.replace(" ", "_")))
                 for fname in ["diesel_fuel_prices.csv", "hdd.csv", "cpi.csv",
                              "com_building_estimates.csv",
                              "community_buildings.csv", "com_num_buildings.csv",
@@ -432,11 +433,12 @@ def setup (coms, data_repo, model_root,
                              "residential_data.csv", "wastewater_data.csv",
                              'population.csv','yearly_electricity_summary.csv']:
                     try:
+                        
                         shutil.copy(os.path.join(model_root, 'setup',
                                     "input_data",id.replace(" ", "_"),fname),
                                 os.path.join(model_root,run_name,"input_data",
                                              id.replace(" ", "_"),fname))
-                    except IOError:
+                    except (OSError, IOError):
                         pass
 
         if save_bacth_files:
