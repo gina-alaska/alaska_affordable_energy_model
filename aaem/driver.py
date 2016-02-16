@@ -444,6 +444,7 @@ def setup (coms, data_repo, model_root,
                                         "input_data",ids[0].replace(" ", "_")))
             except OSError:
                     pass
+
             for fname in MODEL_FILES.values():
                 try:
                         
@@ -485,6 +486,7 @@ def setup (coms, data_repo, model_root,
                                         "input_data",id.replace(" ", "_")))
                 except OSError:
                     pass
+
                 for fname in MODEL_FILES.values():
                     try:
                         
