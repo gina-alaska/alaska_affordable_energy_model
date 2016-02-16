@@ -5,7 +5,7 @@ run_command.py
 """
 import pycommand
 from aaem import driver, __version__, __download_url__
-from default_cases import __DEV_COMS__ 
+from default_cases import __DEV_COMS_RUN__ as __DEV_COMS__ 
 from datetime import datetime
 import os.path
 import shutil
@@ -51,7 +51,6 @@ class RunCommand(pycommand.CommandBase):
         
         if self.flags.dev:
             coms = __DEV_COMS__
-        
         batch = {}
         for com in coms:
             batch[com] = os.path.join(config, com.replace(" ","_"),
