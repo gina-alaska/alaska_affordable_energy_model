@@ -56,6 +56,7 @@ class RefreshCommand(pycommand.CommandBase):
         except IOError:
             ver = "unknown_version_backup_"+ datetime.strftime(datetime.now(),
                                                                     "%Y%m%d")
+        print ver
         try:
             z = zipfile.ZipFile(os.path.join(model_root,
                                 "setup","data_"+ver+".zip"),"w")

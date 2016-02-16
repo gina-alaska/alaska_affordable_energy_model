@@ -393,11 +393,31 @@ def setup (coms, data_repo, model_root,
             write_config(ids[0], os.path.join(model_root,run_name))
             model_batch[ids[0]] = it_batch[ids[0]] = write_driver(ids[0],
                                             os.path.join(model_root,run_name))
-            shutil.copytree(os.path.join(model_root, 'setup',"input_data",
-                                         ids[0].replace(" ", "_")),
-                                         os.path.join(model_root, 
-                                            run_name,"input_data",
-                                            ids[0].replace(" ", "_")))
+            
+            #~ shutil.copytree(os.path.join(model_root, 'setup',"input_data",
+                                         #~ ids[0].replace(" ", "_")),
+                                         #~ os.path.join(model_root, 
+                                            #~ run_name,"input_data",
+                                            #~ ids[0].replace(" ", "_")))
+            try:
+                os.makedirs(os.path.join(model_root,run_name,
+                                        "input_data",ids[0].replace(" ", "_")))
+            except OSError:
+                    pass
+            for fname in ["diesel_fuel_prices.csv", "hdd.csv", "cpi.csv",
+                             "com_building_estimates.csv",
+                             "community_buildings.csv", "com_num_buildings.csv",
+                             "interties.csv", "prices.csv", "region.csv",
+                             "residential_data.csv", "wastewater_data.csv",
+                             'population.csv','yearly_electricity_summary.csv']:
+                try:
+                        
+                    shutil.copy(os.path.join(model_root, 'setup',
+                                    "input_data",ids[0].replace(" ", "_"),fname),
+                                os.path.join(model_root,run_name,"input_data",
+                                             ids[0].replace(" ", "_"),fname))
+                except (OSError, IOError):
+                    pass
             try:
                 shutil.copy(os.path.join(model_root, 'setup',"input_data",
                     ids[0].replace(" ", "_") + "_preprocessor_diagnostis.csv"),
@@ -418,14 +438,18 @@ def setup (coms, data_repo, model_root,
 
                 try:
                     shutil.copy(os.path.join(model_root, 'setup',"input_data",
-                        ids[1].replace(" ", "_") + "_preprocessor_diagnostis.csv"),
+                     ids[1].replace(" ", "_") + "_preprocessor_diagnostis.csv"),
                                              os.path.join(model_root,
                                                 run_name, "input_data"))
                 except IOError:
                     pass
 
-                os.makedirs(os.path.join(model_root,run_name,
-                                    "input_data",id.replace(" ", "_")))
+                
+                try:
+                    os.makedirs(os.path.join(model_root,run_name,
+                                        "input_data",id.replace(" ", "_")))
+                except OSError:
+                    pass
                 for fname in ["diesel_fuel_prices.csv", "hdd.csv", "cpi.csv",
                              "com_building_estimates.csv",
                              "community_buildings.csv", "com_num_buildings.csv",
