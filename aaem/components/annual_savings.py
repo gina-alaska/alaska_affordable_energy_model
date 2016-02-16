@@ -340,9 +340,10 @@ class AnnualSavings (object):
                         "Net Benefit": self.get_net_beneft(),
                        }, years)
 
-
+        df["community"] = self.cd['name']
         
-        ol = ["Heating Fuel Use Baseline", "Heating Fuel Use Retrofit", 
+        ol = ["community",
+              "Heating Fuel Use Baseline", "Heating Fuel Use Retrofit", 
               "Heating Fuel Use Savings", "Heating Fuel Cost Baseline",
               "Heating Fuel Cost Retrofit", "Heating Fuel Cost Savings",
               "Electricity Use Baseline", "Electricity Use Retrofit", 
