@@ -6,7 +6,7 @@ driver.py
 from community_data import CommunityData
 from forecast import Forecast
 from diagnostics import diagnostics
-from preprocessor import preprocess
+from preprocessor import preprocess, MODEL_FILES
 import defaults
 from constants import mmbtu_to_kWh 
 import shutil
@@ -27,6 +27,10 @@ comp_lib = {
     "community buildings": "community_buildings",
     "water wastewater": "wastewater",
         }
+
+
+        
+
 
 class Driver (object):
     """ 
@@ -440,12 +444,7 @@ def setup (coms, data_repo, model_root,
                                         "input_data",ids[0].replace(" ", "_")))
             except OSError:
                     pass
-            for fname in ["diesel_fuel_prices.csv", "hdd.csv", "cpi.csv",
-                             "com_building_estimates.csv",
-                             "community_buildings.csv", "com_num_buildings.csv",
-                             "interties.csv", "prices.csv", "region.csv",
-                             "residential_data.csv", "wastewater_data.csv",
-                             'population.csv','yearly_electricity_summary.csv']:
+            for fname in MODEL_FILES.values():
                 try:
                         
                     shutil.copy(os.path.join(model_root, 'setup',
@@ -486,12 +485,7 @@ def setup (coms, data_repo, model_root,
                                         "input_data",id.replace(" ", "_")))
                 except OSError:
                     pass
-                for fname in ["diesel_fuel_prices.csv", "hdd.csv", "cpi.csv",
-                             "com_building_estimates.csv",
-                             "community_buildings.csv", "com_num_buildings.csv",
-                             "interties.csv", "prices.csv", "region.csv",
-                             "residential_data.csv", "wastewater_data.csv",
-                             'population.csv','yearly_electricity_summary.csv']:
+                for fname in MODEL_FILES.values():
                     try:
                         
                         shutil.copy(os.path.join(model_root, 'setup',

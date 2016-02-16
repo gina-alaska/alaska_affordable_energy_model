@@ -9,8 +9,47 @@ import shutil
 import os.path
 from diagnostics import diagnostics
 import numpy as np
-from forecast import growth
+#~ from forecast import growth
 from datetime import datetime
+
+
+MODEL_FILES = {"DIESEL_PRICES": "diesel_fuel_prices.csv",
+               "HDD": "hdd.csv",
+               "CPI": "cpi.csv", 
+               "COM_BUILDING_EST": "com_building_estimates.csv",
+               "COM_BUILDING_INV": "community_buildings.csv",
+               "COM_BUILFING_COUNT": "com_num_buildings.csv",
+               "INTERTIES": "interties.csv",
+               "PRICES": "prices.csv", 
+               "REGION": "region.csv", 
+               "RES_DATA": "residential_data.csv",
+               "WWW_DATA": "wastewater_data.csv",
+               "POPULATION": "population.csv",
+               "ELECTRICITY": "yearly_electricity_summary.csv"}
+               
+def growth(xs, ys , x):
+    """
+    growth function
+    
+    pre:
+        xs,ys are arrays of known x and y values. x is a scaler or np.array 
+    of values to calculate new y values for
+    
+    post:
+        return new y values
+    """
+    xs = np.array(xs)
+    ys = np.log(np.array(ys))
+    
+    xy_bar = np.average(xs*ys)
+    x_bar = np.average(xs)
+    y_bar = np.average(ys)
+    x_sq_bar = np.average(xs**2)
+    
+    beta = (xy_bar - x_bar*y_bar)/(x_sq_bar- x_bar**2)
+    alpha = y_bar - beta* x_bar
+    return np.exp(alpha  + beta * x)
+
 
 class Preprocessor (object):
     def __init__ (self, com_id, data_dir, out_dir, diag = None):
