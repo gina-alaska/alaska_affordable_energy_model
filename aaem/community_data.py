@@ -16,6 +16,7 @@ import numpy as np
 from diesel_prices import DieselProjections
 from defaults import absolute
 from diagnostics import diagnostics
+from preprocessor import MODEL_FILES
 
 PATH = os.path.join
 class CommunityData (object):
@@ -387,10 +388,10 @@ class CommunityData (object):
                                 elec_summary["net generation"])
             if self.get_item('community','generation numbers') == "IMPORT":
                 self.set_item('community','generation numbers', 
-                              elec_summary[['generation diesel', 'generation hydro',
-                                           'generation natural gas',
-                                           'generation wind', 'generation solar',
-                                           'generation biomass']])
+                          elec_summary[['generation diesel', 'generation hydro',
+                                       'generation natural gas',
+                                       'generation wind', 'generation solar',
+                                       'generation biomass']])
         except:
             #~ self.diagnostics.add_warning("Community Data", 
                             #~ "Generation data not available by energy type")
@@ -458,18 +459,28 @@ class CommunityData (object):
         ## save work around 
         import copy
         copy = copy.deepcopy(self.model_inputs)
-        
-        self.set_item('residential buildings','data', "IMPORT")
-        self.set_item('community buildings','com building data', "IMPORT")
-        self.set_item('community buildings',"com building estimates", "IMPORT")
+        rel =  os.path.relpath(os.path.dirname(fname),os.path.join("model",".."))
+        rt = os.path.join(rel,"input_data")
+        self.set_item('residential buildings','data',
+                            os.path.join(rt, MODEL_FILES["RES_DATA"]))
+        self.set_item('community buildings','com building data', 
+                            os.path.join(rt, MODEL_FILES["COM_BUILDING_INV"]))
+        self.set_item('community buildings',"com building estimates", 
+                            os.path.join(rt, MODEL_FILES["COM_BUILDING_EST"]))
 
-        self.set_item('community', "diesel prices", "IMPORT")
-        self.set_item('forecast', "electricity", "IMPORT")
-        self.set_item('forecast', "population", "IMPORT")
-        self.set_item('water wastewater', "data", "IMPORT")
+        self.set_item('community', "diesel prices", 
+                            os.path.join(rt, MODEL_FILES["DIESEL_PRICES"]))
+        self.set_item('forecast', "electricity", 
+                            os.path.join(rt, MODEL_FILES["ELECTRICITY"]))
+        self.set_item('forecast', "population", 
+                            os.path.join(rt, MODEL_FILES["POPULATION"]))
+        self.set_item('water wastewater', "data", 
+                            os.path.join(rt, MODEL_FILES["WWW_DATA"]))
         self.set_item("community","electric non-fuel prices","IMPORT")
-        self.set_item("community","generation numbers","IMPORT")
-        self.set_item("community","generation","IMPORT")
+        self.set_item("community","generation numbers",
+                            os.path.join(rt, MODEL_FILES["ELECTRICITY"]))
+        self.set_item("community","generation",
+                            os.path.join(rt, MODEL_FILES["ELECTRICITY"]))
         
         fd = open(fname, 'w')
         text = yaml.dump(self.model_inputs, default_flow_style=False) 
