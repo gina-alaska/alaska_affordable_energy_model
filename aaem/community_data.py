@@ -281,30 +281,10 @@ class CommunityData (object):
             csvitems are in self.model_inputs 
         """
         self.community = self.get_item('community','name')
-        #~ if self.get_item('community buildings','com benchmark data')== "IMPORT":
-            #~ self.set_item('community buildings','com benchmark data',
-                                            #~ self.load_csv('com benchmark data'))
-        #~ if self.get_item('community buildings',"com num buildings")== "IMPORT":
-            #~ self.set_item('community buildings',"com num buildings",
-                                            #~ self.load_csv("com num buildings"))
-                                            
-        #~ if self.get_item('community',"HDD") == "IMPORT":
-            #~ self.set_item('community',"HDD", int(self.load_csv("hdd")))
-        
-        ## different type csv
-        #~ if self.get_item('community buildings',
-                                        #~ "com building estimates")== "IMPORT":
-            #~ self.set_item('community buildings',"com building estimates",
-             #~ read_csv(os.path.join(self.data_dir, "com_building_estimates.csv"),
-                         #~ index_col = 0, header=1, comment = '#').T)
-        
         ## load preprocessed files
         if self.get_item('forecast', "population") == "IMPORT":
             self.set_item('forecast', "population", 
                           self.load_pp_csv("population.csv"))
-        #~ if self.get_item('forecast', "electricity") == "IMPORT":
-            #~ self.set_item('forecast', "electricity", 
-                          #~ self.load_pp_csv("electricity.csv"))
     
         if self.get_item('community',"HDD") == "IMPORT":
             try:
@@ -421,20 +401,6 @@ class CommunityData (object):
                         comment = '#', index_col=0, header=0)
 
         
-            
-    def load_csv (self, file_key):
-        """ 
-        load a single csv file as a pandas data frame like object
-        
-        pre:
-            file_key should resolve to a valid csv file name 
-        post:
-            returns a pandas data frame like object
-        """
-        return read_csv(os.path.join(self.data_dir, 
-                        self.make_csv_name(file_key)), comment = '#', 
-                        index_col=0, header=0).T[self.community].T
-        
     
     def make_csv_name (self, file_key):
         """
@@ -459,7 +425,7 @@ class CommunityData (object):
         ## save work around 
         import copy
         copy = copy.deepcopy(self.model_inputs)
-        rel =  os.path.relpath(os.path.dirname(fname),os.path.join("model",".."))
+        rel = os.path.relpath(os.path.dirname(fname),os.path.join("model",".."))
         rt = os.path.join(rel,"input_data")
         self.set_item('residential buildings','data',
                             os.path.join(rt, MODEL_FILES["RES_DATA"]))
