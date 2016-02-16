@@ -109,10 +109,11 @@ class RefreshCommand(pycommand.CommandBase):
         #avaliable coms
         if self.flags.dev:
             coms = __DEV_COMS__
+            interties = False
         else:
             coms = read_csv(os.path.join(raw,'community_list.csv'),
                          comment="#",index_col=0).Community.tolist()
-        
+            interties = True
         try:
             fd = open(os.path.join(model_root,'setup','raw_data',"VERSION"),'r')
             ver = fd.read().replace("\n","")
@@ -121,7 +122,8 @@ class RefreshCommand(pycommand.CommandBase):
             ver = "unknown_version_created_"+ datetime.strftime(datetime.now(),
                                                                     "%Y%m%d")
         
-        driver.setup(coms, raw, model_root, run_name = "run_"+ver )
+        driver.setup(coms, raw, model_root, run_name = "run_"+ver,
+                     setup_intertie = interties)
         
         
 
