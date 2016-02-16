@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.2.2]
+### Fixed
+- various bugs in the devlopment flag [--dev(-d)] in the cli
+
 ## [0.2.0]
 ### Changed
 - '-' to '_' in file names
