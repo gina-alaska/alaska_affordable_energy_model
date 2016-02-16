@@ -146,11 +146,42 @@ class Driver (object):
             diagnostics file is saved
         """
         self.di.save_messages(os.path.join(directory,
-            self.cd.get_item("community", 'name') +"_runtime_diagnostics.csv"))
+            self.cd.get_item("community", 'name').replace(" ","_")\
+                                                +"_runtime_diagnostics.csv"))
         
 
+def run_model_simple (model_root, run_name, community):
+    """
+    simple run function 
+    
+    assumes directory structure used by default in cli
+        -model_root
+        --setup\
+        ---input_data
+        ---raw
+        --<runs>
+        ---config
+        ----test_defaults.yaml
+        ----<communities>
+        ---input_data
+        ----<communities>
+        ---results
+        ----<communities>
+    """
+    com = community.replace(" ","_")
+    overrides = os.path.join(model_root, run_name, "config", 
+                                                    com, "community_data.yaml") 
+    defaults = os.path.join(model_root, run_name, "config", 
+                                                          "test_defaults.yaml")
 
-def run_model (config_file, name = None, override_data = None, 
+    input_data = os.path.join(model_root, run_name, "input_data", com)
+    out_dir =os.path.join(model_root, run_name, "results", com)
+    
+    run_model(name = community, override_data = overrides,
+              default_data = defaults, input_data = input_data, 
+              results_dir = out_dir, results_suffix = None)
+
+def run_model (config_file = None, name = None, override_data = None, 
                             default_data = None, input_data = None,
                             results_dir = None, results_suffix = None):
     """ 
@@ -165,7 +196,9 @@ def run_model (config_file, name = None, override_data = None,
             |output directory suffix: TIMESTAMP # TIMESTAMP|NONE|<string>
             |-------------------------------------
             The Following will override the information in the config_file and 
-        are optional:
+        are optional 
+        
+        note: if config file is None(not provided) all of these must be provided
             name: is a string (Community Name)
             override_data: a communit_data.yaml file
             default_data: a communit_data.yaml file
@@ -174,10 +207,13 @@ def run_model (config_file, name = None, override_data = None,
     post:
         The model will have been run, and outputs saved.  
     """
-    fd = open(config_file, 'r')
-    config = yaml.load(fd)
-    fd.close()
-    
+    if config_file:
+        fd = open(config_file, 'r')
+        config = yaml.load(fd)
+        fd.close()
+    else:
+        config = {}
+        
     if name:
         config['name'] = name
     if override_data:
@@ -413,7 +449,7 @@ def setup (coms, data_repo, model_root,
                 try:
                         
                     shutil.copy(os.path.join(model_root, 'setup',
-                                    "input_data",ids[0].replace(" ", "_"),fname),
+                                "input_data",ids[0].replace(" ", "_"),fname),
                                 os.path.join(model_root,run_name,"input_data",
                                              ids[0].replace(" ", "_"),fname))
                 except (OSError, IOError):
