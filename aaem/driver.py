@@ -633,39 +633,74 @@ def create_generation_forecast (models, path):
             continue
         gen_fc = gen_fc + models[idx].cd.get_item('community',
                                                  'generation numbers')
-   
-    for col in ('generation hydro', 'generation natural gas',
+                
+    
+    #~ print not np.isnan(gen_fc[['generation natural gas']]).all().bool()
+    if not np.isnan(gen_fc[['generation natural gas']]).all().bool():
+        for col in ('generation hydro', 'generation diesel',
                 'generation wind', 'generation solar',
                 'generation biomass'):
-        try:
-
-            last = gen_fc[gen_fc[col].notnull()]\
-                                [col].values[-3:]
-            last =  np.mean(last)
-            last_idx = gen_fc[gen_fc[col].notnull()]\
-                                [col].index[-1]
-                                
-                                
-            col_idx = np.logical_and(gen_fc[col].isnull(), 
-                                     gen_fc[col].index > last_idx)
-                                     
-            gen_fc[col][col_idx] = last
-        except IndexError:
-            pass
-                
-                                    
-    last_idx = gen_fc[gen_fc['generation diesel'].notnull()]\
-                            ['generation diesel'].index[-1]
-
-
-    col = gen_fc[gen_fc.index>last_idx]\
-                                ['generation total']\
-          - gen_fc[gen_fc.index>last_idx][['generation hydro', 
-                                           'generation natural gas',
-                                        'generation wind', 'generation solar',
-                                         'generation biomass']].fillna(0).sum(1)
+            try:
     
-    gen_fc.loc[gen_fc.index>last_idx,'generation diesel'] = col
+                last = gen_fc[gen_fc[col].notnull()]\
+                                    [col].values[-3:]
+                last =  np.mean(last)
+                last_idx = gen_fc[gen_fc[col].notnull()]\
+                                    [col].index[-1]
+                                    
+                                    
+                col_idx = np.logical_and(gen_fc[col].isnull(), 
+                                         gen_fc[col].index > last_idx)
+                                         
+                gen_fc[col][col_idx] = last
+            except IndexError:
+                pass
+        last_idx = gen_fc[gen_fc['generation natural gas'].notnull()]\
+                                ['generation natural gas'].index[-1]
+    
+    
+        
+        col = gen_fc[gen_fc.index>last_idx]\
+                                    ['generation total']\
+              - gen_fc[gen_fc.index>last_idx][['generation hydro', 
+                                               'generation diesel',
+                                            'generation wind', 'generation solar',
+                                             'generation biomass']].fillna(0).sum(1)
+        
+        gen_fc.loc[gen_fc.index>last_idx,'generation natural gas'] = col
+    else:
+        for col in ('generation hydro', 'generation natural gas',
+                'generation wind', 'generation solar',
+                'generation biomass'):
+            try:
+    
+                last = gen_fc[gen_fc[col].notnull()]\
+                                    [col].values[-3:]
+                last =  np.mean(last)
+                last_idx = gen_fc[gen_fc[col].notnull()]\
+                                    [col].index[-1]
+                                    
+                                    
+                col_idx = np.logical_and(gen_fc[col].isnull(), 
+                                         gen_fc[col].index > last_idx)
+                                         
+                gen_fc[col][col_idx] = last
+            except IndexError:
+                pass
+        
+        last_idx = gen_fc[gen_fc['generation diesel'].notnull()]\
+                                ['generation diesel'].index[-1]
+    
+    
+        
+        col = gen_fc[gen_fc.index>last_idx]\
+                                    ['generation total']\
+              - gen_fc[gen_fc.index>last_idx][['generation hydro', 
+                                               'generation natural gas',
+                                            'generation wind', 'generation solar',
+                                             'generation biomass']].fillna(0).sum(1)
+        
+        gen_fc.loc[gen_fc.index>last_idx,'generation diesel'] = col
     
     
     for col in ['generation total', 'generation diesel', 'generation hydro', 
