@@ -280,39 +280,43 @@ class CommunityData (object):
         post:
             csvitems are in self.model_inputs 
         """
+        IMPORT_FLAGS = ("IMPORT", "--see input_data")
+        
         self.community = self.get_item('community','name')
         ## load preprocessed files
-        if self.get_item('forecast', "population") == "IMPORT":
+        if self.get_item('forecast', "population") in IMPORT_FLAGS:
             self.set_item('forecast', "population", 
                           self.load_pp_csv("population.csv"))
     
-        if self.get_item('community',"HDD") == "IMPORT":
+        if self.get_item('community',"HDD") in IMPORT_FLAGS:
             try:
                 self.set_item('community',"HDD", 
                           int(self.load_pp_csv("hdd.csv").values[0][0]))
             except IOError:
                 raise IOError, "Heating Degree Days summary not found"
 
-        if  self.get_item('residential buildings','data') == "IMPORT":
+        if  self.get_item('residential buildings','data') in IMPORT_FLAGS:
             self.set_item('residential buildings','data',
                           self.load_pp_csv("residential_data.csv"))
 
-        if self.get_item('water wastewater', "data") == "IMPORT":
+        if self.get_item('water wastewater', "data") in IMPORT_FLAGS:
             self.set_item('water wastewater', "data", 
                           self.load_pp_csv("wastewater_data.csv"))
 
         region = self.load_pp_csv("region.csv")
-        if self.get_item('community',"region") == "IMPORT":
+        if self.get_item('community',"region") in IMPORT_FLAGS:
             self.set_item('community',"region", region.ix["region"][0])
-        if self.get_item('community',"heating fuel premium") == "IMPORT":    
+        if self.get_item('community',"heating fuel premium") in IMPORT_FLAGS:    
             self.set_item('community',"heating fuel premium", 
                          float(region.ix["premium"][0]))
                          
         try:
             prices = self.load_pp_csv("prices.csv")
         except IOError:
-            if self.get_item('community',"res non-PCE elec cost") == "IMPORT" \
-              and self.get_item('community',"elec non-fuel cost") == "IMPORT":
+            if self.get_item('community',
+                                    "res non-PCE elec cost") in IMPORT_FLAGS \
+              and self.get_item('community',
+                                        "elec non-fuel cost") in IMPORT_FLAGS:
                 #~ raise IOError, "Prices not found"
                 self.diagnostics.add_error("Community Data", 
                         ("(reading csv) electricity prices not found."
@@ -321,52 +325,54 @@ class CommunityData (object):
                 self.set_item("community", "elec non-fuel cost", False)
                 self.set_item("community", "model financial", False)
                 
-        if self.get_item('community',"res non-PCE elec cost") == "IMPORT":
+        if self.get_item('community',"res non-PCE elec cost") in IMPORT_FLAGS:
             self.set_item("community", "res non-PCE elec cost",
                             np.float(prices.ix["res non-PCE elec cost"]))
-        if self.get_item('community',"elec non-fuel cost") == "IMPORT":
+        if self.get_item('community',"elec non-fuel cost") in IMPORT_FLAGS:
             self.set_item("community", "elec non-fuel cost",
                             np.float(prices.ix["elec non-fuel cost"]))
 
         if self.get_item('community buildings',
-                                        "com building estimates") == "IMPORT":
+                                      "com building estimates") in IMPORT_FLAGS:
             self.set_item('community buildings',"com building estimates",
                            self.load_pp_csv("com_building_estimates.csv"))
                            
-        if self.get_item('community buildings','com building data')== "IMPORT":
+        if self.get_item('community buildings',
+                                            'com building data')in IMPORT_FLAGS:
             self.set_item('community buildings','com building data',
                                     self.load_pp_csv("community_buildings.csv"))
                                     
-        if self.get_item('community buildings','number buildings')== "IMPORT":
+        if self.get_item('community buildings','number buildings')in IMPORT_FLAGS:
             self.set_item('community buildings','number buildings',
                 int(self.load_pp_csv("com_num_buildings.csv").ix["Buildings"]))
                 
         try:
             elec_summary = self.load_pp_csv("yearly_electricity_summary.csv")
         except IOError:
-            if self.get_item('community',"line losses") == "IMPORT" \
+            if self.get_item('community',"line losses") in IMPORT_FLAGS \
               and self.get_item('community',"diesel generation efficiency") \
-                                        == "IMPORT":
+                                        in IMPORT_FLAGS:
                 raise IOError, "yearly electricity summary not found"
         
-        if self.get_item('forecast', "electricity") == "IMPORT":
+        if self.get_item('forecast', "electricity") in IMPORT_FLAGS:
             self.set_item('forecast', "electricity",elec_summary[["consumption",
                                                 "consumption residential",
                                                 "consumption non-residential"]])
         
         
-        if self.get_item('community',"line losses") == "IMPORT":
+        if self.get_item('community',"line losses") in IMPORT_FLAGS:
             self.set_item('community',"line losses", 
             np.float(elec_summary["line loss"][-3:].mean()))
 
-        if self.get_item('community','diesel generation efficiency')== "IMPORT":
+        if self.get_item('community',
+                                'diesel generation efficiency')in IMPORT_FLAGS:
             self.set_item('community','diesel generation efficiency', 
                           np.float(elec_summary['efficiency'].values[-1]))
         try:
-            if self.get_item('community',"generation") == "IMPORT":
+            if self.get_item('community',"generation") in IMPORT_FLAGS:
                 self.set_item('community',"generation", 
                                 elec_summary["net generation"])
-            if self.get_item('community','generation numbers') == "IMPORT":
+            if self.get_item('community','generation numbers') in IMPORT_FLAGS:
                 self.set_item('community','generation numbers', 
                           elec_summary[['generation diesel', 'generation hydro',
                                        'generation natural gas',
@@ -425,33 +431,37 @@ class CommunityData (object):
         ## save work around 
         import copy
         copy = copy.deepcopy(self.model_inputs)
-        rel = os.path.relpath(os.path.dirname(fname),os.path.join("model",".."))
-        rt = os.path.join(rel,"input_data")
-        self.set_item('residential buildings','data',
-                            os.path.join(rt, MODEL_FILES["RES_DATA"]))
-        self.set_item('community buildings','com building data', 
-                            os.path.join(rt, MODEL_FILES["COM_BUILDING_INV"]))
-        self.set_item('community buildings',"com building estimates", 
-                            os.path.join(rt, MODEL_FILES["COM_BUILDING_EST"]))
+        #~ rel = os.path.relpath(os.path.dirname(fname),os.path.join("model",".."))
+        #~ rt = os.path.join(rel,"input_data")
+        self.set_item('residential buildings','data', "IMPORT")
+        self.set_item('community buildings','com building data', "IMPORT")
+        self.set_item('community buildings',"com building estimates", "IMPORT")
 
-        self.set_item('community', "diesel prices", 
-                            os.path.join(rt, MODEL_FILES["DIESEL_PRICES"]))
-        self.set_item('forecast', "electricity", 
-                            os.path.join(rt, MODEL_FILES["ELECTRICITY"]))
-        self.set_item('forecast', "population", 
-                            os.path.join(rt, MODEL_FILES["POPULATION"]))
-        self.set_item('water wastewater', "data", 
-                            os.path.join(rt, MODEL_FILES["WWW_DATA"]))
+        self.set_item('community', "diesel prices", "IMPORT")
+        self.set_item('forecast', "electricity", "IMPORT")
+        self.set_item('forecast', "population", "IMPORT")
+        self.set_item('water wastewater', "data", "IMPORT")
         self.set_item("community","electric non-fuel prices","IMPORT")
-        self.set_item("community","generation numbers",
-                            os.path.join(rt, MODEL_FILES["ELECTRICITY"]))
-        self.set_item("community","generation",
-                            os.path.join(rt, MODEL_FILES["ELECTRICITY"]))
+        self.set_item("community","generation numbers", "IMPORT")
+        self.set_item("community","generation", "IMPORT")
         
         fd = open(fname, 'w')
         text = yaml.dump(self.model_inputs, default_flow_style=False) 
-        fd.write(text)
+        comment = \
+        ("# some of the items may reference files the input data directory\n"
+         "# residential buildings(data)-> residential_data.csv\n" 
+         "# community buildings(com building data) -> community_buildings.csv\n"
+ "# community buildings(com building estimates) -> com_building_estimates.csv\n"
+         "# community(diesel prices) -> \n"
+         "# forecast(electricity) -> yearly_electricity_summary.csv\n"
+         "# forecast(population) -> population.csv\n"
+         "# water wastewater(data) -> wastewater_data.csv\n"
+         "# community(electric non-fuel prices) -> prices.csv\n"
+         "# community(generation numbers) -> yearly_electricity_summary.csv\n"
+         "# community(generation) -> yearly_electricity_summary.csv\n")
+        fd.write(comment + text.replace("IMPORT","--see input_data"))
         fd.close()
 
         del self.model_inputs
         self.model_inputs = copy
+        #~ return comment + text
