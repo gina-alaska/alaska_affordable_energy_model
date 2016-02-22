@@ -345,8 +345,16 @@ class CommunityBuildings (AnnualSavings):
                                  #~ self.comp_specs['cohort savings multiplier']
         #~ self.refit_savings_HF_total = self.benchmark_savings_HF +\
                                       #~ self.additional_savings_HF
-        self.refit_savings_HF_total = self.baseline_HF_consumption * \
-                                    self.comp_specs['cohort savings multiplier']
+        #~ self.refit_savings_HF_total = self.baseline_HF_consumption * \
+                                    #~ self.comp_specs['cohort savings multiplier']
+        idx = np.isnan(self.comp_specs['com building data']["Fuel Oil Post"])
+        
+        self.comp_specs['com building data']["Fuel Oil Post"][idx] = \
+                        self.comp_specs['com building data']["Fuel Oil"][idx]*\
+                        self.comp_specs['cohort savings multiplier']
+        self.refit_savings_HF_total = \
+                    self.comp_specs['com building data']["Fuel Oil Post"].sum()
+        
         
     def calc_refit_savings_kWh (self):
         """ 
@@ -365,8 +373,15 @@ class CommunityBuildings (AnnualSavings):
                                  #~ self.comp_specs['cohort savings multiplier']
         #~ self.refit_savings_kWh_total = self.benchmark_savings_kWh +\
                                       #~ self.additional_savings_kWh
-        self.refit_savings_kWh_total = self.baseline_kWh_consumption * \
-                                    self.comp_specs['cohort savings multiplier']
+        #~ self.refit_savings_kWh_total = self.baseline_kWh_consumption * \
+                                    #~ self.comp_specs['cohort savings multiplier']
+        idx = np.isnan(self.comp_specs['com building data']["Electric Post"])
+        
+        self.comp_specs['com building data']["Electric Post"][idx] = \
+                        self.comp_specs['com building data']["Electric"][idx]*\
+                        self.comp_specs['cohort savings multiplier']
+        self.refit_savings_kWh_total = \
+                    self.comp_specs['com building data']["Electric Post"].sum()
         
     def calc_post_refit_use (self):
         """ 
