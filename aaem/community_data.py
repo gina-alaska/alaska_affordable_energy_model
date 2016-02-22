@@ -465,3 +465,26 @@ class CommunityData (object):
         del self.model_inputs
         self.model_inputs = copy
         #~ return comment + text
+        
+def test(data, overrides, defaults):
+    """ 
+    test the object
+    """
+    cd = CommunityData(data, overrides, defaults)
+    cd.save_model_inputs("cd_test.yaml")
+    cd2 = CommunityData(data, "cd_test.yaml")
+    cd2.save_model_inputs("cd_test2.yaml")
+    fd = open("cd_test.yaml",'r')
+    t1 = fd.read()
+    fd.close()
+    fd = open("cd_test2.yaml",'r')
+    t2 = fd.read()
+    fd.close()
+    os.remove("cd_test.yaml")
+    os.remove("cd_test2.yaml")
+    return {"result":t1 == t2, "text":{1:t1, 2:t2}}
+    
+    
+    
+    
+    
