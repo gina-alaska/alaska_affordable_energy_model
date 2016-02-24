@@ -1,6 +1,19 @@
 #Change Log
 
-## [0.2.2]
+## [0.3.0]
+### Changed
+- in .yaml config files (IMPORT) can now, and should, be (--see input_data)
+- natural gas will now absorb extra consumption in generation forecast when available 
+- community names are in diagnostic file names
+- in  CommunityBuildigns module the post refit consumption formulas has been changed to use real data if available.
+
+### Added
+- header in post model run .yaml config file
+- community are a column in  output .csv files
+- preprocessor diagnostic file is forwarded to output directory
+
+
+## [0.2.1]
 ### Fixed
 - various bugs in the devlopment flag [--dev(-d)] in the cli
 
