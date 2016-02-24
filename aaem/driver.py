@@ -712,7 +712,8 @@ def create_generation_forecast (models, path):
                     (gen_fc[col] / mmbtu_to_kWh).fillna(0).round().astype(int)
         del gen_fc[col]
     
-    
+    gen_fc["community"] = name
+    order =  [gen_fc.columns[-1]] + gen_fc.columns[:-1].values.tolist()
     gen_fc.index = gen_fc.index.values.astype(int)
     gen_fc = gen_fc.fillna(0).ix[2003:]
     
@@ -722,7 +723,7 @@ def create_generation_forecast (models, path):
     fd.write("# Generation forecast\n")
     fd.write("# projections start in " + str(int(last_idx+1)) + "\n")
     fd.close()
-    gen_fc.to_csv(out_file, index_label="year", mode = 'a')   
+    gen_fc[order].to_csv(out_file, index_label="year", mode = 'a')   
     return gen_fc
     
     

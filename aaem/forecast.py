@@ -12,7 +12,7 @@ import constants
 import numpy as np
 from pandas import DataFrame, read_csv, concat
 import os.path
-
+import copy
 
 
 
@@ -312,18 +312,21 @@ class Forecast (object):
         
         kWh_con = self.consumption
         kWh_con.columns = ["total_electricity_consumed [kWh/year]"]
-        c_map = self.c_map
+        c_map = copy.deepcopy(self.c_map)
         c_map.columns = ["total_electricity_consumed_qualifier"]
         
         kWh_gen = self.generation
         kWh_gen.columns = ["total_electricity_generation [kWh/year]"]
-        g_map = c_map
+        g_map = copy.deepcopy(c_map)
         g_map.columns = ["total_electricity_generation_qualifier"]
-        
+    
+        community = copy.deepcopy(self.c_map)
+        community.columns = ["community"]
+        community.ix[:] = self.cd.get_item("community","name")
         try:
-            data = concat([self.population.round().astype(int), self.p_map, 
-                        kWh_con.round().astype(int), c_map, 
-                        kWh_gen.round().astype(int), g_map] ,axis=1)
+            data = concat([community,self.population.round().astype(int), 
+                           self.p_map, kWh_con.round().astype(int), c_map, 
+                           kWh_gen.round().astype(int), g_map] ,axis=1)
         except ValueError:
             self.diagnostics.add_warning("Forecast", 
                                 ("when saving null values were found in "
@@ -373,7 +376,10 @@ class Forecast (object):
         total_demand = DataFrame(data[data.keys()[idx]].sum(1))
         total_demand.columns = ["heat_energy_demand_total [mmbtu/year]"]
 
-        data = concat([data, total_demand], axis=1)
+        community = copy.deepcopy(self.c_map)
+        community.columns = ["community"]
+        community.ix[:] = self.cd.get_item("community","name")
+        data = concat([community, data, total_demand], axis=1)
         
         for key in data.keys():
             try:
@@ -437,7 +443,11 @@ class Forecast (object):
         total_btu = DataFrame(data[hf_btu_idx].sum(1)).round()
         total_btu.columns = ["heating_fuel_total_consumed [mmbtu/year]"]
         
-        data = concat([data,total_gal,total_btu],axis=1)
+        
+        community = copy.deepcopy(self.c_map)
+        community.columns = ["community"]
+        community.ix[:] = self.cd.get_item("community","name")
+        data = concat([community,data,total_gal,total_btu],axis=1)
         
         for key in data.keys():
             try:
