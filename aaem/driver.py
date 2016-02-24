@@ -6,7 +6,7 @@ driver.py
 from community_data import CommunityData
 from forecast import Forecast
 from diagnostics import diagnostics
-from preprocessor import preprocess
+from preprocessor import preprocess, MODEL_FILES
 import defaults
 from constants import mmbtu_to_kWh 
 import shutil
@@ -27,6 +27,10 @@ comp_lib = {
     "community buildings": "community_buildings",
     "water wastewater": "wastewater",
         }
+
+
+        
+
 
 class Driver (object):
     """ 
@@ -146,11 +150,42 @@ class Driver (object):
             diagnostics file is saved
         """
         self.di.save_messages(os.path.join(directory,
-            self.cd.get_item("community", 'name') +"_runtime_diagnostics.csv"))
+            self.cd.get_item("community", 'name').replace(" ","_")\
+                                                +"_runtime_diagnostics.csv"))
         
 
+def run_model_simple (model_root, run_name, community):
+    """
+    simple run function 
+    
+    assumes directory structure used by default in cli
+        -model_root
+        --setup\
+        ---input_data
+        ---raw
+        --<runs>
+        ---config
+        ----test_defaults.yaml
+        ----<communities>
+        ---input_data
+        ----<communities>
+        ---results
+        ----<communities>
+    """
+    com = community.replace(" ","_")
+    overrides = os.path.join(model_root, run_name, "config", 
+                                                    com, "community_data.yaml") 
+    defaults = os.path.join(model_root, run_name, "config", 
+                                                          "test_defaults.yaml")
 
-def run_model (config_file, name = None, override_data = None, 
+    input_data = os.path.join(model_root, run_name, "input_data", com)
+    out_dir =os.path.join(model_root, run_name, "results", com)
+    
+    run_model(name = community, override_data = overrides,
+              default_data = defaults, input_data = input_data, 
+              results_dir = out_dir, results_suffix = None)
+
+def run_model (config_file = None, name = None, override_data = None, 
                             default_data = None, input_data = None,
                             results_dir = None, results_suffix = None):
     """ 
@@ -165,7 +200,9 @@ def run_model (config_file, name = None, override_data = None,
             |output directory suffix: TIMESTAMP # TIMESTAMP|NONE|<string>
             |-------------------------------------
             The Following will override the information in the config_file and 
-        are optional:
+        are optional 
+        
+        note: if config file is None(not provided) all of these must be provided
             name: is a string (Community Name)
             override_data: a communit_data.yaml file
             default_data: a communit_data.yaml file
@@ -174,10 +211,13 @@ def run_model (config_file, name = None, override_data = None,
     post:
         The model will have been run, and outputs saved.  
     """
-    fd = open(config_file, 'r')
-    config = yaml.load(fd)
-    fd.close()
-    
+    if config_file:
+        fd = open(config_file, 'r')
+        config = yaml.load(fd)
+        fd.close()
+    else:
+        config = {}
+        
     if name:
         config['name'] = name
     if override_data:
@@ -404,16 +444,12 @@ def setup (coms, data_repo, model_root,
                                         "input_data",ids[0].replace(" ", "_")))
             except OSError:
                     pass
-            for fname in ["diesel_fuel_prices.csv", "hdd.csv", "cpi.csv",
-                             "com_building_estimates.csv",
-                             "community_buildings.csv", "com_num_buildings.csv",
-                             "interties.csv", "prices.csv", "region.csv",
-                             "residential_data.csv", "wastewater_data.csv",
-                             'population.csv','yearly_electricity_summary.csv']:
+
+            for fname in MODEL_FILES.values():
                 try:
                         
                     shutil.copy(os.path.join(model_root, 'setup',
-                                    "input_data",ids[0].replace(" ", "_"),fname),
+                                "input_data",ids[0].replace(" ", "_"),fname),
                                 os.path.join(model_root,run_name,"input_data",
                                              ids[0].replace(" ", "_"),fname))
                 except (OSError, IOError):
@@ -450,12 +486,8 @@ def setup (coms, data_repo, model_root,
                                         "input_data",id.replace(" ", "_")))
                 except OSError:
                     pass
-                for fname in ["diesel_fuel_prices.csv", "hdd.csv", "cpi.csv",
-                             "com_building_estimates.csv",
-                             "community_buildings.csv", "com_num_buildings.csv",
-                             "interties.csv", "prices.csv", "region.csv",
-                             "residential_data.csv", "wastewater_data.csv",
-                             'population.csv','yearly_electricity_summary.csv']:
+
+                for fname in MODEL_FILES.values():
                     try:
                         
                         shutil.copy(os.path.join(model_root, 'setup',
@@ -601,39 +633,74 @@ def create_generation_forecast (models, path):
             continue
         gen_fc = gen_fc + models[idx].cd.get_item('community',
                                                  'generation numbers')
-   
-    for col in ('generation hydro', 'generation natural gas',
+                
+    
+    #~ print not np.isnan(gen_fc[['generation natural gas']]).all().bool()
+    if not np.isnan(gen_fc[['generation natural gas']]).all().bool():
+        for col in ('generation hydro', 'generation diesel',
                 'generation wind', 'generation solar',
                 'generation biomass'):
-        try:
-
-            last = gen_fc[gen_fc[col].notnull()]\
-                                [col].values[-3:]
-            last =  np.mean(last)
-            last_idx = gen_fc[gen_fc[col].notnull()]\
-                                [col].index[-1]
-                                
-                                
-            col_idx = np.logical_and(gen_fc[col].isnull(), 
-                                     gen_fc[col].index > last_idx)
-                                     
-            gen_fc[col][col_idx] = last
-        except IndexError:
-            pass
-                
-                                    
-    last_idx = gen_fc[gen_fc['generation diesel'].notnull()]\
-                            ['generation diesel'].index[-1]
-
-
-    col = gen_fc[gen_fc.index>last_idx]\
-                                ['generation total']\
-          - gen_fc[gen_fc.index>last_idx][['generation hydro', 
-                                           'generation natural gas',
-                                        'generation wind', 'generation solar',
-                                         'generation biomass']].fillna(0).sum(1)
+            try:
     
-    gen_fc.loc[gen_fc.index>last_idx,'generation diesel'] = col
+                last = gen_fc[gen_fc[col].notnull()]\
+                                    [col].values[-3:]
+                last =  np.mean(last)
+                last_idx = gen_fc[gen_fc[col].notnull()]\
+                                    [col].index[-1]
+                                    
+                                    
+                col_idx = np.logical_and(gen_fc[col].isnull(), 
+                                         gen_fc[col].index > last_idx)
+                                         
+                gen_fc[col][col_idx] = last
+            except IndexError:
+                pass
+        last_idx = gen_fc[gen_fc['generation natural gas'].notnull()]\
+                                ['generation natural gas'].index[-1]
+    
+    
+        
+        col = gen_fc[gen_fc.index>last_idx]\
+                                    ['generation total']\
+              - gen_fc[gen_fc.index>last_idx][['generation hydro', 
+                                               'generation diesel',
+                                            'generation wind', 'generation solar',
+                                             'generation biomass']].fillna(0).sum(1)
+        
+        gen_fc.loc[gen_fc.index>last_idx,'generation natural gas'] = col
+    else:
+        for col in ('generation hydro', 'generation natural gas',
+                'generation wind', 'generation solar',
+                'generation biomass'):
+            try:
+    
+                last = gen_fc[gen_fc[col].notnull()]\
+                                    [col].values[-3:]
+                last =  np.mean(last)
+                last_idx = gen_fc[gen_fc[col].notnull()]\
+                                    [col].index[-1]
+                                    
+                                    
+                col_idx = np.logical_and(gen_fc[col].isnull(), 
+                                         gen_fc[col].index > last_idx)
+                                         
+                gen_fc[col][col_idx] = last
+            except IndexError:
+                pass
+        
+        last_idx = gen_fc[gen_fc['generation diesel'].notnull()]\
+                                ['generation diesel'].index[-1]
+    
+    
+        
+        col = gen_fc[gen_fc.index>last_idx]\
+                                    ['generation total']\
+              - gen_fc[gen_fc.index>last_idx][['generation hydro', 
+                                               'generation natural gas',
+                                            'generation wind', 'generation solar',
+                                             'generation biomass']].fillna(0).sum(1)
+        
+        gen_fc.loc[gen_fc.index>last_idx,'generation diesel'] = col
     
     
     for col in ['generation total', 'generation diesel', 'generation hydro', 
@@ -645,7 +712,8 @@ def create_generation_forecast (models, path):
                     (gen_fc[col] / mmbtu_to_kWh).fillna(0).round().astype(int)
         del gen_fc[col]
     
-    
+    gen_fc["community"] = name
+    order =  [gen_fc.columns[-1]] + gen_fc.columns[:-1].values.tolist()
     gen_fc.index = gen_fc.index.values.astype(int)
     gen_fc = gen_fc.fillna(0).ix[2003:]
     
@@ -655,7 +723,7 @@ def create_generation_forecast (models, path):
     fd.write("# Generation forecast\n")
     fd.write("# projections start in " + str(int(last_idx+1)) + "\n")
     fd.close()
-    gen_fc.to_csv(out_file, index_label="year", mode = 'a')   
+    gen_fc[order].to_csv(out_file, index_label="year", mode = 'a')   
     return gen_fc
     
     
