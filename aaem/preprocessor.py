@@ -736,6 +736,9 @@ class Preprocessor (object):
                               total_generation['NET GENERATION (megawatthours)']
             total_generation["generation"] = \
                     total_generation["net generation"]/(1 - GENERATION_AVG)
+            self.diagnostics.add_note("EIA Electricity",
+                        "Gross Generation assumed to be " +\
+                         str((1+GENERATION_AVG)*100) + " of net generation")
 
         else:
             total_generation = DataFrame({"year":(2003,2004),
@@ -1003,6 +1006,10 @@ class Preprocessor (object):
             phc = temp["powerhouse_consumption_kwh"]
             if np.isnan(phc):
                 phc = temp['consumption'] * GENERATION_AVG
+                self.diagnostics.add_note("PCE Electricity",
+                        "Powerhouse consumption not found for " + \
+                        str(year) +" assuming to be " +\
+                        str(GENERATION_AVG*100) + "% of gross generation.")
             temp['net generation'] = temp['generation'] - \
                                      phc
 
