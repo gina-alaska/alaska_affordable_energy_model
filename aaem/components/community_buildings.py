@@ -218,7 +218,18 @@ class CommunityBuildings (AnnualSavings):
             except AttributeError:
                 # only one item 
                 if np.isnan(data.ix[k][measure]):
-                    data.ix[k][measure] = sqft_ests.ix[k]
+                    try:
+                        data.ix[k][measure] = sqft_ests.ix[k]
+                    except KeyError:
+                        self.diagnostics.add_note(self.component_name, 
+                            "Building Type: " + k +\
+                            " not valid. Using 'other's estimates")
+                        data.ix[k][measure] = sqft_ests.ix['other']
+            except KeyError:
+                self.diagnostics.add_note(self.component_name, 
+                 "Building Type: " + k + " not valid. Using 'other's estimates")
+                data.loc[:,measure].loc[k] = \
+                    data.loc[:,measure].loc[k].fillna(sqft_ests.ix['Other'])
         
         self.refit_sqft_total = data[measure].sum()
         
@@ -283,9 +294,12 @@ class CommunityBuildings (AnnualSavings):
         keys = set(keys)
 
         for k in keys:
-            HDD_ratio = self.cd["HDD"]/HDD_ests.ix[k] # unitless
-            gal_sf = gal_sf_ests.ix[k] # (gal)/sqft
-            
+            try:
+                HDD_ratio = self.cd["HDD"]/HDD_ests.ix[k] # unitless
+                gal_sf = gal_sf_ests.ix[k] # (gal)/sqft
+            except KeyError:
+                HDD_ratio = self.cd["HDD"]/HDD_ests.ix['Other'] # unitless
+                gal_sf = gal_sf_ests.ix['Other'] # (gal)/sqft
             idx = np.logical_and(d2[:,0] == k, np.isnan(d2[:,2].astype(float)))
             sqft = d2[idx,1].astype(np.float64) # sqft
             d2[idx,2] = sqft * HDD_ratio * gal_sf # gal/yr
@@ -319,7 +333,10 @@ class CommunityBuildings (AnnualSavings):
         keys = set(keys)
         
         for k in keys:
-            kwh_sf = kwh_sf_ests.ix[k] # (kWh)/sqft
+            try:
+                kwh_sf = kwh_sf_ests.ix[k] # (kWh)/sqft
+            except KeyError:
+                kwh_sf = kwh_sf_ests.ix['Other'] # (kwh)/sqft
             
             idx = np.logical_and(d2[:,0] == k, np.isnan(d2[:,2].astype(float)))
             sqft = d2[idx, 1].astype(np.float64) #sqft

@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.3.1]
+### Fixed
+- CommunityBuildings unknown building types 'ie. Vacant' will default to Other when estimating.
+
 ## [0.3.0]
 ### Changed
 - in .yaml config files (IMPORT) can now, and should, be (--see input_data)
