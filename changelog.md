@@ -1,5 +1,10 @@
 #Change Log
 
+## [0.3.2]
+### added
+- powerhouse consumption is assumbed to be 3% of gross genneration when not provided
+- ground work for copper valley intertie(Doesn't affect resuts yet)
+
 ## [0.3.1]
 ### Fixed
 - CommunityBuildings unknown building types 'ie. Vacant' will default to Other when estimating.
