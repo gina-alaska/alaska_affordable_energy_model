@@ -556,8 +556,10 @@ class Preprocessor (object):
         #~ # TODO: find a way to calculate this
         con_file = os.path.join(self.data_dir, "eia_sales.csv")
         try:
-		    con_data = read_csv(con_file, comment='#', 
-		                                 index_col=2).ix[self.com_id]
+            cid = self.com_id
+            if cid == 'Glennallen':
+                cid = "Copper Valley"
+            con_data = read_csv(con_file, comment='#', index_col=2).ix[cid]
         except KeyError:
             self.diagnostics.add_note("Electricity Prices (EIA)",
                                   "they need to be input in community data")  
@@ -638,7 +640,11 @@ class Preprocessor (object):
         """
         gen_file = os.path.join(self.data_dir, "eia_generation.csv" )
         con_file = os.path.join(self.data_dir, "eia_sales.csv")
-
+        
+        ## for sales
+        cid = self.com_id
+        if cid == 'Glennallen':
+            cid = "Copper Valley"
 
         try:
             generation = read_csv(gen_file, comment = "#", index_col=3)\
@@ -658,7 +664,7 @@ class Preprocessor (object):
 
         try:
             sales = read_csv(con_file, comment = "#", index_col=2)\
-                                                    .loc[self.com_id]\
+                                                    .loc[cid]\
                                                   [["Data Year",
                                                     "Residential Megawatthours",
                                                     "Total Megawatthours"]]
@@ -768,6 +774,19 @@ class Preprocessor (object):
             sales = sales[['year',"consumption",
                            'consumption residential',
                            'consumption non-residential']].set_index('year')
+            if cid == "Copper Valley":
+                val = os.path.join(self.data_dir, "valdez_kwh_consumption.csv")
+                val = read_csv(val, comment = '#', index_col=0)
+                val["Total"] = val.sum(1)
+                val['non-res'] = val[['Commercial','Industrial']].sum(1)
+                #~ val = concat([self.electricity_data,val],axis = 1)
+                    
+                val["consumption"] = val["Total"]
+                val["consumption residential"] = val["Residential"]
+                val["consumption non-residential"] = val["non-res"]
+                val = val[["consumption","consumption residential",
+                           "consumption non-residential"]]
+                sales = sales - val
         else:
             sales = DataFrame({"year":(2003,2004),
                     "consumption":(np.nan,np.nan),
@@ -1222,7 +1241,6 @@ class Preprocessor (object):
         in_file = os.path.join(self.data_dir, "hdd.csv")
         hdd = read_csv(in_file, index_col=0,
                        comment = "#", header=0).ix[self.com_id].values[0]
-        
         out_file = os.path.join(self.out_dir, "hdd.csv")
         fd = open(out_file,'w')
         fd.write(self.hdd_header())
