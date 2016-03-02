@@ -13,6 +13,8 @@ import numpy as np
 from datetime import datetime
 
 
+GENERATION_AVG = .03
+
 MODEL_FILES = {"DIESEL_PRICES": "diesel_fuel_prices.csv",
                "HDD": "hdd.csv",
                "CPI": "cpi.csv", 
@@ -730,9 +732,13 @@ class Preprocessor (object):
     
             total_generation = DataFrame(generation.groupby('Year').sum()\
                                      ['NET GENERATION (megawatthours)'])* 1000.0
-            total_generation["generation"] = \
+            total_generation["net generation"] = \
                               total_generation['NET GENERATION (megawatthours)']
-            total_generation["net generation"] = total_generation["generation"]
+            total_generation["generation"] = \
+                    total_generation["net generation"]/(1 - GENERATION_AVG)
+            self.diagnostics.add_note("EIA Electricity",
+                        "Gross Generation assumed to be " +\
+                         str((1+GENERATION_AVG)*100) + " of net generation")
 
         else:
             total_generation = DataFrame({"year":(2003,2004),
@@ -997,8 +1003,15 @@ class Preprocessor (object):
             temp['consumption non-residential'] = temp['consumption'] - \
                                                  temp['consumption residential']
             ## net generation
+            phc = temp["powerhouse_consumption_kwh"]
+            if np.isnan(phc):
+                phc = temp['consumption'] * GENERATION_AVG
+                self.diagnostics.add_note("PCE Electricity",
+                        "Powerhouse consumption not found for " + \
+                        str(year) +" assuming to be " +\
+                        str(GENERATION_AVG*100) + "% of gross generation.")
             temp['net generation'] = temp['generation'] - \
-                                     temp["powerhouse_consumption_kwh"]
+                                     phc
 
             ## other values
             temp['fuel used'] = temp['fuel_used_gal']
