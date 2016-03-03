@@ -281,6 +281,7 @@ def run_model (config_file = None, name = None, override_data = None,
         model.save_diagnostics(out_dir) 
     except RuntimeError as e:
         print "Fatal Error see Diagnostics"
+        print str(e[0])
         d = e[1]
         d.add_error("FATAL", str(e[0]))
         d.save_messages(os.path.join(out_dir,"diagnostics.csv"))

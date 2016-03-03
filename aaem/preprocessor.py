@@ -105,8 +105,9 @@ class Preprocessor (object):
         self.interties()
         
         self.residential()
+        #~ print self.residential_data.ix['year']
         base_pop = np.float(self.population_data.ix\
-                            [self.residential_data.ix['year']]["population"])
+                        [int(self.residential_data.ix['year'])]["population"])
         self.buildings(base_pop)
         self.wastewater()
     

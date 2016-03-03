@@ -1,6 +1,10 @@
 #Change Log
 
 ## [0.3.2]
+### Fixed
+- bug in preprocessor where float needed to be an int
+
+## [0.3.2]
 ### added
 - powerhouse consumption is assumbed to be 3% of gross genneration when not provided
 - ground work for copper valley intertie(Doesn't affect resuts yet)
