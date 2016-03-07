@@ -6,56 +6,150 @@ ross spicer
 plotting functions
 """
 import matplotlib.pyplot as plt
+from pylab import rand
 import numpy as np
-from colors import colors
+from colors import colors, red
 
 
 
 def test():
+    """
+    test some of the function
+    """
     x = np.linspace(0,10)
     
     fig, axes = setup_fig('test','x','y1')
-
-    ax2 = add_yaxis(fig,axes,'y2')
-
+    ax2 = add_yaxis(fig,'y2')
     
-    add_line(x,x,axes, 'y = x',colors[0])
-    add_line(x,20*x,axes, 'y = 20x',colors[4])
-    add_line(x,x*3,axes, 'y = 3x',colors[6])
+    add_line(axes, x, x, 'y = x', colors[0], fill = True)
+    add_line(axes, x, 2*x, 'y = 2x', colors[1], fill = x)
+    add_line(axes, x, x*3, 'y = 3x', colors[2], fill = 2*x)
     
-    add_line(x,-1*x,ax2,'y = -x on a seond set of axes',colors[10])
+    
+    
+    add_line(ax2, x, -1*x, 'y = -x on a second y-axis', colors[3])
+
+    add_bars(axes, [1,3,5,7,9], [2,4,6,8,10], color = colors[4])
+    
+    
+    #~ add_named_bars(axes, ('a', 'b', 'c', 'd', 'd'),
+                      #~ 3+10*rand(4), colors[5])
     
     create_legend(fig)
     plt.show()
-    #~ plt.savefig("polt_test.png")
+    
+    fig.savefig("polt_test.png")
     
     return fig
     
-def setup_fig(title,x_label,y_label):
-    """ """
+def setup_fig(title, x_label, y_label):
+    """
+    set-up the figure for the the plots
+    
+    pre-conditions:
+        title: <string> the title of the plot
+        x_label: <string> x axis label
+        y_label: <string> y axis label
+    post-conditions:
+        returns the figure and the axes 
+    """
     fig, axes = plt.subplots()
     axes.set_title(title)
     axes.set_xlabel(x_label)
     axes.set_ylabel(y_label, color='black')
     return fig, axes
     
-def add_yaxis (fig, ax, label ):
-    """"""
+def add_yaxis (fig, label):
+    """
+    adds a second y axis 
+    
+    pre:
+        fig: <matplotlib figure> the figure
+        label: <string> new axis label
+    post:
+        returns the new axis and the figure has been updated with it.
+    """
     fig.subplots_adjust(left=.1)
+    ax = fig.get_axes()[0]
     new_ax = ax.twinx()
     new_ax.set_ylabel(label, color='black')
     return new_ax
 
-def add_line(x,y, ax, label = 'test', color = 'red', marker = 'o', fill = False):
+def add_line(ax, x, y, label='test', color=red, marker='o', fill = False):
     """
-    """
-    ax.plot(x,y, label = label, color = color, marker = marker)
+    add a line to the axes 
     
-    if fill:
-        ax.fill_between(x,y,color=color, alpha = .5)
+    pre:
+        ax: <matplotlib axes> axes to plot on
+        x: <array like> the x values
+        y: <array like> the y values
+        label: <string> label for the line
+        color: <rgb triplet> a color rgb values between 0,1
+        marker: <matplotlib marker> a marker
+        fill: <bool or array like> If true fills to y = 0, otherwise fills 
+                                                        to line y[n] = fill[n] 
+    post:
+        line is plotted on axis
+    """
+    ax.plot(x, y, label = label, color = color, marker = marker)
+    
+    if type(fill) is not bool or fill == True:
+        if type(fill) is bool:
+            fill = 0
+        ax.fill_between(x,y,fill,color=color, alpha = .5)
+
+def add_bars (ax, nums, heights, width = 1, 
+              color = red, direction = 'vertical', error = None):
+    """
+    add bars to axes 
+    
+    pre:
+        ax: <matplotlib axes> axes to plot on
+        numbers: <array like> the numbers to start bars at
+        heights: <array like> the heights of the bars
+        width: <number> width of the bar (defaults to 1)
+        color: <rgb triplet> a color rgb values between 0,1 (defaults to red)
+        direction: <sting> 'horizontal' or 'vertical'
+        error: error values
+    post:
+        bars are plotted on axis
+    """
+    if direction == 'horizontal':
+        ax.barh(nums, heights, width, color = color, yerr = error)
+    else:
+        ax.bar(nums, heights, width, color = color, yerr = error)
+    
+def add_named_bars (ax, labels, values, color=red, direction = 'horizontal'):
+    """
+    add named bars to axes 
+    
+    pre:
+        ax: <matplotlib axes> axes to plot on
+        labels: <array>  labels of bars
+        values: <array like> values of each label
+        color: <rgb triplet> a color rgb values between 0,1 (defaults to red)
+        direction: <sting> 'horizontal' or 'vertical'
+    post:
+        bars are plotted on axis and labeled
+    """
+    pos = np.arange(len(labels)) + .5
+    if direction == 'vertical':
+        ax.bar(pos, values, color=color,align='center')
+        ax.set_xticks(pos)
+        ax.set_xticklabels(labels)
+    else:
+        ax.barh(pos, values, color=color,align='center')
+        ax.set_yticks(pos)
+        ax.set_yticklabels(labels)
         
 def create_legend(fig):
     """
+    create a legend form the line labels and place it below the plot
+    
+    pre:
+        fig: the figure
+    post:
+        legend is placed below the plot
     """
     axes = fig.get_axes()
     
