@@ -8,7 +8,7 @@ plotting functions
 import matplotlib.pyplot as plt
 from pylab import rand
 import numpy as np
-from colors import colors, red
+from colors import colors, red, jet
 
 
 
@@ -25,7 +25,7 @@ def test():
     add_line(axes, x, 2*x, 'y = 2x', colors[1], fill = x)
     add_line(axes, x, x*3, 'y = 3x', colors[2], fill = 2*x)
     
-    
+    add_vertical_line(axes, 3)
     
     add_line(ax2, x, -1*x, 'y = -x on a second y-axis', colors[3])
 
@@ -166,4 +166,15 @@ def create_legend(fig):
     ax0.legend(lines, labels, 
                bbox_to_anchor = (0.5, -.31),loc='lower center',
                ncol=2)
+
+def add_vertical_line (ax, position):
+    """
+    add a vertical line to the plot
     
+    pre:
+        ax: <matplotlib axes> the axes
+        position: <number> the position
+    post:
+        line is added to axes at potions( x= position)
+    """
+    ax.axvline(position, color=jet, linestyle='--')
