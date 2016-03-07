@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from pylab import rand
 import numpy as np
 from colors import colors, red, jet
-
+from pandas import DataFrame 
 
 
 def test():
@@ -31,9 +31,24 @@ def test():
 
     add_bars(axes, [1,3,5,7,9], [2,4,6,8,10], color = colors[4])
     
-    
+    # named bars --------------------------------------------------------------
     #~ add_named_bars(axes, ('a', 'b', 'c', 'd', 'd'),
                       #~ 3+10*rand(4), colors[5])
+    # -------------------------------------------------------------------------
+    
+    # annotations ---------- in development -----------------------------------
+    #~ axes.annotate('a line', xy=(3, 25), xytext=(4, 25.1),
+            #~ arrowprops=dict(facecolor='black', shrink=0.05, width=1,headwidth=4),
+            #~ )
+    # -------------------------------------------------------------------------
+    
+    # dataframe ---------------------------------------------------------------
+    #~ df = DataFrame({"year":[2001,2002,2003,2004,2005],
+                    #~ "d1":  [1,2,3,4,5],
+                    #~ "d2":  [1,4,9,16,25],
+                    #~ "d3":  [3,4,6,7,8]}).set_index("year")
+    #~ plot_dataframe(ax2,df,axes,["d1"])
+    # -------------------------------------------------------------------------
     
     create_legend(fig)
     plt.show()
@@ -41,6 +56,23 @@ def test():
     fig.savefig("polt_test.png")
     
     return fig
+    
+def plot_dataframe(ax, dataframe, ax0 = None, ax0_cols = None):
+    c_index = 0
+    keys = set(dataframe.keys())
+    
+    x = dataframe.index
+    if ax0:
+        for col in ax0_cols:
+            add_line(ax0,x,dataframe[col].values,col,color=colors[c_index])
+            c_index += 1
+        keys = keys.difference(ax0_cols)
+
+    for col in  keys:
+        add_line(ax,x,dataframe[col].values,col,color=colors[c_index])
+        c_index += 1
+            
+    
     
 def setup_fig(title, x_label, y_label):
     """
