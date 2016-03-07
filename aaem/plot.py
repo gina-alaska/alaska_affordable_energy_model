@@ -6,10 +6,9 @@ ross spicer
 plotting functions
 """
 import matplotlib.pyplot as plt
-from pylab import rand
 import numpy as np
 from colors import colors, red, jet
-from pandas import DataFrame 
+from pandas import DataFrame ,read_csv
 
 
 def test():
@@ -29,18 +28,18 @@ def test():
     
     add_line(ax2, x, -1*x, 'y = -x on a second y-axis', colors[3])
 
-    add_bars(axes, [1,3,5,7,9], [2,4,6,8,10], color = colors[4])
+    add_bars(axes, [1,3,5,7,9], [2,4,6,8,10], None, color = colors[4])
     
     # named bars --------------------------------------------------------------
-    #~ add_named_bars(axes, ('a', 'b', 'c', 'd', 'd'),
-                      #~ 3+10*rand(4), colors[5])
-    # -------------------------------------------------------------------------
+    #~ add_named_bars(axes, ('a', 'b', 'c', 'd', '3'),
+                      #~ (1,2,3,4,5), 'bar test', colors[5])
+    #~ # -------------------------------------------------------------------------
     
-    # annotations ---------- in development -----------------------------------
-    #~ axes.annotate('a line', xy=(3, 25), xytext=(4, 25.1),
-            #~ arrowprops=dict(facecolor='black', shrink=0.05, width=1,headwidth=4),
-            #~ )
-    # -------------------------------------------------------------------------
+    #~ # annotations ---------- in development -----------------------------------
+    axes.annotate('a line', xy=(3, 25), xytext=(4, 25.1),
+            arrowprops=dict(facecolor='black', shrink=0.05, width=1,headwidth=4),
+            )
+    #~ # -------------------------------------------------------------------------
     
     # dataframe ---------------------------------------------------------------
     #~ df = DataFrame({"year":[2001,2002,2003,2004,2005],
@@ -57,6 +56,20 @@ def test():
     
     return fig
     
+def test_elec (e_file):
+    df = read_csv(e_file,comment = '#',index_col = 0)
+    df2 = df[['population','total_electricity_consumed [kWh/year]','total_electricity_generation [kWh/year]']]
+    fig, ax = setup_fig('Sand Point Electricity Forecast','years','population')
+    ax1 = add_yaxis(fig,'kWh')
+    
+    plot_dataframe(ax1,df2,ax,['population'])
+    ax1.set_yticklabels(ax1.get_yticks().astype(int),rotation=0)
+    fig.subplots_adjust(right=.87)
+    add_vertical_line(ax,2013)
+    create_legend(fig)
+    plt.show()
+    fig.savefig("Sand_Point.png")
+    
 def plot_dataframe(ax, dataframe, ax0 = None, ax0_cols = None):
     c_index = 0
     keys = set(dataframe.keys())
@@ -64,12 +77,12 @@ def plot_dataframe(ax, dataframe, ax0 = None, ax0_cols = None):
     x = dataframe.index
     if ax0:
         for col in ax0_cols:
-            add_line(ax0,x,dataframe[col].values,col,color=colors[c_index])
+            add_line(ax0,x,dataframe[col].values,col,color=colors[c_index],marker='*')
             c_index += 1
         keys = keys.difference(ax0_cols)
 
     for col in  keys:
-        add_line(ax,x,dataframe[col].values,col,color=colors[c_index])
+        add_line(ax,x,dataframe[col].values,col,color=colors[c_index],marker='.')
         c_index += 1
             
     
@@ -85,7 +98,7 @@ def setup_fig(title, x_label, y_label):
     post-conditions:
         returns the figure and the axes 
     """
-    fig, axes = plt.subplots()
+    fig, axes = plt.subplots(figsize = (10,8))
     axes.set_title(title)
     axes.set_xlabel(x_label)
     axes.set_ylabel(y_label, color='black')
@@ -107,7 +120,7 @@ def add_yaxis (fig, label):
     new_ax.set_ylabel(label, color='black')
     return new_ax
 
-def add_line(ax, x, y, label='test', color=red, marker='o', fill = False):
+def add_line(ax, x, y, label, color=red, marker='o', fill = False):
     """
     add a line to the axes 
     
@@ -130,7 +143,7 @@ def add_line(ax, x, y, label='test', color=red, marker='o', fill = False):
             fill = 0
         ax.fill_between(x,y,fill,color=color, alpha = .5)
 
-def add_bars (ax, nums, heights, width = 1, 
+def add_bars (ax, nums, heights, label, width = 1, 
               color = red, direction = 'vertical', error = None):
     """
     add bars to axes 
@@ -147,11 +160,12 @@ def add_bars (ax, nums, heights, width = 1,
         bars are plotted on axis
     """
     if direction == 'horizontal':
-        ax.barh(nums, heights, width, color = color, yerr = error)
+        ax.barh(nums, heights, width, label=label, color = color, yerr = error)
     else:
-        ax.bar(nums, heights, width, color = color, yerr = error)
+        ax.bar(nums, heights, width, label=label, color = color, yerr = error)
     
-def add_named_bars (ax, labels, values, color=red, direction = 'horizontal'):
+def add_named_bars (ax, categories, values, label, 
+                    color=red, direction = 'horizontal'):
     """
     add named bars to axes 
     
@@ -164,15 +178,15 @@ def add_named_bars (ax, labels, values, color=red, direction = 'horizontal'):
     post:
         bars are plotted on axis and labeled
     """
-    pos = np.arange(len(labels)) + .5
+    pos = np.arange(len(categories)) + .5
     if direction == 'vertical':
-        ax.bar(pos, values, color=color,align='center')
+        ax.bar(pos, values, label = label, color=color,align='center')
         ax.set_xticks(pos)
-        ax.set_xticklabels(labels)
+        ax.set_xticklabels(categories)
     else:
-        ax.barh(pos, values, color=color,align='center')
+        ax.barh(pos, values, label=label,color=color,align='center')
         ax.set_yticks(pos)
-        ax.set_yticklabels(labels)
+        ax.set_yticklabels(categories)
         
 def create_legend(fig):
     """
