@@ -58,11 +58,15 @@ def test():
     
 def test_elec (e_file):
     df = read_csv(e_file,comment = '#',index_col = 0)
-    df2 = df[['population','total_electricity_consumed [kWh/year]','total_electricity_generation [kWh/year]']]
+    df2 = df[['population','total_electricity_consumed [kWh/year]',
+              'total_electricity_generation [kWh/year]']]
     fig, ax = setup_fig('Sand Point Electricity Forecast','years','population')
     ax1 = add_yaxis(fig,'kWh')
     
-    plot_dataframe(ax1,df2,ax,['population'])
+    plot_dataframe(ax1,df2,ax,['population'],
+                   col_map = {'population':'population',
+                'total_electricity_consumed [kWh/year]':'consumption',
+                'total_electricity_generation [kWh/year]':'generation'})
     ax1.set_yticklabels(ax1.get_yticks().astype(int),rotation=0)
     fig.subplots_adjust(right=.87)
     add_vertical_line(ax,2013)
@@ -70,19 +74,24 @@ def test_elec (e_file):
     plt.show()
     fig.savefig("Sand_Point.png")
     
-def plot_dataframe(ax, dataframe, ax0 = None, ax0_cols = None):
+def plot_dataframe(ax, dataframe, ax0 = None, ax0_cols = None, col_map = None):
     c_index = 0
     keys = set(dataframe.keys())
+    
+    if col_map is None:
+        col_map = {} 
+        for c in keys:
+            col_map[c] = c
     
     x = dataframe.index
     if ax0:
         for col in ax0_cols:
-            add_line(ax0,x,dataframe[col].values,col,color=colors[c_index],marker='*')
+            add_line(ax0,x,dataframe[col].values,col_map[col],color=colors[c_index],marker='*')
             c_index += 1
         keys = keys.difference(ax0_cols)
 
     for col in  keys:
-        add_line(ax,x,dataframe[col].values,col,color=colors[c_index],marker='.')
+        add_line(ax,x,dataframe[col].values,col_map[col],color=colors[c_index],marker='.')
         c_index += 1
             
     
