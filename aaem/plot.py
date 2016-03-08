@@ -20,15 +20,15 @@ def test():
     fig, axes = setup_fig('test','x','y1')
     ax2 = add_yaxis(fig,'y2')
     
-    #~ add_line(axes, x, x, 'y = x', colors[0], fill = True)
-    #~ add_line(axes, x, 2*x, 'y = 2x', colors[1], fill = x)
-    #~ add_line(axes, x, x*3, 'y = 3x', colors[2], fill = 2*x)
+    add_line(axes, x, x, 'y = x', colors[0], fill = True)
+    add_line(axes, x, 2*x, 'y = 2x', colors[1], fill = x)
+    add_line(axes, x, x*3, 'y = 3x', colors[2], fill = 2*x)
     
-    #~ add_vertical_line(axes, 3)
+    add_vertical_line(axes, 3,'a line')
     
-    #~ add_line(ax2, x, -1*x, 'y = -x on a second y-axis', colors[3])
+    add_line(ax2, x, -1*x, 'y = -x on a second y-axis', colors[3])
 
-    #~ add_bars(axes, [1,3,5,7,9], [2,4,6,8,10], None, color = colors[4])
+    add_bars(axes, [1,3,5,7,9], [2,4,6,8,10], None, color = colors[4])
     
     # named bars --------------------------------------------------------------
     #~ add_named_bars(axes, ('a', 'b', 'c', 'd', '3'),
@@ -49,10 +49,13 @@ def test():
     #~ plot_dataframe(ax2,df,axes,["d1"])
     # -------------------------------------------------------------------------
     
-    add_bars_2(axes,('a','b','c','d','e'),{'gr1':(1,2,3,4,5),
-                                           'gr2':(3,2,5,7,1),
-                                           'gr3':(5,4,3,2,1),
-                                           'gr4':(5,4,3,2,1)})
+    #~ add_bars_2(axes,('a','b','c','d','e'),{'gr1':(1,2,3,4,5),
+                                           #~ 'gr2':(3,2,5,7,1),
+                                           #~ 'gr3':(5,4,3,2,1),
+                                           #~ 'gr4':(5,4,3,2,1)})
+
+    axes.set_yticklabels(axes.get_yticks(), verticalalignment = 'bottom')
+    ax2.set_yticklabels(ax2.get_yticks(), verticalalignment = 'bottom')
     
     create_legend(fig)
     plt.show()
@@ -61,11 +64,11 @@ def test():
     
     return fig
     
-def test_elec (e_file):
+def test_elec (e_file, com):
     df = read_csv(e_file,comment = '#',index_col = 0)
     df2 = df[['population','total_electricity_consumed [kWh/year]',
               'total_electricity_generation [kWh/year]']]
-    fig, ax = setup_fig('Sand Point Electricity Forecast','years','population')
+    fig, ax = setup_fig( com + ' Electricity Forecast','years','population')
   
     
     ax1 = add_yaxis(fig,'kWh')
@@ -82,10 +85,16 @@ def test_elec (e_file):
     ax1.set_yticklabels(ax1.get_yticks().astype(int),rotation=0)
     fig.subplots_adjust(right=.85)
     fig.subplots_adjust(left=.12)
-    add_vertical_line(ax,2013)
+    add_vertical_line(ax,2015, 'forecasting starts' )
+    
+    ax.set_yticklabels(ax.get_yticks().astype(int), 
+                       verticalalignment = 'bottom')
+    ax1.set_yticklabels(ax1.get_yticks().astype(int),
+                        verticalalignment = 'bottom')
+    
     create_legend(fig)
     plt.show()
-    fig.savefig("Sand_Point.png")
+    fig.savefig(com+".png")
     
 def setup_fig(title, x_label, y_label):
     """
@@ -226,10 +235,10 @@ def create_legend(fig):
         ax.set_position(ax0.get_position())
         
     ax0.legend(lines, labels, 
-               bbox_to_anchor = (0.5, -.31),loc='lower center',
+               bbox_to_anchor = (0.5, -.1),loc='upper center',
                ncol=2)
 
-def add_vertical_line (ax, position):
+def add_vertical_line (ax, position,text = None):
     """
     add a vertical line to the plot
     
@@ -240,6 +249,12 @@ def add_vertical_line (ax, position):
         line is added to axes at potions( x= position)
     """
     ax.axvline(position, color=jet, linestyle='--')
+    if text:
+        ypos = (ax.get_ylim()[1] - ax.get_ylim()[0])*.25 + ax.get_ylim()[0]
+        xpos = (ax.get_xlim()[1] - ax.get_xlim()[0])*.10
+        ax.annotate(text, xy=(position, ypos), xytext=(position +xpos, ypos),
+        arrowprops=dict(facecolor='black', shrink=0.05, width=1,headwidth=4),
+        )
 
 def plot_dataframe(ax, dataframe, 
                    ax0 = None, ax0_cols = None, 
