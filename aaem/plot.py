@@ -177,7 +177,6 @@ def add_bars (ax, nums, heights, label,
 def add_bars_2(ax, categories, values):
     """
     """
-    
     num = len(categories)
     pos = np.arange(num)
     count = 0
@@ -250,7 +249,7 @@ def add_vertical_line (ax, position,text = None):
     """
     ax.axvline(position, color=jet, linestyle='--')
     if text:
-        ypos = (ax.get_ylim()[1] - ax.get_ylim()[0])*.25 + ax.get_ylim()[0]
+        ypos = (ax.get_ylim()[1] - ax.get_ylim()[0])*.10 + ax.get_ylim()[0]
         xpos = (ax.get_xlim()[1] - ax.get_xlim()[0])*.10
         ax.annotate(text, xy=(position, ypos), xytext=(position +xpos, ypos),
         arrowprops=dict(facecolor='black', shrink=0.05, width=1,headwidth=4),
