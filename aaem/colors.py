@@ -35,6 +35,6 @@ colors_0 = [crimson,vermilion,
           amethyst, jet]
 
 
-colors = [red,goldenrod,viridian,cerulean,
+colors = [red,goldenrod,viridian,cobalt,
             vermilion,orange,avacado,blue, 
-          crimson,green,cobalt,amethyst, jet]
+          crimson,green,cerulean,amethyst, jet]

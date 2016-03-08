@@ -20,15 +20,15 @@ def test():
     fig, axes = setup_fig('test','x','y1')
     ax2 = add_yaxis(fig,'y2')
     
-    add_line(axes, x, x, 'y = x', colors[0], fill = True)
-    add_line(axes, x, 2*x, 'y = 2x', colors[1], fill = x)
-    add_line(axes, x, x*3, 'y = 3x', colors[2], fill = 2*x)
+    #~ add_line(axes, x, x, 'y = x', colors[0], fill = True)
+    #~ add_line(axes, x, 2*x, 'y = 2x', colors[1], fill = x)
+    #~ add_line(axes, x, x*3, 'y = 3x', colors[2], fill = 2*x)
     
-    add_vertical_line(axes, 3)
+    #~ add_vertical_line(axes, 3)
     
-    add_line(ax2, x, -1*x, 'y = -x on a second y-axis', colors[3])
+    #~ add_line(ax2, x, -1*x, 'y = -x on a second y-axis', colors[3])
 
-    add_bars(axes, [1,3,5,7,9], [2,4,6,8,10], None, color = colors[4])
+    #~ add_bars(axes, [1,3,5,7,9], [2,4,6,8,10], None, color = colors[4])
     
     # named bars --------------------------------------------------------------
     #~ add_named_bars(axes, ('a', 'b', 'c', 'd', '3'),
@@ -36,9 +36,9 @@ def test():
     #~ # -------------------------------------------------------------------------
     
     #~ # annotations ---------- in development -----------------------------------
-    axes.annotate('a line', xy=(3, 25), xytext=(4, 25.1),
-            arrowprops=dict(facecolor='black', shrink=0.05, width=1,headwidth=4),
-            )
+    #~ axes.annotate('a line', xy=(3, 25), xytext=(4, 25.1),
+            #~ arrowprops=dict(facecolor='black', shrink=0.05, width=1,headwidth=4),
+            #~ )
     #~ # -------------------------------------------------------------------------
     
     # dataframe ---------------------------------------------------------------
@@ -48,6 +48,11 @@ def test():
                     #~ "d3":  [3,4,6,7,8]}).set_index("year")
     #~ plot_dataframe(ax2,df,axes,["d1"])
     # -------------------------------------------------------------------------
+    
+    add_bars_2(axes,('a','b','c','d','e'),{'gr1':(1,2,3,4,5),
+                                           'gr2':(3,2,5,7,1),
+                                           'gr3':(5,4,3,2,1),
+                                           'gr4':(5,4,3,2,1)})
     
     create_legend(fig)
     plt.show()
@@ -61,40 +66,26 @@ def test_elec (e_file):
     df2 = df[['population','total_electricity_consumed [kWh/year]',
               'total_electricity_generation [kWh/year]']]
     fig, ax = setup_fig('Sand Point Electricity Forecast','years','population')
+  
+    
     ax1 = add_yaxis(fig,'kWh')
+    #~ fig, axes = plt.subplots(2,1)
+    #~ plot_dataframe(axes[1],df2,axes[0],['population'],
+                   #~ col_map = {'population':'population',
+                #~ 'total_electricity_consumed [kWh/year]':'consumption',
+                #~ 'total_electricity_generation [kWh/year]':'generation'})
     
     plot_dataframe(ax1,df2,ax,['population'],
-                   col_map = {'population':'population',
+                   column_map = {'population':'population',
                 'total_electricity_consumed [kWh/year]':'consumption',
                 'total_electricity_generation [kWh/year]':'generation'})
     ax1.set_yticklabels(ax1.get_yticks().astype(int),rotation=0)
-    fig.subplots_adjust(right=.87)
+    fig.subplots_adjust(right=.85)
+    fig.subplots_adjust(left=.12)
     add_vertical_line(ax,2013)
     create_legend(fig)
     plt.show()
     fig.savefig("Sand_Point.png")
-    
-def plot_dataframe(ax, dataframe, ax0 = None, ax0_cols = None, col_map = None):
-    c_index = 0
-    keys = set(dataframe.keys())
-    
-    if col_map is None:
-        col_map = {} 
-        for c in keys:
-            col_map[c] = c
-    
-    x = dataframe.index
-    if ax0:
-        for col in ax0_cols:
-            add_line(ax0,x,dataframe[col].values,col_map[col],color=colors[c_index],marker='*')
-            c_index += 1
-        keys = keys.difference(ax0_cols)
-
-    for col in  keys:
-        add_line(ax,x,dataframe[col].values,col_map[col],color=colors[c_index],marker='.')
-        c_index += 1
-            
-    
     
 def setup_fig(title, x_label, y_label):
     """
@@ -107,7 +98,7 @@ def setup_fig(title, x_label, y_label):
     post-conditions:
         returns the figure and the axes 
     """
-    fig, axes = plt.subplots(figsize = (10,8))
+    fig, axes = plt.subplots()
     axes.set_title(title)
     axes.set_xlabel(x_label)
     axes.set_ylabel(y_label, color='black')
@@ -129,7 +120,8 @@ def add_yaxis (fig, label):
     new_ax.set_ylabel(label, color='black')
     return new_ax
 
-def add_line(ax, x, y, label, color=red, marker='o', fill = False):
+def add_line(ax, x, y, label, 
+             color=red, marker='o', fill = False):
     """
     add a line to the axes 
     
@@ -145,15 +137,15 @@ def add_line(ax, x, y, label, color=red, marker='o', fill = False):
     post:
         line is plotted on axis
     """
-    ax.plot(x, y, label = label, color = color, marker = marker)
+    ax.plot(x, y, label = label, color = color, marker = marker, linewidth=1.5)
     
     if type(fill) is not bool or fill == True:
         if type(fill) is bool:
             fill = 0
         ax.fill_between(x,y,fill,color=color, alpha = .5)
 
-def add_bars (ax, nums, heights, label, width = 1, 
-              color = red, direction = 'vertical', error = None):
+def add_bars (ax, nums, heights, label, 
+              width = 1, color = red, direction = 'vertical', error = None):
     """
     add bars to axes 
     
@@ -172,6 +164,21 @@ def add_bars (ax, nums, heights, label, width = 1,
         ax.barh(nums, heights, width, label=label, color = color, yerr = error)
     else:
         ax.bar(nums, heights, width, label=label, color = color, yerr = error)
+        
+def add_bars_2(ax, categories, values):
+    """
+    """
+    
+    num = len(categories)
+    pos = np.arange(num)
+    count = 0
+    width = .80/len(values) 
+    for key in values:
+        ax.bar(.10+ pos + count*width, values[key],width,
+               color = colors[count],label = key) 
+        count += 1
+    ax.set_xticks(.10+ pos + .8/2)
+    ax.set_xticklabels(categories)
     
 def add_named_bars (ax, categories, values, label, 
                     color=red, direction = 'horizontal'):
@@ -233,3 +240,47 @@ def add_vertical_line (ax, position):
         line is added to axes at potions( x= position)
     """
     ax.axvline(position, color=jet, linestyle='--')
+
+def plot_dataframe(ax, dataframe, 
+                   ax0 = None, ax0_cols = None, 
+                   column_map = None):
+    """
+        Plots the columns in a pandas.DataFrame on ax. If ax0 and ax0_cols are 
+    provided dataframe[ax0_cols] will be plotted on ax0 before all columns not 
+    in ax0_cols are plotted on ax.
+    
+    pre:
+        ax: <matplotlib axes> axes to plot on
+        dataframe: <pandas.DataFrame> dataframe to plot. 
+                   Values in columns must be numbers.
+        ax0: (optional) <matplotlib axes> axes to plot on. 
+        ax0_cols: (optional) <list like> columns to plot on ax0
+        column_map: (optional) <dict> map of column names to labels
+        
+    post:
+        Plots the columns in a pandas.DataFrame on ax. If ax0 and ax0_cols are 
+    provided dataframe[ax0_cols] will be plotted on ax0 before all columns not 
+    in ax0_cols are plotted on ax.
+    """
+    c_index = 0
+    keys = set(dataframe.keys())
+    
+    if column_map is None:
+        column_map = {} 
+        for c in keys:
+            column_map[c] = c
+    
+    x = dataframe.index
+    if ax0:
+        for col in ax0_cols:
+            add_line(ax0,x,dataframe[col].values,column_map[col],
+                           color=colors[c_index],marker='o')
+            c_index += 1
+        ax0.set_ylabel(ax0.get_ylabel()+' (circles)')
+        keys = keys.difference(ax0_cols)
+
+    for col in  keys:
+        add_line(ax,x,dataframe[col].values,column_map[col],
+                      color=colors[c_index],marker='^')
+        c_index += 1
+    ax.set_ylabel(ax.get_ylabel()+' (triangles)')
