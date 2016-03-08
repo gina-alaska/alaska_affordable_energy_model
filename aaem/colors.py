@@ -28,11 +28,13 @@ jet = [52/255.0,52/255.0,52/255.0]
 yellow = goldenrod
 violet = amethyst 
 
-colors = [crimson,vermilion,
+colors_0 = [crimson,vermilion,
           red, orange, goldenrod, 
           viridian, avacado, green,
           cerulean, blue, cobalt, 
           amethyst, jet]
 
 
-    
+colors = [red,goldenrod,viridian,cerulean,
+            vermilion,orange,avacado,blue, 
+          crimson,green,cobalt,amethyst, jet]
