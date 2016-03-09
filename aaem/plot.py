@@ -174,8 +174,18 @@ def add_bars (ax, nums, heights, label,
     else:
         ax.bar(nums, heights, width, label=label, color = color, yerr = error)
         
-def add_bars_2(ax, categories, values):
+def add_vertical_bars(ax, categories, values):
     """
+    create a bar graph with vertical bars 
+    
+    pre:
+        ax: <matplotlib axes> axes to plot on
+        categories: <list> list of categories to plot
+        values: <dict> a dictionary of sets of values. {"label 1":[values],
+                                                        "label 2":[values],
+                                                        ...}
+    post:
+        plots a bar graph on ax
     """
     num = len(categories)
     pos = np.arange(num)
