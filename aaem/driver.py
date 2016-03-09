@@ -5,6 +5,7 @@ driver.py
 """
 from community_data import CommunityData
 from forecast import Forecast
+import plot
 from diagnostics import diagnostics
 from preprocessor import preprocess, MODEL_FILES
 import defaults
@@ -620,6 +621,7 @@ def create_generation_forecast (models, path):
     gen_fc = None
     nat_gas = False
     name = models[0].cd.get_item('community', 'name')
+    population = models[0].fc.population
     for idx in range(len(models)):
         if idx == 0:
             
@@ -714,9 +716,57 @@ def create_generation_forecast (models, path):
     
     gen_fc["community"] = name
     order =  [gen_fc.columns[-1]] + gen_fc.columns[:-1].values.tolist()
+    
+    gen_fc = concat([population.astype(int),gen_fc], axis=1)
+    
+    
+    order.insert(1,"population")
     gen_fc.index = gen_fc.index.values.astype(int)
     gen_fc = gen_fc.fillna(0).ix[2003:]
+   
+    png_list = ['population',
+    'generation_total [mmbtu/year]',
+    'generation_diesel [mmbtu/year]',
+    'generation_hydro [mmbtu/year]',
+    'generation_natural_gas [mmbtu/year]',
+    'generation_wind [mmbtu/year]',
+    'generation_solar [mmbtu/year]',
+    'generation_biomass [mmbtu/year]']
     
+    png_dict = {'population':'population',
+    'generation_total [mmbtu/year]':'total',
+    'generation_diesel [mmbtu/year]':'diesel',
+    'generation_hydro [mmbtu/year]':'hydro',
+    'generation_natural_gas [mmbtu/year]':'natural gas',
+    'generation_wind [mmbtu/year]':'wind',
+    'generation_solar [mmbtu/year]':'solar',
+    'generation_biomass [mmbtu/year]':'biomass'}
+    
+    temp = []
+    for i in png_list:
+        if  all(gen_fc[i] == 0):
+            continue
+        temp.append(i)
+    png_list = temp
+    
+    df2 = gen_fc[png_list]
+    plot_name = name + ' Generation Forecast'
+    
+    fig, ax = plot.setup_fig(plot_name ,'years','population')
+    ax1 = plot.add_yaxis(fig,'Generation MMBtu')
+    
+    plot.plot_dataframe(ax1,df2,ax,['population'],png_dict)
+    fig.subplots_adjust(right=.85)
+    fig.subplots_adjust(left=.12)
+    start = models[0].\
+            fc.p_map[models[0].fc.p_map['population_qualifier'] == 'P'].index[0]
+    plot.add_vertical_line(ax,start, 'forecasting starts' )
+
+
+    plot.create_legend(fig,.20)
+    plot.save(fig,os.path.join(path,'images',
+                            name.replace(" ",'_') + "_generation_forecast.png"))
+
     out_file = os.path.join(path,
                             name.replace(" ",'_') + "_generation_forecast.csv")
     fd = open(out_file, 'w')
