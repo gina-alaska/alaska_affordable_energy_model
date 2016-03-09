@@ -83,7 +83,7 @@ class AnnualSavings (object):
         self.net_npv = np.npv(rate, np.append(yts, self.annual_net_benefit))
         
     
-    def set_project_life_details (self, start_year, project_life):
+    def set_project_life_details (self, start_year, project_life,fc_period = 25):
         """
         set the details for the project life time(
         pre:
@@ -95,6 +95,7 @@ class AnnualSavings (object):
         """
         self.start_year = start_year
         self.project_life = project_life 
+        self.forecast_period = fc_period
         self.end_year = self.start_year + self.project_life
         
     def get_diesel_prices (self):
