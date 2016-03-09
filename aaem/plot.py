@@ -58,9 +58,9 @@ def test():
     ax2.set_yticklabels(ax2.get_yticks(), verticalalignment = 'bottom')
     
     create_legend(fig)
-    plt.show()
-    
-    fig.savefig("polt_test.png")
+    #~ plt.show()
+    show(fig)
+    save(fig, "polt_test.png")
     
     return fig
     
@@ -308,3 +308,32 @@ def plot_dataframe(ax, dataframe,
                       color=colors[c_index],marker='^')
         c_index += 1
     ax.set_ylabel(ax.get_ylabel()+' (triangles)')
+
+def save (fig, filename):
+    """ 
+    saves the figure
+    
+    pre: 
+        fig: <matplotlib figure> the figure to save
+        filename: <string> a file name that is a valid image type
+    psot:
+        the figure is saved as filename
+    """
+    axes = fig.get_axes()
+    for ax in axes:
+        ax.set_yticklabels(ax.get_yticks().astype(int), 
+                       verticalalignment = 'bottom')
+    fig.savefig(filename)
+    
+def show (fig):
+    """
+    show the figure to the screen. can olny be done once
+    
+    pre: 
+        fig: <matplotlib figure> the figure to save
+    post:
+        figure is displayed.
+    """
+    fig.show()
+    
+    
