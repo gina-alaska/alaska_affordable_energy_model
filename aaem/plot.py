@@ -222,7 +222,7 @@ def add_named_bars (ax, categories, values, label,
         ax.set_yticks(pos)
         ax.set_yticklabels(categories)
         
-def create_legend(fig):
+def create_legend(fig,space = .15):
     """
     create a legend form the line labels and place it below the plot
     
@@ -236,7 +236,7 @@ def create_legend(fig):
     ax0 = axes[0]
     lines, labels = ax0.get_legend_handles_labels()
     pos = ax0.get_position()
-    ax0.set_position([pos.x0, pos.y0+.15*pos.height, pos.width, pos.height*.85])
+    ax0.set_position([pos.x0, pos.y0+space*pos.height, pos.width, pos.height*(1-space)])
     
     for ax in axes[1:]:
         lines += ax.get_legend_handles_labels()[0]

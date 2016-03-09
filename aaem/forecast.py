@@ -268,10 +268,12 @@ class Forecast (object):
         post:
             saves 3 files
         """
-        path += self.cd.get_item("community","name").replace(" ", "_") + "_"
-        self.save_electric(path)
-        self.save_heat_demand(path)
-        self.save_heating_fuel(path)
+        tag = self.cd.get_item("community", "name").replace(" ", "_") + "_"
+        pathrt = os.path.join(path, tag)
+        os.makedirs(os.path.join(path,"images"))
+        self.save_electric(pathrt, os.path.join(path,"images",tag))
+        self.save_heat_demand(pathrt, os.path.join(path,"images",tag))
+        self.save_heating_fuel(pathrt, os.path.join(path,"images",tag))
 
     
     def add_heat_demand_column (self, key, year_col, data_col):
@@ -325,7 +327,7 @@ class Forecast (object):
             
     
     
-    def save_electric (self, path):
+    def save_electric (self, csv_path, png_path):
         """ 
         save the electric forecast
         
@@ -337,8 +339,8 @@ class Forecast (object):
             a file, electricity_forecast.csv, is save in the output directory.
         """
         self.generate_electric_output_dataframe()
-        self.save_electric_csv(path)
-        self.save_electric_png(path)
+        self.save_electric_csv(csv_path)
+        self.save_electric_png(png_path)
         
 
 
@@ -361,7 +363,9 @@ class Forecast (object):
                                  "forecast is suspect not saving summary(csv)"))
             return
         data = self.electric_dataframe
-        f_name = path + "electricity_forecast.csv"
+        #not joining path adding file name
+        f_name = path + "electricity_forecast.csv" 
+        
         fd = open(f_name ,"w")
         fd.write("# Electricity Forecast for " + \
                                     self.cd.get_item("community","name") + "\n")
@@ -382,50 +386,35 @@ class Forecast (object):
                                  "generation/consumption data. Electricity "
                                  "forecast is suspect not saving summary(png)"))
             return
-        path = path + "electricity_forecast.png"
-        
+            
+        path = path+ "electricity_forecast.png"
+        start = self.p_map[self.p_map['population_qualifier'] == 'P'].index[0]
         df2 = self.electric_dataframe[['population',
                                     'total_electricity_consumed [kWh/year]',
                                     'total_electricity_generation [kWh/year]']]
-        fig, ax = plot.setup_fig( self.cd.get_item("community","name") + ' Electricity Forecast','years','population')
-      
+        name = self.cd.get_item("community","name") + ' Electricity Forecast'
         
+        fig, ax = plot.setup_fig(name ,'years','population')
         ax1 = plot.add_yaxis(fig,'kWh')
         
         plot.plot_dataframe(ax1,df2,ax,['population'],
                        column_map = {'population':'population',
                     'total_electricity_consumed [kWh/year]':'consumption',
                     'total_electricity_generation [kWh/year]':'generation'})
-        ax1.set_yticklabels(ax1.get_yticks().astype(int),rotation=0)
         fig.subplots_adjust(right=.85)
         fig.subplots_adjust(left=.12)
-        #add_vertical_line(ax,2015, 'forecasting starts' )
+        plot.add_vertical_line(ax,start, 'forecasting starts' )
     
-        ax.set_yticklabels(ax.get_yticks().astype(int), 
-        verticalalignment = 'bottom')
-        ax1.set_yticklabels(ax1.get_yticks().astype(int),
-                        verticalalignment = 'bottom')
     
         plot.create_legend(fig)
-        #~ plt.show()
-        fig.savefig(path)
+        plot.save(fig,path)
     
-    
-    def save_heat_demand (self, path):
+    def generate_heat_demand_dataframe (self):
         """
-        save the heat demand forecast
-        
-        pre:
-            self.population should be a dataframe. self.heat_demad_cols should 
-        be populated using add_heat_demad_column. path should be the path to the
-        output directory.
-        post:
-            a file, heat_demand_forecast.csv, is save in the output directory.
         """
-        f_name = path + "heat_demand_forecast.csv"
         data = concat([self.population.round().astype(int), self.p_map] + \
-												self.heat_demand_cols,axis=1)
-
+                                                self.heat_demand_cols,axis=1) 
+    
         for key in data.keys():
             try:
                 col = data[key]
@@ -451,8 +440,26 @@ class Forecast (object):
                 data[key] = col.round()
             except (TypeError, AttributeError):
                 pass
+        self.heat_demand_dataframe = data
+    def save_heat_demand (self,csv_path, png_path):
+        """ Function doc """
+        self.generate_heat_demand_dataframe()
+        self.save_heat_demand_csv(csv_path)
+        self.save_heat_demand_png(png_path)
+    
+    def save_heat_demand_csv (self, path):
+        """
+        save the heat demand forecast
         
-        
+        pre:
+            self.population should be a dataframe. self.heat_demad_cols should 
+        be populated using add_heat_demad_column. path should be the path to the
+        output directory.
+        post:
+            a file, heat_demand_forecast.csv, is save in the output directory.
+        """
+        f_name = path + "heat_demand_forecast.csv"
+        data =  self.heat_demand_dataframe      
         fd = open(f_name ,"w")
         fd.write("# Heat Demand Forecast for " + \
                                     self.cd.get_item("community","name") + "\n")
@@ -464,19 +471,38 @@ class Forecast (object):
         data.index = data.index.values.astype(int)
         data.to_csv(f_name, index_label="year", mode = 'a')
         
-    
-    def save_heating_fuel (self, path):
+    def save_heat_demand_png(self,path):
         """
-        save the heating fuel 
+        """
+        path = path+ "heat_demand_forecast.png"
+        start = self.p_map[self.p_map['population_qualifier'] == 'P'].index[0]
+        df2 = self.heat_demand_dataframe[['population',
+                            'heat_energy_demand_residential [mmbtu/year]',
+                            'heat_energy_demand_water-wastewater [mmbtu/year]',
+                            'heat_energy_demand_non-residential [mmbtu/year]',
+                            'heat_energy_demand_total [mmbtu/year]']]
+        name = self.cd.get_item("community","name") + ' Heat Demand Forecast'
         
-        pre:
-            self.population should be a dataframe. self.heat_demad_cols should 
-        be populated using add_heating_fuel_column. path should be the path to 
-        the output directory. 
-        post:
-            a file, heating_fuel_forecast.csv, is save in the output directory.
-        """
-        f_name = path + "heating_fuel_forecast.csv"
+        fig, ax = plot.setup_fig(name ,'years','population')
+        ax1 = plot.add_yaxis(fig,'Heat Demand MMBtu')
+        
+        plot.plot_dataframe(ax1,df2,ax,['population'],
+            {'population':'population',
+        'heat_energy_demand_residential [mmbtu/year]':'residential',
+        'heat_energy_demand_water-wastewater [mmbtu/year]':'water & wastewater',
+        'heat_energy_demand_non-residential [mmbtu/year]':'non-residential',
+                        'heat_energy_demand_total [mmbtu/year]':'total'})
+        fig.subplots_adjust(right=.85)
+        fig.subplots_adjust(left=.12)
+        plot.add_vertical_line(ax,start, 'forecasting starts' )
+    
+    
+        plot.create_legend(fig,.2)
+        plot.save(fig,path)
+        
+    
+    def generate_heating_fuel_dataframe(self):
+        """ """
         data = concat([self.population.round().astype(int), self.p_map] + \
                                                 self.heating_fuel_cols, axis=1)
                                                 
@@ -519,6 +545,27 @@ class Forecast (object):
                 data[key] = col.round()
             except (TypeError, AttributeError):
                 pass
+        self.heating_fuel_dataframe = data
+    
+    def save_heating_fuel(self, csv_path, png_path):
+        """ """
+        self.generate_heating_fuel_dataframe()
+        self.save_heating_fuel_csv(csv_path)
+        self.save_heating_fuel_png(png_path)
+    
+    def save_heating_fuel_csv (self, path):
+        """
+        save the heating fuel 
+        
+        pre:
+            self.population should be a dataframe. self.heat_demad_cols should 
+        be populated using add_heating_fuel_column. path should be the path to 
+        the output directory. 
+        post:
+            a file, heating_fuel_forecast.csv, is save in the output directory.
+        """
+        f_name = path + "heating_fuel_forecast.csv"
+        data = self.heating_fuel_dataframe
         
         fd = open(f_name ,"w")
         fd.write("# Heating Fuel Forecast for " + \
@@ -540,6 +587,50 @@ class Forecast (object):
                 pass
         data.index = data.index.values.astype(int)
         data.to_csv(f_name, index_label="year", mode = 'a')
+        
+    def save_heating_fuel_png (self, path):
+        """"""
+        path = path+ "heating_fuel_forecast.png"
+        start = self.p_map[self.p_map['population_qualifier'] == 'P'].index[0]
+        df2 = self.heating_fuel_dataframe[["population",
+            "heating_fuel_residential_consumed [mmbtu/year]",
+            "cords_wood_residential_consumed [mmbtu/year]",
+            "gas_residential_consumed [mmbtu/year]",
+            "electric_residential_consumed [mmbtu/year]",
+            "propane_residential_consumed [mmbtu/year]",
+            "heating_fuel_water-wastewater_consumed [mmbtu/year]",
+            "heating_fuel_non-residential_consumed [mmbtu/year]",
+            "heating_fuel_total_consumed [mmbtu/year]"]]
+
+        name = self.cd.get_item("community","name") + ' Heat Demand Forecast'
+        
+        fig, ax = plot.setup_fig(name ,'years','population')
+        ax1 = plot.add_yaxis(fig,'Heat Demand MMBtu')
+        
+        plot.plot_dataframe(ax1,df2,ax,['population'],
+            {"population":'population',
+            "heating_fuel_residential_consumed [mmbtu/year]":
+                    'heating oil - residential',
+            "cords_wood_residential_consumed [mmbtu/year]":
+                    'wood - residential',
+            "gas_residential_consumed [mmbtu/year]":
+                    'natural gas - residential',
+            "electric_residential_consumed [mmbtu/year]":
+                    'electric - residential',
+            "propane_residential_consumed [mmbtu/year]":
+                    'propane - residential',
+            "heating_fuel_water-wastewater_consumed [mmbtu/year]":
+                    'heating oil - water wastewater',
+            "heating_fuel_non-residential_consumed [mmbtu/year]":
+                    'heating oil - non - residential',
+            "heating_fuel_total_consumed [mmbtu/year]":'total'})
+        fig.subplots_adjust(right=.85)
+        fig.subplots_adjust(left=.12)
+        plot.add_vertical_line(ax,start, 'forecasting starts' )
+    
+    
+        plot.create_legend(fig,.30)
+        plot.save(fig,path)
        
 
 def test ():
