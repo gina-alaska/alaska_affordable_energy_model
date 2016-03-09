@@ -8,6 +8,7 @@ created: 2015/09/18
 from community_data import CommunityData
 from diagnostics import diagnostics
 import constants
+import plot
 
 import numpy as np
 from pandas import DataFrame, read_csv, concat
@@ -297,19 +298,10 @@ class Forecast (object):
         self.heating_fuel_cols.append(DataFrame({"year":year_col, 
                                            key:data_col}).set_index("year"))
     
-    def save_electric (self, path):
-        """ 
-        save the electric forecast
-        
-        pre:
-            self.population, consumption, and generation. should be dataframes 
-        as calculated in this class. path should be the path to the output 
-        directory.
-        post:
-            a file, electricity_forecast.csv, is save in the output directory.
+    
+    def generate_electric_output_dataframe (self):
         """
-        f_name = path + "electricity_forecast.csv"
-        
+        """
         kWh_con = self.consumption
         kWh_con.columns = ["total_electricity_consumed [kWh/year]"]
         c_map = copy.deepcopy(self.c_map)
@@ -324,16 +316,52 @@ class Forecast (object):
         community.columns = ["community"]
         community.ix[:] = self.cd.get_item("community","name")
         try:
-            data = concat([community,self.population.round().astype(int), 
+            self.electric_dataframe = \
+                    concat([community,self.population.round().astype(int), 
                            self.p_map, kWh_con.round().astype(int), c_map, 
                            kWh_gen.round().astype(int), g_map] ,axis=1)
         except ValueError:
+            self.electric_dataframe = None
+            
+    
+    
+    def save_electric (self, path):
+        """ 
+        save the electric forecast
+        
+        pre:
+            self.population, consumption, and generation. should be dataframes 
+        as calculated in this class. path should be the path to the output 
+        directory.
+        post:
+            a file, electricity_forecast.csv, is save in the output directory.
+        """
+        self.generate_electric_output_dataframe()
+        self.save_electric_csv(path)
+        self.save_electric_png(path)
+        
+
+
+    def save_electric_csv (self, path):
+        """ 
+        save the electric forecast
+        
+        pre:
+            self.population, consumption, and generation. should be dataframes 
+        as calculated in this class. path should be the path to the output 
+        directory.
+        post:
+            a file, electricity_forecast.csv, is save in the output directory.
+        """
+
+        if self.electric_dataframe is None:
             self.diagnostics.add_warning("Forecast", 
                                 ("when saving null values were found in "
                                  "generation/consumption data. Electricity "
-                                 "forecast is suspect not saving summary"))
+                                 "forecast is suspect not saving summary(csv)"))
             return
-                       
+        data = self.electric_dataframe
+        f_name = path + "electricity_forecast.csv"
         fd = open(f_name ,"w")
         fd.write("# Electricity Forecast for " + \
                                     self.cd.get_item("community","name") + "\n")
@@ -345,6 +373,42 @@ class Forecast (object):
             
         data.index = data.index.values.astype(int)
         data.to_csv(f_name, index_label="year", mode = 'a')
+    
+    def save_electric_png (self, path):
+        """ Function doc """
+        if self.electric_dataframe is None:
+            self.diagnostics.add_warning("Forecast", 
+                                ("when saving null values were found in "
+                                 "generation/consumption data. Electricity "
+                                 "forecast is suspect not saving summary(png)"))
+            return
+        path = path + "electricity_forecast.png"
+        
+        df2 = self.electric_dataframe[['population',
+                                    'total_electricity_consumed [kWh/year]',
+                                    'total_electricity_generation [kWh/year]']]
+        fig, ax = plot.setup_fig( self.cd.get_item("community","name") + ' Electricity Forecast','years','population')
+      
+        
+        ax1 = plot.add_yaxis(fig,'kWh')
+        
+        plot.plot_dataframe(ax1,df2,ax,['population'],
+                       column_map = {'population':'population',
+                    'total_electricity_consumed [kWh/year]':'consumption',
+                    'total_electricity_generation [kWh/year]':'generation'})
+        ax1.set_yticklabels(ax1.get_yticks().astype(int),rotation=0)
+        fig.subplots_adjust(right=.85)
+        fig.subplots_adjust(left=.12)
+        #add_vertical_line(ax,2015, 'forecasting starts' )
+    
+        ax.set_yticklabels(ax.get_yticks().astype(int), 
+        verticalalignment = 'bottom')
+        ax1.set_yticklabels(ax1.get_yticks().astype(int),
+                        verticalalignment = 'bottom')
+    
+        plot.create_legend(fig)
+        #~ plt.show()
+        fig.savefig(path)
     
     
     def save_heat_demand (self, path):
