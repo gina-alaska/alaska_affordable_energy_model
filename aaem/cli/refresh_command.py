@@ -118,13 +118,13 @@ class RefreshCommand(pycommand.CommandBase):
         try:
             fd = open(os.path.join(model_root,'setup','raw_data',"VERSION"),'r')
             ver = fd.read().replace("\n","")
-            ver = 'm'+ __version__ +'_c' +ver
+            ver = 'm'+ __version__ +'_d' +ver
             fd.close()
         except IOError:
             ver = "unknown_version_created_"+ datetime.strftime(datetime.now(),
                                                                     "%Y%m%d")
         
-        driver.setup(coms, raw, model_root, run_name = "run_"+ver,
+        driver.setup(coms, raw, model_root, run_name = ver,
                      setup_intertie = interties)
         
         
