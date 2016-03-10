@@ -66,36 +66,47 @@ class AnnualSavings (object):
         clacualte the NPV net benfit
         pre:
             rate: should be the savings rate 
-            self.annual_net_benefit is  an array of the annual monetary benefit over 
-        projects life time
+            self.annual_net_benefit is  an array of the annual monetary benefit 
+        over projects life time
         post:
             self.net_npv, self.benefit_npv, slef.cost_npv is a dollar value
             self.benefit_cost_ratio is a ratio 
         """
+        # These need to be calculated for the actual project life
+        end = self.actual_project_life
+        
+        
         # number of arrays as zero ($ value) until project start
         yts = np.zeros((self.start_year - current_year)+1)
 
-        
         self.benefit_npv = np.npv(rate, 
-                                    np.append(yts, self.annual_total_savings))
-        self.cost_npv = np.npv(rate, np.append(yts, self.annual_costs))
+                           np.append(yts, self.annual_total_savings[:end]))
+        self.cost_npv = np.npv(rate, np.append(yts, self.annual_costs[:end]))
         self.benefit_cost_ratio = self.benefit_npv/self.cost_npv 
-        self.net_npv = np.npv(rate, np.append(yts, self.annual_net_benefit))
+        self.net_npv = np.npv(rate, 
+                       np.append(yts, self.annual_net_benefit[:end]))
         
     
-    def set_project_life_details (self, start_year, project_life):
+    def set_project_life_details (self, start_year,project_life,fc_period = 25):
         """
         set the details for the project life time(
         pre:
             start_year is an int represnting a year
-            projct life is the number(int >0) of years 
+            projct life: is the number(int >0) of years (<= fc_period) 
+            fc_period: <int> length of forecast period
         post:
             self.start_year, and self.project_life are the input values
         and self.end_year would be the year the project ends.
         """
         self.start_year = start_year
-        self.project_life = project_life 
-        self.end_year = self.start_year + self.project_life
+        
+        # do caclulations for whole forecast period & only save project life
+        self.project_life = fc_period 
+        self.end_year = self.start_year + self.project_life 
+        
+        # remember the actual lifetime
+        self.actual_project_life = project_life
+        self.actual_end_year = self.start_year + project_life - 1
         
     def get_diesel_prices (self):
         """
@@ -358,13 +369,13 @@ class AnnualSavings (object):
         fin_str = "Enabled" if self.cd["model financial"] else "Disabled"
         fd = open(fname, 'w')
         fd.write(("# " + self.component_name + " model outputs\n"
-                  "# Finacial Component: " + fin_str + '\n'
-                  "# --- Cost Benefit Information ---\n"
-                  "# NPV Benefits: " + str(self.get_NPV_benefits()) + '\n'
-                  "# NPV Cost: " + str(self.get_NPV_costs()) + '\n'
-                  "# NPV Net Benefit: " + str(self.get_NPV_net_benefit()) + '\n'
-                  "# Benefit Cost Ratio: " + str(self.get_BC_ratio()) + '\n'
-                  "# --------------------------------\n"
+                  #~ "# Finacial Component: " + fin_str + '\n'
+                  #~ "# --- Cost Benefit Information ---\n"
+                  #~ "# NPV Benefits: " + str(self.get_NPV_benefits()) + '\n'
+                  #~ "# NPV Cost: " + str(self.get_NPV_benefits()) + '\n'
+                  #~ "# NPV Net Benefit: " + str(self.get_NPV_benefits()) + '\n'
+                  #~ "# Benefit Cost Ratio: " + str(self.get_BC_ratio()) + '\n'
+                  #~ "# --------------------------------\n"
               "# year: year for projection \n"
               "# Heating Fuel Use Baseline: Gallons Heating "
                                             "Fuel used with no retrofits \n"
@@ -387,106 +398,16 @@ class AnnualSavings (object):
               "# Net Benefit: benefit from retrofits\n"
                   )) 
         fd.close()
-        df[ol].to_csv(fname, index_label="year", mode = 'a')
-
-    def save_electric_csv (self, directory):
-        """
-        save electric for cast values
-        pre:
-            directory should exist
-        post:
-            <comp_name>_electric_forecast.csv is saved
-        """
-        years = np.array(range(self.project_life)) + self.start_year
-        base_cost = self.get_base_kWh_cost()
-        rfit_cost = self.get_refit_kWh_cost()
-        save_cost = self.get_electric_savings_costs()
-        base_use = self.get_base_kWh_use()
-        rfit_use = self.get_refit_kWh_use()
-        save_use = base_use - rfit_use 
-        df = DataFrame({"baseline cost": base_cost,
-                        "proposed cost": rfit_cost,
-                        "cost savings": save_cost,
-                        "baseline consumption": base_use,
-                        "proposed consumption": rfit_use,
-                        "consumption savings": save_use,},
-                        years)
-        fname = directory + self.component_name + "_electric_forecast.csv"
-        fname = fname.replace(" ","_")
-        fd = open(fname, 'w')
-        fd.write("# " + self.component_name +\
-                 "electric cost & consumption forecast\n")
-        fd.write("# costs in dollars, consumption in kWh\n")
-        fd.close()
-        df.to_csv(fname, columns = ["baseline cost", "proposed cost",
-                                    "cost savings", "baseline consumption",
-                                "proposed consumption", "consumption savings"], 
-                                 index_label="year", mode = 'a')
-
-    def save_heating_csv (self, directory):
-        """
-        save heating for cast values
-        pre:
-            directory should exist
-        post:
-            <comp_name>_heating_forecast.csv is saved
-        """
-        years = np.array(range(self.project_life)) + self.start_year
-        base_cost = self.get_base_HF_cost()
-        rfit_cost = self.get_refit_HF_cost()
-        save_cost = self.get_heating_savings_costs()
-        base_use = self.get_base_HF_use()
-        rfit_use = self.get_refit_HF_use()
-        save_use = base_use - rfit_use 
-        df = DataFrame({"baseline cost": base_cost,
-                        "proposed cost": rfit_cost,
-                        "cost savings": save_cost,
-                        "baseline consumption": base_use,
-                        "proposed consumption": rfit_use,
-                        "consumption savings": save_use,},
-                        years)
-        fname = directory + self.component_name + "_heating_forecast.csv"
-        fname = fname.replace(" ","_")
-        fd = open(fname, 'w')
-        fd.write("# " + self.component_name +\
-                                "heating cost & consumption forecast\n")
-        fd.write("# costs in dollars, consumption in gallons heating fuel\n")
-        fd.close()
-        df.to_csv(fname, columns = ["baseline cost", "proposed cost",
-                                    "cost savings", "baseline consumption",
-                                "proposed consumption", "consumption savings"], 
-                                 index_label="year", mode = 'a')
-                                
-    def save_financial_csv (self, directory):
-        """
-        save finical csv
-        pre:
-            directory should exist
-        post:
-            <comp_name>_financial_forecast.csv is saved
-        """
-        years = np.array(range(self.project_life)) + self.start_year
-        df = DataFrame({"capital cost": self.get_capital_costs(),
-                     "electric cost savings": self.get_electric_savings_costs(),
-                     "heating cost savings": self.get_heating_savings_costs(),
-                       "total cost savings": self.get_total_savings_costs(),
-                        "net benefit": self.get_net_beneft(),
-                        }, years)
-        fname = directory + self.component_name + "_financial_forecast.csv"
-        fname = fname.replace(" ","_")
-        fd = open(fname, 'w')
-        fd.write("# " + self.component_name + "_financial_forecast\n")
-        fd.write("benefit cost ratio: " + str(self.get_BC_ratio()) +"\n")
-        fd.close()
         
-        df.to_csv(fname, columns = ["capital cost", "electric cost savings",
-                                "heating cost savings", "total cost savings",
-                                "net benefit"],
-                                 index_label="year", mode = 'a')
-        ll = "NPV,"+ str(self.get_NPV_costs()) +",,," +\
-             str(self.get_NPV_benefits()) +\
-             "," + str(self.get_NPV_net_benefit()) + '\n'
+        # save npv stuff
+        df2 = DataFrame([self.get_NPV_benefits(),self.get_NPV_benefits(),
+                            self.get_NPV_benefits(),self.get_BC_ratio()],
+                       ['NPV Benefits','NPV Cost',
+                            'NPV Net Benefit','Benefit Cost Ratio'])
+        df2.to_csv(fname, header = False, mode = 'a')
         
-        fd = open(fname, 'a')
-        fd.write(ll)
-        fd.close()
+        # save to end of project(actual lifetime)
+        df[ol].ix[:self.actual_end_year].to_csv(fname, index_label="year", 
+                                                                    mode = 'a')
+                                                                    
+

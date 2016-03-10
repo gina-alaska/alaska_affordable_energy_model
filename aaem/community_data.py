@@ -59,23 +59,6 @@ class CommunityData (object):
                       data_dir))
         self.calc_non_fuel_electricty_price ()
         self.check_auto_disable_conditions ()
-        self.update_project_lifetime ()
-        
-    def update_project_lifetime (self):
-        """ 
-        updates the project lifetime to be until the end of the forecast period
-        
-        pre:
-            self.model_inputs should be initilized
-        post:
-            project lifetimes are integers > 0
-        """
-        end = self.get_item('forecast', 'end year')
-        for each in self.model_inputs:
-            if 'lifetime' in self.model_inputs[each].keys():
-                start = self.get_item(each, 'start year')
-                self.set_item(each, 'lifetime', end - start)
-        
     
     def check_auto_disable_conditions  (self):
         """

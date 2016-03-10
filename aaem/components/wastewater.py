@@ -54,16 +54,18 @@ class WaterWastewaterSystems (AnnualSavings):
         
         self.cd = community_data.get_section('community')
         self.comp_specs = community_data.get_section('water wastewater')
+        self.forecast = forecast
         
         self.set_project_life_details(self.comp_specs["start year"],
-                                      self.comp_specs["lifetime"])
+                                      self.comp_specs["lifetime"],
+                        self.forecast.end_year - self.comp_specs["start year"])
         
         average = self.comp_specs['average refit cost']
         mult = community_data.get_item('construction multipliers',
                                        self.cd["region"])  
         self.cost_per_person = average * mult 
         
-        self.forecast = forecast
+        
         
         self.hdd = self.cd["HDD"]
         self.pop = self.forecast.base_pop

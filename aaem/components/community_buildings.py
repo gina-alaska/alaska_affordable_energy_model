@@ -72,7 +72,8 @@ class CommunityBuildings (AnnualSavings):
         self.refit_cost_rate = self.comp_specs['average refit cost'] * \
       community_data.get_section('construction multipliers')[self.cd["region"]]
         self.set_project_life_details(self.comp_specs["start year"],
-                                      self.comp_specs["lifetime"])
+                                      self.comp_specs["lifetime"],
+                        self.forecast.end_year - self.comp_specs["start year"])
                                       
         
         
