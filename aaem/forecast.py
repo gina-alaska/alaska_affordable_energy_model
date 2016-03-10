@@ -270,8 +270,9 @@ class Forecast (object):
         path += self.cd.get_item("community","name").replace(" ", "_") + "_"
         if self.cd.intertie != 'child':
             self.save_electric(path)
-        self.save_heat_demand(path)
-        self.save_heating_fuel(path)
+        if self.cd.intertie != 'parent':
+            self.save_heat_demand(path)
+            self.save_heating_fuel(path)
 
     
     def add_heat_demand_column (self, key, year_col, data_col):
