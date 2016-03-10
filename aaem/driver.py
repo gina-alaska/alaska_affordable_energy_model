@@ -25,7 +25,7 @@ import sys
 
 comp_lib = {
     "residential buildings": "residential_buildings",
-    "community buildings": "community_buildings",
+    "non-residential buildings": "community_buildings",
     "water wastewater": "wastewater",
         }
 

@@ -51,7 +51,7 @@ residential buildings:
   average refit cost: 11000 # cost/refit <float>
   data: IMPORT
 
-community buildings:
+non-residential buildings:
   enabled: False
   lifetime: ABSOLUTE DEFAULT # number years <int>  
   start year: ABSOLUTE DEFAULT # start year <int>
@@ -129,7 +129,7 @@ residential buildings:
   lifetime: 15 # number years <int>  
   start year: 2015 # start year <int>
 
-community buildings:
+non-residential buildings:
   enabled: True
   lifetime: 10 # number years <int>  
   start year: 2015 # start year <int>

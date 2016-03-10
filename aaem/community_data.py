@@ -12,7 +12,7 @@ import numpy as np
 ## w&ww - water and wastewater
 ## it - intertie
 ## fc - forecast
-## com - community buildings 
+## com - non-residential buildings 
 from diesel_prices import DieselProjections
 from defaults import absolute
 from diagnostics import diagnostics
@@ -315,18 +315,18 @@ class CommunityData (object):
             self.set_item("community", "elec non-fuel cost",
                             np.float(prices.ix["elec non-fuel cost"]))
 
-        if self.get_item('community buildings',
+        if self.get_item('non-residential buildings',
                                       "com building estimates") in IMPORT_FLAGS:
-            self.set_item('community buildings',"com building estimates",
+            self.set_item('non-residential buildings',"com building estimates",
                            self.load_pp_csv("com_building_estimates.csv"))
                            
-        if self.get_item('community buildings',
+        if self.get_item('non-residential buildings',
                                             'com building data')in IMPORT_FLAGS:
-            self.set_item('community buildings','com building data',
+            self.set_item('non-residential buildings','com building data',
                                     self.load_pp_csv("community_buildings.csv"))
                                     
-        if self.get_item('community buildings','number buildings')in IMPORT_FLAGS:
-            self.set_item('community buildings','number buildings',
+        if self.get_item('non-residential buildings','number buildings')in IMPORT_FLAGS:
+            self.set_item('non-residential buildings','number buildings',
                 int(self.load_pp_csv("com_num_buildings.csv").ix["Buildings"]))
                 
         try:
@@ -448,8 +448,8 @@ class CommunityData (object):
         #~ rel = os.path.relpath(os.path.dirname(fname),os.path.join("model",".."))
         #~ rt = os.path.join(rel,"input_data")
         self.set_item('residential buildings','data', "IMPORT")
-        self.set_item('community buildings','com building data', "IMPORT")
-        self.set_item('community buildings',"com building estimates", "IMPORT")
+        self.set_item('non-residential buildings','com building data', "IMPORT")
+        self.set_item('non-residential buildings',"com building estimates", "IMPORT")
 
         self.set_item('community', "diesel prices", "IMPORT")
         self.set_item('forecast', "electricity", "IMPORT")
@@ -464,8 +464,8 @@ class CommunityData (object):
         comment = \
         ("# some of the items may reference files the input data directory\n"
          "# residential buildings(data)-> residential_data.csv\n" 
-         "# community buildings(com building data) -> community_buildings.csv\n"
- "# community buildings(com building estimates) -> com_building_estimates.csv\n"
+         "# non-residential buildings(com building data) -> community_buildings.csv\n"
+ "# non-residential buildings(com building estimates) -> com_building_estimates.csv\n"
          "# community(diesel prices) -> \n"
          "# forecast(electricity) -> yearly_electricity_summary.csv\n"
          "# forecast(population) -> population.csv\n"
