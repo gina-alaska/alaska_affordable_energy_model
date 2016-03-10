@@ -120,6 +120,7 @@ class Driver (object):
         for comp in self.comps_used:
             self.comps_used[comp].save_csv_outputs(os.path.join(directory,
                                                           "component_outputs/"))
+            self.comps_used[comp].save_additional_output(directory)
     
     def save_forecast_output (self, directory):
         """

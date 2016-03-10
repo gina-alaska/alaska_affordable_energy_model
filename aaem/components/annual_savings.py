@@ -109,6 +109,11 @@ class AnnualSavings (object):
         prices = self.cd["diesel prices"]
         self.diesel_prices = prices.get_projected_prices(self.start_year,
                                                          self.end_year)
+                                                         
+    def save_additional_output(self, directory):
+        """
+        """
+        pass
     
     @abstractmethod
     def calc_capital_costs (self):
