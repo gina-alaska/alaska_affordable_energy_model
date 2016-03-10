@@ -39,13 +39,16 @@ GLOSSARY:
 """
 import numpy as np
 from math import isnan
-from pandas import DataFrame
+from pandas import DataFrame,concat
+from copy import deepcopy
+import os
 
 from annual_savings import AnnualSavings
 from aaem.community_data import CommunityData
 from aaem.forecast import Forecast
 from aaem.diagnostics import diagnostics
 import aaem.constants as constants
+
 
 class CommunityBuildings (AnnualSavings):
     """
@@ -74,9 +77,56 @@ class CommunityBuildings (AnnualSavings):
         self.set_project_life_details(self.comp_specs["start year"],
                                       self.comp_specs["lifetime"],
                         self.forecast.end_year - self.comp_specs["start year"])
-                                      
+         
+
+        self.buildigns_df = deepcopy(self.comp_specs["com building data"])
+        freq = {}
+        for item in self.buildigns_df.index.tolist():
+            try:
+                freq[item] += 1
+            except KeyError:
+                freq[item] = 1
+        df = DataFrame(freq.values(),freq.keys(),["count"])
+        self.buildigns_df = \
+                    self.buildigns_df.groupby(self.buildigns_df.index).sum()
+        self.buildigns_df = concat([df,self.buildigns_df],axis=1)
         
+    def save_building_summay(self, file_name):
+        """
+        """
+        with_estimates = deepcopy(self.comp_specs["com building data"])
         
+        try:
+            num = len(with_estimates.ix['Average'])
+            print num
+        except KeyError:
+            pass
+        
+        with_estimates = with_estimates.groupby(with_estimates.index).sum()
+        with_estimates.columns = \
+                [c+" with estimates" for c in with_estimates.columns]
+        summary = concat([self.buildigns_df,with_estimates],axis=1)
+        cols = self.buildigns_df.columns[1:]
+        order = ["count"] 
+        for col in cols:
+            order += [c, c+" with estimates"] 
+        
+        try:
+            summary.ix["Unknown"] =  summary.ix["Average"] 
+            summary = summary[summary.index != "Average"]
+        
+            summary.ix["Unknown"]['count'] = num
+        except KeyError:
+            pass
+        
+        summary[order].to_csv(file_name)
+    
+    def save_additional_output(self, path):
+        """
+        """
+        self.save_building_summay(os.path.join(path,"non_residential_buildigns_summary.csv"))
+        
+    
     def run (self):
         """
         run the forecast model
