@@ -59,27 +59,6 @@ class CommunityData (object):
                       data_dir))
         self.calc_non_fuel_electricty_price ()
         self.check_auto_disable_conditions ()
-        self.update_project_lifetime ()
-        
-    def update_project_lifetime (self):
-        """ 
-            Adds a temporary item to each component 'fc period'. This gets 
-        ignored when saving the inputs. 
-        
-        pre:
-            self.model_inputs should be initilized
-        post:
-            project lifetimes are integers > 0
-        """
-        end = self.get_item('forecast', 'end year')
-        for each in self.model_inputs:
-            if 'lifetime' in self.model_inputs[each].keys():
-                start = self.get_item(each, 'start year')
-                #~ self.set_item(each, 'original lifetime',
-                                        #~ self.get_item(each, 'lifetime'))
-                self.set_item(each, 'fc period', end - start)
-                
-        
     
     def check_auto_disable_conditions  (self):
         """
@@ -448,13 +427,6 @@ class CommunityData (object):
         self.set_item("community","electric non-fuel prices","IMPORT")
         self.set_item("community","generation numbers", "IMPORT")
         self.set_item("community","generation", "IMPORT")
-        
-        for each in self.model_inputs:
-            if 'lifetime' in self.model_inputs[each].keys():
-                #~ self.set_item(each, 'lifetime',
-                                    #~ self.get_item(each, 'original lifetime'))
-                del self.model_inputs[each]['fc period']
-        
         
         fd = open(fname, 'w')
         text = yaml.dump(self.model_inputs, default_flow_style=False) 
