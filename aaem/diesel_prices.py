@@ -26,7 +26,6 @@ class DieselProjections (object):
         """
         df = read_csv(os.path.join(data_dir,"diesel_fuel_prices.csv"),
                         index_col=3, comment="#", header=0)
-        print df
 
         # 3 is the first column that has a year as the name/index
         self.start_year = int(df.keys()[3])
