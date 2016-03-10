@@ -1348,6 +1348,17 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
                                     ("" + com + " is using it's "
                                      "parent's (" + parent + ""
                                      ") Heating degree days "))
+                                     
+                                     
+        f_path = os.path.join(out_dir,com.replace(" ","_"),"interties.csv")
+        if com != parent and not os.path.exists(f_path):
+            #print com + " adding data - electricity"
+            shutil.copy(os.path.join(parent_dir,
+                                    "interties.csv")
+                                    ,os.path.join(out_dir,com.replace(" ","_")))
+            diagnostics.add_warning("Intertie update (interties)", 
+                                    ("" + com + " has copy of parents intertie"
+                                     " info(interties.csv)" ))
     
     # for intertie
     #   generation = generation(parent) + 

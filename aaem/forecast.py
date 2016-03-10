@@ -271,9 +271,11 @@ class Forecast (object):
         tag = self.cd.get_item("community", "name").replace(" ", "_") + "_"
         pathrt = os.path.join(path, tag)
         os.makedirs(os.path.join(path,"images"))
-        self.save_electric(pathrt, os.path.join(path,"images",tag))
-        self.save_heat_demand(pathrt, os.path.join(path,"images",tag))
-        self.save_heating_fuel(pathrt, os.path.join(path,"images",tag))
+        if self.cd.intertie != 'child':
+            self.save_electric(pathrt, os.path.join(path,"images",tag))
+        if self.cd.intertie != 'parent':
+            self.save_heat_demand(pathrt, os.path.join(path,"images",tag))
+            self.save_heating_fuel(pathrt, os.path.join(path,"images",tag))
 
     
     def add_heat_demand_column (self, key, year_col, data_col):
