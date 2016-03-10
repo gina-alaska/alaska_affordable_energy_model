@@ -98,7 +98,6 @@ class CommunityBuildings (AnnualSavings):
         
         try:
             num = len(with_estimates.ix['Average'])
-            print num
         except KeyError:
             pass
         
