@@ -275,7 +275,7 @@ def run_model (config_file = None, name = None, override_data = None,
         try:
             create_generation_forecast([model],out_dir)
             
-        except IndexError:
+        except (IndexError, KeyError):
             model.di.add_warning("Generation Forecast", 
                                             "Cannont Create File")
         model.save_diagnostics(out_dir) 

@@ -393,7 +393,38 @@ class CommunityData (object):
             
             #~ self.set_item('community','generation numbers', temp )
             print "Generation data not available by energy type"
-        
+            
+        try:
+            # special loading case
+            try:
+                intertie = read_csv(os.path.join(self.data_dir,"interties.csv"),
+                            comment = '#', index_col=0,names =['key','value'])
+                com_list = intertie.T.values[0].tolist()[1:]
+                tied = intertie.ix['Plant Intertied'].values[0]
+            except IndexError:
+                intertie = read_csv(os.path.join(self.data_dir,"interties.csv"),
+                            comment = '#', index_col=0).ix[0]
+                tied = intertie.ix['Plant Intertied']
+                com_list = intertie.T.values.tolist()[1:]
+            #~ print intertie.ix['Plant Intertied'].values[0]
+            
+            if tied == 'No':
+                intertie = None
+            elif ''.join(com_list).replace("''","") == '':
+                # the list of subcommunites is empty, so for modeling purposes 
+                #no intertie
+                intertie = None
+            else:
+                if self.get_item('community','name') in com_list:
+                    intertie = "child"
+                elif self.get_item('community','name').find('_intertie') != -1:
+                    intertie = 'parent'
+                else:
+                    intertie = "child"
+        except IOError:
+            intertie = None
+        self.intertie = intertie
+            
     def load_pp_csv(self, f_name):
         """
         load a preprocessed csv file

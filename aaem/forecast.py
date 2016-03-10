@@ -268,7 +268,8 @@ class Forecast (object):
             saves 3 files
         """
         path += self.cd.get_item("community","name").replace(" ", "_") + "_"
-        self.save_electric(path)
+        if self.cd.intertie != 'child':
+            self.save_electric(path)
         self.save_heat_demand(path)
         self.save_heating_fuel(path)
 
