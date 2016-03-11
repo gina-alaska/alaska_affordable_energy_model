@@ -44,7 +44,7 @@ class CopyCommand(pycommand.CommandBase):
             tag = self.flags.tag
         else:
             tag = datetime.strftime(datetime.now(),"%Y%m%d%H%M%S")
-        new = os.path.join(model_root,"run_" + tag)
+        new = os.path.join(model_root, tag)
         
         try:
             shutil.copytree(os.path.join(base,"input_data"), 

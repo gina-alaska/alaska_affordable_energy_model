@@ -1,5 +1,24 @@
 #Change Log
 
+## [0.4.0]
+### Changed
+- community buildings is now non-residential buildings for input/output purposes
+- intertie parent groups only get electric output
+- intertie child communities only get heating output
+- cli refresh command will tag directory with model and data versions
+- cli commands don't add 'run_' to directories anymore
+
+### Added
+- general plotting functionality (plot.py, colors.py)
+- automatic plotting for forecast and generation forecast
+- added frame work for components to have additional output files
+- added non-residential building summary file to outputs 
+
+### Fixed
+- typo in water/wastewater system map
+- project lifetimes are correct, while maintaining longer forecast period 
+- reading in diesel fuel prices corrected to match data file format
+
 ## [0.3.2]
 ### Fixed
 - bug in preprocessor where float needed to be an int

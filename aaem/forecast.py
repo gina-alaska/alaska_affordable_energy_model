@@ -478,11 +478,13 @@ class Forecast (object):
         """
         path = path+ "heat_demand_forecast.png"
         start = self.p_map[self.p_map['population_qualifier'] == 'P'].index[0]
-        df2 = self.heat_demand_dataframe[['population',
-                            'heat_energy_demand_residential [mmbtu/year]',
-                            'heat_energy_demand_water-wastewater [mmbtu/year]',
-                            'heat_energy_demand_non-residential [mmbtu/year]',
-                            'heat_energy_demand_total [mmbtu/year]']]
+        
+        cols = ['population']
+        for col in self.heat_demand_dataframe.columns:
+            if "[mmbtu/year]" in col:
+                cols += [col]
+                
+        df2 = self.heat_demand_dataframe[cols]
         name = self.cd.get_item("community","name") + ' Heat Demand Forecast'
         
         fig, ax = plot.setup_fig(name ,'years','population')
@@ -594,15 +596,13 @@ class Forecast (object):
         """"""
         path = path+ "heating_fuel_forecast.png"
         start = self.p_map[self.p_map['population_qualifier'] == 'P'].index[0]
-        df2 = self.heating_fuel_dataframe[["population",
-            "heating_fuel_residential_consumed [mmbtu/year]",
-            "cords_wood_residential_consumed [mmbtu/year]",
-            "gas_residential_consumed [mmbtu/year]",
-            "electric_residential_consumed [mmbtu/year]",
-            "propane_residential_consumed [mmbtu/year]",
-            "heating_fuel_water-wastewater_consumed [mmbtu/year]",
-            "heating_fuel_non-residential_consumed [mmbtu/year]",
-            "heating_fuel_total_consumed [mmbtu/year]"]]
+        
+        cols = ['population']
+        for col in self.heating_fuel_dataframe.columns:
+            if "[mmbtu/year]" in col:
+                cols += [col]
+        
+        df2 = self.heating_fuel_dataframe[cols]
 
         name = self.cd.get_item("community","name") + ' Heat Demand Forecast'
         
