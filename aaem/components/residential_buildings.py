@@ -219,6 +219,13 @@ class ResidentialBuildings(AnnualSavings):
         #~ self.savings_coal
         #~ self.savings_solar
         #~ self.savings_other
+                           
+        self.savings_mmbtu = self.savings_HF * (1/constants.mmbtu_to_gal_HF) +\
+                             self.savings_wood * (1/constants.mmbtu_to_cords) +\
+                             self.savings_gas * (1/constants.mmbtu_to_Mcf) +\
+                             self.savings_kWh * (1/constants.mmbtu_to_kWh) +\
+                             self.savings_LP* (1/constants.mmbtu_to_gal_LP)
+        
         
     def calc_consumption_by_fuel (self, fuel_amnt, total_consumption, HH, cf):
         """ Function doc """
@@ -294,6 +301,8 @@ class ResidentialBuildings(AnnualSavings):
                                      self.savings_gas 
         self.refit_fuel_kWh_consumption = self.baseline_fuel_kWh_consumption - \
                                      self.savings_kWh 
+                                     
+        self.refit_HF_consumption = self.baseline_HF_consumption - self.savings_mmbtu
         # coal,solar, other
         
     def calc_refit_fuel_cost (self):
