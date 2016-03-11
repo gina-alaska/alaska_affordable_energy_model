@@ -237,29 +237,29 @@ class ResidentialBuildings(AnnualSavings):
         
         scaler = (HH - self.init_HH) * area * EUI
         
-        self.baseline_HF_consumption = self.init_HF+np.float64(rd["Fuel Oil"])*\
+        self.baseline_fuel_Hoil_consumption = self.init_HF+np.float64(rd["Fuel Oil"])*\
                                        scaler * constants.mmbtu_to_gal_HF
-        self.baseline_wood_consumption = self.init_wood+np.float64(rd["Wood"])*\
+        self.baseline_fuel_wood_consumption = self.init_wood+np.float64(rd["Wood"])*\
                                        scaler * constants.mmbtu_to_cords
-        self.baseline_gas_consumption = self.init_gas + \
+        self.baseline_fuel_gas_consumption = self.init_gas + \
                                         np.float64(rd["Utility Gas"]) * \
                                         scaler * constants.mmbtu_to_Mcf
-        self.baseline_LP_consumption = self.init_LP+np.float64(rd["LP"])*\
+        self.baseline_fuel_LP_consumption = self.init_LP+np.float64(rd["LP"])*\
                                        scaler * constants.mmbtu_to_gal_LP
-        self.baseline_kWh_consumption = self.init_kWh+\
+        self.baseline_fuel_kWh_consumption = self.init_kWh+\
                                         np.float64(rd["Electricity"])*\
                                         scaler * constants.mmbtu_to_kWh
-        #~ self.baseline_coal_consumption
-        #~ self.baseline_solar_consumption
-        #~ self.baseline_other_consumption
+        #~ self.baseline_fuel_coal_consumption
+        #~ self.baseline_fuel_solar_consumption
+        #~ self.baseline_fuel_other_consumption
         
         
-        self.baseline_total_heating_demand = \
-                self.baseline_HF_consumption * (1/constants.mmbtu_to_gal_HF) +\
-                self.baseline_wood_consumption * (1/constants.mmbtu_to_cords) +\
-                self.baseline_gas_consumption * (1/constants.mmbtu_to_Mcf) +\
-                self.baseline_kWh_consumption * (1/constants.mmbtu_to_kWh) +\
-                self.baseline_LP_consumption * (1/constants.mmbtu_to_gal_LP)
+        self.baseline_HF_consumption = \
+                self.baseline_fuel_Hoil_consumption * (1/constants.mmbtu_to_gal_HF) +\
+                self.baseline_fuel_wood_consumption * (1/constants.mmbtu_to_cords) +\
+                self.baseline_fuel_gas_consumption * (1/constants.mmbtu_to_Mcf) +\
+                self.baseline_fuel_kWh_consumption * (1/constants.mmbtu_to_kWh) +\
+                self.baseline_fuel_LP_consumption * (1/constants.mmbtu_to_gal_LP)
         
 
     def calc_baseline_fuel_cost (self):
@@ -273,26 +273,26 @@ class ResidentialBuildings(AnnualSavings):
         gas_price = 0 # TODO: find
         
         
-        self.baseline_HF_cost =  self.baseline_HF_consumption * HF_price + \
-                                 self.baseline_wood_consumption * wood_price + \
-                                 self.baseline_gas_consumption * gas_price + \
-                                 self.baseline_LP_consumption * LP_price + \
-                                 self.baseline_kWh_consumption * gas_price
+        self.baseline_HF_cost =  self.baseline_fuel_Hoil_consumption * HF_price + \
+                                 self.baseline_fuel_wood_consumption * wood_price + \
+                                 self.baseline_fuel_gas_consumption * gas_price + \
+                                 self.baseline_fuel_LP_consumption * LP_price + \
+                                 self.baseline_fuel_kWh_consumption * gas_price
         # coal,solar, other
         
 
     def calc_refit_fuel_consumption (self):
         """
         """
-        self.refit_HF_consumption = self.baseline_HF_consumption -\
+        self.refit_fuel_Hoil_consumption = self.baseline_fuel_Hoil_consumption -\
                                     self.savings_HF 
-        self.refit_wood_consumption = self.baseline_wood_consumption -\
+        self.refit_fuel_wood_consumption = self.baseline_fuel_wood_consumption -\
                                       self.savings_wood 
-        self.refit_LP_consumption = self.baseline_LP_consumption -\
+        self.refit_fuel_LP_consumption = self.baseline_fuel_LP_consumption -\
                                     self.savings_LP 
-        self.refit_gas_consumption = self.baseline_gas_consumption - \
+        self.refit_fuel_gas_consumption = self.baseline_fuel_gas_consumption - \
                                      self.savings_gas 
-        self.refit_kWh_consumption = self.baseline_kWh_consumption - \
+        self.refit_fuel_kWh_consumption = self.baseline_fuel_kWh_consumption - \
                                      self.savings_kWh 
         # coal,solar, other
         
@@ -307,11 +307,11 @@ class ResidentialBuildings(AnnualSavings):
         gas_price = 0 # TODO: find
         
         
-        self.refit_HF_cost =  self.refit_HF_consumption * HF_price + \
-                                 self.refit_wood_consumption * wood_price + \
-                                 self.refit_gas_consumption * gas_price + \
-                                 self.refit_LP_consumption * LP_price + \
-                                 self.refit_kWh_consumption * gas_price
+        self.refit_HF_cost =  self.refit_fuel_Hoil_consumption * HF_price + \
+                                 self.refit_fuel_wood_consumption * wood_price + \
+                                 self.refit_fuel_gas_consumption * gas_price + \
+                                 self.refit_fuel_LP_consumption * LP_price + \
+                                 self.refit_fuel_kWh_consumption * gas_price
     
     def calc_capital_costs (self):
         """
@@ -319,7 +319,7 @@ class ResidentialBuildings(AnnualSavings):
         
         Pre:
             self.opportunity_HH, # occupied of houses  
-            self.refit_cost_rate, cost / refit
+            self.refit_fuel_cost_rate, cost / refit
         post:
             self.capital_costs the total cost of the project
         """
@@ -339,7 +339,7 @@ class ResidentialBuildings(AnnualSavings):
         calculate the savings in HF cost
         
         pre: 
-            self.baseline_HF_cost, self.refit_HF_cost should be dollar value 
+            self.baseline_fuel_HF_cost, self.refit_HF_cost should be dollar value 
         arrays over the project life time
         post: 
             self.annual_heating_savings array savings in HF cost
@@ -352,43 +352,43 @@ class ResidentialBuildings(AnnualSavings):
         years = range(self.start_year,self.end_year)
         self.forecast.add_heating_fuel_column(\
                             "heating_fuel_residential_consumed [gallons/year]",
-                                 years, self.baseline_HF_consumption)
+                                 years, self.baseline_fuel_Hoil_consumption)
         self.forecast.add_heating_fuel_column(\
                         "heating_fuel_residential_consumed [mmbtu/year]", years,
-                        self.baseline_HF_consumption/constants.mmbtu_to_gal_HF)
+                        self.baseline_fuel_Hoil_consumption/constants.mmbtu_to_gal_HF)
         
         self.forecast.add_heating_fuel_column(\
                                 "cords_wood_residential_consumed [cords/year]",
-                                 years, self.baseline_wood_consumption)
+                                 years, self.baseline_fuel_wood_consumption)
         self.forecast.add_heating_fuel_column(\
                         "cords_wood_residential_consumed [mmbtu/year]", years, 
-                        self.baseline_wood_consumption/constants.mmbtu_to_cords)
+                        self.baseline_fuel_wood_consumption/constants.mmbtu_to_cords)
         
         self.forecast.add_heating_fuel_column(\
                                  "gas_residential_consumed [Mcf/year]",
-                                 years, self.baseline_gas_consumption)
+                                 years, self.baseline_fuel_gas_consumption)
         self.forecast.add_heating_fuel_column(\
                           "gas_residential_consumed [mmbtu/year]", years,
-                          self.baseline_gas_consumption/constants.mmbtu_to_Mcf)
+                          self.baseline_fuel_gas_consumption/constants.mmbtu_to_Mcf)
                                  
         self.forecast.add_heating_fuel_column(\
                                  "electric_residential_consumed [kWh/year]",
-                                 years, self.baseline_kWh_consumption)
+                                 years, self.baseline_fuel_kWh_consumption)
         self.forecast.add_heating_fuel_column(\
                         "electric_residential_consumed [mmbtu/year]", years,
-                        self.baseline_kWh_consumption/constants.mmbtu_to_kWh)
+                        self.baseline_fuel_kWh_consumption/constants.mmbtu_to_kWh)
         
         self.forecast.add_heating_fuel_column(\
                                 "propane_residential_consumed [gallons/year]",
-                                 years, self.baseline_LP_consumption)
+                                 years, self.baseline_fuel_LP_consumption)
         self.forecast.add_heating_fuel_column(\
                             "propane_residential_consumed [mmbtu/year]", years,
-                        self.baseline_LP_consumption/constants.mmbtu_to_gal_LP)
+                        self.baseline_fuel_LP_consumption/constants.mmbtu_to_gal_LP)
         
         
         self.forecast.add_heat_demand_column(\
                                  "heat_energy_demand_residential [mmbtu/year]",
-                                 years, self.baseline_total_heating_demand)
+                                 years, self.baseline_HF_consumption)
                                       
         
 
