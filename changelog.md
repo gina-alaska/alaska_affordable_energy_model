@@ -1,6 +1,10 @@
 #Change Log
 
 ## [0.4.1]
+### fixed
+- fixed memory bug in plotting	
+
+## [0.4.1]
 ### added
 - clear function for figures to plot.py
 

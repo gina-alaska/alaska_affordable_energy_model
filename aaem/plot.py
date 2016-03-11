@@ -346,6 +346,7 @@ def clear(fig):
     post:
         the figure is cleared and deleted.
     """
-    fig.clear()
+    #~ fig.clear()
+    plt.close(fig)
     del(fig)
     
