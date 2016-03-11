@@ -1,5 +1,13 @@
 #Change Log
 
+## [0.4.1]
+### added
+- clear function for figures to plot.py
+
+### Changed
+- default start year is 2017 in config .yaml files
+- Improved speed when plotting in forecast and generation forecast
+
 ## [0.4.0]
 ### Changed
 - community buildings is now non-residential buildings for input/output purposes
