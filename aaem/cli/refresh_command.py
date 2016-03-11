@@ -11,7 +11,7 @@ import zipfile
 from aaem import driver, __version__
 from datetime import datetime
 from pandas import read_csv
-from default_cases import __DEV_COMS__ 
+from default_cases import __DEV_COMS__
 
 
 class RefreshCommand(pycommand.CommandBase):
@@ -25,13 +25,13 @@ class RefreshCommand(pycommand.CommandBase):
            #~ ('path', ('p', "<name>", "path to location to setup/run  model")),
            #~ ('name', ('n', "<name>", "name of model")),
     )
-    
+
     description = ('Refresh the data from the data repo\n\n'
                    'options: \n'
                    "  " + str([o[0] + ': ' + o[1][2] + '. Use: --' +\
                    o[0] + ' (-'+o[1][0]+') ' +  (o[1][1] if o[1][1] else "")  +\
                    '' for o in optionList]).replace('[','').\
-                   replace(']','').replace(',','\n ') 
+                   replace(']','').replace(',','\n ')
             )
 
     def run(self):
@@ -48,7 +48,7 @@ class RefreshCommand(pycommand.CommandBase):
         else:
             print "Refresh Error: please provide a path to the aaem data repo"
             return 0
-            
+
         try:
             fd = open(os.path.join(model_root,'setup','raw_data',"VERSION"),'r')
             ver = fd.read().replace("\n","")
@@ -76,16 +76,16 @@ class RefreshCommand(pycommand.CommandBase):
             shutil.rmtree(os.path.join(model_root,"setup","input_data"))
         except OSError:
             pass
-            
+
         try:
             shutil.rmtree(os.path.join(model_root,"setup","raw_data"))
         except OSError:
             pass
-            
+
         raw = os.path.join(model_root, 'setup', "raw_data")
         os.makedirs(os.path.join(model_root, 'setup',"raw_data"))
-        shutil.copy(os.path.join(repo, 
-                        "2013-add-power-cost-equalization-pce-data.csv"), raw)
+        shutil.copy(os.path.join(repo,
+                        "power-cost-equalization-pce-data.csv"), raw)
         shutil.copy(os.path.join(repo, "com_building_estimates.csv"), raw)
         shutil.copy(os.path.join(repo, "com_num_buildings.csv"), raw)
         shutil.copy(os.path.join(repo, "cpi.csv"), raw)
@@ -123,9 +123,6 @@ class RefreshCommand(pycommand.CommandBase):
         except IOError:
             ver = "unknown_version_created_"+ datetime.strftime(datetime.now(),
                                                                     "%Y%m%d")
-        
+
         driver.setup(coms, raw, model_root, run_name = ver,
                      setup_intertie = interties)
-        
-        
-

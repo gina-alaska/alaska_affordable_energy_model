@@ -9,7 +9,7 @@ import os.path
 import shutil
 from aaem import driver
 from pandas import read_csv
-from default_cases import __DEV_COMS__ 
+from default_cases import __DEV_COMS__
 
 class SetupCommand(pycommand.CommandBase):
     """
@@ -21,13 +21,13 @@ class SetupCommand(pycommand.CommandBase):
            ('dev', ('d', False, "use only development communities")),
            #~ ('name', ('n', "<name>", "name of model")),
     )
-    
+
     description = ('Set up directory for running AAEM Models\n\n'
                    'options: \n'
                    "  " + str([o[0] + ': ' + o[1][2] + '. Use: --' +\
                    o[0] + ' (-'+o[1][0]+') ' +  (o[1][1] if o[1][1] else "")  +\
                    '' for o in optionList]).replace('[','').\
-                   replace(']','').replace(',','\n ') 
+                   replace(']','').replace(',','\n ')
             )
 
     def run(self):
@@ -39,19 +39,19 @@ class SetupCommand(pycommand.CommandBase):
         else:
             print  "Setup Error: please provide a path to the aaem data repo"
             return 0
-        
+
         path = os.getcwd()
         if self.flags.path:
             path = os.path.abspath(self.flags.path)
-        
+
         #add this later?
         name = ""
         #~ if self.flags.name:
             #~ name = '_' + self.flags.name
-            
-        
-        
-        
+
+
+
+
         model_root = os.path.join(path,"model" + name)
         #~ print model_root
         try:
@@ -75,10 +75,10 @@ class SetupCommand(pycommand.CommandBase):
             #~ os.makedirs(os.path.join(model_root, 'run_init', "results"))
         #~ except OSError:
             #~ pass
-            
+
         raw = os.path.join(model_root, 'setup', "raw_data")
-        shutil.copy(os.path.join(repo, 
-                        "2013-add-power-cost-equalization-pce-data.csv"), raw)
+        shutil.copy(os.path.join(repo,
+                        "power-cost-equalization-pce-data.csv"), raw)
         shutil.copy(os.path.join(repo, "com_building_estimates.csv"), raw)
         shutil.copy(os.path.join(repo, "com_num_buildings.csv"), raw)
         shutil.copy(os.path.join(repo, "cpi.csv"), raw)
@@ -100,7 +100,7 @@ class SetupCommand(pycommand.CommandBase):
         shutil.copy(os.path.join(repo, "VERSION"), raw)
         shutil.copy(os.path.join(repo, "community_list.csv"), raw)
         #avaliable coms
-        
+
         if self.flags.dev:
             coms = __DEV_COMS__
             full = False
@@ -108,15 +108,15 @@ class SetupCommand(pycommand.CommandBase):
             coms = read_csv(os.path.join(raw,'community_list.csv'),
                          comment="#",index_col=0).Community.tolist()
             full = True
-        
-                         
+
+
         print "Setting up..."
         config = driver.setup(coms, raw, model_root, setup_intertie = full)
         print "Running ..."
         driver.run(config, "")
 
 
-        
+
 
 if __name__ == '__main__':
     # Shortcut for reading from sys.argv[1:] and sys.exit(status)

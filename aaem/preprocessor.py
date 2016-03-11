@@ -587,7 +587,7 @@ class Preprocessor (object):
         pre process fuel prices
         """
         in_file = os.path.join(self.data_dir,
-                            "2013-add-power-cost-equalization-pce-data.csv")
+                            "power-cost-equalization-pce-data.csv")
         data = read_csv(in_file, index_col=1, comment = "#")
         try:
             if self.com_id == "Craig":
@@ -836,7 +836,7 @@ class Preprocessor (object):
         ## set up files
         lib_file = os.path.join(self.data_dir, "purchased_power_lib.csv")
         in_file = os.path.join(self.data_dir,
-                                "2013-add-power-cost-equalization-pce-data.csv")
+                                "power-cost-equalization-pce-data.csv")
         ## Load Data
         data = read_csv(in_file, index_col=1, comment = "#")
         try:
@@ -1348,14 +1348,14 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
                                     ("" + com + " is using it's "
                                      "parent's (" + parent + ""
                                      ") Heating degree days "))
-                                     
+
         f_path = os.path.join(out_dir,com.replace(" ","_"),"interties.csv")
         if com != parent and not os.path.exists(f_path):
             #print com + " adding data - electricity"
             shutil.copy(os.path.join(parent_dir,
                                     "interties.csv")
                                     ,os.path.join(out_dir,com.replace(" ","_")))
-            diagnostics.add_warning("Intertie update (interties)", 
+            diagnostics.add_warning("Intertie update (interties)",
                                     ("" + com + " has copy of parents intertie"
                                      " info(interties.csv)" ))
 
