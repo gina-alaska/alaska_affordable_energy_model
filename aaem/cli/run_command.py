@@ -11,6 +11,7 @@ import os.path
 import shutil
 import sys
 
+from datetime import datetime
 
 
 
@@ -37,6 +38,8 @@ class RunCommand(pycommand.CommandBase):
         """
         run the command
         """
+        #~ start = datetime.now()
+        
         if self.args and os.path.exists(self.args[0]):
             base = os.path.abspath(self.args[0])
         else:
@@ -79,3 +82,4 @@ class RunCommand(pycommand.CommandBase):
                 "Date Run: "+ datetime.strftime(datetime.now(),"%Y-%m-%d")+'\n'
                  ))
         fd.close()
+        #~ print datetime.now() - start

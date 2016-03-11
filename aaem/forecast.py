@@ -15,6 +15,7 @@ from pandas import DataFrame, read_csv, concat
 import os.path
 import copy
 
+from datetime import datetime
 
 
 class Forecast (object):
@@ -272,11 +273,19 @@ class Forecast (object):
         pathrt = os.path.join(path, tag)
         os.makedirs(os.path.join(path,"images"))
         if self.cd.intertie != 'child':
-            self.save_electric(pathrt, os.path.join(path,"images",tag))
-        if self.cd.intertie != 'parent':
-            self.save_heat_demand(pathrt, os.path.join(path,"images",tag))
-            self.save_heating_fuel(pathrt, os.path.join(path,"images",tag))
 
+            #~ start = datetime.now() 
+            self.save_electric(pathrt, os.path.join(path,"images",tag))
+            #~ print "saving electric:" + str(datetime.now() - start)
+        if self.cd.intertie != 'parent':
+     
+            #~ start = datetime.now() 
+            self.save_heat_demand(pathrt, os.path.join(path,"images",tag))
+            #~ print "saving heat demand:" + str(datetime.now() - start)
+            
+            #~ start = datetime.now() 
+            self.save_heating_fuel(pathrt, os.path.join(path,"images",tag))
+            #~ print "saving heating fuel:" + str( datetime.now() - start)
     
     def add_heat_demand_column (self, key, year_col, data_col):
         """ 
@@ -316,7 +325,8 @@ class Forecast (object):
         g_map = copy.deepcopy(c_map)
         g_map.columns = ["total_electricity_generation_qualifier"]
     
-        community = copy.deepcopy(self.c_map)
+        #~ community = copy.deepcopy(self.c_map)
+        community = self.c_map
         community.columns = ["community"]
         community.ix[:] = self.cd.get_item("community","name")
         try:
@@ -410,6 +420,7 @@ class Forecast (object):
     
         plot.create_legend(fig)
         plot.save(fig,path)
+        plot.clear(fig)
     
     def generate_heat_demand_dataframe (self):
         """
@@ -420,29 +431,22 @@ class Forecast (object):
         for key in data.keys():
             try:
                 col = data[key]
-                lv = col[np.logical_not(col.apply(np.isnan))].tail(1).values[0]
-                yr = col[np.logical_not(col.apply(np.isnan))].tail(1).index[0]
+                idx = np.logical_not(col.apply(np.isnan))
+                lv = col[idx].tail(1).values[0]
+                yr = col[idx].tail(1).index[0]
                 col[col.index > yr] = lv
-                data[key] = col
-            except (TypeError, IndexError):
+                data[key] = col.round()
+            except (TypeError, IndexError, AttributeError):
                 pass
             
-        idx = ['mmbtu' in s for s in data.keys()]
-        total_demand = DataFrame(data[data.keys()[idx]].sum(1))
-        total_demand.columns = ["heat_energy_demand_total [mmbtu/year]"]
-
-        community = copy.deepcopy(self.c_map)
-        community.columns = ["community"]
-        community.ix[:] = self.cd.get_item("community","name")
-        data = concat([community, data, total_demand], axis=1)
+        idx = data.keys()[['mmbtu' in s for s in data.keys()]]
+    
+        data["heat_energy_demand_total [mmbtu/year]"] = data[idx].sum(1).round()
+        data["community"] = self.cd.get_item("community","name")
+                
+        self.heat_demand_dataframe = data[[data.columns[-1]] + data.columns[:-1].tolist()]
+        del data
         
-        for key in data.keys():
-            try:
-                col = data[key]
-                data[key] = col.round()
-            except (TypeError, AttributeError):
-                pass
-        self.heat_demand_dataframe = data
     def save_heat_demand (self,csv_path, png_path):
         """ Function doc """
         self.generate_heat_demand_dataframe()
@@ -503,59 +507,53 @@ class Forecast (object):
     
         plot.create_legend(fig,.2)
         plot.save(fig,path)
-        
+        plot.clear(fig)
     
     def generate_heating_fuel_dataframe(self):
         """ """
         data = concat([self.population.round().astype(int), self.p_map] + \
                                                 self.heating_fuel_cols, axis=1)
-                                                
+
         for key in data.keys():
             try:
                 col = data[key]
-                lv = col[np.logical_not(col.apply(np.isnan))].tail(1).values[0]
-                yr = col[np.logical_not(col.apply(np.isnan))].tail(1).index[0]
+                idx = np.logical_not(col.apply(np.isnan))
+                lv = col[idx].tail(1).values[0]
+                yr = col[idx].tail(1).index[0]
                 col[col.index > yr] = lv
-                data[key] = col
-            except (TypeError, IndexError):
-                
+                data[key] = col.round()
+            except (TypeError,IndexError, AttributeError):
                 pass
 
-        #~ hf_gal_idx = ['heating_fuel' in s for s in data.keys()] and \
         hf_gal_idx = data.keys()[['gallons' in s for s in data.keys()]]
         hf_gal_idx =  hf_gal_idx[['heating_fuel' in s for s in hf_gal_idx]]
-        #~ hf_gal_idx = hf_gal_idx[['heating_fuel' in s for s in hf_gal_idx]]
-        #~ print data[hf_gal_idx]
-                                         
-        #~ hf_btu_idx = ['heating_fuel' in s for s in data.keys()] and \
+        
         hf_btu_idx = data.keys()[['mmbtu' in s for s in data.keys()]]
         hf_btu_idx =  hf_btu_idx[['heating_fuel' in s for s in hf_btu_idx]]
+        
+        
+        data["heating_fuel_total_consumed [gallons/year]"] = \
+                                        data[hf_gal_idx].sum(1).round()
+        data["heating_fuel_total_consumed [mmbtu/year]"]= \
+                                        data[hf_btu_idx].sum(1).round()
+        data["community"] = self.cd.get_item("community","name")
 
-        total_gal = DataFrame(data[hf_gal_idx].sum(1)).round()
-        total_gal.columns = ["heating_fuel_total_consumed [gallons/year]"]
-        
-        total_btu = DataFrame(data[hf_btu_idx].sum(1)).round()
-        total_btu.columns = ["heating_fuel_total_consumed [mmbtu/year]"]
-        
-        
-        community = copy.deepcopy(self.c_map)
-        community.columns = ["community"]
-        community.ix[:] = self.cd.get_item("community","name")
-        data = concat([community,data,total_gal,total_btu],axis=1)
-        
-        for key in data.keys():
-            try:
-                col = data[key]
-                data[key] = col.round()
-            except (TypeError, AttributeError):
-                pass
-        self.heating_fuel_dataframe = data
+
+        self.heating_fuel_dataframe = \
+                        data[[data.columns[-1]] + data.columns[:-1].tolist()]
+        del data
     
     def save_heating_fuel(self, csv_path, png_path):
         """ """
+        #~ start = datetime.now() 
         self.generate_heating_fuel_dataframe()
+        #~ print "saving heating fuel *1:" + str( datetime.now() - start)
+        #~ start = datetime.now() 
         self.save_heating_fuel_csv(csv_path)
+        #~ print "saving heating fuel *2:" + str( datetime.now() - start)
+        #~ start = datetime.now() 
         self.save_heating_fuel_png(png_path)
+        #~ print "saving heating fuel *3:" + str( datetime.now() - start)
     
     def save_heating_fuel_csv (self, path):
         """
@@ -578,17 +576,7 @@ class Forecast (object):
         fd.write("#   M indicates a measured value \n")
         fd.write("#   P indicates a projected value \n")
         fd.close()
-        for key in data.keys():
-            try:
-                col = data[key]
-                lv = col[np.logical_not(col.apply(np.isnan))].tail(1).values[0]
-                yr = col[np.logical_not(col.apply(np.isnan))].tail(1).index[0]
-                col[col.index > yr] = lv
-                data[key] = col.round()
-            except (TypeError, IndexError):
-                pass
-            except AttributeError:
-                pass
+
         data.index = data.index.values.astype(int)
         data.to_csv(f_name, index_label="year", mode = 'a')
         
@@ -604,10 +592,10 @@ class Forecast (object):
         
         df2 = self.heating_fuel_dataframe[cols]
 
-        name = self.cd.get_item("community","name") + ' Heat Demand Forecast'
+        name = self.cd.get_item("community","name") + ' Heating fuel Forecast'
         
         fig, ax = plot.setup_fig(name ,'years','population')
-        ax1 = plot.add_yaxis(fig,'Heat Demand MMBtu')
+        ax1 = plot.add_yaxis(fig,'Heating fuel MMBtu')
         
         plot.plot_dataframe(ax1,df2,ax,['population'],
             {"population":'population',
@@ -633,7 +621,7 @@ class Forecast (object):
     
         plot.create_legend(fig,.30)
         plot.save(fig,path)
-       
+        plot.clear(fig)
 
 def test ():
     """ 

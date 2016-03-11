@@ -336,4 +336,16 @@ def show (fig):
     """
     fig.show()
     
+
+def clear(fig):
+    """
+    clear the figure
+    
+    pre:
+        fig: <matplotlib figure> the figure 
+    post:
+        the figure is cleared and deleted.
+    """
+    fig.clear()
+    del(fig)
     

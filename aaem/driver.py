@@ -275,8 +275,10 @@ def run_model (config_file = None, name = None, override_data = None,
         model.save_input_files(out_dir)
         
         try:
-            create_generation_forecast([model],out_dir)
             
+            #~ start = datetime.now() 
+            create_generation_forecast([model],out_dir)
+            #~ print "saving generation fc:" + str( datetime.now() - start)
         except (IndexError, KeyError):
             model.di.add_warning("Generation Forecast", 
                                             "Cannont Create File")
@@ -382,8 +384,10 @@ def run_batch (config, suffix = "TS"):
     for key in config:
         print key
         #~ try:
+        #~ start = datetime.now()
         r_val = run_model(config[key], results_suffix = suffix)
         communities[key] = {"model": r_val[0], "directory": r_val[1]}
+        #~ print datetime.now() - start
         #~ except StandardError as e :
              #~ log.write("COMMUNITY: " + key + "\n\n")
              #~ log.write( str(sys.exc_info()[0]) + "\n\n")
@@ -768,6 +772,7 @@ def create_generation_forecast (models, path):
     plot.create_legend(fig,.20)
     plot.save(fig,os.path.join(path,'images',
                             name.replace(" ",'_') + "_generation_forecast.png"))
+    plot.clear(fig)
 
     out_file = os.path.join(path,
                             name.replace(" ",'_') + "_generation_forecast.csv")
