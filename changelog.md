@@ -1,6 +1,10 @@
 #Change Log
 
-## [0.4.1]
+## [0.5.0]
+### changed
+- changed file name of pce file to correct name, power-cost-equalization-pce-data.csv, as it is now correct in the data repo
+
+## [0.4.2]
 ### fixed
 - fixed memory bug in plotting	
 
