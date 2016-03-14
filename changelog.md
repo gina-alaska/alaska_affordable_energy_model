@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.5.1]
+### changed
+- output images created with run command will be in a seperate directory with in results(__images)
+
 ## [0.5.0]
 ### changed
 - changed file name of pce file to correct name, power-cost-equalization-pce-data.csv, as it is now correct in the data repo
