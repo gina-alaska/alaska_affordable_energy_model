@@ -304,7 +304,7 @@ class ResidentialBuildings(AnnualSavings):
             self.baseline_fuel_LP_consumption - self.savings_LP 
         self.refit_fuel_gas_consumption = \
             self.baseline_fuel_gas_consumption - self.savings_gas 
-        self.refit_fuel_kWh_consumption = 
+        self.refit_fuel_kWh_consumption = \
             self.baseline_fuel_kWh_consumption - self.savings_kWh 
                                      
         self.refit_HF_consumption = \

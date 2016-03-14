@@ -405,8 +405,8 @@ class AnnualSavings (object):
         fd.close()
         
         # save npv stuff
-        df2 = DataFrame([self.get_NPV_benefits(),self.get_NPV_benefits(),
-                            self.get_NPV_benefits(),self.get_BC_ratio()],
+        df2 = DataFrame([self.get_NPV_benefits(),self.get_NPV_costs(),
+                            self.get_NPV_net_benefit(),self.get_BC_ratio()],
                        ['NPV Benefits','NPV Cost',
                             'NPV Net Benefit','Benefit Cost Ratio'])
         df2.to_csv(fname, header = False, mode = 'a')
