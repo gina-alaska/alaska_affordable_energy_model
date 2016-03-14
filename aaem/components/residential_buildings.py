@@ -14,6 +14,7 @@ from aaem.community_data import CommunityData
 from aaem.forecast import Forecast
 from aaem.diagnostics import diagnostics
 import aaem.constants as constants
+import os
 
 class ResidentialBuildings(AnnualSavings):
     """
@@ -404,7 +405,145 @@ class ResidentialBuildings(AnnualSavings):
         self.forecast.add_heat_demand_column(\
                                  "heat_energy_demand_residential [mmbtu/year]",
                                  years, self.baseline_HF_consumption)
-                                      
+                                 
+    def save_component_csv (self, directory):
+        """
+            save the output from the component. Override the default version 
+        because of the extra-fuel sources.
+        """
+        b_oil = self.baseline_fuel_Hoil_consumption/constants.mmbtu_to_gal_HF
+        r_oil = self.refit_fuel_Hoil_consumption/constants.mmbtu_to_gal_HF
+        s_oil = b_oil - r_oil
+        
+        b_bio = self.baseline_fuel_wood_consumption/constants.mmbtu_to_cords
+        r_bio = self.refit_fuel_wood_consumption/constants.mmbtu_to_cords
+        s_bio = b_bio - r_bio
+        
+        b_elec = self.baseline_fuel_kWh_consumption/constants.mmbtu_to_kWh
+        r_elec = self.refit_fuel_kWh_consumption/constants.mmbtu_to_kWh
+        s_elec = b_elec - r_elec
+        
+        b_LP = self.baseline_fuel_LP_consumption/constants.mmbtu_to_gal_LP
+        r_LP = self.refit_fuel_LP_consumption/constants.mmbtu_to_gal_LP
+        s_LP = b_LP - r_LP
+        
+        b_NG = self.baseline_fuel_gas_consumption/constants.mmbtu_to_Mcf
+        r_NG = self.refit_fuel_gas_consumption/constants.mmbtu_to_Mcf
+        s_NG = b_NG - r_NG
+        
+    
+        
+        years = np.array(range(self.project_life)) + self.start_year
+        df = DataFrame({
+            "Heating Fuel (All) Consumption Baseline": self.get_base_HF_use(),
+            "Heating Fuel (All) Consumption Retrofit": self.get_refit_HF_use(),
+            "Heating Fuel (All) Consumption Savings": self.get_base_HF_use() -\
+                                        self.get_refit_HF_use(), 
+            "Heating Fuel (All) Cost Baseline": self.get_base_HF_cost(),
+            "Heating Fuel (All) Cost Retrofit": self.get_refit_HF_cost(),
+            "Heating Fuel (All) Cost Savings": 
+                                    self.get_heating_savings_costs(),
+    
+            "Heating Fuel (Oil) Consumption Baseline": b_oil,
+            "Heating Fuel (Oil) Consumption Retrofit": r_oil,
+            "Heating Fuel (Oil) Consumption Savings": s_oil, 
+            #~ "Heating Fuel (Oil) Cost Baseline": ,
+            #~ "Heating Fuel (Oil) Cost Retrofit": ,
+            #~ "Heating Fuel (Oil) Cost Savings": ,
+            
+            "Heating Fuel (Biomass) Consumption Baseline": b_bio,
+            "Heating Fuel (Biomass) Consumption Retrofit": r_bio,
+            "Heating Fuel (Biomass) Consumption Savings": s_bio, 
+            #~ "Heating Fuel (Biomass) Cost Baseline": ,
+            #~ "Heating Fuel (Biomass) Cost Retrofit": ,
+            #~ "Heating Fuel (Biomass) Cost Savings": ,
+            
+            "Heating Fuel (Electric) Consumption Baseline": b_elec,
+            "Heating Fuel (Electric) Consumption Retrofit": r_elec,
+            "Heating Fuel (Electric) Consumption Savings": s_elec, 
+            #~ "Heating Fuel (Electric) Cost Baseline": ,
+            #~ "Heating Fuel (Electric) Cost Retrofit": ,
+            #~ "Heating Fuel (Electric) Cost Savings": ,
+            
+            "Heating Fuel (Propane) Consumption Baseline": b_LP,
+            "Heating Fuel (Propane) Consumption Retrofit": r_LP,
+            "Heating Fuel (Propane) Consumption Savings": s_LP, 
+            #~ "Heating Fuel (Propane) Cost Baseline": ,
+            #~ "Heating Fuel (Propane) Cost Retrofit": ,
+            #~ "Heating Fuel (Propane) Cost Savings": ,
+            
+            "Heating Fuel (Natural Gas) Consumption Baseline": b_NG,
+            "Heating Fuel (Natural Gas) Consumption Retrofit": r_NG,
+            "Heating Fuel (Natural Gas) Consumption Savings": s_NG, 
+            #~ "Heating Fuel (Natural Gas) Cost Baseline": ,
+            #~ "Heating Fuel (Natural Gas) Cost Retrofit": ,
+            #~ "Heating Fuel (Natural Gas) Cost Savings": ,
+    
+            "Total Cost Savings": self.get_total_savings_costs(),
+            "Net Benefit": self.get_net_beneft(),
+            }, years)
+
+        df = df.round().astype(int)
+        df = df[["Heating Fuel (All) Consumption Baseline",
+                "Heating Fuel (All) Consumption Retrofit",
+                "Heating Fuel (All) Consumption Savings",
+                "Heating Fuel (Oil) Consumption Baseline",
+                "Heating Fuel (Oil) Consumption Retrofit",
+                "Heating Fuel (Oil) Consumption Savings",
+                "Heating Fuel (Biomass) Consumption Baseline",
+                "Heating Fuel (Biomass) Consumption Retrofit",
+                "Heating Fuel (Biomass) Consumption Savings",
+                "Heating Fuel (Electric) Consumption Baseline",
+                "Heating Fuel (Electric) Consumption Retrofit",
+                "Heating Fuel (Electric) Consumption Savings",
+                "Heating Fuel (Propane) Consumption Baseline",
+                "Heating Fuel (Propane) Consumption Retrofit",
+                "Heating Fuel (Propane) Consumption Savings",
+                "Heating Fuel (Natural Gas) Consumption Baseline",
+                "Heating Fuel (Natural Gas) Consumption Retrofit",
+                "Heating Fuel (Natural Gas) Consumption Savings",
+                "Heating Fuel (All) Cost Baseline",
+                "Heating Fuel (All) Cost Retrofit",
+                "Heating Fuel (All) Cost Savings",
+                "Total Cost Savings",
+                "Net Benefit"
+                ]]
+            
+        
+        df["community"] = self.cd['name']
+        df["population"] = self.forecast.get_population(self.start_year,
+                                                        self.end_year)
+
+        df = df[df.columns[-2:].tolist() + df.columns[:-2].tolist()]
+
+        fname = os.path.join(directory,
+                                   self.component_name + "_output.csv")
+        fname = fname.replace(" ","_")
+        
+        
+        fin_str = "Enabled" if self.cd["model financial"] else "Disabled"
+        fd = open(fname, 'w')
+        fd.write(("# " + self.component_name + " model outputs\n"
+          "# year: year for projection \n"
+          "# consumption columns are the are"
+                    " the ammout of fuel used by type(mmbtu)\n"
+          "# cost columns are in dollars"
+          "# Project Capital Cost: Cost of retrofits \n"
+          "# Total Cost Savings: savings from retrofits\n"
+          "# Net Benefit: benefit from retrofits\n"
+                  )) 
+        fd.close()
+        
+        # save npv stuff
+        df2 = DataFrame([self.get_NPV_benefits(),self.get_NPV_costs(),
+                            self.get_NPV_net_benefit(),self.get_BC_ratio()],
+                       ['NPV Benefits','NPV Cost',
+                            'NPV Net Benefit','Benefit Cost Ratio'])
+        df2.to_csv(fname, header = False, mode = 'a')
+        
+        # save to end of project(actual lifetime)
+        df.ix[:self.actual_end_year].to_csv(fname, index_label="year", 
+                                                                    mode = 'a')
         
 
 component = ResidentialBuildings
