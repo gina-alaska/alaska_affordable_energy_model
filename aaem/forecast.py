@@ -261,30 +261,53 @@ class Forecast (object):
             return self.households.ix[start].T.values[0]
         return self.households.ix[start:end-1].T.values[0]
         
-    def save_forecast (self, path):
+    def save_forecast (self, path, png_path = None):
         """
         save the forecast to a csv
         pre:
             everything needs to be foretasted
+            path: path to each communities output dir
+            png_path: altenat location for pngs
         post:
             saves 3 files
         """
         tag = self.cd.get_item("community", "name").replace(" ", "_") + "_"
         pathrt = os.path.join(path, tag)
-        os.makedirs(os.path.join(path,"images"))
+        if png_path is None:
+            os.makedirs(os.path.join(path,"images"))
+            png_path = os.path.join(path, 'images',tag)
+            epng_path = png_path
+            hdpng_path = png_path
+            hfpng_path = png_path;
+        else:
+            epng_path = os.path.join(png_path,'electric_forecast',tag)
+            try:
+                os.makedirs(os.path.join(png_path,'electric_forecast'))
+            except OSError:
+                pass
+            hdpng_path = os.path.join(png_path,'heat_demand_forecast',tag)
+            try:
+                os.makedirs(os.path.join(png_path,'heat_demand_forecast'))
+            except OSError:
+                pass
+            hfpng_path = os.path.join(png_path,'heating_fuel_forecast',tag)
+            try:
+                os.makedirs(os.path.join(png_path,'heating_fuel_forecast'))
+            except OSError:
+                pass
         if self.cd.intertie != 'child':
 
             #~ start = datetime.now() 
-            self.save_electric(pathrt, os.path.join(path,"images",tag))
+            self.save_electric(pathrt, epng_path)
             #~ print "saving electric:" + str(datetime.now() - start)
         if self.cd.intertie != 'parent':
      
             #~ start = datetime.now() 
-            self.save_heat_demand(pathrt, os.path.join(path,"images",tag))
+            self.save_heat_demand(pathrt, hdpng_path)
             #~ print "saving heat demand:" + str(datetime.now() - start)
             
             #~ start = datetime.now() 
-            self.save_heating_fuel(pathrt, os.path.join(path,"images",tag))
+            self.save_heating_fuel(pathrt, hfpng_path)
             #~ print "saving heating fuel:" + str( datetime.now() - start)
     
     def add_heat_demand_column (self, key, year_col, data_col):

@@ -42,6 +42,7 @@ class RunCommand(pycommand.CommandBase):
         
         if self.args and os.path.exists(self.args[0]):
             base = os.path.abspath(self.args[0])
+            img_dir = os.path.join(base,'results','__images')
         else:
             print  "run needs a directory"
             return 0
@@ -69,7 +70,7 @@ class RunCommand(pycommand.CommandBase):
         
         if self.flags.log:
             sys.stdout  = open(self.flags.log, 'w')
-        driver.run(batch, "")
+        driver.run(batch, "", img_dir)
         sys.stdout = sout
         
         fd = open(os.path.join(base, "version_metadata.txt"), 'r')

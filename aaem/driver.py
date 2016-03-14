@@ -123,7 +123,7 @@ class Driver (object):
                                                           "component_outputs/"))
             self.comps_used[comp].save_additional_output(directory)
     
-    def save_forecast_output (self, directory):
+    def save_forecast_output (self, directory, img_dir):
         """
         save the forecast output:
         pre:
@@ -131,7 +131,7 @@ class Driver (object):
         post: 
             the forecast is saved as a csv file
         """
-        self.fc.save_forecast(directory)
+        self.fc.save_forecast(directory, img_dir)
     
     def save_input_files (self, directory):
         """ 
@@ -189,7 +189,8 @@ def run_model_simple (model_root, run_name, community):
 
 def run_model (config_file = None, name = None, override_data = None, 
                             default_data = None, input_data = None,
-                            results_dir = None, results_suffix = None):
+                            results_dir = None, results_suffix = None, 
+                            img_dir = None):
     """ 
     run the model given an input file
     pre:
@@ -271,13 +272,18 @@ def run_model (config_file = None, name = None, override_data = None,
                 pass
         except OSError:
             pass
-        model.save_forecast_output(out_dir)
+        model.save_forecast_output(out_dir, img_dir)
         model.save_input_files(out_dir)
         
         try:
-            
+            try:
+                gfc_img_dir = os.path.join(img_dir,'generation_forecast')
+                os.makedirs(gfc_img_dir)
+                
+            except OSError:
+                pass
             #~ start = datetime.now() 
-            create_generation_forecast([model],out_dir)
+            create_generation_forecast([model],out_dir, gfc_img_dir)
             #~ print "saving generation fc:" + str( datetime.now() - start)
         except (IndexError, KeyError):
             model.di.add_warning("Generation Forecast", 
@@ -356,7 +362,7 @@ def config_split (root, out):
     
 
 
-def run_batch (config, suffix = "TS"):
+def run_batch (config, suffix = "TS", img_dir = None):
     """
     run a set of communities
     
@@ -379,13 +385,15 @@ def run_batch (config, suffix = "TS"):
     except:
         pass
     communities = {}
+    
     if suffix == "TS":
         suffix = datetime.strftime(datetime.now(),"%Y%m%d%H%M%S")
     for key in config:
         print key
         #~ try:
         #~ start = datetime.now()
-        r_val = run_model(config[key], results_suffix = suffix)
+        r_val = run_model(config[key], results_suffix = suffix, 
+                          img_dir = img_dir)
         communities[key] = {"model": r_val[0], "directory": r_val[1]}
         #~ print datetime.now() - start
         #~ except StandardError as e :
@@ -614,7 +622,7 @@ def write_config (com_id, root):
 
     
     
-def create_generation_forecast (models, path):
+def create_generation_forecast (models, path, img_dir = None):
     """  
     creates the generation forecast file
     pre:
@@ -770,7 +778,9 @@ def create_generation_forecast (models, path):
 
 
     plot.create_legend(fig,.20)
-    plot.save(fig,os.path.join(path,'images',
+    if img_dir is None:
+        img_dir = os.path.join(path,'images')
+    plot.save(fig,os.path.join(img_dir,
                             name.replace(" ",'_') + "_generation_forecast.png"))
     plot.clear(fig)
 
@@ -784,7 +794,7 @@ def create_generation_forecast (models, path):
     return gen_fc
     
     
-def run (batch_file, suffix = "TS", dev = False):
+def run (batch_file, suffix = "TS", img_dir= None, dev = False):
     """
     run function
     pre:
@@ -799,7 +809,7 @@ def run (batch_file, suffix = "TS", dev = False):
     """
     if not dev:
         warnings.filterwarnings("ignore")
-    stuff = run_batch(batch_file, suffix)
+    stuff = run_batch(batch_file, suffix,img_dir)
     warnings.filterwarnings("default")
     return stuff
     
