@@ -411,25 +411,47 @@ class ResidentialBuildings(AnnualSavings):
             save the output from the component. Override the default version 
         because of the extra-fuel sources.
         """
+        HF_price = (self.diesel_prices + self.cd['heating fuel premium'])
+        wood_price = 250 # TODO: change to mutable
+        elec_price = self.elec_prices[self.start_year-self.start_year:
+                                         self.end_year-self.start_year]
+        LP_price = 0 # TODO: find
+        gas_price = 0 # TODO: find
+        
         b_oil = self.baseline_fuel_Hoil_consumption/constants.mmbtu_to_gal_HF
         r_oil = self.refit_fuel_Hoil_consumption/constants.mmbtu_to_gal_HF
         s_oil = b_oil - r_oil
+        b_oil_cost = self.baseline_fuel_Hoil_consumption * HF_price
+        r_oil_cost = self.refit_fuel_Hoil_consumption * HF_price
+        s_oil_cost = b_oil_cost - r_oil_cost
         
         b_bio = self.baseline_fuel_wood_consumption/constants.mmbtu_to_cords
         r_bio = self.refit_fuel_wood_consumption/constants.mmbtu_to_cords
         s_bio = b_bio - r_bio
+        b_bio_cost = self.baseline_fuel_wood_consumption * wood_price
+        r_bio_cost = self.refit_fuel_wood_consumption * wood_price
+        s_bio_cost = b_bio_cost - r_bio_cost
         
         b_elec = self.baseline_fuel_kWh_consumption/constants.mmbtu_to_kWh
         r_elec = self.refit_fuel_kWh_consumption/constants.mmbtu_to_kWh
         s_elec = b_elec - r_elec
+        b_elec_cost = self.baseline_fuel_kWh_consumption * elec_price
+        r_elec_cost = self.refit_fuel_kWh_consumption * elec_price
+        s_elec_cost = b_elec_cost - r_elec_cost
         
         b_LP = self.baseline_fuel_LP_consumption/constants.mmbtu_to_gal_LP
         r_LP = self.refit_fuel_LP_consumption/constants.mmbtu_to_gal_LP
         s_LP = b_LP - r_LP
+        b_LP_cost = self.baseline_fuel_LP_consumption * LP_price
+        r_LP_cost = self.refit_fuel_LP_consumption * LP_price
+        s_LP_cost = b_LP_cost - r_LP_cost
         
         b_NG = self.baseline_fuel_gas_consumption/constants.mmbtu_to_Mcf
         r_NG = self.refit_fuel_gas_consumption/constants.mmbtu_to_Mcf
         s_NG = b_NG - r_NG
+        b_NG_cost = self.baseline_fuel_gas_consumption * gas_price
+        r_NG_cost = self.refit_fuel_gas_consumption * gas_price
+        s_NG_cost = b_NG_cost - r_NG_cost
         
     
         
@@ -447,46 +469,44 @@ class ResidentialBuildings(AnnualSavings):
             "Heating Fuel (Oil) Consumption Baseline": b_oil,
             "Heating Fuel (Oil) Consumption Retrofit": r_oil,
             "Heating Fuel (Oil) Consumption Savings": s_oil, 
-            #~ "Heating Fuel (Oil) Cost Baseline": ,
-            #~ "Heating Fuel (Oil) Cost Retrofit": ,
-            #~ "Heating Fuel (Oil) Cost Savings": ,
+            "Heating Fuel (Oil) Cost Baseline": b_oil_cost,
+            "Heating Fuel (Oil) Cost Retrofit": r_oil_cost ,
+            "Heating Fuel (Oil) Cost Savings": s_oil_cost,
             
             "Heating Fuel (Biomass) Consumption Baseline": b_bio,
             "Heating Fuel (Biomass) Consumption Retrofit": r_bio,
             "Heating Fuel (Biomass) Consumption Savings": s_bio, 
-            #~ "Heating Fuel (Biomass) Cost Baseline": ,
-            #~ "Heating Fuel (Biomass) Cost Retrofit": ,
-            #~ "Heating Fuel (Biomass) Cost Savings": ,
+            "Heating Fuel (Biomass) Cost Baseline": b_bio_cost,
+            "Heating Fuel (Biomass) Cost Retrofit": r_bio_cost,
+            "Heating Fuel (Biomass) Cost Savings": s_bio_cost,
             
             "Heating Fuel (Electric) Consumption Baseline": b_elec,
             "Heating Fuel (Electric) Consumption Retrofit": r_elec,
             "Heating Fuel (Electric) Consumption Savings": s_elec, 
-            #~ "Heating Fuel (Electric) Cost Baseline": ,
-            #~ "Heating Fuel (Electric) Cost Retrofit": ,
-            #~ "Heating Fuel (Electric) Cost Savings": ,
+            "Heating Fuel (Electric) Cost Baseline": b_elec_cost,
+            "Heating Fuel (Electric) Cost Retrofit": r_elec_cost,
+            "Heating Fuel (Electric) Cost Savings": s_elec_cost,
             
             "Heating Fuel (Propane) Consumption Baseline": b_LP,
             "Heating Fuel (Propane) Consumption Retrofit": r_LP,
             "Heating Fuel (Propane) Consumption Savings": s_LP, 
-            #~ "Heating Fuel (Propane) Cost Baseline": ,
-            #~ "Heating Fuel (Propane) Cost Retrofit": ,
-            #~ "Heating Fuel (Propane) Cost Savings": ,
+            "Heating Fuel (Propane) Cost Baseline": b_LP_cost,
+            "Heating Fuel (Propane) Cost Retrofit": r_LP_cost,
+            "Heating Fuel (Propane) Cost Savings": s_LP_cost,
             
             "Heating Fuel (Natural Gas) Consumption Baseline": b_NG,
             "Heating Fuel (Natural Gas) Consumption Retrofit": r_NG,
             "Heating Fuel (Natural Gas) Consumption Savings": s_NG, 
-            #~ "Heating Fuel (Natural Gas) Cost Baseline": ,
-            #~ "Heating Fuel (Natural Gas) Cost Retrofit": ,
-            #~ "Heating Fuel (Natural Gas) Cost Savings": ,
+            "Heating Fuel (Natural Gas) Cost Baseline": b_NG_cost,
+            "Heating Fuel (Natural Gas) Cost Retrofit": r_NG_cost,
+            "Heating Fuel (Natural Gas) Cost Savings": s_NG_cost,
     
             "Total Cost Savings": self.get_total_savings_costs(),
             "Net Benefit": self.get_net_beneft(),
             }, years)
 
         df = df.round().astype(int)
-        df = df[["Heating Fuel (All) Consumption Baseline",
-                "Heating Fuel (All) Consumption Retrofit",
-                "Heating Fuel (All) Consumption Savings",
+        df = df[[
                 "Heating Fuel (Oil) Consumption Baseline",
                 "Heating Fuel (Oil) Consumption Retrofit",
                 "Heating Fuel (Oil) Consumption Savings",
@@ -502,6 +522,24 @@ class ResidentialBuildings(AnnualSavings):
                 "Heating Fuel (Natural Gas) Consumption Baseline",
                 "Heating Fuel (Natural Gas) Consumption Retrofit",
                 "Heating Fuel (Natural Gas) Consumption Savings",
+                "Heating Fuel (All) Consumption Baseline",
+                "Heating Fuel (All) Consumption Retrofit",
+                "Heating Fuel (All) Consumption Savings",
+                "Heating Fuel (Oil) Cost Baseline",
+                "Heating Fuel (Oil) Cost Retrofit",
+                "Heating Fuel (Oil) Cost Savings",
+                "Heating Fuel (Biomass) Cost Baseline",
+                "Heating Fuel (Biomass) Cost Retrofit",
+                "Heating Fuel (Biomass) Cost Savings",
+                "Heating Fuel (Electric) Cost Baseline",
+                "Heating Fuel (Electric) Cost Retrofit",
+                "Heating Fuel (Electric) Cost Savings",
+                "Heating Fuel (Propane) Cost Baseline",
+                "Heating Fuel (Propane) Cost Retrofit",
+                "Heating Fuel (Propane) Cost Savings",
+                "Heating Fuel (Natural Gas) Cost Baseline",
+                "Heating Fuel (Natural Gas) Cost Retrofit",
+                "Heating Fuel (Natural Gas) Cost Savings",
                 "Heating Fuel (All) Cost Baseline",
                 "Heating Fuel (All) Cost Retrofit",
                 "Heating Fuel (All) Cost Savings",
@@ -512,7 +550,7 @@ class ResidentialBuildings(AnnualSavings):
         
         df["community"] = self.cd['name']
         df["population"] = self.forecast.get_population(self.start_year,
-                                                        self.end_year)
+                                                        self.end_year).astype(int)
 
         df = df[df.columns[-2:].tolist() + df.columns[:-2].tolist()]
 
