@@ -298,6 +298,12 @@ class Preprocessor (object):
                 "# Data Source: hdd.csv\n"
                 "# HDD: heating degree-days per year for community (HDD/Yr)\n"
                 "" + self.comments_dataframe_divide + "" )
+                
+    def propane_prices_header (self):
+        """
+        
+        """
+        pass
 
     ## PROCESS FUNCTIONS #######################################################
     def population (self, threshold = 20, end_year = 2040,
