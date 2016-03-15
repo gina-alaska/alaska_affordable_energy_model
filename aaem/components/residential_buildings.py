@@ -230,6 +230,7 @@ class ResidentialBuildings(AnnualSavings):
         """
         """
         rd = self.comp_specs['data'].T
+        self.fuel_oil_percent = rd["Fuel Oil"]
         HH = self.forecast.get_households(self.start_year,self.end_year)
         
         area = np.float64(rd["pre_avg_area"])

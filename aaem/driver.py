@@ -404,6 +404,38 @@ def run_batch (config, suffix = "TS", img_dir = None):
              
     #~ log.close()
     return communities
+    
+def res_log (coms, dir3):
+    """
+    """
+    out = []
+    for c in coms:
+        if c.find("_intertie") != -1:
+            continue
+        try:
+            res = coms[c]['model'].comps_used['residential buildings']
+            out.append([c,
+                res.get_NPV_benefits(),res.get_NPV_costs(),
+                res.get_NPV_net_benefit(),res.get_BC_ratio(),
+                res.diesel_prices[0], res.init_HH, res.opportunity_HH,
+                res.baseline_HF_consumption[0],
+                res.baseline_HF_consumption[0] - res.refit_HF_consumption[0],
+                round(float(res.fuel_oil_percent)*100,2)])
+        except KeyError:
+            pass
+    data = DataFrame(out,columns = ['community','NPV Benefit','NPV Cost', 
+                           'NPV Net Benefit', 'B/C Ratio',
+                           'Heating Oil Price - year 1',
+                           'Occupied Houses', 'Houses to Retrofit', 
+                           'Heating Oil Consumed(gal) - year 1',
+                           'Heating Oil Saved(gal/year)',
+                           'Heating Oil as percent of Total Heating Fuels']
+                    ).set_index('community').round(2)
+    f_name = os.path.join(dir3,'residential_summary.csv')
+    fd = open(f_name,'w')
+    fd.write("# residental building component summary by community\n")
+    fd.close()
+    data.to_csv(f_name, mode='a')
 
 def setup (coms, data_repo, model_root, 
            save_bacth_files = False, run_name = 'run_init',

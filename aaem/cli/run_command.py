@@ -70,7 +70,9 @@ class RunCommand(pycommand.CommandBase):
         
         if self.flags.log:
             sys.stdout  = open(self.flags.log, 'w')
-        driver.run(batch, "", img_dir)
+        coms = driver.run(batch, "", img_dir)
+        driver.res_log(coms,os.path.join(base,'results'))
+        
         sys.stdout = sout
         
         fd = open(os.path.join(base, "version_metadata.txt"), 'r')
