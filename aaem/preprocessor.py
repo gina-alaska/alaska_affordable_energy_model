@@ -86,6 +86,9 @@ class Preprocessor (object):
             os.makedirs(out_dir)
         except OSError:
             pass
+            
+        self.load_ids()
+        self.propane_prices()
 
         ### copy files that still need their own preprocessor function yet
         shutil.copy(os.path.join(data_dir,"diesel_fuel_prices.csv"), out_dir)
@@ -301,9 +304,9 @@ class Preprocessor (object):
                 
     def propane_prices_header (self):
         """
-        
         """
-        pass
+        return "# prices"
+        
 
     ## PROCESS FUNCTIONS #######################################################
     def population (self, threshold = 20, end_year = 2040,
@@ -1255,8 +1258,28 @@ class Preprocessor (object):
         fd.write("HDD," + str(hdd) +"\n")
         fd.close()
 
-
-
+    def propane_prices (self):
+        """
+        """
+        in_file = os.path.join(self.data_dir, "propane_price_estimates.csv")
+        data = read_csv(in_file, index_col=0,comment = "#", header=0)
+        return self.get_communities_data(data)
+        
+    def get_communities_data(self, dataframe):
+        dataframe = dataframe.ix[self.id_list]
+        return dataframe.ix[dataframe.index[dataframe.T.any()]]  
+    
+    def load_ids (self):
+        """
+        """
+        in_file = os.path.join(self.data_dir, "community_list.csv")
+        data = read_csv(in_file)
+        ids = data.ix[data.index[data.T[data.T==self.com_id].any()]]
+        region = ids['Energy Region'].values[0]
+        ids = ids[ids.keys()[ids.keys()!='Energy Region']].set_index("Model ID")
+        self.energy_region = region
+        self.id_df = ids
+        self.id_list = ids.values[0].tolist()
 
 def preprocess (data_dir, out_dir, com_id):
     """ Function doc """
