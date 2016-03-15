@@ -110,11 +110,12 @@ class SetupCommand(pycommand.CommandBase):
                          comment="#",index_col=0).Community.tolist()
             full = True
 
+        img_dir = os.path.join(model_root,'run_init','results','__images')
 
         print "Setting up..."
         config = driver.setup(coms, raw, model_root, setup_intertie = full)
         print "Running ..."
-        driver.run(config, "")
+        driver.run(config, "",img_dir )
 
 
 
