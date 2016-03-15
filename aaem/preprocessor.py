@@ -27,7 +27,8 @@ MODEL_FILES = {"DIESEL_PRICES": "diesel_fuel_prices.csv",
                "RES_DATA": "residential_data.csv",
                "WWW_DATA": "wastewater_data.csv",
                "POPULATION": "population.csv",
-               "ELECTRICITY": "yearly_electricity_summary.csv"}
+               "ELECTRICITY": "yearly_electricity_summary.csv",
+               "PRICES_NONELECTRIC": 'prices_non-electric_fixed.csv'}
 
 def growth(xs, ys , x):
     """
@@ -88,7 +89,7 @@ class Preprocessor (object):
             pass
             
         self.load_ids()
-        self.propane_prices()
+        self.prices()
 
         ### copy files that still need their own preprocessor function yet
         shutil.copy(os.path.join(data_dir,"diesel_fuel_prices.csv"), out_dir)
@@ -1258,19 +1259,82 @@ class Preprocessor (object):
         fd.write("HDD," + str(hdd) +"\n")
         fd.close()
 
-    def propane_prices (self):
+    def prices (self):
+        """
+        """
+        out_file = os.path.join(self.out_dir, "prices_non-electric_fixed.csv")
+        fd = open(out_file,'w')
+        fd.write(self.hdd_header())
+        fd.write("fuel, price\n")
+        fd.write("Propane," + str(self.prices_propane()) +"\n")
+        fd.write("Biomass," + str(self.prices_biomass()) +"\n")
+        fd.close()
+        
+        
+        ## update the way diesel works at some point
+        #~ self.prices_diesel()
+        
+
+    def prices_propane (self):
+        """
+        """
+        #~ print self.com_id
+        in_file = os.path.join(self.data_dir, "propane_price_estimates.csv")
+        data = read_csv(in_file, index_col=0,comment = "#", header=0)
+        if len(self.get_communities_data(data)['Source'].values)==0:
+            self.diagnostics.add_warning("prices-propane", "not found")
+            return np.nan
+            
+        self.diagnostics.add_note("prices-propane", "price source: " +\
+                      str(self.get_communities_data(data)['Source'].values[0]))
+        return float(self.get_communities_data(data)['Propane ($/gallon)'])
+        
+    def prices_diesel (self):
+        """
+        """
+        in_file = os.path.join(self.data_dir, "diesel_fuel_prices.csv")
+        data = read_csv(in_file, index_col=3, comment="#", header=0)
+        data = self.get_communities_data(data)
+        try:
+            keys = data.keys()[3:]
+            data = np.array(data.values[0][3:], dtype = np.float64)
+       
+        except IndexError:
+            data = read_csv(in_file, index_col=3, comment="#", header=0)
+            keys = data.keys()[3:]
+            data = np.array(data.mean().values[2:], dtype = np.float64)
+            
+        return DataFrame({"year":keys,"price diesel":data}).set_index("year")
+    
+    def prices_biomass (self):
         """
         """
         in_file = os.path.join(self.data_dir, "propane_price_estimates.csv")
         data = read_csv(in_file, index_col=0,comment = "#", header=0)
-        return self.get_communities_data(data)
+        
+        if len(self.get_communities_data(data)['Source'].values)==0:
+            self.diagnostics.add_warning("prices-biomass", "not found")
+            return np.nan
+        self.diagnostics.add_warning("prices-biomass", "price source: " +\
+                      str(self.get_communities_data(data)['Source'].values[0]))
+        try:
+            val = float(self.get_communities_data(data)['Propane ($/gallon)'])         
+        except ValueError:
+            val = np.nan
+        return val
         
     def get_communities_data(self, dataframe):
+        """
+            pull the data for a community out of a data frame with multiple 
+        communities. 
+        """
         dataframe = dataframe.ix[self.id_list]
         return dataframe.ix[dataframe.index[dataframe.T.any()]]  
     
     def load_ids (self):
         """
+            for a community get a list of alternate id's and potential synonyms 
+        for the id.
         """
         in_file = os.path.join(self.data_dir, "community_list.csv")
         data = read_csv(in_file)
@@ -1366,6 +1430,7 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
                                     ("" + com + " is using it's "
                                      "parent's (" + parent + ""
                                      ") prices"))
+
 
         f_path = os.path.join(out_dir,com,"hdd.csv")
         if com != parent and not os.path.exists(f_path):
@@ -1488,6 +1553,8 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
     shutil.copy(os.path.join(parent_dir,"residential_data.csv"), out_dir)
     diagnostics.add_note("Intertie(wastewater_data)", "from parent")
     shutil.copy(os.path.join(parent_dir,"wastewater_data.csv"), out_dir)
+    shutil.copy(os.path.join(parent_dir,
+            MODEL_FILES["PRICES_NONELECTRIC"]),out_dir)                  
 
 
     return pp_data
