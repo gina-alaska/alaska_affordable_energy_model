@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.5.2]
+### changed
+- default colors
+
 ## [0.5.1]
 ### changed
 - output images created with run command will be in a seperate directory with in results(__images)
