@@ -38,3 +38,10 @@ colors_0 = [crimson,vermilion,
 colors = [red,goldenrod,viridian,cobalt,
             vermilion,orange,avacado,blue, 
           crimson,green,cerulean,amethyst, jet]
+
+green = avacado
+#~ blue = cer
+
+colors = [[min(1,r*4) for r in red], red, [ min(1,r*2) for r in red],orange,yellow,
+         [min(1,r*4)for r in green], green, [ min(1,r*2) for r in green],
+         [min(1,r*4) for r in blue], blue, [ min(1,r*2) for r in blue],amethyst, jet]
