@@ -436,6 +436,43 @@ def res_log (coms, dir3):
     fd.write("# residental building component summary by community\n")
     fd.close()
     data.to_csv(f_name, mode='a')
+    
+def com_log (coms, dir3): 
+    """
+    """
+    out = []
+    for c in coms:
+        if c.find("_intertie") != -1:
+            continue
+        try:
+            com = coms[c]['model'].comps_used['non-residential buildings']
+            out.append([c,
+                com.get_NPV_benefits(),com.get_NPV_costs(),
+                com.get_NPV_net_benefit(),com.get_BC_ratio(),
+                com.diesel_prices[0], com.elec_price[0], 
+                com.num_buildigns , com.refit_sqft_total,
+                com.baseline_HF_consumption,
+                com.baseline_kWh_consumption,
+                com.baseline_HF_consumption - com.refit_HF_consumption,
+                com.baseline_kWh_consumption - com.refit_kWh_consumption])
+        except KeyError:
+            pass
+    data = DataFrame(out,columns = ['community','NPV Benefit','NPV Cost', 
+                           'NPV Net Benefit', 'B/C Ratio',
+                           'Heating Oil Price - year 1','$ per kWh - year 1',
+                           'Number Buildings', 'Total Square Footage', 
+                           'Heating Oil Consumed(gal) - year 1',
+                           'Electricity Consumed(kWh) - year 1',
+                           'Heating Oil Saved(gal/year)',
+                           'Electricity Saved(kWh/year)'
+                           ]
+                    ).set_index('community').round(2)
+    f_name = os.path.join(dir3,'non-residential_summary.csv')
+    fd = open(f_name,'w')
+    fd.write("# non residental building component summary by community\n")
+    fd.close()
+    data.to_csv(f_name, mode='a')
+
 
 def setup (coms, data_repo, model_root, 
            save_bacth_files = False, run_name = 'run_init',

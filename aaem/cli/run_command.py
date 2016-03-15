@@ -72,6 +72,7 @@ class RunCommand(pycommand.CommandBase):
             sys.stdout  = open(self.flags.log, 'w')
         coms = driver.run(batch, "", img_dir)
         driver.res_log(coms,os.path.join(base,'results'))
+        driver.com_log(coms,os.path.join(base,'results'))
         
         sys.stdout = sout
         
