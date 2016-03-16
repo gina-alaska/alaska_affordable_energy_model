@@ -182,6 +182,7 @@ class CommunityBuildings (AnnualSavings):
         post:
             a warning may be added to self.diagnostics 
         """
+        self.num_buildigns = self.comp_specs["number buildings"]
         self.additional_buildings = self.comp_specs["number buildings"] - \
                             len(self.comp_specs['com building data']) 
 
@@ -500,6 +501,7 @@ class CommunityBuildings (AnnualSavings):
         """
         elec_price = self.cd["elec non-fuel cost"]+\
                     self.diesel_prices/self.cd['diesel generation efficiency']
+        self.elec_price = elec_price
         self.baseline_kWh_cost = self.baseline_kWh_consumption * elec_price
                     
         self.refit_kWh_cost = self.refit_kWh_consumption * elec_price
@@ -519,6 +521,7 @@ class CommunityBuildings (AnnualSavings):
             self.annual_heating_savings containt the projected savings
         """
         fuel_price = (self.diesel_prices + self.cd['heating fuel premium'])
+        self.fuel_price = fuel_price
         self.baseline_HF_cost = self.baseline_HF_consumption * fuel_price
                     
         self.refit_HF_cost = self.refit_HF_consumption * fuel_price
