@@ -73,7 +73,7 @@ class RunCommand(pycommand.CommandBase):
         coms = driver.run(batch, "", img_dir)
         driver.res_log(coms,os.path.join(base,'results'))
         driver.com_log(coms,os.path.join(base,'results'))
-        
+        driver.village_log(coms,os.path.join(base,'results'))
         sys.stdout = sout
         
         fd = open(os.path.join(base, "version_metadata.txt"), 'r')

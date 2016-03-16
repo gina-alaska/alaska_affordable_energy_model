@@ -472,6 +472,61 @@ def com_log (coms, dir3):
     fd.write("# non residental building component summary by community\n")
     fd.close()
     data.to_csv(f_name, mode='a')
+    
+def village_log (coms, dir3): 
+    """
+    """
+    out = []
+    for c in coms:
+        if c.find("_intertie") != -1:
+            continue
+        
+        try:
+            res = coms[c]['model'].comps_used['residential buildings']
+            res_con = [res.baseline_HF_consumption[0], np.nan]
+            res_cost = [res.baseline_HF_cost[0], np.nan]
+        except KeyError:
+            res_con = [np.nan, np.nan]
+            res_cost = [np.nan, np.nan]
+        try:
+            com = coms[c]['model'].comps_used['non-residential buildings']
+            com_con = [com.baseline_HF_consumption,com.baseline_kWh_consumption]
+            com_cost = [com.baseline_HF_cost[0],com.baseline_kWh_cost[0]]
+        except KeyError:
+            com_con = [np.nan, np.nan]
+            com_cost = [np.nan, np.nan]
+        try:
+            ww = coms[c]['model'].comps_used['water wastewater']
+            ww_con = [ww.baseline_HF_consumption[0],
+                            ww.baseline_kWh_consumption[0]]
+            ww_cost = [ww.baseline_HF_cost[0],ww.baseline_kWh_cost[0]]
+        except KeyError:
+            ww_con = [np.nan, np.nan]
+            ww_cost = [np.nan, np.nan]
+        t = [c, coms[c]['model'].cd.get_item('community','region')] +\
+            res_con + com_con + ww_con + res_cost + com_cost + ww_cost 
+        out.append(t)
+    start_year = 2017
+    data = DataFrame(out,columns = ['community','Region',
+                    'Residential Heat (MMBTU)', 
+                    'Residential Electricity (MMBTU)',
+                    'Non-Residential Heat (MMBTU)', 
+                    'Non-Residential Electricity (MMBTU)',
+                    'Water/Wastewater Heat (MMBTU)', 
+                    'Water/Wastewater Electricity (MMBTU)',
+                    'Residential Heat (cost ' + str(start_year)+')', 
+                    'Residential Electricity (cost ' + str(start_year)+')',
+                    'Non-Residential Heat (cost ' + str(start_year)+')',
+                    'Non-Residential Electricity (cost ' + str(start_year)+')',
+                    'Water/Wastewater Heat (cost ' + str(start_year)+')', 
+                    'Water/Wastewater Electricity (cost ' + str(start_year)+')',
+                    ]
+                    ).set_index('community')
+    f_name = os.path.join(dir3,'village_sector_consumption_summary.csv')
+    fd = open(f_name,'w')
+    fd.write("# summary of consumption and cost\n")
+    fd.close()
+    data.to_csv(f_name, mode='a')
 
 
 def setup (coms, data_repo, model_root, 
