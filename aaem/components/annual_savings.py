@@ -335,35 +335,38 @@ class AnnualSavings (object):
         save the output from the component.
         """
         years = np.array(range(self.project_life)) + self.start_year
-        df = DataFrame({"Heating Fuel Use Baseline": self.get_base_HF_use(),
-                        "Heating Fuel Use Retrofit": self.get_refit_HF_use(),
-                        "Heating Fuel Use Savings": self.get_base_HF_use() -\
-                                                    self.get_refit_HF_use(), 
-                        "Heating Fuel Cost Baseline": self.get_base_HF_cost(),
-                        "Heating Fuel Cost Retrofit": self.get_refit_HF_cost(),
-                        "Heating Fuel Cost Savings": 
-                                                self.get_heating_savings_costs(),
-                        "Electricity Use Baseline": self.get_base_kWh_use(),
-                        "Electricity Use Retrofit": self.get_refit_kWh_use(),
-                        "Electricity Use Savings": self.get_base_kWh_use() -\
-                                                   self.get_refit_kWh_use(), 
-                        "Electricity Cost Basline": self.get_base_kWh_cost(),
-                        "Electricity Cost Retrofit": self.get_refit_kWh_cost(),
-                        "Electricity Cost Savings": 
-                                            self.get_electric_savings_costs(),
-                        "Project Capital Cost": self.get_capital_costs(),
-                        "Total Cost Savings": self.get_total_savings_costs(),
-                        "Net Benefit": self.get_net_beneft(),
+        df = DataFrame({
+                "Heating Oil Consumption Baseline": self.get_base_HF_use(),
+                "Heating Oil Consumption Retrofit": self.get_refit_HF_use(),
+                "Heating Oil Consumption Savings": self.get_base_HF_use() -\
+                                            self.get_refit_HF_use(), 
+                "Heating Oil Cost Baseline": self.get_base_HF_cost(),
+                "Heating Oil Cost Retrofit": self.get_refit_HF_cost(),
+                "Heating Oil Cost Savings": 
+                                        self.get_heating_savings_costs(),
+                "Electricity Consumption Baseline": self.get_base_kWh_use(),
+                "Electricity Consumption Retrofit": self.get_refit_kWh_use(),
+                "Electricity Consumption Savings": self.get_base_kWh_use() -\
+                                           self.get_refit_kWh_use(), 
+                "Electricity Cost Basline": self.get_base_kWh_cost(),
+                "Electricity Cost Retrofit": self.get_refit_kWh_cost(),
+                "Electricity Cost Savings": 
+                                    self.get_electric_savings_costs(),
+                "Project Capital Cost": self.get_capital_costs(),
+                "Total Cost Savings": self.get_total_savings_costs(),
+                "Net Benefit": self.get_net_beneft(),
                        }, years)
 
         df["community"] = self.cd['name']
         
         ol = ["community",
-              "Heating Fuel Use Baseline", "Heating Fuel Use Retrofit", 
-              "Heating Fuel Use Savings", "Heating Fuel Cost Baseline",
-              "Heating Fuel Cost Retrofit", "Heating Fuel Cost Savings",
-              "Electricity Use Baseline", "Electricity Use Retrofit", 
-              "Electricity Use Savings", "Electricity Cost Basline",
+              "Heating Oil Consumption Baseline", 
+              "Heating Oil Consumption Retrofit", 
+              "Heating Oil Consumption Savings", "Heating Oil Cost Baseline",
+              "Heating Oil Cost Retrofit", "Heating Oil Cost Savings",
+              "Electricity Consumption Baseline",
+              "Electricity Consumption Retrofit", 
+              "Electricity Consumption Savings", "Electricity Cost Basline",
               "Electricity Cost Retrofit", "Electricity Cost Savings",
               "Project Capital Cost", "Total Cost Savings", "Net Benefit"]
         fname = os.path.join(directory,
@@ -381,32 +384,32 @@ class AnnualSavings (object):
                   #~ "# NPV Net Benefit: " + str(self.get_NPV_benefits()) + '\n'
                   #~ "# Benefit Cost Ratio: " + str(self.get_BC_ratio()) + '\n'
                   #~ "# --------------------------------\n"
-              "# year: year for projection \n"
-              "# Heating Fuel Use Baseline: Gallons Heating "
-                                            "Fuel used with no retrofits \n"
-              "# Heating Fuel Use Retrofit: Gallons Heating "
-                                            "Fuel used with retrofits \n"
-              "# Heating Fuel Use Savings: Gallons Heating Fuel savings \n"
-              "# Heating Fuel Cost Baseline: Cost Heating "
-                                            "Fuel used with no retrofits \n"
-              "# Heating Fuel Cost Retrofit: Cost Heating "
-                                            "Fuel used with retrofits \n"
-              "# Heating Fuel Cost Savings: Cost Heating Fuel savings \n"
-              "# Electricity Use Baseline: kWh used with no retrofits \n"
-              "# Electricity Use Retrofit: kWh used with retrofits \n"
-              "# Electricity Use Savings: kWh savings \n"
-              "# Electricity Cost Baseline: Cost kWh used with no retrofits\n"
-              "# Electricity Cost Retrofit: Cost kWh used with retrofits \n"
-              "# Electricity Cost Savings: Cost kWh savings \n"
-              "# Project Capital Cost: Cost of retrofits \n"
-              "# Total Cost Savings: savings from retrofits\n"
-              "# Net Benefit: benefit from retrofits\n"
+          "# year: year for projection \n"
+          "# Heating Oil Consumption Baseline: Gallons Heating "
+                                        "Fuel used with no retrofits \n"
+          "# Heating Oil Consumption Retrofit: Gallons Heating "
+                                        "Fuel used with retrofits \n"
+          "# Heating Oil Consumption Savings: Gallons Heating Oil savings \n"
+          "# Heating Oil Cost Baseline: Cost Heating "
+                                        "Fuel used with no retrofits \n"
+          "# Heating Oil Cost Retrofit: Cost Heating "
+                                        "Fuel used with retrofits \n"
+          "# Heating Oil Cost Savings: Cost Heating Oil savings \n"
+          "# Electricity Consumption Baseline: kWh used with no retrofits \n"
+          "# Electricity Consumption Retrofit: kWh used with retrofits \n"
+          "# Electricity Consumption Savings: kWh savings \n"
+          "# Electricity Cost Baseline: Cost kWh used with no retrofits\n"
+          "# Electricity Cost Retrofit: Cost kWh used with retrofits \n"
+          "# Electricity Cost Savings: Cost kWh savings \n"
+          "# Project Capital Cost: Cost of retrofits \n"
+          "# Total Cost Savings: savings from retrofits\n"
+          "# Net Benefit: benefit from retrofits\n"
                   )) 
         fd.close()
         
         # save npv stuff
-        df2 = DataFrame([self.get_NPV_benefits(),self.get_NPV_benefits(),
-                            self.get_NPV_benefits(),self.get_BC_ratio()],
+        df2 = DataFrame([self.get_NPV_benefits(),self.get_NPV_costs(),
+                            self.get_NPV_net_benefit(),self.get_BC_ratio()],
                        ['NPV Benefits','NPV Cost',
                             'NPV Net Benefit','Benefit Cost Ratio'])
         df2.to_csv(fname, header = False, mode = 'a')
