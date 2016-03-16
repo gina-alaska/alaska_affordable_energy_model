@@ -36,6 +36,9 @@ absolute = """community:
   HDD: IMPORT
   diesel prices: IMPORT
   electric non-fuel prices: IMPORT
+  propane price: IMPORT
+  biomass price: IMPORT
+  natural gas price: 0
   
   generation numbers: IMPORT
 

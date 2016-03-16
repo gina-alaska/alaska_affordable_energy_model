@@ -277,6 +277,7 @@ def run_model (config_file = None, name = None, override_data = None,
         
         try:
             try:
+                print img_dir
                 gfc_img_dir = os.path.join(img_dir,'generation_forecast')
                 os.makedirs(gfc_img_dir)
                 

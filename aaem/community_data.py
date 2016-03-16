@@ -407,6 +407,17 @@ class CommunityData (object):
         except IOError:
             intertie = None
         self.intertie = intertie
+        
+        
+        
+        prices = self.load_pp_csv("prices_non-electric_fixed.csv")
+                
+        if self.get_item('community',"propane price") in IMPORT_FLAGS:
+            self.set_item("community", "propane price",
+                            np.float(prices.ix["Propane"]))
+        if self.get_item('community',"biomass price") in IMPORT_FLAGS:
+            self.set_item("community", "biomass price",
+                            np.float(prices.ix["Biomass"]))
             
     def load_pp_csv(self, f_name):
         """
