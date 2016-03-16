@@ -1,5 +1,15 @@
 #Change Log
 
+## [0.5.3]
+### changed
+- residential building component output file was reformatted. 
+- natural gas numbers are only calculated if a price is provided
+
+### added
+- propane, biomass, and natural gas price prices as options in config 
+- propane, and biomass prices preprocessed
+- summary file have been added.
+
 ## [0.5.2]
 ### changed
 - default colors
