@@ -422,7 +422,7 @@ def res_log (coms, dir3):
                 res.baseline_fuel_Hoil_consumption[0] - \
                         res.refit_fuel_Hoil_consumption[0],
                 round(float(res.fuel_oil_percent)*100,2)])
-        except KeyError:
+        except (KeyError,AttributeError):
             pass
     data = DataFrame(out,columns = ['community','NPV Benefit','NPV Cost', 
                            'NPV Net Benefit', 'B/C Ratio',
@@ -456,7 +456,7 @@ def com_log (coms, dir3):
                 com.baseline_kWh_consumption,
                 com.baseline_HF_consumption - com.refit_HF_consumption,
                 com.baseline_kWh_consumption - com.refit_kWh_consumption])
-        except KeyError:
+        except (KeyError,AttributeError):
             pass
     data = DataFrame(out,columns = ['community','NPV Benefit','NPV Cost', 
                            'NPV Net Benefit', 'B/C Ratio',
@@ -481,32 +481,35 @@ def village_log (coms, dir3):
     for c in coms:
         if c.find("_intertie") != -1:
             continue
-        
         try:
-            res = coms[c]['model'].comps_used['residential buildings']
-            res_con = [res.baseline_HF_consumption[0], np.nan]
-            res_cost = [res.baseline_HF_cost[0], np.nan]
-        except KeyError:
-            res_con = [np.nan, np.nan]
-            res_cost = [np.nan, np.nan]
-        try:
-            com = coms[c]['model'].comps_used['non-residential buildings']
-            com_con = [com.baseline_HF_consumption,com.baseline_kWh_consumption]
-            com_cost = [com.baseline_HF_cost[0],com.baseline_kWh_cost[0]]
-        except KeyError:
-            com_con = [np.nan, np.nan]
-            com_cost = [np.nan, np.nan]
-        try:
-            ww = coms[c]['model'].comps_used['water wastewater']
-            ww_con = [ww.baseline_HF_consumption[0],
-                            ww.baseline_kWh_consumption[0]]
-            ww_cost = [ww.baseline_HF_cost[0],ww.baseline_kWh_cost[0]]
-        except KeyError:
-            ww_con = [np.nan, np.nan]
-            ww_cost = [np.nan, np.nan]
-        t = [c, coms[c]['model'].cd.get_item('community','region')] +\
-            res_con + com_con + ww_con + res_cost + com_cost + ww_cost 
-        out.append(t)
+            try:
+                res = coms[c]['model'].comps_used['residential buildings']
+                res_con = [res.baseline_HF_consumption[0], np.nan]
+                res_cost = [res.baseline_HF_cost[0], np.nan]
+            except KeyError:
+                res_con = [np.nan, np.nan]
+                res_cost = [np.nan, np.nan]
+            try:
+                com = coms[c]['model'].comps_used['non-residential buildings']
+                com_con = [com.baseline_HF_consumption,
+                            com.baseline_kWh_consumption]
+                com_cost = [com.baseline_HF_cost[0],com.baseline_kWh_cost[0]]
+            except KeyError:
+                com_con = [np.nan, np.nan]
+                com_cost = [np.nan, np.nan]
+            try:
+                ww = coms[c]['model'].comps_used['water wastewater']
+                ww_con = [ww.baseline_HF_consumption[0],
+                                ww.baseline_kWh_consumption[0]]
+                ww_cost = [ww.baseline_HF_cost[0],ww.baseline_kWh_cost[0]]
+            except KeyError:
+                ww_con = [np.nan, np.nan]
+                ww_cost = [np.nan, np.nan]
+            t = [c, coms[c]['model'].cd.get_item('community','region')] +\
+                res_con + com_con + ww_con + res_cost + com_cost + ww_cost 
+            out.append(t)
+        except AttributeError:
+            pass
     start_year = 2017
     data = DataFrame(out,columns = ['community','Region',
                     'Residential Heat (MMBTU)', 

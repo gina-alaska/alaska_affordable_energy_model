@@ -263,7 +263,8 @@ class ResidentialBuildings(AnnualSavings):
         #~ self.baseline_fuel_coal_consumption
         #~ self.baseline_fuel_solar_consumption
         #~ self.baseline_fuel_other_consumption
-        
+        if self.cd['natural gas price'] == 0:
+            self.baseline_fuel_gas_consumption = 0
         
         self.baseline_HF_consumption = \
             self.baseline_fuel_Hoil_consumption * \
@@ -311,6 +312,9 @@ class ResidentialBuildings(AnnualSavings):
                                      
         self.refit_HF_consumption = \
                     self.baseline_HF_consumption - self.savings_mmbtu
+                    
+        if self.cd['natural gas price'] == 0:
+            self.refit_fuel_gas_consumption = 0
         # coal,solar, other
         
     def calc_refit_fuel_cost (self):
@@ -506,7 +510,10 @@ class ResidentialBuildings(AnnualSavings):
             "Net Benefit": self.get_net_beneft(),
             }, years)
 
-        df = df.round().astype(int)
+        try:
+            df = df.round().astype(int)
+        except ValueError:
+            pass
         df = df[[
                 "Heating Fuel (Oil) Consumption Baseline",
                 "Heating Fuel (Oil) Consumption Retrofit",
