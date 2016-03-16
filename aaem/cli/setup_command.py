@@ -100,6 +100,8 @@ class SetupCommand(pycommand.CommandBase):
         shutil.copy(os.path.join(repo, "VERSION"), raw)
         shutil.copy(os.path.join(repo, "community_list.csv"), raw)
         shutil.copy(os.path.join(repo, "propane_price_estimates.csv"), raw)
+        shutil.copy(os.path.join(repo, "biomass_price_estimates.csv"), raw)
+        
         #avaliable coms
 
         if self.flags.dev:

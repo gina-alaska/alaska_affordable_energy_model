@@ -277,7 +277,6 @@ def run_model (config_file = None, name = None, override_data = None,
         
         try:
             try:
-                print img_dir
                 gfc_img_dir = os.path.join(img_dir,'generation_forecast')
                 os.makedirs(gfc_img_dir)
                 
@@ -419,8 +418,9 @@ def res_log (coms, dir3):
                 res.get_NPV_benefits(),res.get_NPV_costs(),
                 res.get_NPV_net_benefit(),res.get_BC_ratio(),
                 res.diesel_prices[0], res.init_HH, res.opportunity_HH,
-                res.baseline_HF_consumption[0],
-                res.baseline_HF_consumption[0] - res.refit_HF_consumption[0],
+                res.baseline_fuel_Hoil_consumption[0],
+                res.baseline_fuel_Hoil_consumption[0] - \
+                        res.refit_fuel_Hoil_consumption[0],
                 round(float(res.fuel_oil_percent)*100,2)])
         except KeyError:
             pass

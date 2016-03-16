@@ -1283,10 +1283,10 @@ class Preprocessor (object):
         data = read_csv(in_file, index_col=0,comment = "#", header=0)
         if len(self.get_communities_data(data)['Source'].values)==0:
             self.diagnostics.add_warning("prices-propane", "not found")
-            return np.nan
+            return 0
             
         self.diagnostics.add_note("prices-propane", "price source: " +\
-                      str(self.get_communities_data(data)['Source'].values[0]))
+                      str(self.get_communities_data(data)['Source'].values))
         return float(self.get_communities_data(data)['Propane ($/gallon)'])
         
     def prices_diesel (self):
@@ -1309,18 +1309,24 @@ class Preprocessor (object):
     def prices_biomass (self):
         """
         """
-        in_file = os.path.join(self.data_dir, "propane_price_estimates.csv")
+        in_file = os.path.join(self.data_dir, "biomass_price_estimates.csv")
         data = read_csv(in_file, index_col=0,comment = "#", header=0)
         
         if len(self.get_communities_data(data)['Source'].values)==0:
             self.diagnostics.add_warning("prices-biomass", "not found")
-            return np.nan
+            return 0
         self.diagnostics.add_warning("prices-biomass", "price source: " +\
-                      str(self.get_communities_data(data)['Source'].values[0]))
+                      str(self.get_communities_data(data)['Source'].values))
         try:
-            val = float(self.get_communities_data(data)['Propane ($/gallon)'])         
+            val = float(self.get_communities_data(data)['Biomass ($/Cord)'])         
         except ValueError:
-            val = np.nan
+            self.diagnostics.add_note("prices-biomass", 
+                                        "is N/a treating as $0")
+            val = 0
+        if np.isnan(val):
+            self.diagnostics.add_note("prices-biomass", 
+                                        "is N/a treating as $0")
+            val = 0 
         return val
         
     def get_communities_data(self, dataframe):
