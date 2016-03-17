@@ -130,7 +130,8 @@ class WaterWastewaterSystems (AnnualSavings):
         fuel_cost = self.diesel_prices + self.cd['heating fuel premium']# $/gal
         # are there ever o&m costs
         # $/gal * gal/yr = $/year 
-        self.refit_HF_cost += self.refit_HF_consumption * fuel_cost
+        self.refit_HF_cost += \
+                self.refit_fuel_Hoil_consumption * fuel_cost #+ others
         
     def calc_base_heating_savings (self):
         """
@@ -146,7 +147,8 @@ class WaterWastewaterSystems (AnnualSavings):
         self.baseline_HF_cost = np.zeros(self.project_life)
         fuel_cost = self.diesel_prices + self.cd['heating fuel premium'] #$/gal
         # $/gal * gal/yr = $/year 
-        self.baseline_HF_cost += self.baseline_HF_consumption * fuel_cost #$/yr
+        self.baseline_HF_cost += \
+                self.baseline_fuel_Hoil_consumption * fuel_cost #$/yr + others?
         
     def run (self):
         """
@@ -168,14 +170,15 @@ class WaterWastewaterSystems (AnnualSavings):
         years = range(self.start_year,self.end_year)
         self.forecast.add_heating_fuel_column(\
                         "heating_fuel_water-wastewater_consumed [gallons/year]",
-                                 years, self.baseline_HF_consumption)
+                         years, 
+                         self.baseline_HF_consumption*constants.mmbtu_to_gal_HF)
         self.forecast.add_heating_fuel_column(\
                    "heating_fuel_water-wastewater_consumed [mmbtu/year]", years,
-                    self.baseline_HF_consumption/constants.mmbtu_to_gal_HF)
+                    self.baseline_HF_consumption)
         
         self.forecast.add_heat_demand_column(\
                     "heat_energy_demand_water-wastewater [mmbtu/year]",
-                 years, self.baseline_HF_consumption/constants.mmbtu_to_gal_HF)
+                 years, self.baseline_HF_consumption)
         
         if self.cd["model financial"]:
             self.calc_capital_costs()
@@ -250,7 +253,11 @@ class WaterWastewaterSystems (AnnualSavings):
             self.baseline_HF_consumption = \
                     ((self.hdd * hdd_coeff+ self.pop * pop_coeff) * hr_coeff) +\
                     ((self.population_fc - self.pop) * pop_coeff)
-
+        # don't want to detangle that
+        self.baseline_fuel_Hoil_consumption = self.baseline_HF_consumption 
+        self.baseline_HF_consumption = \
+            self.baseline_HF_consumption/constants.mmbtu_to_gal_HF
+            
     def calc_refit_kWh_consumption (self):
         """
         calculate post refit kWh use
@@ -292,8 +299,9 @@ class WaterWastewaterSystems (AnnualSavings):
                  np.float64(self.comp_specs['data'].ix['HF w/Retro'])):
             percent = np.float64(self.comp_specs['data'].ix['HF w/Retro'])/\
                       np.float64(self.comp_specs['data'].ix['HF Used'])
-        consumption = self.baseline_HF_consumption * percent
-        self.refit_HF_consumption = consumption 
+        consumption = self.baseline_fuel_Hoil_consumption * percent
+        self.refit_fuel_Hoil_consumption = consumption
+        self.refit_HF_consumption = consumption/constants.mmbtu_to_gal_HF
         
     def calc_savings_kWh_consumption (self):
         """
@@ -320,6 +328,8 @@ class WaterWastewaterSystems (AnnualSavings):
         """
         self.savings_HF_consumption = self.baseline_HF_consumption -\
                                        self.refit_HF_consumption
+        self.savings_fuel_Hoil_consumption = \
+            self.savings_HF_consumption*constants.mmbtu_to_gal_HF
             
     def calc_capital_costs (self, cost_per_person = 450):
         """
