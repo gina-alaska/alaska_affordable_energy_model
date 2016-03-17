@@ -469,7 +469,7 @@ class CommunityBuildings (AnnualSavings):
         
         self.refit_HF_consumption = self.baseline_HF_consumption - \
                                                 self.refit_savings_HF_total
-        self.refit_fuel_Holi_consumption = \
+        self.refit_fuel_Hoil_consumption = \
                 self.refit_HF_consumption*constants.mmbtu_to_gal_HF
         self.refit_kWh_consumption = self.baseline_kWh_consumption - \
                                                 self.refit_savings_kWh_total
@@ -534,7 +534,7 @@ class CommunityBuildings (AnnualSavings):
         self.baseline_HF_cost = self.baseline_fuel_Hoil_cost # + other?
         
         self.refit_fuel_Hoil_cost = \
-                self.refit_fuel_Holi_consumption * fuel_price
+                self.refit_fuel_Hoil_consumption * fuel_price
         
         self.refit_HF_cost = self.refit_fuel_Hoil_cost # + other
         
