@@ -88,9 +88,14 @@ class CommunityData (object):
         # TODO: 1 is 100% need to change to a calculation
         generation_eff = self.get_item("community",
                                             "diesel generation efficiency")
-        price = self.get_item("community","elec non-fuel cost") +\
-            1.00 * self.get_item("community","diesel prices").projected_prices/\
-                            generation_eff
+        percent_diesel = self.get_item('community','generation numbers')\
+                         ['generation diesel'].fillna(0)/\
+                         self.get_item('community',"generation")
+        percent_diesel = float(percent_diesel.values[-1])
+        price = self.get_item("community","elec non-fuel cost") + \
+                percent_diesel * \
+                self.get_item("community","diesel prices").projected_prices/\
+                generation_eff
         
         start_year = self.get_item("community","diesel prices").start_year
         years = range(start_year,start_year+len(price))
@@ -321,11 +326,12 @@ class CommunityData (object):
                            self.load_pp_csv("com_building_estimates.csv"))
                            
         if self.get_item('non-residential buildings',
-                                            'com building data')in IMPORT_FLAGS:
+                                        'com building data') in IMPORT_FLAGS:
             self.set_item('non-residential buildings','com building data',
                                     self.load_pp_csv("community_buildings.csv"))
                                     
-        if self.get_item('non-residential buildings','number buildings')in IMPORT_FLAGS:
+        if self.get_item('non-residential buildings',
+                                        'number buildings') in IMPORT_FLAGS:
             self.set_item('non-residential buildings','number buildings',
                 int(self.load_pp_csv("com_num_buildings.csv").ix["Buildings"]))
                 
@@ -366,12 +372,16 @@ class CommunityData (object):
                             #~ "Generation data not available by energy type")
                         #~ temp = elec_summary[['generation']]
             #~ temp['generation diesel'] = temp['generation']
-            #~ temp['generation hydro'] = temp['generation'] - temp['generation']
+            #~ temp['generation hydro'] = temp['generation'] - \
+                                                #~ temp['generation']
             #~ temp['generation natural gas'] = temp['generation'] - \
-                                                            #~ temp['generation']
-            #~ temp['generation wind'] = temp['generation'] - temp['generation']
-            #~ temp['generation solar'] = temp['generation'] - temp['generation']
-            #~ temp['generation biomass'] = temp['generation'] - temp['generation']
+                                                        #~ temp['generation']
+            #~ temp['generation wind'] = temp['generation'] - \
+                                                    #~ temp['generation']
+            #~ temp['generation solar'] = temp['generation'] - \
+                                                    #~ temp['generation']
+            #~ temp['generation biomass'] = temp['generation'] - \
+                                                    #~ temp['generation']
     
             
             #~ self.set_item('community','generation numbers', temp )
@@ -459,8 +469,10 @@ class CommunityData (object):
         #~ rel = os.path.relpath(os.path.dirname(fname),os.path.join("model",".."))
         #~ rt = os.path.join(rel,"input_data")
         self.set_item('residential buildings','data', "IMPORT")
-        self.set_item('non-residential buildings','com building data', "IMPORT")
-        self.set_item('non-residential buildings',"com building estimates", "IMPORT")
+        self.set_item('non-residential buildings',
+                                                'com building data', "IMPORT")
+        self.set_item('non-residential buildings',
+                                           "com building estimates", "IMPORT")
 
         self.set_item('community', "diesel prices", "IMPORT")
         self.set_item('forecast', "electricity", "IMPORT")
@@ -475,8 +487,10 @@ class CommunityData (object):
         comment = \
         ("# some of the items may reference files the input data directory\n"
          "# residential buildings(data)-> residential_data.csv\n" 
-         "# non-residential buildings(com building data) -> community_buildings.csv\n"
- "# non-residential buildings(com building estimates) -> com_building_estimates.csv\n"
+         "# non-residential buildings(com building data)"
+                                        " -> community_buildings.csv\n"
+         "# non-residential buildings(com building estimates)"
+                                     " -> com_building_estimates.csv\n"
          "# community(diesel prices) -> \n"
          "# forecast(electricity) -> yearly_electricity_summary.csv\n"
          "# forecast(population) -> population.csv\n"

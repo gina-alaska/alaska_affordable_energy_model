@@ -522,10 +522,8 @@ class Preprocessor (object):
                     val = concat([self.electricity_data,val],axis = 1)
 
                     val["consumption"] = val["Total"]
-                    val["consumption residential"] = \
-                                                              val["Residential"]
-                    val["consumption non-residential"] = \
-                                                              val["non-res"]
+                    val["consumption residential"] = val["Residential"]
+                    val["consumption non-residential"] = val["non-res"]
                     val = val[['generation','consumption',
                                              'fuel used', 'efficiency',
                                              'line loss', 'net generation',
@@ -568,7 +566,7 @@ class Preprocessor (object):
         con_file = os.path.join(self.data_dir, "eia_sales.csv")
         try:
             cid = self.com_id
-            if cid == 'Glennallen':
+            if cid == 'Glennallen' or cid == 'Valdez':
                 cid = "Copper Valley"
             con_data = read_csv(con_file, comment='#', index_col=2).ix[cid]
         except KeyError:

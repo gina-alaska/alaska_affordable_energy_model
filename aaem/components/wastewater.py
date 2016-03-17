@@ -95,9 +95,9 @@ class WaterWastewaterSystems (AnnualSavings):
            self.baseline_kWh_cost is an np.array of $/year values (floats) over
         the project lifetime
         """
-        # TODO update with new way of doing this when it's finished
-        kWh_cost = self.cd["elec non-fuel cost"] + \
-                self.diesel_prices/self.cd['diesel generation efficiency']
+        kWh_cost = self.cd["electric non-fuel prices"].\
+                                            ix[self.start_year:self.end_year-1]
+        kWh_cost = kWh_cost.T.values[0]
         # kWh/yr*$/kWh
         self.baseline_kWh_cost = self.savings_kWh_consumption * kWh_cost
     
