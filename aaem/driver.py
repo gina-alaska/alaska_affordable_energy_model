@@ -422,7 +422,7 @@ def res_log (coms, dir3):
                 res.baseline_fuel_Hoil_consumption[0] - \
                         res.refit_fuel_Hoil_consumption[0],
                 round(float(res.fuel_oil_percent)*100,2)])
-        except (KeyError,AttributeError):
+        except (KeyError,AttributeError) :
             pass
     data = DataFrame(out,columns = ['community','NPV Benefit','NPV Cost', 
                            'NPV Net Benefit', 'B/C Ratio',
@@ -447,14 +447,16 @@ def com_log (coms, dir3):
             continue
         try:
             com = coms[c]['model'].comps_used['non-residential buildings']
+            savings = com.baseline_fuel_Hoil_consumption -\
+                      com.refit_fuel_Hoil_consumption
             out.append([c,
                 com.get_NPV_benefits(),com.get_NPV_costs(),
                 com.get_NPV_net_benefit(),com.get_BC_ratio(),
                 com.diesel_prices[0], com.elec_price[0], 
                 com.num_buildigns , com.refit_sqft_total,
-                com.baseline_HF_consumption,
+                com.baseline_fuel_Hoil_consumption,
                 com.baseline_kWh_consumption,
-                com.baseline_HF_consumption - com.refit_HF_consumption,
+                savings,
                 com.baseline_kWh_consumption - com.refit_kWh_consumption])
         except (KeyError,AttributeError):
             pass
