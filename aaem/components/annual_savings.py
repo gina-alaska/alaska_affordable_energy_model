@@ -336,13 +336,13 @@ class AnnualSavings (object):
         """
         years = np.array(range(self.project_life)) + self.start_year
         df = DataFrame({
-                "Heating Oil Consumption Baseline": self.get_base_HF_use(),
-                "Heating Oil Consumption Retrofit": self.get_refit_HF_use(),
-                "Heating Oil Consumption Savings": self.get_base_HF_use() -\
+                "Heating Fuel Consumption Baseline": self.get_base_HF_use(),
+                "Heating Fuel Consumption Retrofit": self.get_refit_HF_use(),
+                "Heating Fuel Consumption Savings": self.get_base_HF_use() -\
                                             self.get_refit_HF_use(), 
-                "Heating Oil Cost Baseline": self.get_base_HF_cost(),
-                "Heating Oil Cost Retrofit": self.get_refit_HF_cost(),
-                "Heating Oil Cost Savings": 
+                "Heating Fuel Cost Baseline": self.get_base_HF_cost(),
+                "Heating Fuel Cost Retrofit": self.get_refit_HF_cost(),
+                "Heating Fuel Cost Savings": 
                                         self.get_heating_savings_costs(),
                 "Electricity Consumption Baseline": self.get_base_kWh_use(),
                 "Electricity Consumption Retrofit": self.get_refit_kWh_use(),
@@ -360,10 +360,10 @@ class AnnualSavings (object):
         df["community"] = self.cd['name']
         
         ol = ["community",
-              "Heating Oil Consumption Baseline", 
-              "Heating Oil Consumption Retrofit", 
-              "Heating Oil Consumption Savings", "Heating Oil Cost Baseline",
-              "Heating Oil Cost Retrofit", "Heating Oil Cost Savings",
+              "Heating Fuel Consumption Baseline", 
+              "Heating Fuel Consumption Retrofit", 
+              "Heating Fuel Consumption Savings", "Heating Fuel Cost Baseline",
+              "Heating Fuel Cost Retrofit", "Heating Fuel Cost Savings",
               "Electricity Consumption Baseline",
               "Electricity Consumption Retrofit", 
               "Electricity Consumption Savings", "Electricity Cost Basline",
@@ -385,11 +385,11 @@ class AnnualSavings (object):
                   #~ "# Benefit Cost Ratio: " + str(self.get_BC_ratio()) + '\n'
                   #~ "# --------------------------------\n"
           "# year: year for projection \n"
-          "# Heating Oil Consumption Baseline: Gallons Heating "
-                                        "Fuel used with no retrofits \n"
-          "# Heating Oil Consumption Retrofit: Gallons Heating "
-                                        "Fuel used with retrofits \n"
-          "# Heating Oil Consumption Savings: Gallons Heating Oil savings \n"
+          "# Heating Oil Consumption Baseline: Heating "
+                                        "Fuel used with no retrofits(mmbtu)\n"
+          "# Heating Oil Consumption Retrofit: Heating "
+                                        "Fuel used with retrofits(mmbtu) \n"
+          "# Heating Oil Consumption Savings:  Heating fuel savings (mmbtu)\n"
           "# Heating Oil Cost Baseline: Cost Heating "
                                         "Fuel used with no retrofits \n"
           "# Heating Oil Cost Retrofit: Cost Heating "
