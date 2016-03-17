@@ -72,13 +72,18 @@ class CommunityBuildings (AnnualSavings):
         self.comp_specs =community_data.get_section('non-residential buildings')
         self.component_name = 'non-residential buildings'
         self.forecast = forecast
+        #~ print self.comp_specs['average refit cost']
+        #~ print community_data.get_section('construction multipliers')[self.cd["region"]]
+        #~ print self.comp_specs['average refit cost'] * \
+      #~ community_data.get_section('construction multipliers')[self.cd["region"]]
+        
         self.refit_cost_rate = self.comp_specs['average refit cost'] * \
       community_data.get_section('construction multipliers')[self.cd["region"]]
         self.set_project_life_details(self.comp_specs["start year"],
                                       self.comp_specs["lifetime"],
                         self.forecast.end_year - self.comp_specs["start year"])
          
-
+        #~ print self.refit_cost_rate 
         self.buildigns_df = deepcopy(self.comp_specs["com building data"])
         freq = {}
         for item in self.buildigns_df.index.tolist():
@@ -499,9 +504,21 @@ class CommunityBuildings (AnnualSavings):
         post:
             self.annual_electric_savings containt the projected savings
         """
-        elec_price = self.cd["elec non-fuel cost"]+\
-                    self.diesel_prices/self.cd['diesel generation efficiency']
+        #~ elec_price = self.cd["elec non-fuel cost"]+\
+                    #~ self.diesel_prices/self.cd['diesel generation efficiency']
+        #~ print self.cd["electric non-fuel prices"].ix[self.start_year:self.end_year]
+        elec_price = self.cd["electric non-fuel prices"].\
+                                            ix[self.start_year:self.end_year-1]
+        elec_price = elec_price.T.values[0]
+        #~ print self.cd["elec non-fuel cost"]
+        #~ print self.diesel_prices
+        #~ print self.cd['diesel generation efficiency']
         self.elec_price = elec_price
+        #~ print self.elec_price 
+        #~ print self.cd["electric non-fuel prices"]
+        
+        
+        
         self.baseline_kWh_cost = self.baseline_kWh_consumption * elec_price
                     
         self.refit_kWh_cost = self.refit_kWh_consumption * elec_price
