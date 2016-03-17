@@ -1,5 +1,14 @@
 #Change Log
 
+## [0.5.4]
+### changed
+- internal representation of Heating Fuel and heating oil for non-residential buildings and water/wastewater systems
+- the equation for $/kWh now includes as scaler percent for the amount diesel generated kWh added in
+
+### fixed
+- summary output files now have correct units (mmbtu)
+- Valdez prices have been fixed 
+
 ## [0.5.3]
 ### changed
 - residential building component output file was reformatted. 
