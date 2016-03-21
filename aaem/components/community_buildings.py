@@ -113,7 +113,7 @@ class CommunityBuildings (AnnualSavings):
         cols = self.buildigns_df.columns[1:]
         order = ["count"] 
         for col in cols:
-            order += [c, c+" with estimates"] 
+            order += [col, col+" with estimates"] 
         
         try:
             summary.ix["Unknown"] =  summary.ix["Average"] 
