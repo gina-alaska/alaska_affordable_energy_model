@@ -279,7 +279,9 @@ def plot_dataframe(ax, dataframe,
                    Values in columns must be numbers.
         ax0: (optional) <matplotlib axes> axes to plot on. 
         ax0_cols: (optional) <list like> columns to plot on ax0
-        column_map: (optional) <dict> map of column names to labels
+        column_map: (optional) <dict> map of column names to labels,
+                    will also force each of the names to be assigned a 
+                    consistent color.
         
     post:
         Plots the columns in a pandas.DataFrame on ax. If ax0 and ax0_cols are 
