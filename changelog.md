@@ -1,5 +1,15 @@
 #Change Log
 
+## [0.5.5]
+### changed
+- when plotting a data frame colored can be consistent if the same set of columns is provided
+
+### fixed
+- mmbtu is used in electricity consumption
+- heating oil prices are output correctly
+- non_residential_buildings_summary.csv has correct name 
+- non_residential_buildings_summary.csv has correct columns 
+
 ## [0.5.4]
 ### changed
 - internal representation of Heating Fuel and heating oil for non-residential buildings and water/wastewater systems
