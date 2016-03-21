@@ -494,7 +494,7 @@ def village_log (coms, dir3):
             try:
                 com = coms[c]['model'].comps_used['non-residential buildings']
                 com_con = [com.baseline_HF_consumption,
-                            com.baseline_kWh_consumption]
+                            com.baseline_kWh_consumption / mmbtu_to_kWh]
                 com_cost = [com.baseline_HF_cost[0],com.baseline_kWh_cost[0]]
             except KeyError:
                 com_con = [np.nan, np.nan]
@@ -502,7 +502,7 @@ def village_log (coms, dir3):
             try:
                 ww = coms[c]['model'].comps_used['water wastewater']
                 ww_con = [ww.baseline_HF_consumption[0],
-                                ww.baseline_kWh_consumption[0]]
+                          ww.baseline_kWh_consumption[0] / mmbtu_to_kWh ]
                 ww_cost = [ww.baseline_HF_cost[0],ww.baseline_kWh_cost[0]]
             except KeyError:
                 ww_con = [np.nan, np.nan]
