@@ -417,7 +417,7 @@ def res_log (coms, dir3):
             out.append([c,
                 res.get_NPV_benefits(),res.get_NPV_costs(),
                 res.get_NPV_net_benefit(),res.get_BC_ratio(),
-                res.diesel_prices[0], res.init_HH, res.opportunity_HH,
+                res.hoil_price[0], res.init_HH, res.opportunity_HH,
                 res.baseline_fuel_Hoil_consumption[0],
                 res.baseline_fuel_Hoil_consumption[0] - \
                         res.refit_fuel_Hoil_consumption[0],
@@ -452,7 +452,7 @@ def com_log (coms, dir3):
             out.append([c,
                 com.get_NPV_benefits(),com.get_NPV_costs(),
                 com.get_NPV_net_benefit(),com.get_BC_ratio(),
-                com.diesel_prices[0], com.elec_price[0], 
+                com.hoil_price[0], com.elec_price[0], 
                 com.num_buildigns , com.refit_sqft_total,
                 com.baseline_fuel_Hoil_consumption,
                 com.baseline_kWh_consumption,
