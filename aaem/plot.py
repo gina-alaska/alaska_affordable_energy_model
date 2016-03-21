@@ -289,24 +289,41 @@ def plot_dataframe(ax, dataframe,
     c_index = 0
     keys = set(dataframe.keys())
     
+    c2use = colors
+    colors_as_dict = False
+    
     if column_map is None:
         column_map = {} 
         for c in keys:
             column_map[c] = c
+    else:
+        colors_as_dict = True
+        c2use = {}
+        ci = 0
+        for c in column_map:
+            c2use[c] = colors[ci]
+            ci += 1
     
     x = dataframe.index
     if ax0:
         for col in ax0_cols:
+            if colors_as_dict:
+                c_index = col
             add_line(ax0,x,dataframe[col].values,column_map[col],
-                           color=colors[c_index],marker='o')
-            c_index += 1
+                           color=c2use[c_index],marker='o')
+            if not colors_as_dict:
+                c_index += 1
+        
         ax0.set_ylabel(ax0.get_ylabel()+' (circles)')
         keys = keys.difference(ax0_cols)
 
     for col in  keys:
+        if colors_as_dict:
+            c_index = col
         add_line(ax,x,dataframe[col].values,column_map[col],
-                      color=colors[c_index],marker='^')
-        c_index += 1
+                      color=c2use[c_index],marker='^')
+        if not colors_as_dict:
+            c_index += 1
     ax.set_ylabel(ax.get_ylabel()+' (triangles)')
 
 def save (fig, filename):
