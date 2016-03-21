@@ -216,6 +216,7 @@ class AnnualSavings (object):
     def get_fuel_price (self): # ex: eff(res) G84-V84 or G90-V90
         """ get the diesel fuel price used"""
         try:
+            ### TODO:CHANGE THIS TOO??
             return self.diesel_prices
         except:
             return self.get_nan_range()

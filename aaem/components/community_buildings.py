@@ -527,7 +527,8 @@ class CommunityBuildings (AnnualSavings):
             self.annual_heating_savings containt the projected savings
         """
         fuel_price = (self.diesel_prices + self.cd['heating fuel premium'])
-        self.fuel_price = fuel_price
+        #~ self.fuel_price = fuel_price
+        self.hoil_price = fuel_price
         self.baseline_fuel_Hoil_cost = \
                 self.baseline_fuel_Hoil_consumption * fuel_price
         
