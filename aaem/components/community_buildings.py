@@ -113,6 +113,9 @@ class CommunityBuildings (AnnualSavings):
         cols = self.buildigns_df.columns[1:]
         order = ["count"] 
         for col in cols:
+            if col in ["Retrofits Done", "Audited"]:
+                order += [col]
+                continue
             order += [col, col+" with estimates"] 
         
         try:
@@ -122,13 +125,19 @@ class CommunityBuildings (AnnualSavings):
             summary.ix["Unknown"]['count'] = num
         except KeyError:
             pass
-        
-        summary[order].to_csv(file_name)
+        try:
+            
+            summary[order].to_csv(file_name)
+        except KeyError:
+            self.diagnostics.add_note(self.component_name, 
+                        ("in saving the building list the "
+                         "standard order could not be used"))
+            summary.to_csv(file_name)
     
     def save_additional_output(self, path):
         """
         """
-        self.save_building_summay(os.path.join(path,"non_residential_buildigns_summary.csv"))
+        self.save_building_summay(os.path.join(path,"non_residential_buildings_summary.csv"))
         
     
     def run (self):
