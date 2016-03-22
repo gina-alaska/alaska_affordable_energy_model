@@ -1,5 +1,12 @@
 #Change Log
 
+## [0.6.0]
+### added
+- input file listing files that were copied
+
+### fixed
+- negative & missing consumption values
+
 ## [0.5.5]
 ### changed
 - when plotting a data frame colored can be consistent if the same set of columns is provided
