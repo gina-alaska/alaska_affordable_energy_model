@@ -417,7 +417,6 @@ class CommunityData (object):
         except IOError:
             intertie = None
         self.intertie = intertie
-        print self.intertie
         
         self.copies = self.load_pp_csv("copies.csv")
         

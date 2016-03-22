@@ -92,7 +92,7 @@ class ResidentialBuildings(AnnualSavings):
     
     def calc_avg_consumption (self, con_threshold = 6000.0):
         """ 
-        get the average monthly consumption
+        get the average monthly consumption of electricity for a house
         
         pre:
         
@@ -105,23 +105,17 @@ class ResidentialBuildings(AnnualSavings):
         houses = int(self.comp_specs['data'].ix['total_occupied'])
         r_con = self.forecast.base_res_consumption
         avg_con = r_con/houses
-        print avg_con
-        print houses
         #~ self.avg_monthly_consumption = ave_con/12
-        if avg_con < con_threshold:
+        if (avg_con < con_threshold) or self.copied_elec or np.isnan(avg_con):
             avg_con = con_threshold
-        #~ print self.cd
-        if self.copied_elec:
-            avg_con = con_threshold
-        if np.isnan(avg_con):
-            avg_con = con_threshold
+            self.diagnostics.add_note(self.component_name, 
+                    ("Average residential Electric consumption"
+                    " corrected to 6000 kWh per year"))
         self.avg_consumption = avg_con
-        print self.avg_consumption
         self.diagnostics.add_note(self.component_name,
                     "Average consumption was " + str(self.avg_consumption) +\
                     " in " + str(yr))
         
-        #~ print self.avg_consumption
     
     def calc_init_HH (self):
         """
@@ -144,13 +138,6 @@ class ResidentialBuildings(AnnualSavings):
         """
         rd = self.comp_specs['data'].T
         ## total consumption
-        #~ print rd["post_total_consumption"]
-        #~ print rd["BEES_total_consumption"] 
-        #~ print rd["pre_avg_area"]
-        #~ print rd["pre_avg_EUI"]
-        #~ print self.opportunity_HH
-        
-        
         total = rd["post_total_consumption"] + rd["BEES_total_consumption"] + \
                 rd["pre_avg_area"] * rd["pre_avg_EUI"] * self.opportunity_HH
         HH = self.init_HH
@@ -158,13 +145,9 @@ class ResidentialBuildings(AnnualSavings):
         percent_acconuted = 0
         
         amnt = np.float64(rd["Fuel Oil"])
-        #~ print amnt
-        #~ print total
-        #~ print HH
         percent_acconuted += amnt
         self.init_HF = self.calc_consumption_by_fuel(amnt, total, HH, 
                                                      constants.mmbtu_to_gal_HF)
-        #~ print self.init_HF
         amnt = np.float64(rd["Wood"])
         percent_acconuted += amnt
         self.init_wood = self.calc_consumption_by_fuel(amnt, total, HH, 
