@@ -28,7 +28,8 @@ MODEL_FILES = {"DIESEL_PRICES": "diesel_fuel_prices.csv",
                "WWW_DATA": "wastewater_data.csv",
                "POPULATION": "population.csv",
                "ELECTRICITY": "yearly_electricity_summary.csv",
-               "PRICES_NONELECTRIC": 'prices_non-electric_fixed.csv'}
+               "PRICES_NONELECTRIC": 'prices_non-electric_fixed.csv',
+               "COPIES":'copies.csv'}
 
 def growth(xs, ys , x):
     """
@@ -1396,6 +1397,20 @@ def preprocess_no_intertie (data_dir, out_dir, com_id, diagnostics):
     """
     pp = Preprocessor(com_id, data_dir,out_dir, diagnostics)
     pp.preprocess()
+    
+    copied_data = { "yearly electric summary":False,
+                    "interties" : False,
+                    'prices': False,
+                    'HDD': False
+                }
+    f_path = os.path.join(out_dir,'copies.csv')
+    fd = open(f_path,'w')
+    fd.write("# a list of copied data for the child community")
+    fd.close()
+    DataFrame(copied_data,["copied"]).T.to_csv(f_path,mode='a')
+    
+    
+   
     return pp
 
 def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
@@ -1411,6 +1426,13 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
                                             com.replace(" ","_")), diagnostics)
         pp.preprocess()
         pp_data.append(pp)
+        
+        
+        copied_data = { "yearly electric summary":False,
+                    "interties":False,
+                    'prices':False,
+                    'HDD' :False
+                }
 
         f_path = os.path.join(out_dir,com.replace(" ","_"),
                                             "yearly_electricity_summary.csv")
@@ -1419,6 +1441,7 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
             shutil.copy(os.path.join(parent_dir,
                                     "yearly_electricity_summary.csv")
                                     ,os.path.join(out_dir,com.replace(" ","_")))
+            copied_data["yearly electric summary"] = True
             diagnostics.add_warning("Intertie update (electricity)",
                                     ("" + com + " is using it's "
                                      "parent's (" + parent + ""
@@ -1430,6 +1453,7 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
             shutil.copy(os.path.join(parent_dir,
                                     "prices.csv")
                                     ,os.path.join(out_dir,com.replace(" ","_")))
+            copied_data["prices"] = True
             diagnostics.add_warning("Intertie update (prices)",
                                     ("" + com + " is using it's "
                                      "parent's (" + parent + ""
@@ -1439,6 +1463,7 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
         f_path = os.path.join(out_dir,com,"hdd.csv")
         if com != parent and not os.path.exists(f_path):
             #print com + " adding data- hdd"
+            copied_data["HDD"] = True
             shutil.copy(os.path.join(parent_dir,
                                     "hdd.csv")
                                     ,os.path.join(out_dir,com.replace(" ","_")))
@@ -1453,10 +1478,20 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
             shutil.copy(os.path.join(parent_dir,
                                     "interties.csv")
                                     ,os.path.join(out_dir,com.replace(" ","_")))
+            copied_data["interties"] = True
             diagnostics.add_warning("Intertie update (interties)",
                                     ("" + com + " has copy of parents intertie"
                                      " info(interties.csv)" ))
-
+    
+        # save which files were copied
+        f_path = os.path.join(out_dir,com.replace(" ","_"),'copies.csv')
+        fd = open(f_path,'w')
+        fd.write("# a list of copied data for the child community")
+        fd.close()
+        
+        DataFrame(copied_data,["copied"]).T.to_csv(f_path,mode='a')
+    
+    
     # for intertie
     #   generation = generation(parent) +
     #             (generation(child) - kWh_purchased(child)) for each child
