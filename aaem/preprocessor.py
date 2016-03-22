@@ -1421,7 +1421,7 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
     #~ print com_ids
     for com in com_ids:
 
-        #~ print com
+        print com
         pp = Preprocessor(com, data_dir,os.path.join(out_dir,
                                             com.replace(" ","_")), diagnostics)
         pp.preprocess()
@@ -1570,6 +1570,8 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
     out_file = os.path.join(out_dir,'yearly_electricity_summary.csv')
     electricity.to_csv(out_file)
 
+    
+
     diagnostics.add_note("Intertie(diesel_fuel_prices)", "from parent")
     shutil.copy(os.path.join(parent_dir,"diesel_fuel_prices.csv"), out_dir)
     diagnostics.add_note("Intertie(hdd)", "from parent")
@@ -1594,6 +1596,7 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
     shutil.copy(os.path.join(parent_dir,"wastewater_data.csv"), out_dir)
     shutil.copy(os.path.join(parent_dir,
             MODEL_FILES["PRICES_NONELECTRIC"]),out_dir)                  
-
+    shutil.copy(os.path.join(parent_dir,
+            MODEL_FILES["COPIES"]),out_dir)    
 
     return pp_data
