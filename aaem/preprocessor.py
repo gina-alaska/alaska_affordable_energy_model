@@ -1421,7 +1421,7 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
     #~ print com_ids
     for com in com_ids:
 
-        print com
+        #~ print com
         pp = Preprocessor(com, data_dir,os.path.join(out_dir,
                                             com.replace(" ","_")), diagnostics)
         pp.preprocess()

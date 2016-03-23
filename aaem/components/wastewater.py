@@ -80,10 +80,12 @@ class WaterWastewaterSystems (AnnualSavings):
         post:
             self.annual_electric_savings is an np.array of $/year values 
         """
-        self.calc_base_electric_savings()
-        self.annual_electric_savings = self.baseline_kWh_cost
+        self.calc_base_electric_cost()
+        self.calc_proposed_electric_cost ()
+        self.annual_electric_savings = self.baseline_kWh_cost - \
+                                       self.refit_kWh_cost
     
-    def calc_base_electric_savings (self):
+    def calc_base_electric_cost (self):
         """
         calcualte the savings for the base electric savings
         pre:
@@ -99,7 +101,25 @@ class WaterWastewaterSystems (AnnualSavings):
                                             ix[self.start_year:self.end_year-1]
         kWh_cost = kWh_cost.T.values[0]
         # kWh/yr*$/kWh
-        self.baseline_kWh_cost = self.savings_kWh_consumption * kWh_cost
+        self.baseline_kWh_cost = self.baseline_kWh_consumption * kWh_cost
+        
+    def calc_proposed_electric_cost (self):
+        """
+        calcualte the savings for the base electric savings
+        pre:
+            "elec non-fuel cost" is a dollar value (float).
+            self.diesel_prices is an array of dollar values over the project 
+        lifetime (floats)
+            'diesel generation efficiency' is in Gal/kWh (float)
+        post:
+           self.baseline_kWh_cost is an np.array of $/year values (floats) over
+        the project lifetime
+        """
+        kWh_cost = self.cd["electric non-fuel prices"].\
+                                            ix[self.start_year:self.end_year-1]
+        kWh_cost = kWh_cost.T.values[0]
+        # kWh/yr*$/kWh
+        self.refit_kWh_cost = self.refit_kWh_consumption * kWh_cost
     
     def calc_annual_heating_savings (self):
         """
@@ -110,12 +130,12 @@ class WaterWastewaterSystems (AnnualSavings):
             self.annual_heating_savings is an np.array of $/year values (floats) 
         over the project lifetime
         """
-        self.calc_proposed_heating_savings()
-        self.calc_base_heating_savings()
+        self.calc_proposed_heating_cost()
+        self.calc_base_heating_cost()
         # $ / yr
         self.annual_heating_savings = self.baseline_HF_cost - self.refit_HF_cost
         
-    def calc_proposed_heating_savings (self):
+    def calc_proposed_heating_cost (self):
         """
         calcualte the savings for the proposed heating savings
         pre:
@@ -133,7 +153,7 @@ class WaterWastewaterSystems (AnnualSavings):
         self.refit_HF_cost += \
                 self.refit_fuel_Hoil_consumption * fuel_cost #+ others
         
-    def calc_base_heating_savings (self):
+    def calc_base_heating_cost (self):
         """
         calcualte the savings for the base heating savings
         pre:
