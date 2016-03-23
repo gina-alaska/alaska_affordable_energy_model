@@ -1,5 +1,15 @@
 #Change Log
 
+## [0.6.1]
+### changed
+- some w&ww function names have been changed for clarity
+
+### fixed
+- negative residential consumption values
+- preprocessor overwriting copies.csv for intertie sub communities. 
+- wastewater kWh costs are calculated correctly
+- cost of a project per year is now calculated over proper period
+
 ## [0.6.0]
 ### added
 - input file listing files that were copied
