@@ -507,6 +507,8 @@ class Preprocessor (object):
         """
         """
         try:
+            if self.com_id == "South Naknek":
+                raise KeyError, "S. Naknek"
             self.electricity_process_pce()
             self.electricity_prices_pce()
         except KeyError:
@@ -1403,11 +1405,14 @@ def preprocess_no_intertie (data_dir, out_dir, com_id, diagnostics):
                     'prices': False,
                     'HDD': False
                 }
+    
     f_path = os.path.join(out_dir,'copies.csv')
-    fd = open(f_path,'w')
-    fd.write("# a list of copied data for the child community")
-    fd.close()
-    DataFrame(copied_data,["copied"]).T.to_csv(f_path,mode='a')
+    if not os.path.exists(f_path):
+    
+        fd = open(f_path,'w')
+        fd.write("# a list of copied data for the child community")
+        fd.close()
+        DataFrame(copied_data,["copied"]).T.to_csv(f_path,mode='a')
     
     
    
