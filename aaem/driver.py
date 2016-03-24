@@ -453,12 +453,13 @@ def com_log (coms, dir3):
                 com.get_NPV_benefits(),com.get_NPV_costs(),
                 com.get_NPV_net_benefit(),com.get_BC_ratio(),
                 com.hoil_price[0], com.elec_price[0], 
-                com.num_buildigns , com.refit_sqft_total,
+                com.num_buildings , com.refit_sqft_total,
                 com.baseline_fuel_Hoil_consumption,
                 com.baseline_kWh_consumption,
                 savings,
                 com.baseline_kWh_consumption - com.refit_kWh_consumption])
-        except (KeyError,AttributeError):
+        except (KeyError,AttributeError) as e:
+            print c +":"+ str(e)
             pass
     data = DataFrame(out,columns = ['community','NPV Benefit','NPV Cost', 
                            'NPV Net Benefit', 'B/C Ratio',
@@ -475,6 +476,91 @@ def com_log (coms, dir3):
     fd.write("# non residental building component summary by community\n")
     fd.close()
     data.to_csv(f_name, mode='a')
+    
+def building_log(coms, dir3):
+    """
+    """
+    out = []
+    for c in coms:
+        if c.find("_intertie") != -1:
+            continue
+        try:
+            com = coms[c]['model'].comps_used['non-residential buildings']
+            
+            
+            types = coms[c]['model'].cd.get_item('non-residential buildings',
+                                                "com building estimates").index
+            estimates =coms[c]['model'].cd.get_item('non-residential buildings',
+                                                    "com building data")
+            
+            num  = 0
+            try:
+                num = len(estimates.ix['Average'])
+            except KeyError:
+                pass
+            estimates = estimates.groupby(estimates.index).sum()
+            try:
+                estimates.ix["Unknown"] =  estimates.ix["Average"] 
+                estimates = estimates[estimates.index != "Average"]
+            except KeyError:
+                pass
+            count = []
+            act = []
+            est = []
+            #~ print types
+            for t in types:
+                if t in ['Water & Sewer',]:
+                    continue
+                try:
+                    n = 0
+                    sf_m = np.nan
+                    sf_e = np.nan
+                    if t != 'Average':
+                        
+                        n = num
+                        sf_e = estimates['Square Feet']['Unknown']
+                    else:
+                        n = com.buildings_df['count'][t]
+                        sf_e = estimates['Square Feet'][t]
+                    
+                    
+                    sf_m = com.buildings_df['Square Feet'][t]
+                    
+                except KeyError:
+                    pass
+                count.append(n)
+                act.append(sf_m)
+                est.append(sf_e)
+            out.append([c]+ count+act+est)
+            
+        except (KeyError,AttributeError)as e :
+            #~ print c +":"+ str(e)
+            pass
+    #~ print out
+    l = [n for n in types if n not in  ['Water & Sewer',]]
+    c = []
+    e = []
+    m = []
+    for i in range(len(l)):
+        if l[i] == 'Average':
+            l[i] = 'Unknown'
+        c.append('number buildings')
+        m.append('square feet(measured)')
+        e.append('square feet(including estimates)')
+
+    
+    data = DataFrame(out,columns = ['community'] + l + l + l
+                    ).set_index('community').round(2)
+    f_name = os.path.join(dir3,'non-residential_building_summary.csv')
+    fd = open(f_name,'w')
+    fd.write(("# non residental building component building "
+             "summary by community\n"))
+    fd.write("," + str(c)[1:-1].replace(" '",'').replace("'",'') + "," + \
+             str(m)[1:-1].replace("' ",'').replace("'",'') + "," + \
+             str(e)[1:-1].replace("' ",'').replace("'",'') +'\n')
+    fd.close()
+    data.to_csv(f_name, mode='a')
+    
     
 def village_log (coms, dir3): 
     """

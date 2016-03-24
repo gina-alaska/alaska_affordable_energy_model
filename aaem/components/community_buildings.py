@@ -84,17 +84,17 @@ class CommunityBuildings (AnnualSavings):
                         self.forecast.end_year - self.comp_specs["start year"])
          
         #~ print self.refit_cost_rate 
-        self.buildigns_df = deepcopy(self.comp_specs["com building data"])
+        self.buildings_df = deepcopy(self.comp_specs["com building data"])
         freq = {}
-        for item in self.buildigns_df.index.tolist():
+        for item in self.buildings_df.index.tolist():
             try:
                 freq[item] += 1
             except KeyError:
                 freq[item] = 1
         df = DataFrame(freq.values(),freq.keys(),["count"])
-        self.buildigns_df = \
-                    self.buildigns_df.groupby(self.buildigns_df.index).sum()
-        self.buildigns_df = concat([df,self.buildigns_df],axis=1)
+        self.buildings_df = \
+                    self.buildings_df.groupby(self.buildings_df.index).sum()
+        self.buildings_df = concat([df,self.buildings_df],axis=1)
         
     def save_building_summay(self, file_name):
         """
@@ -109,8 +109,8 @@ class CommunityBuildings (AnnualSavings):
         with_estimates = with_estimates.groupby(with_estimates.index).sum()
         with_estimates.columns = \
                 [c+" with estimates" for c in with_estimates.columns]
-        summary = concat([self.buildigns_df,with_estimates],axis=1)
-        cols = self.buildigns_df.columns[1:]
+        summary = concat([self.buildings_df,with_estimates],axis=1)
+        cols = self.buildings_df.columns[1:]
         order = ["count"] 
         for col in cols:
             if col in ["Retrofits Done", "Audited"]:
@@ -197,7 +197,7 @@ class CommunityBuildings (AnnualSavings):
         post:
             a warning may be added to self.diagnostics 
         """
-        self.num_buildigns = self.comp_specs["number buildings"]
+        self.num_buildings = self.comp_specs["number buildings"]
         self.additional_buildings = self.comp_specs["number buildings"] - \
                             len(self.comp_specs['com building data']) 
 
@@ -211,10 +211,10 @@ class CommunityBuildings (AnnualSavings):
             if len(self.comp_specs['com building data']) < \
                 self.comp_specs["number buildings"]:
                 
-                self.add_additional_buildigns()
+                self.add_additional_buildings()
                 
             
-    def add_additional_buildigns (self, num_not_heated = 2):
+    def add_additional_buildings (self, num_not_heated = 2):
         """
             adds additional buildings to the building dataframe 
         (self.comp_specs['com building data'])
