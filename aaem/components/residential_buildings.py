@@ -181,10 +181,17 @@ class ResidentialBuildings(AnnualSavings):
         rd = self.comp_specs['data'].T
         ##  #HH
         self.opportunity_HH = self.init_HH -rd["BEES_number"] -rd["post_number"]
+        self.opportunity_HH = np.float64( self.opportunity_HH )
+        #~ print self.opportunity_HH
+        if self.opportunity_HH < 0:
+            self.opportunity_HH = 0
+            self.diagnostics.add_note(self.component_name, 
+                "calculate Houses to retrofit was negative, setting to 0" )
+        
         ## % as decimal 
         self.percent_savings = rd["opportunity_total_percent_community_savings"]
         
-        self.opportunity_HH = np.float64( self.opportunity_HH )
+        
         self.percent_savings = np.float64( self.percent_savings)
         
         
