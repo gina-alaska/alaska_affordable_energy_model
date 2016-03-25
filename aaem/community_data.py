@@ -72,7 +72,7 @@ class CommunityData (object):
                      " Fixing by disabling Wastewater component at runtime"))
         
     
-    def calc_non_fuel_electricty_price (self):
+    def calc_non_fuel_electricty_price (self, N_slope_price = .15):
         """
         calculate the electricity price
         
@@ -86,6 +86,7 @@ class CommunityData (object):
                        values indexed by year
         """
         # TODO: 1 is 100% need to change to a calculation
+        
         generation_eff = self.get_item("community",
                                             "diesel generation efficiency")
         percent_diesel = self.get_item('community','generation numbers')\
@@ -93,13 +94,15 @@ class CommunityData (object):
                          self.get_item('community',"generation")
         percent_diesel = float(percent_diesel.values[-1])
         price = self.get_item("community","elec non-fuel cost") + \
-                percent_diesel * \
-                self.get_item("community","diesel prices").projected_prices/\
-                generation_eff
+            percent_diesel * \
+            self.get_item("community","diesel prices").projected_prices/\
+            generation_eff
         
         start_year = self.get_item("community","diesel prices").start_year
         years = range(start_year,start_year+len(price))
-        self.electricity_price =price
+        self.electricity_price = price
+        if self.get_item('community',"region") == "North Slope":
+            self.electricity_price = [N_slope_price for y in  years]
         df = DataFrame({"year":years,
                         "price":self.electricity_price}).set_index("year")
         self.set_item("community","electric non-fuel prices",df)
