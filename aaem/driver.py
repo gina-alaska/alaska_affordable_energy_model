@@ -9,7 +9,7 @@ import plot
 from diagnostics import diagnostics
 from preprocessor import preprocess, MODEL_FILES
 import defaults
-from constants import mmbtu_to_kWh 
+from constants import mmbtu_to_kWh, mmbtu_to_gal_HF
 import shutil
 from pandas import DataFrame, read_csv, concat
 
@@ -418,19 +418,25 @@ def res_log (coms, dir3):
                 res.get_NPV_benefits(),res.get_NPV_costs(),
                 res.get_NPV_net_benefit(),res.get_BC_ratio(),
                 res.hoil_price[0], res.init_HH, res.opportunity_HH,
-                res.baseline_fuel_Hoil_consumption[0],
-                res.baseline_fuel_Hoil_consumption[0] - \
-                        res.refit_fuel_Hoil_consumption[0],
-                round(float(res.fuel_oil_percent)*100,2)])
+                res.baseline_fuel_Hoil_consumption[0]/mmbtu_to_gal_HF,
+                res.baseline_fuel_Hoil_consumption[0]/mmbtu_to_gal_HF - \
+                        res.refit_fuel_Hoil_consumption[0]/mmbtu_to_gal_HF,
+                round(float(res.fuel_oil_percent)*100,2),
+                res.baseline_HF_consumption[0],
+                res.baseline_HF_consumption[0] - \
+                        res.refit_HF_consumption[0],
+                ])
         except (KeyError,AttributeError) :
             pass
     data = DataFrame(out,columns = ['community','NPV Benefit','NPV Cost', 
                            'NPV Net Benefit', 'B/C Ratio',
                            'Heating Oil Price - year 1',
                            'Occupied Houses', 'Houses to Retrofit', 
-                           'Heating Oil Consumed(gal) - year 1',
-                           'Heating Oil Saved(gal/year)',
-                           'Heating Oil as percent of Total Heating Fuels']
+                           'Heating Oil Consumed(mmbtu) - year 1',
+                           'Heating Oil Saved(mmbtu/year)',
+                           'Heating Oil as percent of Total Heating Fuels',
+                           'Total Heating Fuels (mmbtu) - year 1',
+                           'Total Heating Fuels Saved (mmbtu/year)',]
                     ).set_index('community').round(2)
     f_name = os.path.join(dir3,'residential_summary.csv')
     fd = open(f_name,'w')
@@ -486,8 +492,9 @@ def village_log (coms, dir3):
         try:
             try:
                 res = coms[c]['model'].comps_used['residential buildings']
-                res_con = [res.baseline_HF_consumption[0], np.nan]
-                res_cost = [res.baseline_HF_cost[0], np.nan]
+                res_con = [res.baseline_HF_consumption[0], 
+                                res.baseline_kWh_consumption[0] / mmbtu_to_kWh]
+                res_cost = [res.baseline_HF_cost[0], res.baseline_HF_cost[0]]
             except KeyError:
                 res_con = [np.nan, np.nan]
                 res_cost = [np.nan, np.nan]
