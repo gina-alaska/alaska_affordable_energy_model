@@ -69,9 +69,10 @@ class ResidentialBuildings(AnnualSavings):
         
         
         self.calc_baseline_fuel_consumption()
-        
+        self.calc_baseline_kWh_consumption()
         
         self.calc_refit_fuel_consumption()
+        self.calc_refit_kWh_consumption()
         
         self.set_forecast_columns()
         
@@ -79,6 +80,8 @@ class ResidentialBuildings(AnnualSavings):
             self.get_diesel_prices()
             self.calc_baseline_fuel_cost() 
             self.calc_refit_fuel_cost()
+            self.calc_baseline_kWh_cost() 
+            self.calc_refit_kWh_cost()
             
             
             self.calc_annual_electric_savings()
@@ -111,10 +114,10 @@ class ResidentialBuildings(AnnualSavings):
             self.diagnostics.add_note(self.component_name, 
                     ("Average residential Electric consumption"
                     " corrected to 6000 kWh per year"))
-        self.avg_consumption = avg_con
+        self.avg_kWh_consumption_per_HH = avg_con
         self.diagnostics.add_note(self.component_name,
-                    "Average consumption was " + str(self.avg_consumption) +\
-                    " in " + str(yr))
+                "Average consumption was " + str(self.avg_kWh_consumption_per_HH) +\
+                " in " + str(yr))
         
     
     def calc_init_HH (self):
@@ -234,7 +237,8 @@ class ResidentialBuildings(AnnualSavings):
     def calc_consumption_by_fuel (self, fuel_amnt, total_consumption, HH, cf):
         """ Function doc """
   
-        HH_consumption = HH * self.avg_consumption * constants.kWh_to_mmbtu
+        HH_consumption = HH * self.avg_kWh_consumption_per_HH * \
+                                                    constants.kWh_to_mmbtu
         return np.float64(fuel_amnt * (total_consumption - HH_consumption) * cf)
                             
     def calc_baseline_fuel_consumption (self):
@@ -277,10 +281,17 @@ class ResidentialBuildings(AnnualSavings):
             self.baseline_fuel_gas_consumption * (1/constants.mmbtu_to_Mcf) +\
             self.baseline_fuel_kWh_consumption * (1/constants.mmbtu_to_kWh) +\
             self.baseline_fuel_LP_consumption * (1/constants.mmbtu_to_gal_LP)
+    
+    def calc_baseline_kWh_consumption (self):
+        """
+        calculate the baseline kWh consumption for a community 
+        """
+        HH = self.forecast.get_households(self.start_year,self.end_year)
+        self.baseline_kWh_consumption = self.avg_kWh_consumption_per_HH * HH 
         
-
     def calc_baseline_fuel_cost (self):
         """
+        caclulat base line heating fuel costs
         """
         HF_price = (self.diesel_prices + self.cd['heating fuel premium'])
         self.hoil_price = HF_price
@@ -299,6 +310,15 @@ class ResidentialBuildings(AnnualSavings):
             self.baseline_fuel_kWh_consumption * gas_price
         # coal,solar, other
         
+    def calc_baseline_kWh_cost (self):
+        """
+        calculate base line electricity costs
+        """
+        kWh_cost = self.cd["electric non-fuel prices"].\
+                                            ix[self.start_year:self.end_year-1]
+        kWh_cost = kWh_cost.T.values[0]
+        # kWh/yr*$/kWh
+        self.baseline_kWh_cost = self.baseline_kWh_consumption * kWh_cost
 
     def calc_refit_fuel_consumption (self):
         """
@@ -321,6 +341,12 @@ class ResidentialBuildings(AnnualSavings):
             self.refit_fuel_gas_consumption = 0
         # coal,solar, other
         
+    def calc_refit_kWh_consumption (self):
+        """
+        calculate the baseline kWh consumption for a community 
+        """
+        self.refit_kWh_consumption = self.baseline_kWh_consumption 
+        
     def calc_refit_fuel_cost (self):
         """
         """
@@ -337,6 +363,16 @@ class ResidentialBuildings(AnnualSavings):
                              self.refit_fuel_gas_consumption * gas_price + \
                              self.refit_fuel_LP_consumption * LP_price + \
                              self.refit_fuel_kWh_consumption * gas_price
+        
+    def calc_refit_kWh_cost (self):
+        """
+        calculate post retrofit electricity costs
+        """
+        kWh_cost = self.cd["electric non-fuel prices"].\
+                                            ix[self.start_year:self.end_year-1]
+        kWh_cost = kWh_cost.T.values[0]
+        # kWh/yr*$/kWh
+        self.refit_kWh_cost = self.refit_kWh_consumption * kWh_cost
     
     def calc_capital_costs (self):
         """
