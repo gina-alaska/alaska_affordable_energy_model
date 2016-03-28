@@ -1,5 +1,15 @@
 #Change Log
 
+## [0.6.2]
+### added
+- summary of non-residential buildings file
+- total heating fuel added to residential summary file
+
+### fixed
+- in residential component houses to retrofit has minimum of 0
+- 'North Slope' $/kWh prices are set to a default value ($0.15) 
+
+
 ## [0.6.1]
 ### changed
 - some w&ww function names have been changed for clarity

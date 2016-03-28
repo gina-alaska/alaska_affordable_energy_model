@@ -465,7 +465,7 @@ def com_log (coms, dir3):
                 savings,
                 com.baseline_kWh_consumption - com.refit_kWh_consumption])
         except (KeyError,AttributeError) as e:
-            print c +":"+ str(e)
+            #~ print c +":"+ str(e)
             pass
     data = DataFrame(out,columns = ['community','NPV Benefit','NPV Cost', 
                            'NPV Net Benefit', 'B/C Ratio',
