@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.6.3]
+### fixed
+- the non-residential buildings summary file columns have been corrected
+
 ## [0.6.2]
 ### added
 - summary of non-residential buildings file
