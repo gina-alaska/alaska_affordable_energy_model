@@ -93,10 +93,14 @@ class CommunityData (object):
                          ['generation diesel'].fillna(0)/\
                          self.get_item('community',"generation")
         percent_diesel = float(percent_diesel.values[-1])
-        price = self.get_item("community","elec non-fuel cost") + \
-            percent_diesel * \
+        
+        adder = percent_diesel * \
             self.get_item("community","diesel prices").projected_prices/\
             generation_eff
+            
+        adder[np.isnan(adder)] = 0 
+        
+        price = self.get_item("community","elec non-fuel cost") + adder
         
         start_year = self.get_item("community","diesel prices").start_year
         years = range(start_year,start_year+len(price))

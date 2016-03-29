@@ -1397,6 +1397,8 @@ def preprocess (data_dir, out_dir, com_id):
 def preprocess_no_intertie (data_dir, out_dir, com_id, diagnostics):
     """
     """
+    if os.path.exists(os.path.join(out_dir)):
+        return False
     pp = Preprocessor(com_id, data_dir,out_dir, diagnostics)
     pp.preprocess()
     
@@ -1463,8 +1465,36 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
                                     ("" + com + " is using it's "
                                      "parent's (" + parent + ""
                                      ") prices"))
-
-
+                                     
+        if com != parent and os.path.exists(f_path):
+            #~ print com
+            p_file = os.path.join(parent_dir, "prices.csv")
+            parent_prices = read_csv(p_file, comment = '#', index_col = 0)
+            prices = read_csv(f_path, comment = '#', index_col = 0)
+            for i in prices.index:
+                val = float(parent_prices.ix[i])
+                if np.isnan(float(prices.ix[i])):
+                    prices.ix[i] = val
+                    diagnostics.add_warning("Intertie update (prices )",
+                                    ("" + com + " is using it's "
+                                     "parent's (" + parent + ""
+                                     ") " + str(i)))
+            
+            fd = open(f_path, 'r')
+            text = ""
+            while True:
+                l = fd.readline()    
+                if l[0] != '#':
+                    break
+                text += l 
+            fd.close()
+            fd = open(f_path, 'w')
+            fd.write(text)
+            fd.close()
+            prices.to_csv(f_path,mode='a')
+            
+            
+                
         f_path = os.path.join(out_dir,com,"hdd.csv")
         if com != parent and not os.path.exists(f_path):
             #print com + " adding data- hdd"
