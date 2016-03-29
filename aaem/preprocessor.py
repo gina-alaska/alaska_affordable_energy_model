@@ -432,9 +432,13 @@ class Preprocessor (object):
         except (KeyError, ValueError )as e:
             self.diagnostics.add_warning("wastewater",
                                          "system type unknown")
+            ww_d['HDD kWh']	= 0.0
+            ww_d['HDD HF'] = 0.0
+            ww_d['pop kWh'] = 0.0
+            ww_d['pop HF'] = 0.0
+
             ww_d["assumption type used"] = "UNKNOWN"
             #~ ww_d.to_csv(out_file, mode = 'a')
-
             df = ww_d
 
         out_file = os.path.join(self.out_dir,"wastewater_data.csv")

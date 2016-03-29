@@ -64,12 +64,15 @@ class CommunityData (object):
         """
         check for any auto disable conditions and disable those components
         """
-        st = self.get_item('water wastewater',"data").ix["assumption type used"]
-        if st.values[0] == "UNKNOWN":
-            self.set_item('water wastewater',"enabled",  False)
-            self.diagnostics.add_error("Community Data", 
-                    ("(Checking Inputs) Water Wastewater system type unknown."
-                     " Fixing by disabling Wastewater component at runtime"))
+        # no conditions at this time 
+        pass
+        
+        #~ st = self.get_item('water wastewater',"data").ix["assumption type used"]
+        #~ if st.values[0] == "UNKNOWN":
+            #~ self.set_item('water wastewater',"enabled",  False)
+            #~ self.diagnostics.add_error("Community Data", 
+                    #~ ("(Checking Inputs) Water Wastewater system type unknown."
+                     #~ " Fixing by disabling Wastewater component at runtime"))
         
     
     def calc_non_fuel_electricty_price (self, N_slope_price = .15):
