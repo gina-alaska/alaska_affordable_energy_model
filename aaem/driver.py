@@ -521,7 +521,7 @@ def building_log(coms, dir3):
                     n = 0
                     sf_m = np.nan
                     sf_e = np.nan
-                    if t != 'Average':
+                    if t == 'Average':
                         
                         n = num
                         sf_e = estimates['Square Feet']['Unknown']
