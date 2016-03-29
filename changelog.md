@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.6.4]
+### fixed
+- the missing intertie kWh prices have been fixed
+
 ## [0.6.3]
 ### fixed
 - the non-residential buildings summary file columns have been corrected
