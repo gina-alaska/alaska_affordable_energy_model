@@ -1,5 +1,10 @@
 #Change Log
 
+## [0.7.0]
+### changed
+- GNIS ID is used to index building inventory in preprocessor
+- Water and Wastewater systems components now runs with unknown system types
+
 ## [0.6.4]
 ### fixed
 - the missing intertie kWh prices have been fixed
