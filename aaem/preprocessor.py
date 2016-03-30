@@ -1196,10 +1196,9 @@ class Preprocessor (object):
         """
         in_file = os.path.join(self.data_dir,"non_res_buildings.csv")
         try:
-            data = read_csv(in_file, index_col=0, comment = "#")
-            #~ print
-            data = data[data.index == self.com_id]
-
+            data = read_csv(in_file, index_col=1, comment = "#")
+            #~ data = data[data.index == self.com_id]
+            data = self.get_communities_data(data)
             l = ["Square Feet","implementation cost",
                  "Electric", "Electric Post",
                  "Fuel Oil", "Fuel Oil Post",
@@ -1207,7 +1206,6 @@ class Preprocessor (object):
                  "Natural Gas", "Natural Gas Post",
                  "Propane", "Propane Post"]
             data[l] = data[l].replace(r'\s+', np.nan, regex=True)
-
 
 
             c = ["Building Type", "Square Feet",
@@ -1282,13 +1280,13 @@ class Preprocessor (object):
         #~ print self.com_id
         in_file = os.path.join(self.data_dir, "propane_price_estimates.csv")
         data = read_csv(in_file, index_col=0,comment = "#", header=0)
-        if len(self.get_communities_data(data)['Source'].values)==0:
+        if len(self.get_communities_data(data).ix['Source'])==0:
             self.diagnostics.add_warning("prices-propane", "not found")
             return 0
             
         self.diagnostics.add_note("prices-propane", "price source: " +\
-                      str(self.get_communities_data(data)['Source'].values))
-        return float(self.get_communities_data(data)['Propane ($/gallon)'])
+                      str(self.get_communities_data(data).ix['Source']))
+        return float(self.get_communities_data(data).ix['Propane ($/gallon)'])
         
     def prices_diesel (self):
         """
@@ -1313,13 +1311,13 @@ class Preprocessor (object):
         in_file = os.path.join(self.data_dir, "biomass_price_estimates.csv")
         data = read_csv(in_file, index_col=0,comment = "#", header=0)
         
-        if len(self.get_communities_data(data)['Source'].values)==0:
+        if len(self.get_communities_data(data).ix['Source'])==0:
             self.diagnostics.add_warning("prices-biomass", "not found")
             return 0
         self.diagnostics.add_warning("prices-biomass", "price source: " +\
-                      str(self.get_communities_data(data)['Source'].values))
+                      str(self.get_communities_data(data).ix['Source']))
         try:
-            val = float(self.get_communities_data(data)['Biomass ($/Cord)'])         
+            val = float(self.get_communities_data(data).ix['Biomass ($/Cord)'])         
         except ValueError:
             self.diagnostics.add_note("prices-biomass", 
                                         "is N/a treating as $0")
@@ -1335,8 +1333,18 @@ class Preprocessor (object):
             pull the data for a community out of a data frame with multiple 
         communities. 
         """
-        dataframe = dataframe.ix[self.id_list]
-        return dataframe.ix[dataframe.index[dataframe.T.any()]]  
+        #~ dataframe = dataframe.ix[self.id_list]
+        #~ print self.id_list
+        #~ print dataframe
+        
+        #~ return dataframe.ix[dataframe.index[dataframe.T.any()]]  
+        
+        for idx in self.id_list:
+            try:
+                return DataFrame(dataframe.ix[idx])
+            except (IndexError, KeyError) as e:
+                continue
+        return dataframe.ix[-1]
     
     def load_ids (self):
         """
@@ -1344,7 +1352,7 @@ class Preprocessor (object):
         for the id.
         """
         in_file = os.path.join(self.data_dir, "community_list.csv")
-        data = read_csv(in_file)
+        data = read_csv(in_file, comment = '#')
         ids = data.ix[data.index[data.T[data.T==self.com_id].any()]]
         region = ids['Energy Region'].values[0]
         ids = ids[ids.keys()[ids.keys()!='Energy Region']].set_index("Model ID")
