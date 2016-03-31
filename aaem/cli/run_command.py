@@ -4,7 +4,7 @@ run_command.py
     A commad for the cli to run the model
 """
 import pycommand
-from aaem import driver, __version__, __download_url__
+from aaem import driver, __version__, __download_url__ , summaries
 from default_cases import __DEV_COMS_RUN__ as __DEV_COMS__ 
 from datetime import datetime
 import os.path
@@ -71,10 +71,10 @@ class RunCommand(pycommand.CommandBase):
         if self.flags.log:
             sys.stdout  = open(self.flags.log, 'w')
         coms = driver.run(batch, "", img_dir)
-        driver.res_log(coms,os.path.join(base,'results'))
-        driver.com_log(coms,os.path.join(base,'results'))
-        driver.village_log(coms,os.path.join(base,'results'))
-        driver.building_log(coms,os.path.join(base,'results'))
+        summaries.res_log(coms,os.path.join(base,'results'))
+        summaries.com_log(coms,os.path.join(base,'results'))
+        summaries.village_log(coms,os.path.join(base,'results'))
+        summaries.building_log(coms,os.path.join(base,'results'))
         sys.stdout = sout
         
         fd = open(os.path.join(base, "version_metadata.txt"), 'r')

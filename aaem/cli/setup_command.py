@@ -7,7 +7,7 @@ import pycommand
 import sys
 import os.path
 import shutil
-from aaem import driver
+from aaem import driver, summaries
 from pandas import read_csv
 from default_cases import __DEV_COMS__
 
@@ -117,7 +117,14 @@ class SetupCommand(pycommand.CommandBase):
         print "Setting up..."
         config = driver.setup(coms, raw, model_root, setup_intertie = full)
         print "Running ..."
-        driver.run(config, "",img_dir )
+        coms = driver.run(config, "",img_dir )
+        
+        base = os.path.join(model_root,'run_init')
+        summaries.res_log(coms,os.path.join(base,'results'))
+        summaries.com_log(coms,os.path.join(base,'results'))
+        summaries.village_log(coms,os.path.join(base,'results'))
+        summaries.building_log(coms,os.path.join(base,'results'))
+        
 
 
 
