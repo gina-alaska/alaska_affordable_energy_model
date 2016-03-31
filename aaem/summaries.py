@@ -145,7 +145,10 @@ def building_log(coms, res_dir):
                 count.append(n)
                 act.append(sf_m)
                 est.append(sf_e)
-            out.append([c]+ count+act+est)
+            
+            percent = com.buildings_df['Square Feet'].sum() / estimates['Square Feet'].sum()
+            percent2 = float(com.buildings_df['count'].sum())/(com.buildings_df['count'].sum()+num)
+            out.append([c,percent*100,percent2*100]+ count+act+est)
             
         except (KeyError,AttributeError)as e :
             #~ print c +":"+ str(e)
@@ -163,13 +166,13 @@ def building_log(coms, res_dir):
         e.append('square feet(including estimates)')
 
     
-    data = DataFrame(out,columns = ['community'] + l + l + l
+    data = DataFrame(out,columns = ['community','% sqft measured','% buildings from inventory'] + l + l + l
                     ).set_index('community').round(2)
     f_name = os.path.join(res_dir,'non-residential_building_summary.csv')
     fd = open(f_name,'w')
     fd.write(("# non residental building component building "
              "summary by community\n"))
-    fd.write("," + str(c)[1:-1].replace(" '",'').replace("'",'') + "," + \
+    fd.write(",%,%," + str(c)[1:-1].replace(" '",'').replace("'",'') + "," + \
              str(m)[1:-1].replace("' ",'').replace("'",'') + "," + \
              str(e)[1:-1].replace("' ",'').replace("'",'') +'\n')
     fd.close()
