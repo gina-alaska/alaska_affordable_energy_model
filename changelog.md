@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.7.2]
+### changed
+- added % of total columns to building s summary
+
 ## [0.7.1]
 ### changed
 - Order of communites has been alphabetized
