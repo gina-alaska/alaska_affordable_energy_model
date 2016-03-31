@@ -285,7 +285,7 @@ class CommunityBuildings (AnnualSavings):
                 # only one item 
                 if np.isnan(data.ix[k][measure]):
                     try:
-                        data.ix[k][measure] = sqft_ests.ix[k]
+                        data[measure][k] = sqft_ests.ix[k]
                     except KeyError:
                         self.diagnostics.add_note(self.component_name, 
                             "Building Type: " + k +\
@@ -296,7 +296,6 @@ class CommunityBuildings (AnnualSavings):
                  "Building Type: " + k + " not valid. Using 'other's estimates")
                 data.loc[:,measure].loc[k] = \
                     data.loc[:,measure].loc[k].fillna(sqft_ests.ix['Other'])
-        
         self.refit_sqft_total = data[measure].sum()
         
     
