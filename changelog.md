@@ -1,5 +1,12 @@
 #Change Log
 
+## [0.7.1]
+### changed
+- Order of communites has been alphabetized
+
+### fixed
+- Square footage not being included for single building categories
+
 ## [0.7.0]
 ### changed
 - GNIS ID is used to index building inventory in preprocessor
