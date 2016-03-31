@@ -388,7 +388,7 @@ def run_batch (config, suffix = "TS", img_dir = None):
     
     if suffix == "TS":
         suffix = datetime.strftime(datetime.now(),"%Y%m%d%H%M%S")
-    for key in config:
+    for key in sorted(config.keys()):
         print key
         #~ try:
         #~ start = datetime.now()
@@ -409,7 +409,7 @@ def res_log (coms, dir3):
     """
     """
     out = []
-    for c in coms:
+    for c in sorted(coms.keys()):
         if c.find("_intertie") != -1:
             continue
         try:
@@ -448,7 +448,7 @@ def com_log (coms, dir3):
     """
     """
     out = []
-    for c in coms:
+    for c in sorted(coms.keys()):
         if c.find("_intertie") != -1:
             continue
         try:
@@ -487,7 +487,7 @@ def building_log(coms, dir3):
     """
     """
     out = []
-    for c in coms:
+    for c in sorted(coms.keys()):
         if c.find("_intertie") != -1:
             continue
         try:
@@ -572,7 +572,7 @@ def village_log (coms, dir3):
     """
     """
     out = []
-    for c in coms:
+    for c in sorted(coms.keys()):
         if c.find("_intertie") != -1:
             continue
         try:
