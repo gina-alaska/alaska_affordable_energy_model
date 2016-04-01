@@ -9,6 +9,7 @@ from aaem.cli.list_command import ListCommand
 from aaem.cli.compare_command import CompareCommand
 from aaem.cli.refresh_command import RefreshCommand
 
+from datetime import datetime
 
 # remove warnings in cli
 import warnings
@@ -36,6 +37,14 @@ class AaemCommand(pycommand.CommandBase):
         'compare': CompareCommand,
         'refresh': RefreshCommand,
         }
+        
+    optionList = (
+            ('dev', ('d', False, "use only development communities")),
+            ('time',('t', False,
+                    "Displays the total running time at the end of execution")),
+           #~ ('path', ('p', "<name>", "path to location to setup/run  model")),
+           #~ ('name', ('n', "<name>", "name of model")),
+    )
 
     def run(self):
         try:
@@ -51,4 +60,8 @@ class AaemCommand(pycommand.CommandBase):
                   .format(cmd=self.args[0], error=cmd.error))
             return 1
         else:
-            return cmd.run()
+            start = datetime.now()
+            res = cmd.run()
+            if self.flags.time:
+                print "total run time: " + str(datetime.now() - start)
+            return res
