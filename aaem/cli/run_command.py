@@ -22,9 +22,10 @@ class RunCommand(pycommand.CommandBase):
     usagestr = ('usage: run path_to_model_run '
                                     '[list_of_communities (with underscores)] ')
     optionList = (
-
-           ('dev', ('d', False, "use only development communities")),
+            ('dev', ('d', False, "use only development communities")),
             ('log', ('l', "<log_file>", "name/path of file to log outputs to")),
+            ('time',('t', False,
+                    "Displays the total running time at the end of execution")),
            )
     description =('Run model for given communities. (default = all communities)'
                     'options: \n'
@@ -38,7 +39,7 @@ class RunCommand(pycommand.CommandBase):
         """
         run the command
         """
-        #~ start = datetime.now()
+        start = datetime.now()
         
         if self.args and os.path.exists(self.args[0]):
             base = os.path.abspath(self.args[0])
@@ -87,4 +88,6 @@ class RunCommand(pycommand.CommandBase):
                 "Date Run: "+ datetime.strftime(datetime.now(),"%Y-%m-%d")+'\n'
                  ))
         fd.close()
-        #~ print datetime.now() - start
+        
+        if self.flags.time:
+            print "model runt time: " + str(datetime.now() - start)
