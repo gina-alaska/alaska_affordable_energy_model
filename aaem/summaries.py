@@ -145,9 +145,16 @@ def building_log(coms, res_dir):
                 count.append(n)
                 act.append(sf_m)
                 est.append(sf_e)
-            
             percent = com.buildings_df['Square Feet'].sum() / estimates['Square Feet'].sum()
             percent2 = float(com.buildings_df['count'].sum())/(com.buildings_df['count'].sum()+num)
+            
+            if np.isnan(percent):
+                percent = 0.0
+                
+            if np.isnan(percent2):
+                percent2 = 0.0
+            
+            
             out.append([c,percent*100,percent2*100]+ count+act+est)
             
         except (KeyError,AttributeError)as e :

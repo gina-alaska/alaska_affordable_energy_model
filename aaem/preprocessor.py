@@ -79,7 +79,6 @@ class Preprocessor (object):
             all of the files necessary to run the model are in out_dir,
         if out_dir dose not it exist it is created
         """
-
          # join makes it a directory not a file
         data_dir = self.data_dir
         out_dir = self.out_dir
@@ -108,7 +107,6 @@ class Preprocessor (object):
         self.electricity()
         self.region()
         self.interties()
-
         self.residential()
         #~ print self.residential_data.ix['year']
         base_pop = np.float(self.population_data.ix\
@@ -1203,6 +1201,7 @@ class Preprocessor (object):
             data = read_csv(in_file, index_col=1, comment = "#")
             #~ data = data[data.index == self.com_id]
             data = self.get_communities_data(data)
+
             l = ["Square Feet","implementation cost",
                  "Electric", "Electric Post",
                  "Fuel Oil", "Fuel Oil Post",
@@ -1210,7 +1209,7 @@ class Preprocessor (object):
                  "Natural Gas", "Natural Gas Post",
                  "Propane", "Propane Post"]
             data[l] = data[l].replace(r'\s+', np.nan, regex=True)
-
+            
 
             c = ["Building Type", "Square Feet",
                  "Audited", "Retrofits Done",
@@ -1226,7 +1225,7 @@ class Preprocessor (object):
             fd.close()
             data[c].to_csv(out_file, mode="a", index=False)
             self.buildings_inventory_data = data[c]
-        except KeyError:
+        except KeyError as e :
             self.diagnostics.add_error("buildings(inventory)",
                                 "Community " + self.community + \
                                 " does not have an entry in the input data" +\
@@ -1284,13 +1283,13 @@ class Preprocessor (object):
         #~ print self.com_id
         in_file = os.path.join(self.data_dir, "propane_price_estimates.csv")
         data = read_csv(in_file, index_col=0,comment = "#", header=0)
-        if len(self.get_communities_data(data).ix['Source'])==0:
+        if len(self.get_communities_data(data)['Source'])==0:
             self.diagnostics.add_warning("prices-propane", "not found")
             return 0
             
         self.diagnostics.add_note("prices-propane", "price source: " +\
-                      str(self.get_communities_data(data).ix['Source']))
-        return float(self.get_communities_data(data).ix['Propane ($/gallon)'])
+                      str(self.get_communities_data(data)['Source']))
+        return float(self.get_communities_data(data)['Propane ($/gallon)'])
         
     def prices_diesel (self):
         """
@@ -1315,13 +1314,13 @@ class Preprocessor (object):
         in_file = os.path.join(self.data_dir, "biomass_price_estimates.csv")
         data = read_csv(in_file, index_col=0,comment = "#", header=0)
         
-        if len(self.get_communities_data(data).ix['Source'])==0:
+        if len(self.get_communities_data(data)['Source'])==0:
             self.diagnostics.add_warning("prices-biomass", "not found")
             return 0
         self.diagnostics.add_warning("prices-biomass", "price source: " +\
-                      str(self.get_communities_data(data).ix['Source']))
+                      str(self.get_communities_data(data)['Source']))
         try:
-            val = float(self.get_communities_data(data).ix['Biomass ($/Cord)'])         
+            val = float(self.get_communities_data(data)['Biomass ($/Cord)'])         
         except ValueError:
             self.diagnostics.add_note("prices-biomass", 
                                         "is N/a treating as $0")
@@ -1342,10 +1341,12 @@ class Preprocessor (object):
         #~ print dataframe
         
         #~ return dataframe.ix[dataframe.index[dataframe.T.any()]]  
-        
         for idx in self.id_list:
             try:
-                return DataFrame(dataframe.ix[idx])
+                temp = DataFrame(dataframe.ix[idx])
+                if len(temp.T) == 1:
+                    return temp.T
+                return temp
             except (IndexError, KeyError) as e:
                 continue
         return dataframe.ix[-1]
