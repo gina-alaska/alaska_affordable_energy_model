@@ -1,6 +1,13 @@
 #Change Log
 
 ## [0.7.2]
+### added
+- time(-t) option to run command to time it
+
+### fixed
+- indexing in the preprocessor for items with one row
+
+## [0.7.2]
 ### changed
 - added % of total columns to building s summary
 
