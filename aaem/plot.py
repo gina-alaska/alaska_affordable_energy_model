@@ -267,7 +267,8 @@ def add_vertical_line (ax, position,text = None):
 
 def plot_dataframe(ax, dataframe, 
                    ax0 = None, ax0_cols = None, 
-                   column_map = None):
+                   column_map = None,
+                   color_map = None):
     """
         Plots the columns in a pandas.DataFrame on ax. If ax0 and ax0_cols are 
     provided dataframe[ax0_cols] will be plotted on ax0 before all columns not 
@@ -305,6 +306,8 @@ def plot_dataframe(ax, dataframe,
         for c in column_map:
             c2use[c] = colors[ci]
             ci += 1
+    if color_map is not None:
+        c2use = color_map
     
     x = dataframe.index
     if ax0:
