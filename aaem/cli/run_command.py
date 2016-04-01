@@ -90,4 +90,4 @@ class RunCommand(pycommand.CommandBase):
         fd.close()
         
         if self.flags.time:
-            print "model runt time: " + str(datetime.now() - start)
+            print "model run time: " + str(datetime.now() - start)
