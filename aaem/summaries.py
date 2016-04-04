@@ -198,7 +198,7 @@ def village_log (coms, res_dir):
                 res = coms[c]['model'].comps_used['residential buildings']
                 res_con = [res.baseline_HF_consumption[0], 
                                 res.baseline_kWh_consumption[0] / mmbtu_to_kWh]
-                res_cost = [res.baseline_HF_cost[0], res.baseline_HF_cost[0]]
+                res_cost = [res.baseline_HF_cost[0], res.baseline_kWh_cost[0]]
             except KeyError:
                 res_con = [np.nan, np.nan]
                 res_cost = [np.nan, np.nan]
