@@ -1038,13 +1038,15 @@ class Preprocessor (object):
             ## net generation
             phc = temp["powerhouse_consumption_kwh"]
             if np.isnan(phc):
-                phc = temp['consumption'] * GENERATION_AVG
+                phc = temp['generation'] * GENERATION_AVG
                 self.diagnostics.add_note("PCE Electricity",
                         "Powerhouse consumption not found for " + \
                         str(year) +" assuming to be " +\
                         str(GENERATION_AVG*100) + "% of gross generation.")
-            temp['net generation'] = temp['generation'] - \
-                                     phc
+                temp['net generation'] = temp['generation'] 
+                temp['generation'] = temp['generation'] + phc
+            else:
+                temp['net generation'] = temp['generation'] - phc
 
             ## other values
             temp['fuel used'] = temp['fuel_used_gal']

@@ -171,10 +171,17 @@ class Forecast (object):
         
         
         try:
-            real = self.cd.get_item('community',"generation")[2003:]
+            real = self.cd.get_item('community',"generation").ix[2003:]
             idx = real.index.values.tolist()
             df = DataFrame(real.ix[idx])
             df.columns = ['consumption kWh']
+            
+            nas = [] 
+            for i in idx:
+                if np.isnan(float(df.ix[i])):
+                    nas.append(i)
+            idx = set(idx).difference(nas)
+            
             self.generation.ix[idx] = df.ix[idx]
         except:
             pass
