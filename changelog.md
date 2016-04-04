@@ -1,6 +1,16 @@
 #Change Log
 
-## [0.7.2]
+## [0.7.4]
+### added
+- timing feature for all commands. use: aaem -t <command> ...  to time any command
+
+### changed 
+- colors on generation forecast plot
+
+### fixed
+- bug where prices for kWh and heating fuel were the same in the village log
+
+## [0.7.3]
 ### added
 - time(-t) option to run command to time it
 
