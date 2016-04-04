@@ -13,6 +13,8 @@ from constants import mmbtu_to_kWh, mmbtu_to_gal_HF
 import shutil
 from pandas import DataFrame, read_csv, concat
 
+import colors
+
 import numpy as np
 
 import yaml
@@ -759,6 +761,16 @@ def create_generation_forecast (models, path, img_dir = None):
     'generation_solar [mmbtu/year]':'solar',
     'generation_biomass [mmbtu/year]':'biomass'}
     
+
+    c_dict = {'population': [min(1,r*4) for r in colors.red],
+    'generation_total [mmbtu/year]':colors.jet,
+    'generation_diesel [mmbtu/year]':colors.red,
+    'generation_hydro [mmbtu/year]':colors.blue,
+    'generation_natural_gas [mmbtu/year]':colors.violet,
+    'generation_wind [mmbtu/year]':[ min(1,r*2) for r in colors.blue],
+    'generation_solar [mmbtu/year]':colors.orange,
+    'generation_biomass [mmbtu/year]':colors.avacado}
+    
     temp = []
     for i in png_list:
         if  all(gen_fc[i] == 0):
@@ -772,7 +784,7 @@ def create_generation_forecast (models, path, img_dir = None):
     fig, ax = plot.setup_fig(plot_name ,'years','population')
     ax1 = plot.add_yaxis(fig,'Generation MMBtu')
     
-    plot.plot_dataframe(ax1,df2,ax,['population'],png_dict)
+    plot.plot_dataframe(ax1,df2,ax,['population'],png_dict,c_dict)
     fig.subplots_adjust(right=.85)
     fig.subplots_adjust(left=.12)
     start = models[0].\
