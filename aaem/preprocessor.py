@@ -1578,15 +1578,18 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
                         'generation wind', 'generation solar',
                         'generation biomass',
                        ]:
+                #~ print "loop"
                 try:
                     if pp_data[idx].purchase_type == key.split(' ')[1]:
                         electricity[key] = electricity[key].fillna(0) + \
                             (temp[key].fillna(0) - \
                                 temp['kwh_purchased'].fillna(0))
                         continue
-                except IndexError:
+                except (IndexError, AttributeError):
                     electricity[key] = electricity[key].fillna(0) + \
                                                             temp[key].fillna(0)
+                #~ print key
+                #~ print electricity[key]
         except AttributeError:
             pass
     electricity['line loss'] = 1.0 - \
