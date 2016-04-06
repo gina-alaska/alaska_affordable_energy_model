@@ -1,5 +1,16 @@
 #Change Log
 
+## [0.8.0]
+### fixed 
+- residential heating fuel for interties
+- fixes generation forecast where natural gas was shown as present when it was in fact not
+- fixes some preprocessor issues for the interties where some columns were not summed for the yearly electric summary
+- gross generation vs net generation has been fixed in the PCE data where the power house consumption is not available
+- measured generation is now used in the output files (before it was being over written with calculated values) 
+
+### changed
+- moved calculation of residential average kWh/household to the preprocessor
+
 ## [0.7.4]
 ### added
 - timing feature for all commands. use: aaem -t <command> ...  to time any command
