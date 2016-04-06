@@ -105,9 +105,9 @@ class ResidentialBuildings(AnnualSavings):
         # comes from.
         
         yr = int(self.comp_specs['data'].ix['year'])
-        houses = int(self.comp_specs['data'].ix['total_occupied'])
-        r_con = self.forecast.base_res_consumption
-        avg_con = r_con/houses
+        #~ houses = int(self.comp_specs['data'].ix['total_occupied'])
+        #~ r_con = self.forecast.base_res_consumption
+        avg_con = float(self.comp_specs['data'].ix['average kWh per house'])
         #~ self.avg_monthly_consumption = ave_con/12
         if (avg_con < con_threshold) or self.copied_elec or np.isnan(avg_con):
             avg_con = con_threshold
@@ -122,7 +122,7 @@ class ResidentialBuildings(AnnualSavings):
     
     def calc_init_HH (self):
         """
-        estimate the # Housholds for the firet year o the project 
+        estimate the # Households for the first year of the project 
         pre:
             self.forecast should be able to return a population for a given
             year. 
