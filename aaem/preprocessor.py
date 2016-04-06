@@ -83,12 +83,14 @@ class Preprocessor (object):
         data_dir = self.data_dir
         out_dir = self.out_dir
         com_id = self.com_id
+        print com_id
         try:
             os.makedirs(out_dir)
         except OSError:
             pass
-            
         self.load_ids()
+        
+        self.interties()
         self.prices()
 
         ### copy files that still need their own preprocessor function yet
@@ -106,8 +108,9 @@ class Preprocessor (object):
         self.population()
         self.electricity()
         self.region()
-        self.interties()
+
         self.residential()
+        self.residential_add_kWh_consumption_per_household()
         #~ print self.residential_data.ix['year']
         base_pop = np.float(self.population_data.ix\
                         [int(self.residential_data.ix['year'])]["population"])
@@ -479,6 +482,41 @@ class Preprocessor (object):
 
         df.to_csv(out_file,mode="a")
         self.residential_data = df
+        
+        self.init_households = int(df.ix["total_occupied"])
+        self.init_household_year = int(df.ix["year"])
+        
+        
+    def residential_add_kWh_consumption_per_household(self):
+        """
+            add the average kWh/houshold consumption number to the residential
+        input file
+        
+        pre:
+            self.residential and self.electricity need to have been called
+        post:
+            kWh/houshold is added to res data output file
+        """
+        try:
+            consumption_res = self.electricity_data["consumption residential"]\
+                                               [self.init_household_year]
+            average = consumption_res/ self.init_households 
+        except AttributeError as e:
+            average = "CALC_FOR_INTERTIE"
+        except KeyError:
+            average = np.nan
+        if self.combined_com == True:
+            average = "CALC_FOR_INTERTIE"
+        #~ print average
+        out_file = os.path.join(self.out_dir, "residential_data.csv")
+        fd = open(out_file,'a')
+        fd.write("average kWh per house,"+str(average)+'\n')
+        fd.close()
+        
+        
+        
+        
+        
 
     def region (self):
         """
@@ -508,6 +546,7 @@ class Preprocessor (object):
     def electricity(self):
         """
         """
+        self.combined_com = False
         try:
             if self.com_id == "South Naknek":
                 raise KeyError, "S. Naknek"
@@ -515,6 +554,7 @@ class Preprocessor (object):
             self.electricity_prices_pce()
         except KeyError:
             try:
+                self.combined_com = False
                 self.electricity_process_eia()
                 self.electricity_prices_eia()
                 # Valdez work around.
@@ -855,11 +895,14 @@ class Preprocessor (object):
         try:
             if self.com_id == "Craig":
                 data = data.loc[["Craig","Craig, Klawock"]]
+                self.combined_com = True
             else:
                 data = data.loc[self.com_id]
         except KeyError:
             try:
                 data = data.loc[[self.com_id+',' in s for s in data.index]]
+                if self.intertied:
+                    self.combined_com = True
             except KeyError:
                 raise KeyError, "Community not in PCE data"
         data = data[["year","diesel_kwh_generated",
@@ -1114,10 +1157,14 @@ class Preprocessor (object):
         post
             com_id's intertie data is saved to out_dir as interties.csv
         """
+        self.intertied = False 
         try:
             in_file = os.path.join(self.data_dir,"interties.csv")
             data = read_csv(in_file, index_col=0,
                             comment = "#").ix[self.com_id].fillna("''")
+            if data['Plant Intertied'] == 'Yes' and \
+               data['Other Community on Intertie'] != "''":
+                self.intertied = True
             out_file = os.path.join(self.out_dir, "interties.csv")
             fd = open(out_file,'w')
             fd.write(self.interties_header())
@@ -1129,6 +1176,7 @@ class Preprocessor (object):
         except KeyError:
             self.diagnostics.add_note("Interties",
                                                     "no intertie on community")
+        
 
     def buildings_count (self):
         """
@@ -1365,14 +1413,14 @@ class Preprocessor (object):
         self.id_df = ids
         self.id_list = ids.values[0].tolist()
 
-def preprocess (data_dir, out_dir, com_id):
+def preprocess (data_dir, out_dir, com_id, dev = False):
     """ Function doc """
     #print com_id
     diag = diagnostics()
 
     pp = preprocess_no_intertie(data_dir,
                         os.path.join(out_dir,com_id.replace(" ","_")), com_id,
-                                                                    diag)
+                                                                    diag, dev)
     try:
         if pp.it_ids["Plant Intertied"].lower() == "yes":
 
@@ -1388,6 +1436,7 @@ def preprocess (data_dir, out_dir, com_id):
 
 
             ids = [com_id] + ids
+
             if len(ids) >1 :
                 diag = diagnostics()
                 diag.add_note("preprocessor",
@@ -1407,10 +1456,10 @@ def preprocess (data_dir, out_dir, com_id):
 
 
 
-def preprocess_no_intertie (data_dir, out_dir, com_id, diagnostics):
+def preprocess_no_intertie (data_dir, out_dir, com_id, diagnostics, dev = False):
     """
     """
-    if os.path.exists(os.path.join(out_dir)):
+    if os.path.exists(os.path.join(out_dir))and not dev:
         return False
     pp = Preprocessor(com_id, data_dir,out_dir, diagnostics)
     pp.preprocess()
@@ -1592,10 +1641,33 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
     electricity['line loss'] = 1.0 - \
                         electricity['consumption']/electricity['net generation']
 
+    total_HH = 0 
+    for idx in range(len(pp_data)):
+        com = pp_data[idx].com_id
+        total_HH += pp_data[idx].init_households
+        
+    consumption_res = electricity["consumption residential"]\
+                                               [pp_data[0].init_household_year]
+    average = consumption_res/total_HH
+    for com in com_ids:
+        f_path = os.path.join(out_dir,com.replace(" ","_"),
+                                                "residential_data.csv")
 
-
-
-
+        fd = open(f_path,"r")
+        text = fd.read()
+        fd.close()
+        
+        if text.find("CALC_FOR_INTERTIE") == -1:
+            continue
+            
+        diagnostics.add_note("Intertie update (Res avg kWh/household)",
+                                ("" + com + " is using the intertie value of"
+                                " " + str(average) + " for KWh/household"))
+        text = text.replace("CALC_FOR_INTERTIE",str(average))
+        fd = open(f_path,"w")
+        fd.write(text)
+        fd.close()
+    
 
     out_dir = os.path.join(out_dir,com_ids[0].replace(" ","_") +'_intertie')
     try:
