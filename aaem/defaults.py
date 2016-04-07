@@ -48,6 +48,7 @@ forecast:
   electricity: IMPORT 
 
 residential buildings:
+  min kWh per household: 6000 # minimum average consumed kWh/year per house<int>
   enabled: False
   lifetime: ABSOLUTE DEFAULT # number years <int>  
   start year: ABSOLUTE DEFAULT # start year <int>

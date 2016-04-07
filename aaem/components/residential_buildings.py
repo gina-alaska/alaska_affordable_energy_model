@@ -93,7 +93,7 @@ class ResidentialBuildings(AnnualSavings):
             
             self.calc_npv(self.cd['discount rate'], self.cd['current year'])
     
-    def calc_avg_consumption (self, con_threshold = 6000.0):
+    def calc_avg_consumption (self):
         """ 
         get the average monthly consumption of electricity for a house
         
@@ -103,7 +103,7 @@ class ResidentialBuildings(AnnualSavings):
         """
         #   500 average energy use, 12 months in a year. That's whrer the 6000.0
         # comes from.
-        
+        con_threshold = self.comp_specs['min kWh per household']
         yr = int(self.comp_specs['data'].ix['year'])
         #~ houses = int(self.comp_specs['data'].ix['total_occupied'])
         #~ r_con = self.forecast.base_res_consumption
@@ -113,7 +113,7 @@ class ResidentialBuildings(AnnualSavings):
             avg_con = con_threshold
             self.diagnostics.add_note(self.component_name, 
                     ("Average residential Electric consumption"
-                    " corrected to 6000 kWh per year"))
+                    " corrected to "+ str(con_threshold)+" kWh per year"))
         self.avg_kWh_consumption_per_HH = avg_con
         self.diagnostics.add_note(self.component_name,
                 "Average consumption was " + str(self.avg_kWh_consumption_per_HH) +\
