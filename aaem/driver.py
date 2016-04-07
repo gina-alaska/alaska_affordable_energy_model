@@ -656,7 +656,7 @@ def create_generation_forecast (models, path, img_dir = None):
                                                  'generation numbers')
     
     #~ print not np.isnan(gen_fc[['generation natural gas']]).all().bool()
-    if (gen_fc[['generation natural gas']].fillna(0) != 0).all().bool():
+    if (gen_fc[['generation natural gas']].fillna(0) != 0).any().bool():
         for col in ('generation hydro', 'generation diesel',
                 'generation wind', 'generation solar',
                 'generation biomass'):
