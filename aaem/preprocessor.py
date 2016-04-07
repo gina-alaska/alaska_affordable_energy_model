@@ -794,8 +794,13 @@ class Preprocessor (object):
                                      ['NET GENERATION (megawatthours)'])* 1000.0
             total_generation["net generation"] = \
                               total_generation['NET GENERATION (megawatthours)']
-            total_generation["generation"] = \
-                    total_generation["net generation"]/(1 - GENERATION_AVG)
+            
+            try:
+                total_generation["generation"] = total_generation["net generation"]+\
+                      df_diesel['generation diesel'] * GENERATION_AVG
+            except StandardError as w:
+                print w
+            
             self.diagnostics.add_note("EIA Electricity",
                         "Gross Generation assumed to be " +\
                          str((1+GENERATION_AVG)*100) + " of net generation")
@@ -1081,7 +1086,7 @@ class Preprocessor (object):
             ## net generation
             phc = temp["powerhouse_consumption_kwh"]
             if np.isnan(phc):
-                phc = temp['generation'] * GENERATION_AVG
+                phc = temp['generation diesel'] * GENERATION_AVG
                 self.diagnostics.add_note("PCE Electricity",
                         "Powerhouse consumption not found for " + \
                         str(year) +" assuming to be " +\
