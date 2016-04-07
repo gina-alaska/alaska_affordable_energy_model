@@ -244,3 +244,45 @@ def village_log (coms, res_dir):
     fd.write("# summary of consumption and cost\n")
     fd.close()
     data.to_csv(f_name, mode='a')
+    
+def fuel_oil_log (coms, res_dir):
+    """
+    create a 
+    
+    """
+    out = []
+    for c in sorted(coms.keys()):
+        if c.find("_intertie") != -1:
+            continue
+        try:
+            res = coms[c]['model'].comps_used['residential buildings']
+            com = coms[c]['model'].comps_used['non-residential buildings']
+            wat = coms[c]['model'].comps_used['water wastewater']
+            
+            eff = coms[c]['model'].cd.get_item("community",
+                                            "diesel generation efficiency")
+            year = res.start_year
+            
+            elec = int(coms[c]['model'].fc.generation.ix[year]) / eff
+
+            res = res.baseline_fuel_Hoil_consumption[0]
+            com = com.baseline_HF_consumption * mmbtu_to_gal_HF
+            wat = wat.baseline_HF_consumption[0] * mmbtu_to_gal_HF
+            
+            total = res + com + wat + elec
+            
+            out.append([c,elec,res,com,wat,total])
+            
+        except (KeyError,AttributeError) :
+            pass
+    data = DataFrame(out,columns = ['community','Utility diesel (gallons)',
+                                    'Residential Heating oil (gallons)',
+                                    'Non-residential Heating Oil (gallons)',
+                                    'Water/wastewater heating oil (gallons)',
+                                    'Total (gallons)']
+                    ).set_index('community').round(2)
+    f_name = os.path.join(res_dir,'fuel_oil_summary.csv')
+    fd = open(f_name,'w')
+    fd.write("# fuel_oil summary by community\n")
+    fd.close()
+    data.to_csv(f_name, mode='a')

@@ -124,7 +124,7 @@ class SetupCommand(pycommand.CommandBase):
         summaries.com_log(coms,os.path.join(base,'results'))
         summaries.village_log(coms,os.path.join(base,'results'))
         summaries.building_log(coms,os.path.join(base,'results'))
-        
+        summaries.fuel_oil_log(coms,os.path.join(base,'results'))
 
 
 
