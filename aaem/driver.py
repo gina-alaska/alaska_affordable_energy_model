@@ -609,11 +609,10 @@ def write_config (com_id, root):
 
 
     #~ print config_text # no coms
-    if com_id in []:
+    if com_id in ["Barrow", "Nuiqsut"]:
         config_text += (
-"  # added to ensure model execution for weird communities (valdez & sitka) \n"
-"  res non-PCE elec cost: -9999 # $cost/kWh <float> (ex. .83)\n"
-"  elec non-fuel cost: -9999 # $cost/kWh <float> (ex. .83)\n"
+"  # added to ensure model for north slope \n"
+"  natural gas price: 3 # $cost/Mcf <float> (ex. .83)\n"
 )
     #~ print config_text
     try:
