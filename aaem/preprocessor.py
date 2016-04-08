@@ -710,6 +710,11 @@ class Preprocessor (object):
                                           'ELEC FUEL CONSUMPTION MMBTUS',
                                           'NET GENERATION (megawatthours)',
                                           'Year']]
+            if any(generation['NET GENERATION (megawatthours)'] < 0):
+                self.diagnostics.add_note("EIA Electricity",
+                    "Negative generation values have been set to 0")
+                idx = generation['NET GENERATION (megawatthours)'] < 0
+                generation['NET GENERATION (megawatthours)'][idx] = 0
             g_bool = True
         except KeyError:
             self.diagnostics.add_warning("EIA Electricity",
@@ -752,10 +757,13 @@ class Preprocessor (object):
                 if power_type_lib[t] == "diesel":
                     temp2["fuel used"] = \
                                   temp['TOTAL FUEL CONSUMPTION QUANTITY'] * 42.0
+                
 
+                    
                 l.append(temp2)
+                
+                
             fuel_types = concat(l, axis =1 )
-
 
             try:
                 df_diesel = fuel_types[['generation diesel',"fuel used"]]
