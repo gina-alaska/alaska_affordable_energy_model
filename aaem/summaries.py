@@ -263,7 +263,7 @@ def fuel_oil_log (coms, res_dir):
                                             "diesel generation efficiency")
             year = res.start_year
             
-            elec = int(coms[c]['model'].fc.generation.ix[year]) / eff
+            elec = float(coms[c]['model'].fc.generation.ix[year]) / eff
 
             res = res.baseline_fuel_Hoil_consumption[0]
             com = com.baseline_HF_consumption * mmbtu_to_gal_HF
