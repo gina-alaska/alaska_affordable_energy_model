@@ -992,7 +992,7 @@ class Preprocessor (object):
                         ", as it wasthe most common energy source amoung " + \
                         str(s_set) )
 
-
+            o1_key = o1_key.lower()
             if o1_key not in ('diesel', 'natural gas','wind', 'solar'):
                 self.diagnostics.add_warning("PCE Electricity",
                 "energy source key " + str(o1_key) + \
@@ -1022,7 +1022,7 @@ class Preprocessor (object):
                         ", as it wasthe most common energy source amoung " + \
                         str(s_set) )
 
-
+            o2_key = o2_key.lower()
             if o2_key not in ('diesel', 'natural gas','wind', 'solar'):
                 self.diagnostics.add_warning("PCE Electricity",
                 "energy source key " + str(o2_key) + \
@@ -1030,7 +1030,6 @@ class Preprocessor (object):
                 o2_key = None
         except:
             o2_key = None
-
 
         ## create yearly summaries
         sums = []
@@ -1043,6 +1042,12 @@ class Preprocessor (object):
             ## get year as int
             temp["year"] = int(year)
             ## get gross generation
+            #~ print temp[['diesel_kwh_generated',
+                                        #~ "powerhouse_consumption_kwh",
+                                        #~ "hydro_kwh_generated",
+                                        #~ "other_1_kwh_generated",
+                                        #~ "other_2_kwh_generated",
+                                        #~ "kwh_purchased"]]
             temp['generation'] = temp[['diesel_kwh_generated',
                                         "powerhouse_consumption_kwh",
                                         "hydro_kwh_generated",
@@ -1053,6 +1058,7 @@ class Preprocessor (object):
             temp['generation diesel'] = temp['diesel_kwh_generated']
             temp['generation hydro'] = temp['hydro_kwh_generated']
             ## for other 1
+            
             if np.isreal(temp["other_1_kwh_generated"]) and o1_key is not None:
                 val = temp["other_1_kwh_generated"]
                 if o1_key == "diesel":
@@ -1101,7 +1107,6 @@ class Preprocessor (object):
             temp['line loss'] = 1.0 - temp['consumption']/temp['net generation']
             temp['efficiency'] = temp['generation'] / temp['fuel_used_gal']
             sums.append(temp)
-
         ## pull out diesel & hydro
         df_diesel = DataFrame(sums)[["year",
                                         'generation diesel']].set_index('year')
