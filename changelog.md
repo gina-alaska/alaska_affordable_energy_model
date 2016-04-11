@@ -1,5 +1,17 @@
 #Change Log
 
+## [0.8.1]
+### added
+- fuel oil log
+- auto fill in of LNG prices for Barrow and Nuiqsut
+
+### changed
+- generation forecast is now part of the forecast component
+
+### fixed
+- negative EIA diesel generation values are set to zero, while still accounting for the fuel used in said generation 
+- other fuel types in the PCE data are picked up by the preprocessor. 
+
 ## [0.8.0]
 ### fixed 
 - residential heating fuel for interties
