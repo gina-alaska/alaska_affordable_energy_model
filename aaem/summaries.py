@@ -261,9 +261,19 @@ def fuel_oil_log (coms, res_dir):
             
             eff = coms[c]['model'].cd.get_item("community",
                                             "diesel generation efficiency")
-            year = res.start_year
+            if eff == 0:
+                eff = np.nan
             
-            elec = float(coms[c]['model'].fc.generation.ix[year]) / eff
+            year = res.start_year
+            try:
+                try:
+                    elec = float(coms[c]['model'].fc.generation_by_type[\
+                                "generation diesel"][year]) / eff
+                except KeyError:
+                    elec = float(coms[c]['model'].fc.generation_by_type[\
+                                "generation_diesel [kWh/year]"][year]) / eff
+            except KeyError:
+                elec = 0
 
             res = res.baseline_fuel_Hoil_consumption[0]
             com = com.baseline_HF_consumption * mmbtu_to_gal_HF
@@ -273,7 +283,8 @@ def fuel_oil_log (coms, res_dir):
             
             out.append([c,elec,res,com,wat,total])
             
-        except (KeyError,AttributeError) :
+        except (KeyError,AttributeError) as e:
+            #~ print e
             pass
     data = DataFrame(out,columns = ['community','Utility diesel (gallons)',
                                     'Residential Heating oil (gallons)',

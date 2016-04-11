@@ -574,7 +574,7 @@ class Forecast (object):
     def save_generation_forecast_csv (self, path):
         """
         """
-        out_file = path + "_generation_forecast.csv"
+        out_file = path + "generation_forecast.csv"
         fd = open(out_file, 'w')
         fd.write("# Generation forecast\n")
         fd.write(("# The column 'generation_qualifier' applies to all "
