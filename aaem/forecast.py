@@ -53,6 +53,7 @@ class Forecast (object):
         self.forecast_generation()
         try:
             self.forecast_generation_by_type()
+            self.correct_generation()
         except IndexError:
             pass
         self.forecast_average_kW()
@@ -215,6 +216,30 @@ class Forecast (object):
         
         
         #~ print self.generation_by_type
+    
+    def correct_generation (self):
+        """
+        """
+        fuel_types = ['generation diesel','generation natural gas',
+                  'generation hydro','generation wind','generation biomass']
+        
+        total = self.generation_by_type['generation total'].ix[self.start_year:] 
+        
+        
+        for fuel in ['generation hydro','generation wind','generation biomass']:
+            #~ if any(self.generation_by_type[fuel].ix[self.start_year:] <= 0):
+                #~ continue
+                
+            
+            fuel_sums = \
+                self.generation_by_type[fuel_types].ix[self.start_year:].sum(1) 
+            if any(total.ix[self.start_year:] < fuel_sums.ix[self.start_year:]):
+                self.generation_by_type[fuel].ix[self.start_year:] = self.generation_by_type[fuel].ix[self.start_year:] -\
+                                    (fuel_sums - total.ix[self.start_year:])
+            else:
+                break
+        
+        
         
     def forecast_fuels (self, current_type ):
         """
