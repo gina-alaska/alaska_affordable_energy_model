@@ -29,6 +29,8 @@ absolute = """community:
   consumption HF: IMPORT # gallons HF consumed/year <float> 12345.00
 
   line losses: IMPORT #rate as decimal <float> (ex. .1210)
+  max line losses: .4 # rate a decimal maximum allowed line losses
+  default line losses: .1 # rate a decimal line losses will be set to this if they are less than zero
 
   res non-PCE elec cost: IMPORT # $cost/kWh <float> (ex. .83)
   elec non-fuel cost: IMPORT # $cost/kWh <float> (ex. .83)
