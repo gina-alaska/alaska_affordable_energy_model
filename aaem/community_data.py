@@ -57,7 +57,8 @@ class CommunityData (object):
         self.set_item("community","diesel prices",
                       DieselProjections(self.get_item("community","name"),
                       data_dir))
-        self.calc_non_fuel_electricty_price ()
+        if self.get_item("community", "model electricity"):
+            self.calc_non_fuel_electricty_price ()
         self.check_auto_disable_conditions ()
     
     def check_auto_disable_conditions  (self):
@@ -296,6 +297,14 @@ class CommunityData (object):
         if  self.get_item('residential buildings','data') in IMPORT_FLAGS:
             self.set_item('residential buildings','data',
                           self.load_pp_csv("residential_data.csv"))
+            
+            if self.get_item('residential buildings','data').\
+                    ix["average kWh per house"]['value'] == "CALC_FOR_INTERTIE":
+                self.get_item('residential buildings','data').\
+                        ix["average kWh per house"]['value'] = np.nan
+                self.get_item('residential buildings','data')['value'] =\
+                        self.get_item('residential buildings',
+                                'data')['value'].astype(float)
 
         if self.get_item('water wastewater', "data") in IMPORT_FLAGS:
             self.set_item('water wastewater', "data", 
@@ -351,32 +360,43 @@ class CommunityData (object):
             if self.get_item('community',"line losses") in IMPORT_FLAGS \
               and self.get_item('community',"diesel generation efficiency") \
                                         in IMPORT_FLAGS:
-                raise IOError, "yearly electricity summary not found"
+                self.set_item('community','model electricity', False)
+            elec_summary = None
+                #~ raise IOError, "yearly electricity summary not found"
         
+        if elec_summary is None:
+            consumption = None
+            line_losses = None
+            diesel_gen_eff = None
+            net_gen = None
+            gen_by_type = None
+        else:
+            consumption = elec_summary[["consumption","consumption residential",
+                                "consumption non-residential"]]
+            line_losses = np.float(elec_summary["line loss"][-3:].mean())
+            diesel_gen_eff = np.float(elec_summary['efficiency'].values[-1])
+            net_gen = elec_summary["net generation"]
+            gen_by_type = elec_summary[['generation diesel', 'generation hydro',
+                                       'generation natural gas',
+                                       'generation wind', 'generation solar',
+                                       'generation biomass']]
+                                
         if self.get_item('forecast', "electricity") in IMPORT_FLAGS:
-            self.set_item('forecast', "electricity",elec_summary[["consumption",
-                                                "consumption residential",
-                                                "consumption non-residential"]])
+            self.set_item('forecast', "electricity",consumption)
         
         
         if self.get_item('community',"line losses") in IMPORT_FLAGS:
-            self.set_item('community',"line losses", 
-            np.float(elec_summary["line loss"][-3:].mean()))
+            self.set_item('community',"line losses", line_losses)
 
         if self.get_item('community',
                                 'diesel generation efficiency')in IMPORT_FLAGS:
             self.set_item('community','diesel generation efficiency', 
-                          np.float(elec_summary['efficiency'].values[-1]))
+                                                            diesel_gen_eff)
         try:
             if self.get_item('community',"generation") in IMPORT_FLAGS:
-                self.set_item('community',"generation", 
-                                elec_summary["net generation"])
+                self.set_item('community',"generation", net_gen)
             if self.get_item('community','generation numbers') in IMPORT_FLAGS:
-                self.set_item('community','generation numbers', 
-                          elec_summary[['generation diesel', 'generation hydro',
-                                       'generation natural gas',
-                                       'generation wind', 'generation solar',
-                                       'generation biomass']])
+                self.set_item('community','generation numbers', gen_by_type)
         except:
             #~ self.diagnostics.add_warning("Community Data", 
                             #~ "Generation data not available by energy type")
