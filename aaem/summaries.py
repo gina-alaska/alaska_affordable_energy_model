@@ -252,9 +252,12 @@ def fuel_oil_log (coms, res_dir):
     """
     out = []
     for c in sorted(coms.keys()):
-        if c.find("_intertie") != -1:
+        if c+"_intertie" in coms.keys():
             continue
         try:
+            it = coms[c]['model'].cd.intertie
+            if it is None:
+                it = 'parent'
             res = coms[c]['model'].comps_used['residential buildings']
             com = coms[c]['model'].comps_used['non-residential buildings']
             wat = coms[c]['model'].comps_used['water wastewater']
@@ -273,6 +276,8 @@ def fuel_oil_log (coms, res_dir):
                     elec = float(coms[c]['model'].fc.generation_by_type[\
                                 "generation_diesel [kWh/year]"][year]) / eff
             except KeyError:
+                elec = 0
+            if it == 'child':
                 elec = 0
 
             res = res.baseline_fuel_Hoil_consumption[0]
