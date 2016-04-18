@@ -130,7 +130,7 @@ def add_yaxis (fig, label):
     return new_ax
 
 def add_line(ax, x, y, label, 
-             color=red, marker='o', fill = False):
+             color=red, marker='o', fill = False,linestyle="solid"):
     """
     add a line to the axes 
     
@@ -146,7 +146,8 @@ def add_line(ax, x, y, label,
     post:
         line is plotted on axis
     """
-    ax.plot(x, y, label = label, color = color, marker = marker, linewidth=1.5)
+    ax.plot(x, y, label = label, color = color, 
+            marker = marker, linewidth=1.5, linestyle=linestyle)
     
     if type(fill) is not bool or fill == True:
         if type(fill) is bool:
@@ -264,6 +265,25 @@ def add_vertical_line (ax, position,text = None):
         ax.annotate(text, xy=(position, ypos), xytext=(position +xpos, ypos),
         arrowprops=dict(facecolor='black', shrink=0.05, width=1,headwidth=4),
         )
+        
+def add_horizontal_line (ax, position, text = None):
+    """
+    add a horizontal line to the plot
+    
+    pre:
+        ax: <matplotlib axes> the axes
+        position: <number> the position
+    post:
+        line is added to axes at potions( x= position)
+    """
+    ax.axhline(position, color = jet, linestyle='--')
+    #~ if text:
+        #~ ypos = (ax.get_ylim()[1] - ax.get_ylim()[0])*.10 + ax.get_ylim()[0]
+        #~ xpos = (ax.get_xlim()[1] - ax.get_xlim()[0])*.10
+        #~ ax.annotate(text, xy=(position, ypos), xytext=(position +xpos, ypos),
+        #~ arrowprops=dict(facecolor='black', shrink=0.05, width=1,headwidth=4),
+        #~ )
+
 
 def plot_dataframe(ax, dataframe, 
                    ax0 = None, ax0_cols = None, 

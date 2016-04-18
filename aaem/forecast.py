@@ -572,6 +572,7 @@ class Forecast (object):
         fig.subplots_adjust(right=.85)
         fig.subplots_adjust(left=.12)
         plot.add_vertical_line(ax,start, 'forecasting starts' )
+        plot.add_horizontal_line(ax1,0)
     
     
         plot.create_legend(fig)
@@ -677,7 +678,7 @@ class Forecast (object):
         fig.subplots_adjust(left=.12)
         start = self.p_map[self.p_map['population_qualifier'] == 'P'].index[0]
         plot.add_vertical_line(ax,start, 'forecasting starts' )
-    
+        plot.add_horizontal_line(ax1,0)
         plot.create_legend(fig,.20)
 
         plot.save(fig,path)
@@ -772,7 +773,7 @@ class Forecast (object):
         fig.subplots_adjust(right=.85)
         fig.subplots_adjust(left=.12)
         plot.add_vertical_line(ax,start, 'forecasting starts' )
-    
+        plot.add_horizontal_line(ax1,0)
     
         plot.create_legend(fig,.2)
         plot.save(fig,path)
@@ -904,7 +905,7 @@ class Forecast (object):
         fig.subplots_adjust(right=.85)
         fig.subplots_adjust(left=.12)
         plot.add_vertical_line(ax,start, 'forecasting starts' )
-    
+        plot.add_horizontal_line(ax1,0)
     
         plot.create_legend(fig,.30)
         plot.save(fig,path)
