@@ -10,6 +10,8 @@ absolute = """community:
   region: IMPORT # name <string>
   current year: ABSOLUTE DEFAULT  #year to base npv calculations on <int>
   model financial: True 
+  model electricity: True
+  model heating fuel: True
  
  
   #AEA ASSUMPTIONS

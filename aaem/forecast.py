@@ -41,22 +41,29 @@ class Forecast (object):
         yr = self.cd.get_item('residential buildings', 'data').ix['year']
         self.base_pop = self.fc_specs['population'].ix[yr].values[0][0]
         
-        kWh = self.fc_specs["electricity"]
-        self.base_res_consumption = float(kWh['consumption residential'].ix[yr])
-        self.base_non_res_consumption = \
-            float(kWh['consumption non-residential'].ix[yr])
-        self.base_total_consumption = float(kWh['consumption'].ix[yr])
+        self.forecast_population()
+        
+        
+        if self.cd.get_item("community","model electricity") is False:
+            self.base_res_consumption = None
+            self.base_non_res_consumption = None
+            self.base_total_consumption = None
+        else:
+            kWh = self.fc_specs["electricity"]
+            self.base_res_consumption = \
+                float(kWh['consumption residential'].ix[yr])
+            self.base_non_res_consumption = \
+                float(kWh['consumption non-residential'].ix[yr])
+            self.base_total_consumption = float(kWh['consumption'].ix[yr])
+            self.forecast_consumption()
+            self.forecast_generation()
+            try:
+                self.forecast_generation_by_type()
+            except IndexError:
+                pass
+            self.forecast_average_kW()
         
         self.cpi = self.cd.load_pp_csv("cpi.csv")
-        self.forecast_population()
-        self.forecast_consumption()
-        self.forecast_generation()
-        try:
-            self.forecast_generation_by_type()
-            self.correct_generation()
-        except IndexError:
-            pass
-        self.forecast_average_kW()
         self.forecast_households()
         self.heat_demand_cols = []
         self.heating_fuel_cols = [] 
@@ -412,13 +419,15 @@ class Forecast (object):
                 os.makedirs(os.path.join(png_path,'heating_fuel_forecast'))
             except OSError:
                 pass
-        if self.cd.intertie != 'child':
+        if self.cd.intertie != 'child' and \
+            self.cd.get_item("community","model electricity"):
 
             #~ start = datetime.now() 
             self.save_electric(pathrt, epng_path)
             self.save_generation_forecast(pathrt, gpng_path)
             #~ print "saving electric:" + str(datetime.now() - start)
-        if self.cd.intertie != 'parent':
+        if self.cd.intertie != 'parent' and \
+            self.cd.get_item("community","model heating fuel"):
      
             #~ start = datetime.now() 
             self.save_heat_demand(pathrt, hdpng_path)

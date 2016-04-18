@@ -37,7 +37,8 @@ class ResidentialBuildings(AnnualSavings):
         self.copied_elec = community_data.copies.\
                                     ix["yearly electric summary"].values[0]
 
-        self.elec_prices = community_data.electricity_price
+        if self.cd["model electricity"]:
+            self.elec_prices = community_data.electricity_price
         self.comp_specs = community_data.get_section('residential buildings')
         self.component_name = 'residential buildings'
         self.forecast = forecast
@@ -60,23 +61,24 @@ class ResidentialBuildings(AnnualSavings):
             the model is run and the output values are available
         
         """
+        # needed for electric or HF component and has a default value
         self.calc_avg_consumption()
-        self.calc_init_HH()
-        self.calc_savings_opportunities()
-        self.calc_init_consumption()
+        if self.cd["model electricity"]:
+            
+            self.calc_baseline_kWh_consumption()
+            self.calc_refit_kWh_consumption()
         
-        self.calc_capital_costs()
-        
-        
-        self.calc_baseline_fuel_consumption()
-        self.calc_baseline_kWh_consumption()
-        
-        self.calc_refit_fuel_consumption()
-        self.calc_refit_kWh_consumption()
-        
-        self.set_forecast_columns()
+        if self.cd["model heating fuel"]:
+            self.calc_init_HH()
+            self.calc_savings_opportunities()
+            self.calc_init_consumption()
+            self.calc_baseline_fuel_consumption()
+            self.calc_refit_fuel_consumption()
+            self.set_forecast_columns()
         
         if self.cd["model financial"]:
+            self.calc_capital_costs()
+            
             self.get_diesel_prices()
             self.calc_baseline_fuel_cost() 
             self.calc_refit_fuel_cost()
@@ -463,12 +465,19 @@ class ResidentialBuildings(AnnualSavings):
             save the output from the component. Override the default version 
         because of the extra-fuel sources.
         """
-        HF_price = (self.diesel_prices + self.cd['heating fuel premium'])
-        wood_price = 250 # TODO: change to mutable
-        elec_price = self.elec_prices[self.start_year-self.start_year:
-                                         self.end_year-self.start_year]
-        LP_price = 0 # TODO: find
-        gas_price = 0 # TODO: find
+        if self.cd["model financial"]:
+            HF_price = (self.diesel_prices + self.cd['heating fuel premium'])
+            wood_price = 250 # TODO: change to mutable
+            elec_price = self.elec_prices[self.start_year-self.start_year:
+                                             self.end_year-self.start_year]
+            LP_price = 0 # TODO: find
+            gas_price = 0 # TODO: find
+        else:
+            HF_price = np.nan
+            wood_price = np.nan
+            elec_price = np.nan
+            LP_price = np.nan # TODO: find
+            gas_price = np.nan # TODO: find
         
         b_oil = self.baseline_fuel_Hoil_consumption/constants.mmbtu_to_gal_HF
         r_oil = self.refit_fuel_Hoil_consumption/constants.mmbtu_to_gal_HF
