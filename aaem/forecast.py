@@ -70,7 +70,7 @@ class Forecast (object):
         self.electric_columns = []
         
 
-    def calc_electricity_totals (self):
+    def calc_electricity_values (self):
         """ 
         pre:
             'fc_electricity_used' should contain the kWh used for each key type
@@ -78,9 +78,14 @@ class Forecast (object):
             self.electricty_totals is a array of yearly values of total kWh used
         """
         kWh = self.fc_specs["electricity"]
+        #~ print kWh
         years = kWh.T.keys().values
-        self.yearly_kWh_totals = DataFrame({"year":years,
+        self.yearly_res_kWh = DataFrame({"year":years,
+                          "total":kWh['consumption residential'].values}).set_index("year")
+        self.yearly_total_kWh = DataFrame({"year":years,
                           "total":kWh['consumption'].values}).set_index("year")
+        self.average_nr_kWh = kWh['consumption non-residential'].values[-3:].mean()
+        #~ print self.average_nr_kWh
 
     def forecast_population (self):
         """
@@ -108,10 +113,10 @@ class Forecast (object):
             self.consumption is a array of estimated kWh consumption for each 
         year between start and end
         """
-        self.calc_electricity_totals()
-        idx =  self.yearly_kWh_totals.index.values.astype(int).tolist()
+        self.calc_electricity_values()
+        idx =  self.yearly_res_kWh.index.values.astype(int).tolist()
 
-        if len(self.yearly_kWh_totals) < 10:
+        if len(self.yearly_res_kWh) < 10:
             msg = "the data range is < 10 for input consumption "\
                   "check electricity.csv in the models data directory"
             self.diagnostics.add_warning("forecast", msg)
@@ -121,9 +126,9 @@ class Forecast (object):
             for year in population[v].index.values.tolist():
                 idx.remove(year)
         
-        if any(self.yearly_kWh_totals.isnull()):
-            v = self.yearly_kWh_totals.isnull().values.T.tolist()[0]
-            for year in self.yearly_kWh_totals[v].index.values.tolist():
+        if any(self.yearly_res_kWh.isnull()):
+            v = self.yearly_res_kWh.isnull().values.T.tolist()[0]
+            for year in self.yearly_res_kWh[v].index.values.tolist():
                 idx.remove(year)
         
         self.diagnostics.add_note("forecast", 
@@ -131,8 +136,8 @@ class Forecast (object):
         ". List used to generate fit function")
         population = self.population.ix[idx]
         population = self.population.ix[idx].T.values[0]
-        self.measured_consumption = self.yearly_kWh_totals.ix[idx]
-        consumption = self.measured_consumption.T.values[0]
+        self.measured_consumption = self.yearly_total_kWh.ix[idx] 
+        consumption = self.yearly_res_kWh.ix[idx].T.values[0]
         if len(population) < 10:
             self.diagnostics.add_warning("forecast", 
                   "the data range is < 10 matching years for "\
@@ -140,12 +145,14 @@ class Forecast (object):
                   "check population.csv and electricity.csv "\
                   "in the models data directory")
         # get slope(m),intercept(b)
+        #~ print population
+        #~ print consumption
         try:
             m, b = np.polyfit(population,consumption,1) 
         except TypeError:
             raise RuntimeError, "Known population & consumption do not overlap"
         
-        fc_consumption = m * self.population + b
+        fc_consumption = (m * self.population + b) + self.average_nr_kWh
         start = int(self.measured_consumption.index[-1] + 1)
         years= idx +self.population.ix[start:].index.values.astype(int).tolist()
         cons = (consumption-consumption).tolist() + \
@@ -159,14 +166,14 @@ class Forecast (object):
                                                         replace("False", "M")   
         self.c_map.columns  = [self.c_map.columns[0] + "_qualifier"]
         
-        cons = consumption.tolist() +\
+        cons = self.measured_consumption.T.values.tolist()[0] +\
                                 fc_consumption.ix[start:].values.T.tolist()[0]
         consumption = DataFrame({'year':years, 
                                  'consumption': cons}).set_index('year')
         consumption.columns = ["consumption kWh"]
         self.consumption = consumption
         self.consumption.index = self.consumption.index.values.astype(int)
-        self.start_year = int(self.yearly_kWh_totals.T.keys()[-1])
+        self.start_year = int(self.yearly_res_kWh.T.keys()[-1])
         
     def forecast_generation (self):
         """
