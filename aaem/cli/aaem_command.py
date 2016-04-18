@@ -1,3 +1,7 @@
+# remove warnings in cli
+import warnings
+warnings.filterwarnings("ignore")
+
 import pycommand
 import sys
 
@@ -11,9 +15,7 @@ from aaem.cli.refresh_command import RefreshCommand
 
 from datetime import datetime
 
-# remove warnings in cli
-import warnings
-warnings.filterwarnings("ignore")
+
 
 class AaemCommand(pycommand.CommandBase):
     usagestr = 'usage: aaem <command>'
