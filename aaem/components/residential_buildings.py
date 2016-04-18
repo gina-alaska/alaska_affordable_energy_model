@@ -467,17 +467,17 @@ class ResidentialBuildings(AnnualSavings):
         """
         if self.cd["model financial"]:
             HF_price = (self.diesel_prices + self.cd['heating fuel premium'])
-            wood_price = 250 # TODO: change to mutable
+            wood_price = self.cd['biomass price'] 
             elec_price = self.elec_prices[self.start_year-self.start_year:
                                              self.end_year-self.start_year]
-            LP_price = 0 # TODO: find
-            gas_price = 0 # TODO: find
+            LP_price = self.cd['propane price'] 
+            gas_price = self.cd['natural gas price'] 
         else:
             HF_price = np.nan
             wood_price = np.nan
             elec_price = np.nan
-            LP_price = np.nan # TODO: find
-            gas_price = np.nan # TODO: find
+            LP_price = np.nan
+            gas_price = np.nan
         
         b_oil = self.baseline_fuel_Hoil_consumption/constants.mmbtu_to_gal_HF
         r_oil = self.refit_fuel_Hoil_consumption/constants.mmbtu_to_gal_HF
