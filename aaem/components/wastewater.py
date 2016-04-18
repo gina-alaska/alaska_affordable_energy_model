@@ -178,27 +178,28 @@ class WaterWastewaterSystems (AnnualSavings):
         post-conditions:
             The model component is run
         """
-        self.calc_baseline_kWh_consumption()
-        self.calc_baseline_HF_consumption()
+        if self.cd["model electricity"]:
+            self.calc_baseline_kWh_consumption()
+            self.calc_refit_kWh_consumption()
+            self.calc_savings_kWh_consumption()
         
-        self.calc_refit_kWh_consumption()
-        self.calc_refit_HF_consumption()
-        
-        self.calc_savings_kWh_consumption()
-        self.calc_savings_HF_consumption()
-
-        years = range(self.start_year,self.end_year)
-        self.forecast.add_heating_fuel_column(\
+        if self.cd["model heating fuel"]:
+            self.calc_baseline_HF_consumption()
+            self.calc_refit_HF_consumption()
+            self.calc_savings_HF_consumption()
+    
+            years = range(self.start_year,self.end_year)
+            self.forecast.add_heating_fuel_column(\
                         "heating_fuel_water-wastewater_consumed [gallons/year]",
                          years, 
                          self.baseline_HF_consumption*constants.mmbtu_to_gal_HF)
-        self.forecast.add_heating_fuel_column(\
+            self.forecast.add_heating_fuel_column(\
                    "heating_fuel_water-wastewater_consumed [mmbtu/year]", years,
                     self.baseline_HF_consumption)
-        
-        self.forecast.add_heat_demand_column(\
-                    "heat_energy_demand_water-wastewater [mmbtu/year]",
-                 years, self.baseline_HF_consumption)
+            
+            self.forecast.add_heat_demand_column(\
+                        "heat_energy_demand_water-wastewater [mmbtu/year]",
+                     years, self.baseline_HF_consumption)
         
         if self.cd["model financial"]:
             self.calc_capital_costs()
