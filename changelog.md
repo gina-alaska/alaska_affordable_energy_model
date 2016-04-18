@@ -1,5 +1,16 @@
 #Change Log
 
+## [0.8.2]
+### added
+- ability to enable or disable the electricity/heating fuel comonents of the model
+- auto disable of electricity component if yearly_electricity_summary.csv is missing
+- limits on linelosses
+- ability to change the limits on linelosses in config files
+- generation will scale back on renewable sources if predicted generation drops
+
+### fixed 
+- heating oil summary has been fixed for intertied communities
+
 ## [0.8.1]
 ### added
 - fuel oil log

@@ -386,30 +386,33 @@ class CommunityData (object):
         
         
         if self.get_item('community',"line losses") in IMPORT_FLAGS:
-            ll = np.float(elec_summary["line loss"][-3:].mean())
-            if ll < 0.0:
+            if line_losses is None:
+                self.set_item('community',"line losses",line_losses)
+            else:
+                ll = np.float(elec_summary["line loss"][-3:].mean())
+                if ll < 0.0:
+                    try:
+                        def_ll = self.get_item('community',"default line losses")
+                    except KeyError:
+                        def_ll = .1
+                    self.diagnostics.add_note("Line Losses",
+                                    ("The lineloss was negative " + str(ll) + " "
+                                     "correcting to default "+ str(def_ll) + "."))
+                    ll = def_ll
+                 
+                    
                 try:
-                    def_ll = self.get_item('community',"default line losses")
+                    max_ll = self.get_item('community',"default line losses")
                 except KeyError:
-                    def_ll = .1
-                self.diagnostics.add_note("Line Losses",
-                                ("The lineloss was negative " + str(ll) + " "
-                                 "correcting to default "+ str(def_ll) + "."))
-                ll = def_ll
-             
+                    max_ll = self.get_item('community',"max line losses")
+                if ll > max_ll:
+                    self.diagnostics.add_note("Line Losses",
+                                    ("The lineloss " + str(ll) + " was greater than"
+                                     " max of "+ str(max_ll) + ". setting to max."))
+                    ll = max_ll
                 
-            try:
-                max_ll = self.get_item('community',"default line losses")
-            except KeyError:
-                max_ll = self.get_item('community',"max line losses")
-            if ll > max_ll:
-                self.diagnostics.add_note("Line Losses",
-                                ("The lineloss " + str(ll) + " was greater than"
-                                 " max of "+ str(max_ll) + ". setting to max."))
-                ll = max_ll
-            
-            self.set_item('community',"line losses",ll)
-
+                self.set_item('community',"line losses",ll)
+    
         if self.get_item('community',
                                 'diesel generation efficiency')in IMPORT_FLAGS:
             self.set_item('community','diesel generation efficiency', 
