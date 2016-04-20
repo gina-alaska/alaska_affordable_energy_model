@@ -1,5 +1,11 @@
 #Change Log
 
+## [0.8.4]
+### changed
+- consumption forecasting method
+- electricity plots updated for new forecasting method
+
+
 ## [0.8.3]
 ### added
 - dashed line at y = 0 for consumption to help show when values go below 0
