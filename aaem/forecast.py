@@ -85,7 +85,8 @@ class Forecast (object):
         self.yearly_total_kWh = DataFrame({"year":years,
                           "total":kWh['consumption'].values}).set_index("year")
         self.average_nr_kWh = kWh['consumption non-residential'].values[-3:].mean()
-        self.yearly_nr_kWh = kWh['consumption non-residential'].values
+        self.yearly_nr_kWh = DataFrame({"year":years,
+                          "total":kWh['consumption non-residential'].values}).set_index("year")
         #~ print self.average_nr_kWh
 
     def forecast_population (self):
@@ -176,12 +177,12 @@ class Forecast (object):
         
         r =  self.yearly_res_kWh.ix[idx].T.values.tolist()[0] +  r.values.T.tolist()[0]
         
-        nr = self.yearly_nr_kWh.tolist() + nr.tolist() 
+        nr = self.yearly_nr_kWh.ix[idx].T.values.tolist()[0] + nr.tolist() 
         
         if len(nr) < len(r):
             nr.append(self.average_nr_kWh)
-        
-        
+        if len(nr) > len(r):
+            nr = nr[:-1]
         consumption = DataFrame({'year':years, 
                                  'consumption': cons, 
                                  'res': r,
