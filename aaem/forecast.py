@@ -85,6 +85,7 @@ class Forecast (object):
         self.yearly_total_kWh = DataFrame({"year":years,
                           "total":kWh['consumption'].values}).set_index("year")
         self.average_nr_kWh = kWh['consumption non-residential'].values[-3:].mean()
+        self.yearly_nr_kWh = kWh['consumption non-residential'].values
         #~ print self.average_nr_kWh
 
     def forecast_population (self):
@@ -153,6 +154,7 @@ class Forecast (object):
             raise RuntimeError, "Known population & consumption do not overlap"
         
         fc_consumption = (m * self.population + b) + self.average_nr_kWh
+
         start = int(self.measured_consumption.index[-1] + 1)
         years= idx +self.population.ix[start:].index.values.astype(int).tolist()
         cons = (consumption-consumption).tolist() + \
@@ -168,10 +170,28 @@ class Forecast (object):
         
         cons = self.measured_consumption.T.values.tolist()[0] +\
                                 fc_consumption.ix[start:].values.T.tolist()[0]
+        
+        nr = np.zeros(len(fc_consumption.ix[start:])-1) + self.average_nr_kWh
+        r = (m * self.population + b).ix[start:]
+        
+        r =  self.yearly_res_kWh.ix[idx].T.values.tolist()[0] +  r.values.T.tolist()[0]
+        
+        nr = self.yearly_nr_kWh.tolist() + nr.tolist() 
+        
+        if len(nr) < len(r):
+            nr.append(self.average_nr_kWh)
+        
+        
         consumption = DataFrame({'year':years, 
-                                 'consumption': cons}).set_index('year')
-        consumption.columns = ["consumption kWh"]
-        self.consumption = consumption
+                                 'consumption': cons, 
+                                 'res': r,
+                                 'non res' : nr}).set_index('year')
+        consumption.columns = ["consumption kWh", 'residential kWh', 'non-residential kWh']
+        self.consumption_to_save = consumption
+        
+        self.consumption = DataFrame({'year':years, 
+                                 'consumption': cons, }).set_index('year')
+        self.consumption.columns = ["consumption kWh"]
         self.consumption.index = self.consumption.index.values.astype(int)
         self.start_year = int(self.yearly_res_kWh.T.keys()[-1])
         
@@ -472,8 +492,8 @@ class Forecast (object):
     def generate_electric_output_dataframe (self):
         """
         """
-        kWh_con = self.consumption
-        kWh_con.columns = ["total_electricity_consumed [kWh/year]"]
+        kWh_con = self.consumption_to_save
+        kWh_con.columns = ["total_electricity_consumed [kWh/year]",'residential_electricity_consumed [kWh/year]','non-residential_electricity_consumed [kWh/year]']
         c_map = copy.deepcopy(self.c_map)
         c_map.columns = ["total_electricity_consumed_qualifier"]
         
@@ -560,7 +580,9 @@ class Forecast (object):
         start = self.p_map[self.p_map['population_qualifier'] == 'P'].index[0]
         df2 = self.electric_dataframe[['population',
                                     'total_electricity_consumed [kWh/year]',
-                                    'total_electricity_generation [kWh/year]']]
+                                    'total_electricity_generation [kWh/year]',
+                                    'residential_electricity_consumed [kWh/year]',
+                                    'non-residential_electricity_consumed [kWh/year]']]
         name = self.cd.get_item("community","name") + ' Electricity Forecast'
         
         fig, ax = plot.setup_fig(name ,'years','population')
@@ -568,13 +590,17 @@ class Forecast (object):
         
         c_dict = {'population': [min(1,r*4) for r in colors.red],
                    'total_electricity_consumed [kWh/year]':colors.orange,
-                    'total_electricity_generation [kWh/year]':colors.green
+                    'total_electricity_generation [kWh/year]':colors.green,
+                     'residential_electricity_consumed [kWh/year]':colors.yellow,
+                    'non-residential_electricity_consumed [kWh/year]':colors.violet
         }
         
         plot.plot_dataframe(ax1,df2,ax,['population'],
                     {'population':'population',
                     'total_electricity_consumed [kWh/year]':'consumption',
-                    'total_electricity_generation [kWh/year]':'generation'},
+                    'total_electricity_generation [kWh/year]':'generation',
+                    'residential_electricity_consumed [kWh/year]':'residential consumption',
+                    'non-residential_electricity_consumed [kWh/year]':'non residential consumption'},
                     c_dict)
         fig.subplots_adjust(right=.85)
         fig.subplots_adjust(left=.12)
