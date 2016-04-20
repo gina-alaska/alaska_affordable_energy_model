@@ -44,6 +44,9 @@ absolute = """community:
   biomass price: IMPORT
   natural gas price: 0
   
+  hydro generation limit: 10000 # kWh 
+  wind generation limit: 10000 # kWh
+
   generation numbers: IMPORT
 
 forecast:

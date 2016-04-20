@@ -254,11 +254,12 @@ class Forecast (object):
         
         
         gen_types = self.cd.get_item('community','generation numbers')
-        
+        #~ print gen_types
         self.generation_by_type[current_type] = gen_types[current_type]
         
         fuel_types = gen_types.keys().values
         fuel_types = list(set(fuel_types).difference([current_type]))
+        #~ print fuel_types
         #~ print fuel_types
         #~ print current_type
         for fuel in fuel_types:
@@ -266,15 +267,26 @@ class Forecast (object):
             try:
                 # get the last 3 years of generation  and average them
                 
-                generation = gen_types[gen_types[fuel].notnull()]\
-                                                [fuel].values[-3:]
-                generation = np.mean(generation)
-                last_year = gen_types[gen_types[fuel].notnull()]\
-                                               [fuel].index[-1]
-                                               
+                #~ print fuel
+                if fuel == 'generation hydro':
+                    generation = self.cd.get_item('community',
+                                                  'hydro generation limit')
+                elif fuel == 'generation wind':
+                    generation = self.cd.get_item('community',
+                                                  'wind generation limit')
+                else:
+                    
+                    generation = gen_types[gen_types[fuel].notnull()]\
+                                                    [fuel].values[-3:]
+                    generation = np.mean(generation)
+                    
+                #~ last_year = gen_types[gen_types[fuel].notnull()]\
+                                               #~ [fuel].index[-1]
+                last_year = self.start_year
                 foreward_years = np.logical_and(\
                             self.generation_by_type[fuel].isnull(), 
                             self.generation_by_type[fuel].index > last_year)
+                #~ print foreward_years
                                      
                 self.generation_by_type[fuel][foreward_years] = generation
             except IndexError:
