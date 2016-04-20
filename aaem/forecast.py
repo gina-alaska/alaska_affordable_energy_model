@@ -667,7 +667,7 @@ class Forecast (object):
         path = path + "generation_forecast.png"
         
         png_list = ['population',
-        'generation_total [mmbtu/year]',
+        #~ 'generation_total [mmbtu/year]',
         'generation_diesel [mmbtu/year]',
         'generation_hydro [mmbtu/year]',
         'generation_natural_gas [mmbtu/year]',
@@ -707,7 +707,7 @@ class Forecast (object):
         fig, ax = plot.setup_fig(plot_name ,'years','population')
         ax1 = plot.add_yaxis(fig,'Generation MMBtu')
         
-        plot.plot_dataframe(ax1,df2,ax,['population'],png_dict,c_dict)
+        plot.plot_dataframe_2(ax1,df2,ax,['population'],png_dict,c_dict)
         fig.subplots_adjust(right=.85)
         fig.subplots_adjust(left=.12)
         start = self.p_map[self.p_map['population_qualifier'] == 'P'].index[0]

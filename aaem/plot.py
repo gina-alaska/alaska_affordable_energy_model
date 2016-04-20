@@ -350,6 +350,77 @@ def plot_dataframe(ax, dataframe,
         if not colors_as_dict:
             c_index += 1
     ax.set_ylabel(ax.get_ylabel()+' (triangles)')
+    
+    
+def plot_dataframe_2(ax, dataframe, 
+                   ax0 = None, ax0_cols = None, 
+                   column_map = None,
+                   color_map = None):
+    """
+        Plots the columns in a pandas.DataFrame on ax. If ax0 and ax0_cols are 
+    provided dataframe[ax0_cols] will be plotted on ax0 before all columns not 
+    in ax0_cols are plotted on ax.
+    
+    pre:
+        ax: <matplotlib axes> axes to plot on
+        dataframe: <pandas.DataFrame> dataframe to plot. 
+                   Values in columns must be numbers.
+        ax0: (optional) <matplotlib axes> axes to plot on. 
+        ax0_cols: (optional) <list like> columns to plot on ax0
+        column_map: (optional) <dict> map of column names to labels,
+                    will also force each of the names to be assigned a 
+                    consistent color.
+        
+    post:
+        Plots the columns in a pandas.DataFrame on ax. If ax0 and ax0_cols are 
+    provided dataframe[ax0_cols] will be plotted on ax0 before all columns not 
+    in ax0_cols are plotted on ax.
+    """
+    c_index = 0
+    keys = set(dataframe.keys())
+    
+    c2use = colors
+    colors_as_dict = False
+    
+    if column_map is None:
+        column_map = {} 
+        for c in keys:
+            column_map[c] = c
+    else:
+        colors_as_dict = True
+        c2use = {}
+        ci = 0
+        for c in column_map:
+            c2use[c] = colors[ci]
+            ci += 1
+    if color_map is not None:
+        c2use = color_map
+    
+    x = dataframe.index
+    if ax0:
+        for col in ax0_cols:
+            if colors_as_dict:
+                c_index = col
+            add_line(ax0,x,dataframe[col].values,column_map[col],
+                           color=c2use[c_index],marker='o')
+            if not colors_as_dict:
+                c_index += 1
+        
+        ax0.set_ylabel(ax0.get_ylabel()+' (circles)')
+        keys = keys.difference(ax0_cols)
+    keys = list(keys)
+    cumulative = dataframe[keys[0]].values - dataframe[keys[0]].values
+  
+    for col in  keys:
+        if colors_as_dict:
+            c_index = col
+        
+        add_line(ax,x,dataframe[col].values+cumulative,column_map[col],
+                      color=c2use[c_index],marker='^',fill = cumulative)
+        cumulative += dataframe[col].values
+        if not colors_as_dict:
+            c_index += 1
+    ax.set_ylabel(ax.get_ylabel()+' (triangles)')
 
 def save (fig, filename):
     """ 
