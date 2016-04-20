@@ -566,13 +566,20 @@ class Forecast (object):
         fig, ax = plot.setup_fig(name ,'years','population')
         ax1 = plot.add_yaxis(fig,'kWh')
         
+        c_dict = {'population': [min(1,r*4) for r in colors.red],
+                   'total_electricity_consumed [kWh/year]':colors.orange,
+                    'total_electricity_generation [kWh/year]':colors.green
+        }
+        
         plot.plot_dataframe(ax1,df2,ax,['population'],
-                       column_map = {'population':'population',
+                    {'population':'population',
                     'total_electricity_consumed [kWh/year]':'consumption',
-                    'total_electricity_generation [kWh/year]':'generation'})
+                    'total_electricity_generation [kWh/year]':'generation'},
+                    c_dict)
         fig.subplots_adjust(right=.85)
         fig.subplots_adjust(left=.12)
         plot.add_vertical_line(ax,start, 'forecasting starts' )
+        plot.add_horizontal_line(ax1,0)
     
     
         plot.create_legend(fig)
@@ -678,7 +685,7 @@ class Forecast (object):
         fig.subplots_adjust(left=.12)
         start = self.p_map[self.p_map['population_qualifier'] == 'P'].index[0]
         plot.add_vertical_line(ax,start, 'forecasting starts' )
-    
+        plot.add_horizontal_line(ax1,0)
         plot.create_legend(fig,.20)
 
         plot.save(fig,path)
@@ -757,16 +764,23 @@ class Forecast (object):
         fig, ax = plot.setup_fig(name ,'years','population')
         ax1 = plot.add_yaxis(fig,'Heat Demand MMBtu')
         
+        c_dict = {'population': [min(1,r*4) for r in colors.red],
+        'heat_energy_demand_residential [mmbtu/year]':colors.yellow,
+        'heat_energy_demand_water-wastewater [mmbtu/year]':colors.cobalt,
+        'heat_energy_demand_non-residential [mmbtu/year]':colors.green,
+                        'heat_energy_demand_total [mmbtu/year]':colors.jet}
+        
         plot.plot_dataframe(ax1,df2,ax,['population'],
             {'population':'population',
         'heat_energy_demand_residential [mmbtu/year]':'residential',
         'heat_energy_demand_water-wastewater [mmbtu/year]':'water & wastewater',
         'heat_energy_demand_non-residential [mmbtu/year]':'non-residential',
-                        'heat_energy_demand_total [mmbtu/year]':'total'})
+                        'heat_energy_demand_total [mmbtu/year]':'total'},
+                        c_dict)
         fig.subplots_adjust(right=.85)
         fig.subplots_adjust(left=.12)
         plot.add_vertical_line(ax,start, 'forecasting starts' )
-    
+        plot.add_horizontal_line(ax1,0)
     
         plot.create_legend(fig,.2)
         plot.save(fig,path)
@@ -860,6 +874,23 @@ class Forecast (object):
         fig, ax = plot.setup_fig(name ,'years','population')
         ax1 = plot.add_yaxis(fig,'Heating fuel MMBtu')
         
+        c_dict = {'population': [min(1,r*4) for r in colors.red],
+            "heating_fuel_residential_consumed [mmbtu/year]":
+                    colors.red,
+            "cords_wood_residential_consumed [mmbtu/year]":
+                    colors.avacado,
+            "gas_residential_consumed [mmbtu/year]":
+                    colors.violet,
+            "electric_residential_consumed [mmbtu/year]":
+                    colors.goldenrod,
+            "propane_residential_consumed [mmbtu/year]":
+                    colors.orange,
+            "heating_fuel_water-wastewater_consumed [mmbtu/year]":
+                    colors.cobalt,
+            "heating_fuel_non-residential_consumed [mmbtu/year]":
+                    colors.green,
+            "heating_fuel_total_consumed [mmbtu/year]":colors.jet,}
+        
         plot.plot_dataframe(ax1,df2,ax,['population'],
             {"population":'population',
             "heating_fuel_residential_consumed [mmbtu/year]":
@@ -876,11 +907,12 @@ class Forecast (object):
                     'heating oil - water wastewater',
             "heating_fuel_non-residential_consumed [mmbtu/year]":
                     'heating oil - non - residential',
-            "heating_fuel_total_consumed [mmbtu/year]":'total'})
+            "heating_fuel_total_consumed [mmbtu/year]":'total'},
+            c_dict)
         fig.subplots_adjust(right=.85)
         fig.subplots_adjust(left=.12)
         plot.add_vertical_line(ax,start, 'forecasting starts' )
-    
+        plot.add_horizontal_line(ax1,0)
     
         plot.create_legend(fig,.30)
         plot.save(fig,path)

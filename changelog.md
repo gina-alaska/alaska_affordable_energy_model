@@ -1,5 +1,16 @@
 #Change Log
 
+## [0.8.3]
+### added
+- dashed line at y = 0 for consumption to help show when values go below 0
+
+### changed
+- plot colors, population alawys has the same color
+
+### fixed
+- residential component output csv uses the right prices for a community and not the temp prices uesd before
+- sqft values in the  non-res output files dont inclued the Water & Sewer systems 
+
 ## [0.8.2]
 ### added
 - ability to enable or disable the electricity/heating fuel comonents of the model

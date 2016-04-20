@@ -111,6 +111,7 @@ class CommunityBuildings (AnnualSavings):
                 [c+" with estimates" for c in with_estimates.columns]
         summary = concat([self.buildings_df,with_estimates],axis=1)
         cols = self.buildings_df.columns[1:]
+        cols = list(set(cols).difference("Water & Sewer"))
         order = ["count"] 
         for col in cols:
             if col in ["Retrofits Done", "Audited"]:
