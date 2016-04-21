@@ -89,6 +89,7 @@ class Forecast (object):
                           "total":kWh['consumption non-residential'].values}).set_index("year")
         #~ print self.average_nr_kWh
 
+
     def forecast_population (self):
         """
         pre:
@@ -187,6 +188,7 @@ class Forecast (object):
                                  'consumption': cons, 
                                  'res': r,
                                  'non res' : nr}).set_index('year')
+        consumption = consumption[["consumption", 'res', 'non res']]
         consumption.columns = ["consumption kWh", 'residential kWh', 'non-residential kWh']
         self.consumption_to_save = consumption
         
