@@ -1,10 +1,22 @@
 #Change Log
 
+## [0.9.0]
+### added
+- generation capacity (generation limits) for wind and hydro
+
+### fixed
+- fixed interties in the fuel oil log
+- the generation rollback function is called
+
+
+## [0.8.5]
+### fixed
+- fixed consumption column names for elcetricity forecast
+
 ## [0.8.4]
 ### changed
 - consumption forecasting method
 - electricity plots updated for new forecasting method
-
 
 ## [0.8.3]
 ### added
