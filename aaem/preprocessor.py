@@ -29,7 +29,8 @@ MODEL_FILES = {"DIESEL_PRICES": "diesel_fuel_prices.csv",
                "POPULATION": "population.csv",
                "ELECTRICITY": "yearly_electricity_summary.csv",
                "PRICES_NONELECTRIC": 'prices_non-electric_fixed.csv',
-               "COPIES":'copies.csv'}
+               "COPIES":'copies.csv',
+               "GENERATION_LIMITS":'generation_limits.csv'}
 
 def growth(xs, ys , x):
     """
@@ -116,7 +117,7 @@ class Preprocessor (object):
                         [int(self.residential_data.ix['year'])]["population"])
         self.buildings(base_pop)
         self.wastewater()
-
+        self.generation_limits()
 
 
 
@@ -309,6 +310,12 @@ class Preprocessor (object):
         """
         """
         return "# prices"
+        
+    def generation_limits_header (self):
+        """ """
+        return ('# '   + self.com_id + " Generation Limits\n"
+                "# generated: " + str(datetime.now()).split('.')[0] +"\n"
+                "# units are in kWh\n")
         
 
     ## PROCESS FUNCTIONS #######################################################
@@ -1399,6 +1406,36 @@ class Preprocessor (object):
             val = 0 
         return val
         
+    def generation_limits (self):
+        in_file = os.path.join(self.data_dir, "generation_limits.csv")
+        data = read_csv(in_file, index_col=0)
+        data = self.get_communities_data(data)
+        if len(data) == 0:
+            hydro = 0
+            wind = 0
+        else:
+            if len(data[data["Resource Type"] == 'Hydro']\
+                    ['Sum of Average Annual Generation (kWh)']) != 0:
+                hydro = float(data[data["Resource Type"] == 'Hydro']\
+                    ['Sum of Average Annual Generation (kWh)'])
+            else:
+                hydro = 0
+        
+            if len(data[data["Resource Type"] == 'Wind']\
+                    ['Sum of Average Annual Generation (kWh)']) != 0:
+                wind = float(data[data["Resource Type"] == 'Wind']\
+                    ['Sum of Average Annual Generation (kWh)'])
+            else:
+                wind = 0
+        out_file = os.path.join(self.out_dir, "generation_limits.csv")
+        fd = open(out_file,'w')
+        fd.write(self.generation_limits_header())
+        fd.write("fuel, kwh\n")
+        fd.write("hydro," + str(hydro) +"\n")
+        fd.write("wind," + str(wind) +"\n")
+        fd.close()
+        
+        
     def get_communities_data(self, dataframe):
         """
             pull the data for a community out of a data frame with multiple 
@@ -1417,7 +1454,7 @@ class Preprocessor (object):
                 return temp
             except (IndexError, KeyError) as e:
                 continue
-        return dataframe.ix[-1]
+        return DataFrame(columns=dataframe.columns)
     
     def load_ids (self):
         """
@@ -1740,6 +1777,9 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
     shutil.copy(os.path.join(parent_dir,
             MODEL_FILES["PRICES_NONELECTRIC"]),out_dir)                  
     shutil.copy(os.path.join(parent_dir,
-            MODEL_FILES["COPIES"]),out_dir)    
+            MODEL_FILES["COPIES"]),out_dir) 
+    shutil.copy(os.path.join(parent_dir,
+            MODEL_FILES["GENERATION_LIMITS"]),out_dir)
+             
 
     return pp_data

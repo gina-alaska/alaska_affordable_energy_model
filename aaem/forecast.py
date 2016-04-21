@@ -253,6 +253,7 @@ class Forecast (object):
         
         
         #~ print self.generation_by_type
+        self.correct_generation()
     
     def correct_generation (self):
         """
@@ -266,8 +267,6 @@ class Forecast (object):
         for fuel in ['generation hydro','generation wind','generation biomass']:
             #~ if any(self.generation_by_type[fuel].ix[self.start_year:] <= 0):
                 #~ continue
-                
-            
             fuel_sums = \
                 self.generation_by_type[fuel_types].ix[self.start_year:].sum(1) 
             if any(total.ix[self.start_year:] < fuel_sums.ix[self.start_year:]):
@@ -284,29 +283,63 @@ class Forecast (object):
         
         
         gen_types = self.cd.get_item('community','generation numbers')
-        
+        #~ print gen_types
         self.generation_by_type[current_type] = gen_types[current_type]
         
         fuel_types = gen_types.keys().values
         fuel_types = list(set(fuel_types).difference([current_type]))
         #~ print fuel_types
+        #~ print fuel_types
         #~ print current_type
+        rolling = False
         for fuel in fuel_types:
             self.generation_by_type[fuel] = gen_types[fuel]
             try:
                 # get the last 3 years of generation  and average them
                 
-                generation = gen_types[gen_types[fuel].notnull()]\
-                                                [fuel].values[-3:]
-                generation = np.mean(generation)
-                last_year = gen_types[gen_types[fuel].notnull()]\
-                                               [fuel].index[-1]
-                                               
+                #~ print fuel
+                if fuel == 'generation hydro':
+                    generation = self.cd.get_item('community',
+                                                  'hydro generation limit')
+                    if generation == 0:
+                        temp = gen_types[gen_types[fuel].notnull()]\
+                                                    [fuel].values[-3:]
+                        temp = np.mean(temp)
+                        if np.isnan(temp):
+                            generation = 0
+                        else:
+                            rolling = True
+                elif fuel == 'generation wind':
+                    generation = self.cd.get_item('community',
+                                                  'wind generation limit')
+                    if generation == 0:
+                        temp = gen_types[gen_types[fuel].notnull()]\
+                                                    [fuel].values[-3:]
+                        temp = np.mean(temp)
+                        if np.isnan(temp):
+                            generation = 0
+                        else:
+                            rolling = True
+                            
+                else:
+                    
+                    generation = gen_types[gen_types[fuel].notnull()]\
+                                                    [fuel].values[-3:]
+                    generation = np.mean(generation)
+                    
+                #~ last_year = gen_types[gen_types[fuel].notnull()]\
+                                               #~ [fuel].index[-1]
+                last_year = self.start_year
                 foreward_years = np.logical_and(\
                             self.generation_by_type[fuel].isnull(), 
                             self.generation_by_type[fuel].index > last_year)
-                                     
-                self.generation_by_type[fuel][foreward_years] = generation
+                #~ print foreward_years
+                if not rolling:
+                    self.generation_by_type[fuel][foreward_years] = generation
+                else:
+                    for year in self.generation_by_type.ix[foreward_years].index:
+                        data = self.generation_by_type[fuel].ix[year-3:year-1]
+                        self.generation_by_type[fuel][year] = np.mean(data) 
             except IndexError:
                 # fuel not found
                 pass
