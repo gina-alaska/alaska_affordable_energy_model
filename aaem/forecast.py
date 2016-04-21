@@ -223,6 +223,7 @@ class Forecast (object):
         
         
         #~ print self.generation_by_type
+        self.correct_generation()
     
     def correct_generation (self):
         """
@@ -236,8 +237,6 @@ class Forecast (object):
         for fuel in ['generation hydro','generation wind','generation biomass']:
             #~ if any(self.generation_by_type[fuel].ix[self.start_year:] <= 0):
                 #~ continue
-                
-            
             fuel_sums = \
                 self.generation_by_type[fuel_types].ix[self.start_year:].sum(1) 
             if any(total.ix[self.start_year:] < fuel_sums.ix[self.start_year:]):
@@ -262,7 +261,7 @@ class Forecast (object):
         #~ print fuel_types
         #~ print fuel_types
         #~ print current_type
-        rolling_wind = False
+        rolling = False
         for fuel in fuel_types:
             self.generation_by_type[fuel] = gen_types[fuel]
             try:
@@ -272,6 +271,14 @@ class Forecast (object):
                 if fuel == 'generation hydro':
                     generation = self.cd.get_item('community',
                                                   'hydro generation limit')
+                    if generation == 0:
+                        temp = gen_types[gen_types[fuel].notnull()]\
+                                                    [fuel].values[-3:]
+                        temp = np.mean(temp)
+                        if np.isnan(temp):
+                            generation = 0
+                        else:
+                            rolling = True
                 elif fuel == 'generation wind':
                     generation = self.cd.get_item('community',
                                                   'wind generation limit')
@@ -282,7 +289,7 @@ class Forecast (object):
                         if np.isnan(temp):
                             generation = 0
                         else:
-                            rolling_wind = True
+                            rolling = True
                             
                 else:
                     
@@ -297,7 +304,7 @@ class Forecast (object):
                             self.generation_by_type[fuel].isnull(), 
                             self.generation_by_type[fuel].index > last_year)
                 #~ print foreward_years
-                if not rolling_wind:
+                if not rolling:
                     self.generation_by_type[fuel][foreward_years] = generation
                 else:
                     for year in self.generation_by_type.ix[foreward_years].index:
