@@ -580,10 +580,10 @@ class Forecast (object):
         path = path+ "electricity_forecast.png"
         start = self.p_map[self.p_map['population_qualifier'] == 'P'].index[0]
         df2 = self.electric_dataframe[['population',
-                                    'total_electricity_consumed [kWh/year]',
-                                    'total_electricity_generation [kWh/year]',
-                                    'residential_electricity_consumed [kWh/year]',
-                                    'non-residential_electricity_consumed [kWh/year]']]
+                            'total_electricity_consumed [kWh/year]',
+                            'total_electricity_generation [kWh/year]',
+                            'residential_electricity_consumed [kWh/year]',
+                            'non-residential_electricity_consumed [kWh/year]']]
         name = self.cd.get_item("community","name") + ' Electricity Forecast'
         
         fig, ax = plot.setup_fig(name ,'years','population')
@@ -667,13 +667,15 @@ class Forecast (object):
         path = path + "generation_forecast.png"
         
         png_list = ['population',
-        #~ 'generation_total [mmbtu/year]',
+        'generation_total [mmbtu/year]',
         'generation_diesel [mmbtu/year]',
         'generation_hydro [mmbtu/year]',
         'generation_natural_gas [mmbtu/year]',
         'generation_wind [mmbtu/year]',
         'generation_solar [mmbtu/year]',
         'generation_biomass [mmbtu/year]']
+        
+        
         
         png_dict = {'population':'population',
         'generation_total [mmbtu/year]':'total',
@@ -700,6 +702,9 @@ class Forecast (object):
                 continue
             temp.append(i)
         png_list = temp
+        if len(png_list) == 3:
+            png_list = list(set(png_list).\
+                    difference(['generation_total [mmbtu/year]']))
         
         df2 = self.generation_forecast_dataframe[png_list]
         plot_name = self.cd.get_item("community","name") +' Generation Forecast'
@@ -707,7 +712,7 @@ class Forecast (object):
         fig, ax = plot.setup_fig(plot_name ,'years','population')
         ax1 = plot.add_yaxis(fig,'Generation MMBtu')
         
-        plot.plot_dataframe_2(ax1,df2,ax,['population'],png_dict,c_dict)
+        plot.plot_dataframe(ax1,df2,ax,['population'],png_dict,c_dict)
         fig.subplots_adjust(right=.85)
         fig.subplots_adjust(left=.12)
         start = self.p_map[self.p_map['population_qualifier'] == 'P'].index[0]
