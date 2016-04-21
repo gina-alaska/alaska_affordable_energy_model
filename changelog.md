@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.9.1]
+### changed
+- on generation forecast plots the total is not plotted if only one fuel source is present
+
 ## [0.9.0]
 ### added
 - generation capacity (generation limits) for wind and hydro
