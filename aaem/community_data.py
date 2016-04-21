@@ -484,7 +484,25 @@ class CommunityData (object):
         if self.get_item('community',"biomass price") in IMPORT_FLAGS:
             self.set_item("community", "biomass price",
                             np.float(prices.ix["Biomass"]))
+        
+        limits = self.load_pp_csv("generation_limits.csv")
+        if self.get_item('community', 'hydro generation limit') in IMPORT_FLAGS:
+            try:
+                self.set_item('community','hydro generation limit',
+                                float(limits.ix["hydro"]))
+            except ValueError:
+                self.set_item('community','hydro generation limit',
+                                float(0))
+                                
+        if self.get_item('community', 'wind generation limit') in IMPORT_FLAGS:
+            try:
+                self.set_item('community','wind generation limit',
+                                float(limits.ix["wind"]))
+            except ValueError:
+                self.set_item('community','wind generation limit',
+                                float(0))
             
+        
     def load_pp_csv(self, f_name):
         """
         load a preprocessed csv file
