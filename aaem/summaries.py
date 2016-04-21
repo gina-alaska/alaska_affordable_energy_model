@@ -121,6 +121,8 @@ def building_log(coms, res_dir):
             count = []
             act = []
             est = []
+            elec = []
+            hf = []
             #~ print types
             for t in types:
                 if t in ['Water & Sewer',]:
@@ -129,6 +131,8 @@ def building_log(coms, res_dir):
                     n = 0
                     sf_m = np.nan
                     sf_e = np.nan
+                    elec_used = np.nan
+                    hf_used = np.nan
                     if t == 'Average':
                         
                         n = num
@@ -139,12 +143,18 @@ def building_log(coms, res_dir):
                     
                     
                     sf_m = com.buildings_df['Square Feet'][t]
+                    hf_used = com.buildings_df['Fuel Oil'][t]
+                    elec_used = com.buildings_df['Electric'][t] 
                     
-                except KeyError:
+                except KeyError as e:
+                    print e
                     pass
                 count.append(n)
                 act.append(sf_m)
                 est.append(sf_e)
+                elec.append(elec_used)
+                hf.append(hf_used)
+                
             percent = com.buildings_df['Square Feet'].sum() / estimates['Square Feet'].sum()
             percent2 = float(com.buildings_df['count'].sum())/(com.buildings_df['count'].sum()+num)
             
@@ -155,7 +165,7 @@ def building_log(coms, res_dir):
                 percent2 = 0.0
             
             
-            out.append([c,percent*100,percent2*100]+ count+act+est)
+            out.append([c,percent*100,percent2*100]+ count+act+est+elec+hf)
             
         except (KeyError,AttributeError)as e :
             #~ print c +":"+ str(e)
@@ -165,15 +175,19 @@ def building_log(coms, res_dir):
     c = []
     e = []
     m = []
+    ec = []
+    hf = []
     for i in range(len(l)):
         if l[i] == 'Average':
             l[i] = 'Unknown'
         c.append('number buildings')
         m.append('square feet(measured)')
         e.append('square feet(including estimates)')
+        ec.append("electricity used (mmbtu)")
+        hf.append("heating fuel used (mmbtu)")
 
     
-    data = DataFrame(out,columns = ['community','% sqft measured','% buildings from inventory'] + l + l + l
+    data = DataFrame(out,columns = ['community','% sqft measured','% buildings from inventory'] + l + l + l + l + l
                     ).set_index('community').round(2)
     f_name = os.path.join(res_dir,'non-residential_building_summary.csv')
     fd = open(f_name,'w')
@@ -181,7 +195,9 @@ def building_log(coms, res_dir):
              "summary by community\n"))
     fd.write(",%,%," + str(c)[1:-1].replace(" '",'').replace("'",'') + "," + \
              str(m)[1:-1].replace("' ",'').replace("'",'') + "," + \
-             str(e)[1:-1].replace("' ",'').replace("'",'') +'\n')
+             str(e)[1:-1].replace("' ",'').replace("'",'') + "," +\
+             str(ec)[1:-1].replace("' ",'').replace("'",'') + "," +\
+             str(hf)[1:-1].replace("' ",'').replace("'",'') +'\n')
     fd.close()
     data.to_csv(f_name, mode='a')
     
