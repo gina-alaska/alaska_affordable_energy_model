@@ -262,6 +262,7 @@ class Forecast (object):
         #~ print fuel_types
         #~ print fuel_types
         #~ print current_type
+        rolling_wind = False
         for fuel in fuel_types:
             self.generation_by_type[fuel] = gen_types[fuel]
             try:
@@ -274,6 +275,15 @@ class Forecast (object):
                 elif fuel == 'generation wind':
                     generation = self.cd.get_item('community',
                                                   'wind generation limit')
+                    if generation == 0:
+                        temp = gen_types[gen_types[fuel].notnull()]\
+                                                    [fuel].values[-3:]
+                        temp = np.mean(temp)
+                        if np.isnan(temp):
+                            generation = 0
+                        else:
+                            rolling_wind = True
+                            
                 else:
                     
                     generation = gen_types[gen_types[fuel].notnull()]\
@@ -287,8 +297,12 @@ class Forecast (object):
                             self.generation_by_type[fuel].isnull(), 
                             self.generation_by_type[fuel].index > last_year)
                 #~ print foreward_years
-                                     
-                self.generation_by_type[fuel][foreward_years] = generation
+                if not rolling_wind:
+                    self.generation_by_type[fuel][foreward_years] = generation
+                else:
+                    for year in self.generation_by_type.ix[foreward_years].index:
+                        data = self.generation_by_type[fuel].ix[year-3:year-1]
+                        self.generation_by_type[fuel][year] = np.mean(data) 
             except IndexError:
                 # fuel not found
                 pass
