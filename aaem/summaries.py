@@ -368,6 +368,7 @@ def forecast_comparison_log (coms, res_dir):
                 com_kwh +=  icom.baseline_kWh_consumption
                 wat_kwh +=  iwat.baseline_kWh_consumption[first_year - iwat.start_year]
             
+            
             comp_res = float(res_kwh)
             comp_non_res = float(com_kwh + wat_kwh)
             comp_total = float(com_kwh + wat_kwh + res_kwh)
@@ -377,10 +378,14 @@ def forecast_comparison_log (coms, res_dir):
                                 ['residential_electricity_consumed [kWh/year]'])
             fc_non_res = float(fc.consumption_to_save.ix[first_year]\
                             ['non-residential_electricity_consumed [kWh/year]'])
-                                
+            if np.isnan(fc_non_res):
+                fc_non_res = 0
+            
             fc_total = float(fc.consumption_to_save.ix[first_year]\
                                     ['total_electricity_consumed [kWh/year]'])
             
+            if np.isnan(fc_total):
+                fc_total = 0
             
             res_diff = fc_res - comp_res
             non_res_diff = fc_non_res - comp_non_res
