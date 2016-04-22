@@ -455,7 +455,7 @@ class CommunityData (object):
                 tied = intertie.ix['Plant Intertied']
                 com_list = intertie.T.values.tolist()[1:]
             #~ print intertie.ix['Plant Intertied'].values[0]
-            
+            self.intertie_list = com_list
             if tied == 'No':
                 intertie = None
             elif ''.join(com_list).replace("''","") == '':

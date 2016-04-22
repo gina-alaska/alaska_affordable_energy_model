@@ -77,6 +77,7 @@ class RunCommand(pycommand.CommandBase):
         summaries.village_log(coms,os.path.join(base,'results'))
         summaries.building_log(coms,os.path.join(base,'results'))
         summaries.fuel_oil_log(coms,os.path.join(base,'results'))
+        summaries.forecast_comparison_log(coms,os.path.join(base,'results'))
         sys.stdout = sout
         
         fd = open(os.path.join(base, "version_metadata.txt"), 'r')
