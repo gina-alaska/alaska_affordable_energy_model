@@ -8,7 +8,7 @@ from pandas import DataFrame, read_csv, concat
 import os
 import numpy as np
 
-from constants import mmbtu_to_kWh, mmbtu_to_gal_HF
+from constants import mmbtu_to_kWh, mmbtu_to_gal_HF, mmbtu_to_gal_LP, mmbtu_to_Mcf, mmbtu_to_cords
 
 
 def res_log (coms, res_dir):
@@ -105,7 +105,7 @@ def building_log(coms, res_dir):
             types = coms[c]['model'].cd.get_item('non-residential buildings',
                                                 "com building estimates").index
             estimates =coms[c]['model'].cd.get_item('non-residential buildings',
-                                                    "com building data")
+                                                "com building data").fillna(0)
             
             num  = 0
             try:
@@ -123,6 +123,7 @@ def building_log(coms, res_dir):
             est = []
             elec = []
             hf = []
+            
             #~ print types
             for t in types:
                 if t in ['Water & Sewer',]:
@@ -143,11 +144,15 @@ def building_log(coms, res_dir):
                     
                     
                     sf_m = com.buildings_df['Square Feet'][t]
-                    hf_used = com.buildings_df['Fuel Oil'][t]
-                    elec_used = com.buildings_df['Electric'][t] 
+                    hf_used = \
+                        estimates['Fuel Oil'][t]/mmbtu_to_gal_HF + \
+                        estimates['Natural Gas'][t]/mmbtu_to_Mcf + \
+                        estimates['Propane'][t]/mmbtu_to_gal_LP + \
+                        estimates['HW District'][t]/mmbtu_to_cords
+                    elec_used = estimates['Electric'][t]/mmbtu_to_kWh
                     
                 except KeyError as e:
-                    print e
+                    #~ print e
                     pass
                 count.append(n)
                 act.append(sf_m)
