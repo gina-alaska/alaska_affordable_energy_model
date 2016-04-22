@@ -1,5 +1,13 @@
 #Change Log
 
+## [0.9.2]
+### changed
+- added columns to non-residential_builing_summary.csv for each building types electric(mmbtu) and heaitng(mmbtu) consumtion
+
+### added
+- summary comparing the forecasted (trend line vs. modled) electrictiy consumption numbers forecast_component_consumption_comparison_summary.csv
+
+
 ## [0.9.1]
 ### changed
 - on generation forecast plots the total is not plotted if only one fuel source is present
