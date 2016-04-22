@@ -309,3 +309,116 @@ def fuel_oil_log (coms, res_dir):
     fd.write("# fuel_oil summary by community\n")
     fd.close()
     data.to_csv(f_name, mode='a')
+    
+def forecast_comparison_log (coms, res_dir):
+    """
+        creates a table of results for each community comparing the forecast 
+    consumption results and the component consumtption results
+    
+    pre:
+        coms: the run model outputs: a dictionary 
+                    {<"community_name">:
+                        {'model':<a run driver object>,
+                        'output dir':<a path to the given communites outputs>
+                        },
+                     ... repeated for each community
+                    }
+        res_dir: directory to save the log in
+        
+    post:
+        a csv file "forecast_comparsion_summary.csv"log is saved in res_dir
+    """
+    out = []
+    for c in sorted(coms.keys()):
+        it = coms[c]['model'].cd.intertie
+        if it is None:
+            it = 'parent'
+        if it == 'child':
+            continue
+        try:
+            it_list = coms[c]['model'].cd.intertie_list
+            it_list = [c] + list(set(it_list).difference(["''"]))
+        except AttributeError:
+            it_list = [c]
+        #~ print it_list
+        try:
+            res = coms[c]['model'].comps_used['residential buildings']
+            com = coms[c]['model'].comps_used['non-residential buildings']
+            wat = coms[c]['model'].comps_used['water wastewater']
+            fc = coms[c]['model'].fc
+            
+            first_year = max([res.start_year,
+                              com.start_year,
+                              wat.start_year,
+                              fc.start_year])
+                              
+            res_kwh = 0
+            com_kwh = 0
+            wat_kwh = 0
+            
+            for ic in it_list:
+                try:
+                    ires = coms[ic]['model'].comps_used['residential buildings']
+                    icom = coms[ic]['model'].\
+                        comps_used['non-residential buildings']
+                    iwat = coms[ic]['model'].comps_used['water wastewater']
+                except KeyError:
+                    continue
+                res_kwh +=  ires.baseline_kWh_consumption[first_year - ires.start_year]
+                com_kwh +=  icom.baseline_kWh_consumption
+                wat_kwh +=  iwat.baseline_kWh_consumption[first_year - iwat.start_year]
+            
+            comp_res = float(res_kwh)
+            comp_non_res = float(com_kwh + wat_kwh)
+            comp_total = float(com_kwh + wat_kwh + res_kwh)
+            
+            #~ print fc.consumption_to_save.ix[first_year]
+            fc_res = float(fc.consumption_to_save.ix[first_year]\
+                                ['residential_electricity_consumed [kWh/year]'])
+            fc_non_res = float(fc.consumption_to_save.ix[first_year]\
+                            ['non-residential_electricity_consumed [kWh/year]'])
+                                
+            fc_total = float(fc.consumption_to_save.ix[first_year]\
+                                    ['total_electricity_consumed [kWh/year]'])
+            
+            
+            res_diff = fc_res - comp_res
+            non_res_diff = fc_non_res - comp_non_res
+            total_diff = fc_total - comp_total
+            
+            res_per = (abs(res_diff)/ (fc_res + comp_res))*100.0
+            non_res_per = (abs(non_res_diff)/ (fc_non_res + comp_non_res))*100.0
+            total_per = (abs(total_diff)/ (fc_total + comp_total))*100.0
+            
+            out.append([c,fc_res,comp_res,res_diff,res_per,
+                          fc_non_res,comp_non_res,non_res_diff,non_res_per,
+                          fc_total,comp_total,total_diff,total_per])
+            
+        except (KeyError,AttributeError) as e:
+            #~ print e
+            pass
+    data = DataFrame(out,columns = \
+                       ['community',
+                        'Forecast (trend line) Residential Consumption [kWh]',
+                        'Forecast (modeled) Residential Consumption [kWh]',
+                        'Difference Residential Consumption [kWh]',
+                        'Percent Difference Residential Consumption [%]',
+                        'Forecast (trend line) Non-Residential Consumption [kWh]',
+                        'Forecast (modeled) Non-Residential Consumption [kWh]',
+                        'Difference Non-Residential Consumption [kWh]',
+                        'Percent Difference Non-Residential Consumption [%]',
+                        'Forecast (trend line) Total Consumption [kWh]',
+                        'Forecast (modeled) Total Consumption [kWh]',
+                        'Difference Total Consumption [kWh]',
+                        'Percent Difference Total Consumption [%]']
+                    ).set_index('community').round(2)
+    f_name = os.path.join(res_dir,
+                'forecast_component_consumption_comparison_summary.csv')
+    fd = open(f_name,'w')
+    fd.write(("# comparison of forecast kWh consumption vs."
+             " component kWh consumption summary by community\n"))
+    fd.close()
+    data.to_csv(f_name, mode='a')
+    
+    
+
