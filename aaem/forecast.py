@@ -291,9 +291,12 @@ class Forecast (object):
         #~ print fuel_types
         #~ print fuel_types
         #~ print current_type
-        rolling = False
+        
         for fuel in fuel_types:
+            rolling = False
             self.generation_by_type[fuel] = gen_types[fuel]
+            #~ print fuel
+            #~ print self.generation_by_type[fuel]
             try:
                 # get the last 3 years of generation  and average them
                 
@@ -334,35 +337,38 @@ class Forecast (object):
                             self.generation_by_type[fuel].isnull(), 
                             self.generation_by_type[fuel].index > last_year)
                 #~ print foreward_years
+                #~ print foreward_years
+                #~ print fuel
                 if not rolling:
                     self.generation_by_type[fuel][foreward_years] = generation
                 else:
                     for year in self.generation_by_type.ix[foreward_years].index:
                         data = self.generation_by_type[fuel].ix[year-3:year-1]
                         self.generation_by_type[fuel][year] = np.mean(data) 
-            except IndexError:
+            except IndexError as e:
+                print 'INDEXERROR',fuel, e
                 # fuel not found
                 pass
             
-        last_year = self.generation_by_type\
-                        [self.generation_by_type[current_type].notnull()]\
-                        [current_type].index[-1]
+        #~ last_year = self.generation_by_type\
+                        #~ [self.generation_by_type[current_type].notnull()]\
+                        #~ [current_type].index[-1]
         
-        
+        last_year = self.start_year
         foreward_years = self.generation_by_type.index>last_year
         
         other_type_values = \
                 self.generation_by_type[foreward_years ][fuel_types]
         other_type_values = other_type_values.fillna(0).sum(1)
+        #~ print other_type_values
         
         foreward_values = \
                 self.generation_by_type[foreward_years ]['generation total']\
                 - other_type_values
-                
+        
         foreward_values[foreward_values < 0] = 0
         
         self.generation_by_type.loc[foreward_years,current_type]=foreward_values
-        
         
     def forecast_average_kW (self):
         """
