@@ -258,23 +258,30 @@ class Forecast (object):
     def correct_generation (self):
         """
         """
-        fuel_types = ['generation diesel','generation natural gas',
+        fuel_types = ['generation natural gas', 'generation diesel',
                   'generation hydro','generation wind','generation biomass']
         
         total = self.generation_by_type['generation total'].ix[self.start_year:] 
         
         
-        for fuel in ['generation hydro','generation wind','generation biomass']:
+        for fuel in ['generation wind','generation hydro','generation biomass']:
             #~ if any(self.generation_by_type[fuel].ix[self.start_year:] <= 0):
                 #~ continue
             fuel_sums = \
                 self.generation_by_type[fuel_types].ix[self.start_year:].sum(1) 
             if any(total.ix[self.start_year:] < fuel_sums.ix[self.start_year:]):
-                self.generation_by_type[fuel].ix[self.start_year:] = self.generation_by_type[fuel].ix[self.start_year:] -\
+                if any(total.ix[self.start_year:] < self.generation_by_type[fuel].ix[self.start_year:]):
+                    self.generation_by_type[fuel].ix[self.start_year:] = self.generation_by_type[fuel].ix[self.start_year:] -\
                                     (fuel_sums - total.ix[self.start_year:])
-            else:
-                break
+                
+                
         
+            else:
+                continue
+            #~ self.generation_by_type[fuel].ix[self.start_year:]
+            #~ print fuel
+            self.generation_by_type[fuel].ix[self.start_year:][self.generation_by_type[fuel].ix[self.start_year:] < 0 ] = 0
+
         
         
     def forecast_fuels (self, current_type ):
@@ -325,10 +332,15 @@ class Forecast (object):
                             rolling = True
                             
                 else:
-                    
-                    generation = gen_types[gen_types[fuel].notnull()]\
+                    if current_type == "generation natural gas" and \
+                            fuel == "generation diesel" \
+                        or current_type == "generation diesel" and \
+                            fuel == "generation natural gas":
+                        continue
+                    else:
+                        generation = gen_types[gen_types[fuel].notnull()]\
                                                     [fuel].values[-3:]
-                    generation = np.mean(generation)
+                        generation = np.mean(generation)
                     
                 #~ last_year = gen_types[gen_types[fuel].notnull()]\
                                                #~ [fuel].index[-1]
