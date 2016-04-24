@@ -1,5 +1,15 @@
 #Change Log
 
+## [0.10.0]
+### changed
+- preprocessor updated to take new keys for generation limits
+
+### fixed
+- missing generation_forecast.csv files
+- issue where not all intertie subcommunites were being used
+- issue in creating forecast compareison file
+- issue in preprocessor indexing cauing some communites to get the wrong data input files
+
 ## [0.9.3]
 ### fixed
 - fixes missing renwable generation sources were data was avaialble
