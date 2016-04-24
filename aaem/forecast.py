@@ -701,9 +701,14 @@ class Forecast (object):
                         'generation hydro', 
                         'generation natural gas', 'generation wind', 
                         'generation solar', 'generation biomass']:
+                #~ print data[col].ix[self.start_year:]
+                if col == 'generation total' and \
+                    any(np.isnan(data[col].ix[self.start_year:])):
+                    raise ValueError, "nans found"
+                
                 kWh = col.replace(" ", "_") + " [kWh/year]"
                 mmbtu = col.replace(" ", "_") + " [mmbtu/year]"
-                data[kWh] = data[col].round().astype(int)
+                data[kWh] = data[col].fillna(0).round().astype(int)
                 data[mmbtu] = (data[col] / constants.mmbtu_to_kWh)\
                                                 .fillna(0).round().astype(int)
                 del data[col]

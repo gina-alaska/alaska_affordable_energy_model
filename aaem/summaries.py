@@ -351,18 +351,19 @@ def forecast_comparison_log (coms, res_dir):
     """
     out = []
     for c in sorted(coms.keys()):
-        it = coms[c]['model'].cd.intertie
-        if it is None:
-            it = 'parent'
-        if it == 'child':
-            continue
+        
         try:
-            it_list = coms[c]['model'].cd.intertie_list
-            it_list = [c] + list(set(it_list).difference(["''"]))
-        except AttributeError:
-            it_list = [c]
-        #~ print it_list
-        try:
+            it = coms[c]['model'].cd.intertie
+            if it is None:
+                it = 'parent'
+            if it == 'child':
+                continue
+            try:
+                it_list = coms[c]['model'].cd.intertie_list
+                it_list = [c] + list(set(it_list).difference(["''"]))
+            except AttributeError:
+                it_list = [c]
+            #~ print it_list
             res = coms[c]['model'].comps_used['residential buildings']
             com = coms[c]['model'].comps_used['non-residential buildings']
             wat = coms[c]['model'].comps_used['water wastewater']
