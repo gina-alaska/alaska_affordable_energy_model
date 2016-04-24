@@ -1,5 +1,11 @@
 #Change Log
 
+## [0.9.3]
+### fixed
+- fixes missing renwable generation sources were data was avaialble
+- fixes negitive generation created by scaling the generaton back
+- fixes outputs for generatin forecast where data is not avaiable. They don't get saved.
+
 ## [0.9.2]
 ### changed
 - added columns to non-residential_builing_summary.csv for each building types electric(mmbtu) and heaitng(mmbtu) consumtion
