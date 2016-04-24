@@ -176,7 +176,8 @@ class Forecast (object):
         nr = np.zeros(len(fc_consumption.ix[start:])-1) + self.average_nr_kWh
         r = (m * self.population + b).ix[start:]
         
-        r =  self.yearly_res_kWh.ix[idx].T.values.tolist()[0] +  r.values.T.tolist()[0]
+        r =  self.yearly_res_kWh.ix[idx].T.values.tolist()[0] + \
+             r.values.T.tolist()[0]
         
         nr = self.yearly_nr_kWh.ix[idx].T.values.tolist()[0] + nr.tolist() 
         
@@ -189,7 +190,9 @@ class Forecast (object):
                                  'res': r,
                                  'non res' : nr}).set_index('year')
         consumption = consumption[["consumption", 'res', 'non res']]
-        consumption.columns = ["consumption kWh", 'residential kWh', 'non-residential kWh']
+        consumption.columns = ["consumption kWh", 
+                               'residential kWh',
+                               'non-residential kWh']
         self.consumption_to_save = consumption
         
         self.consumption = DataFrame({'year':years, 
@@ -228,35 +231,46 @@ class Forecast (object):
             self.generation.ix[idx] = df.ix[idx]
         except:
             pass
-        
-        
-        
-        self.generation.columns = ["kWh generation"]
-        
     
+        self.generation.columns = ["kWh generation"]
+            
     def forecast_generation_by_type (self):
         """
+        forecasts the generation by each fuel type
+        
+        pre:
+            self.generation is calculated
+        post:
+            self.generation_by_type is created and filled 
         """
         gen_types = self.cd.get_item('community','generation numbers')
 
         self.generation_by_type = copy.deepcopy(self.generation)
         self.generation_by_type.columns = ["generation total"]
-        # TODO add in Hydro test:
         if (gen_types[['generation natural gas']].fillna(0) != 0).any().bool():
+            msg = "natural gas is fuel used to make up difference" 
+            self.diagnostics.add_note('forecast', msg) 
             current_type = 'generation natural gas'
             self.forecast_fuels(current_type)   
                 
         else: 
+            msg = "diesel is fuel used to make up difference" 
+            self.diagnostics.add_note('forecast', msg) 
             current_type = 'generation diesel'
             self.forecast_fuels(current_type)  
-            
-        
-        
-        #~ print self.generation_by_type
         self.correct_generation()
     
     def correct_generation (self):
         """
+            checks generation of RE fuels, and ensures they remain between the 
+        total generation and the 0
+        
+        pre:
+            self.generation_by_type should be populated with generation 
+        values for each fuel type
+        post:
+            RE fuel types are 0 < fuel genneration < total generation, and
+        sum(generation[each fuel]) == generation total
         """
         fuel_types = ['generation natural gas', 'generation diesel',
                   'generation hydro','generation wind','generation biomass']
@@ -270,44 +284,50 @@ class Forecast (object):
             fuel_sums = \
                 self.generation_by_type[fuel_types].ix[self.start_year:].sum(1) 
             if any(total.ix[self.start_year:] < fuel_sums.ix[self.start_year:]):
-                if any(total.ix[self.start_year:] < self.generation_by_type[fuel].ix[self.start_year:]):
-                    self.generation_by_type[fuel].ix[self.start_year:] = self.generation_by_type[fuel].ix[self.start_year:] -\
-                                    (fuel_sums - total.ix[self.start_year:])
+                if any(total.ix[self.start_year:] < \
+                        self.generation_by_type[fuel].ix[self.start_year:]):
+                    msg = "scaling generation(" + fuel + ") where geneation(" + \
+                            fuel + ") > total generation"
+                    self.diagnostics.add_note('forecast', msg)   
+                            
+                    self.generation_by_type[fuel].ix[self.start_year:] = \
+                            self.generation_by_type[fuel].ix[self.start_year:] -\
+                            (fuel_sums - total.ix[self.start_year:])
                 
                 
         
             else:
                 continue
-            #~ self.generation_by_type[fuel].ix[self.start_year:]
-            #~ print fuel
-            self.generation_by_type[fuel].ix[self.start_year:][self.generation_by_type[fuel].ix[self.start_year:] < 0 ] = 0
+            if any(self.generation_by_type[fuel].ix[self.start_year:] < 0):
+                msg = "zeroing generation(" + fuel + ") where geneation < 0"
+                self.diagnostics.add_note('forecast', msg)
+            
+            self.generation_by_type[fuel].ix[self.start_year:]\
+            [self.generation_by_type[fuel].ix[self.start_year:] < 0 ] = 0
 
         
         
-    def forecast_fuels (self, current_type ):
+    def forecast_fuels (self, current_type):
         """
+        forecast the consumption for each fuel
+        
+        pre:
+            self.generation_by_type should be created but not yet populated
+            current_type is "generation diesel" or "generation natural gas"
+        post:
+            self.generation_by_type will be populated
         """
-        
-        
         gen_types = self.cd.get_item('community','generation numbers')
-        #~ print gen_types
         self.generation_by_type[current_type] = gen_types[current_type]
         
         fuel_types = gen_types.keys().values
         fuel_types = list(set(fuel_types).difference([current_type]))
-        #~ print fuel_types
-        #~ print fuel_types
-        #~ print current_type
         
         for fuel in fuel_types:
             rolling = False
             self.generation_by_type[fuel] = gen_types[fuel]
-            #~ print fuel
-            #~ print self.generation_by_type[fuel]
             try:
                 # get the last 3 years of generation  and average them
-                
-                #~ print fuel
                 if fuel == 'generation hydro':
                     generation = self.cd.get_item('community',
                                                   'hydro generation limit')
@@ -318,6 +338,8 @@ class Forecast (object):
                         if np.isnan(temp):
                             generation = 0
                         else:
+                            msg = "generation(hydro) using rolling average"
+                            self.diagnostics.add_note('forecast', msg)
                             rolling = True
                 elif fuel == 'generation wind':
                     generation = self.cd.get_item('community',
@@ -329,6 +351,8 @@ class Forecast (object):
                         if np.isnan(temp):
                             generation = 0
                         else:
+                            msg = "generation(wind) using rolling average"
+                            self.diagnostics.add_note('forecast', msg)
                             rolling = True
                             
                 else:
@@ -341,16 +365,13 @@ class Forecast (object):
                         generation = gen_types[gen_types[fuel].notnull()]\
                                                     [fuel].values[-3:]
                         generation = np.mean(generation)
+                    msg = "generation("+ fuel +") is " + str(generation)
+                    self.diagnostics.add_note('forecast', msg)
                     
-                #~ last_year = gen_types[gen_types[fuel].notnull()]\
-                                               #~ [fuel].index[-1]
                 last_year = self.start_year
                 foreward_years = np.logical_and(\
                             self.generation_by_type[fuel].isnull(), 
                             self.generation_by_type[fuel].index > last_year)
-                #~ print foreward_years
-                #~ print foreward_years
-                #~ print fuel
                 if not rolling:
                     self.generation_by_type[fuel][foreward_years] = generation
                 else:
@@ -358,13 +379,9 @@ class Forecast (object):
                         data = self.generation_by_type[fuel].ix[year-3:year-1]
                         self.generation_by_type[fuel][year] = np.mean(data) 
             except IndexError as e:
-                print 'INDEXERROR',fuel, e
+                #~ print 'INDEXERROR',fuel, e
                 # fuel not found
                 pass
-            
-        #~ last_year = self.generation_by_type\
-                        #~ [self.generation_by_type[current_type].notnull()]\
-                        #~ [current_type].index[-1]
         
         last_year = self.start_year
         foreward_years = self.generation_by_type.index>last_year
@@ -372,12 +389,14 @@ class Forecast (object):
         other_type_values = \
                 self.generation_by_type[foreward_years ][fuel_types]
         other_type_values = other_type_values.fillna(0).sum(1)
-        #~ print other_type_values
         
         foreward_values = \
                 self.generation_by_type[foreward_years ]['generation total']\
                 - other_type_values
         
+        if any(foreward_values < 0):
+            msg = "zeroing generation("+ current_type +") where generation < 0"
+            self.diagnostics.add_note('forecast', msg)
         foreward_values[foreward_values < 0] = 0
         
         self.generation_by_type.loc[foreward_years,current_type]=foreward_values
@@ -400,7 +419,7 @@ class Forecast (object):
         post:
         """
         peps_per_house = float(self.base_pop) / \
-    self.cd.get_item('residential buildings','data').ix['total_occupied']
+            self.cd.get_item('residential buildings','data').ix['total_occupied']
         self.households = np.round(self.population / np.float64(peps_per_house))
         self.households.columns = ["HH"] 
         
@@ -547,7 +566,9 @@ class Forecast (object):
         """
         """
         kWh_con = self.consumption_to_save
-        kWh_con.columns = ["total_electricity_consumed [kWh/year]",'residential_electricity_consumed [kWh/year]','non-residential_electricity_consumed [kWh/year]']
+        kWh_con.columns = ["total_electricity_consumed [kWh/year]",
+                           'residential_electricity_consumed [kWh/year]',
+                           'non-residential_electricity_consumed [kWh/year]']
         c_map = copy.deepcopy(self.c_map)
         c_map.columns = ["total_electricity_consumed_qualifier"]
         
@@ -675,29 +696,40 @@ class Forecast (object):
         
         
         order = []
-        for col in ['generation total', 'generation diesel', 'generation hydro', 
-                    'generation natural gas', 'generation wind', 
-                    'generation solar', 'generation biomass']:
-            kWh = col.replace(" ", "_") + " [kWh/year]"
-            mmbtu = col.replace(" ", "_") + " [mmbtu/year]"
-            data[kWh] = data[col].fillna(0).round().astype(int)
-            data[mmbtu] = (data[col] / constants.mmbtu_to_kWh)\
-                                            .fillna(0).round().astype(int)
-            del data[col]
-            order += [kWh, mmbtu]
-        data = concat([self.population.round().astype(int),
-                                    self.p_map,g_map,data],axis=1) 
-        data["community"] = self.cd.get_item("community","name")
-                
-        self.generation_forecast_dataframe = \
-                        data[[data.columns[-1]] + data.columns[:-1].tolist()]
-        del data
+        try:
+            for col in ['generation total', 'generation diesel', 
+                        'generation hydro', 
+                        'generation natural gas', 'generation wind', 
+                        'generation solar', 'generation biomass']:
+                kWh = col.replace(" ", "_") + " [kWh/year]"
+                mmbtu = col.replace(" ", "_") + " [mmbtu/year]"
+                data[kWh] = data[col].round().astype(int)
+                data[mmbtu] = (data[col] / constants.mmbtu_to_kWh)\
+                                                .fillna(0).round().astype(int)
+                del data[col]
+                order += [kWh, mmbtu]
+            data = concat([self.population.round().astype(int),
+                           self.p_map,g_map,data],axis=1) 
+            data["community"] = self.cd.get_item("community","name")
+                    
+            self.generation_forecast_dataframe = \
+                            data[[data.columns[-1]] + data.columns[:-1].tolist()]
+            del data
+        except ValueError:
+            self.generation_forecast_dataframe = None
         
     def save_generation_forecast (self, csv_path, png_path):
         
         self.generate_generation_forecast_dataframe()
-        self.save_generation_forecast_csv(csv_path)
-        self.save_generation_forecast_png(png_path)
+        
+        if self.generation_forecast_dataframe is None:
+            self.diagnostics.add_warning("Forecast", 
+                        ("when saving null values were found in "
+                         "generation data. generation generation "
+                         "forecast is suspect not saving summary(csv and png)"))
+        else:
+            self.save_generation_forecast_csv(csv_path)
+            self.save_generation_forecast_png(png_path)
         
     def save_generation_forecast_csv (self, path):
         """
@@ -720,34 +752,34 @@ class Forecast (object):
         path = path + "generation_forecast.png"
         
         png_list = ['population',
-        'generation_total [mmbtu/year]',
-        'generation_diesel [mmbtu/year]',
-        'generation_hydro [mmbtu/year]',
-        'generation_natural_gas [mmbtu/year]',
-        'generation_wind [mmbtu/year]',
-        'generation_solar [mmbtu/year]',
-        'generation_biomass [mmbtu/year]']
+        'generation_total [kWh/year]',
+        'generation_diesel [kWh/year]',
+        'generation_hydro [kWh/year]',
+        'generation_natural_gas [kWh/year]',
+        'generation_wind [kWh/year]',
+        'generation_solar [kWh/year]',
+        'generation_biomass [kWh/year]']
         
         
         
         png_dict = {'population':'population',
-        'generation_total [mmbtu/year]':'total',
-        'generation_diesel [mmbtu/year]':'diesel',
-        'generation_hydro [mmbtu/year]':'hydro',
-        'generation_natural_gas [mmbtu/year]':'natural gas',
-        'generation_wind [mmbtu/year]':'wind',
-        'generation_solar [mmbtu/year]':'solar',
-        'generation_biomass [mmbtu/year]':'biomass'}
+        'generation_total [kWh/year]':'total',
+        'generation_diesel [kWh/year]':'diesel',
+        'generation_hydro [kWh/year]':'hydro',
+        'generation_natural_gas [kWh/year]':'natural gas',
+        'generation_wind [kWh/year]':'wind',
+        'generation_solar [kWh/year]':'solar',
+        'generation_biomass [kWh/year]':'biomass'}
         
     
         c_dict = {'population': [min(1,r*4) for r in colors.red],
-        'generation_total [mmbtu/year]':colors.jet,
-        'generation_diesel [mmbtu/year]':colors.red,
-        'generation_hydro [mmbtu/year]':colors.blue,
-        'generation_natural_gas [mmbtu/year]':colors.violet,
-        'generation_wind [mmbtu/year]':[ min(1,r*2) for r in colors.blue],
-        'generation_solar [mmbtu/year]':colors.orange,
-        'generation_biomass [mmbtu/year]':colors.avacado}
+        'generation_total [kWh/year]':colors.jet,
+        'generation_diesel [kWh/year]':colors.red,
+        'generation_hydro [kWh/year]':colors.blue,
+        'generation_natural_gas [kWh/year]':colors.violet,
+        'generation_wind [kWh/year]':[ min(1,r*2) for r in colors.blue],
+        'generation_solar [kWh/year]':colors.orange,
+        'generation_biomass [kWh/year]':colors.avacado}
         
         temp = []
         for i in png_list:
@@ -757,13 +789,13 @@ class Forecast (object):
         png_list = temp
         if len(png_list) == 3:
             png_list = list(set(png_list).\
-                    difference(['generation_total [mmbtu/year]']))
+                    difference(['generation_total [kWh/year]']))
         
         df2 = self.generation_forecast_dataframe[png_list]
         plot_name = self.cd.get_item("community","name") +' Generation Forecast'
         
         fig, ax = plot.setup_fig(plot_name ,'years','population')
-        ax1 = plot.add_yaxis(fig,'Generation MMBtu')
+        ax1 = plot.add_yaxis(fig,'Generation kWh')
         
         plot.plot_dataframe(ax1,df2,ax,['population'],png_dict,c_dict)
         fig.subplots_adjust(right=.85)
