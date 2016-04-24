@@ -1410,21 +1410,22 @@ class Preprocessor (object):
         in_file = os.path.join(self.data_dir, "generation_limits.csv")
         data = read_csv(in_file, index_col=0)
         data = self.get_communities_data(data)
+        #~ print data
         if len(data) == 0:
             hydro = 0
             wind = 0
         else:
             if len(data[data["Resource Type"] == 'Hydro']\
-                    ['Sum of Average Annual Generation (kWh)']) != 0:
+                    ['Average Annual Generation (kWh)']) != 0:
                 hydro = float(data[data["Resource Type"] == 'Hydro']\
-                    ['Sum of Average Annual Generation (kWh)'])
+                    ['Average Annual Generation (kWh)'].sum())
             else:
                 hydro = 0
         
             if len(data[data["Resource Type"] == 'Wind']\
-                    ['Sum of Average Annual Generation (kWh)']) != 0:
+                    ['Average Annual Generation (kWh)']) != 0:
                 wind = float(data[data["Resource Type"] == 'Wind']\
-                    ['Sum of Average Annual Generation (kWh)'])
+                    ['Average Annual Generation (kWh)'].sum())
             else:
                 wind = 0
         out_file = os.path.join(self.out_dir, "generation_limits.csv")
@@ -1449,7 +1450,10 @@ class Preprocessor (object):
         for idx in self.id_list:
             try:
                 temp = DataFrame(dataframe.ix[idx])
+                
                 if len(temp.T) == 1:
+                    if not temp.T.index[0] in self.id_list:
+                        continue
                     return temp.T
                 return temp
             except (IndexError, KeyError) as e:
@@ -1487,7 +1491,17 @@ def preprocess (data_dir, out_dir, com_id, dev = False):
                              'Other Community on Intertie.3',
                              'Other Community on Intertie.4',
                              'Other Community on Intertie.5',
-                             'Other Community on Intertie.6'
+                             'Other Community on Intertie.6',
+                             'Other Community on Intertie.7',
+                             'Other Community on Intertie.8',
+                             'Other Community on Intertie.9',
+                             'Other Community on Intertie.10',
+                             'Other Community on Intertie.11',
+                             'Other Community on Intertie.12',
+                             'Other Community on Intertie.13',
+                             'Other Community on Intertie.14',
+                             'Other Community on Intertie.15',
+                             #'Other Community on Intertie.16',
                            ]].values
             ids = ids[ids != "''"].tolist()
 
