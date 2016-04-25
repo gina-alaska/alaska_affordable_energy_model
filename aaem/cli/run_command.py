@@ -10,8 +10,8 @@ from datetime import datetime
 import os.path
 import shutil
 import sys
+import cli_lib
 
-from datetime import datetime
 
 
 
@@ -72,12 +72,10 @@ class RunCommand(pycommand.CommandBase):
         if self.flags.log:
             sys.stdout  = open(self.flags.log, 'w')
         coms = driver.run(batch, "", img_dir)
-        summaries.res_log(coms,os.path.join(base,'results'))
-        summaries.com_log(coms,os.path.join(base,'results'))
-        summaries.village_log(coms,os.path.join(base,'results'))
-        summaries.building_log(coms,os.path.join(base,'results'))
-        summaries.fuel_oil_log(coms,os.path.join(base,'results'))
-        summaries.forecast_comparison_log(coms,os.path.join(base,'results'))
+        
+        cli_lib.generate_summaries (coms, base)
+        
+        
         sys.stdout = sout
         
         fd = open(os.path.join(base, "version_metadata.txt"), 'r')

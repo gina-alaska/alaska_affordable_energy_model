@@ -12,7 +12,7 @@ from aaem import driver, __version__
 from datetime import datetime
 from pandas import read_csv
 from default_cases import __DEV_COMS__
-
+import cli_lib
 
 class RefreshCommand(pycommand.CommandBase):
     """
@@ -84,31 +84,8 @@ class RefreshCommand(pycommand.CommandBase):
 
         raw = os.path.join(model_root, 'setup', "raw_data")
         os.makedirs(os.path.join(model_root, 'setup',"raw_data"))
-        shutil.copy(os.path.join(repo,
-                        "power-cost-equalization-pce-data.csv"), raw)
-        shutil.copy(os.path.join(repo, "com_building_estimates.csv"), raw)
-        shutil.copy(os.path.join(repo, "com_num_buildings.csv"), raw)
-        shutil.copy(os.path.join(repo, "cpi.csv"), raw)
-        shutil.copy(os.path.join(repo, "diesel_fuel_prices.csv"), raw)
-        shutil.copy(os.path.join(repo, "eia_generation.csv"), raw)
-        shutil.copy(os.path.join(repo, "eia_sales.csv"), raw)
-        shutil.copy(os.path.join(repo, "hdd.csv"), raw)
-        shutil.copy(os.path.join(repo, "heating_fuel_premium.csv"), raw)
-        shutil.copy(os.path.join(repo, "interties.csv"), raw)
-        shutil.copy(os.path.join(repo, "non_res_buildings.csv"), raw)
-        shutil.copy(os.path.join(repo, "population.csv"), raw)
-        shutil.copy(os.path.join(repo, "population_neil.csv"), raw)
-        shutil.copy(os.path.join(repo, "purchased_power_lib.csv"), raw)
-        shutil.copy(os.path.join(repo, "res_fuel_source.csv"), raw)
-        shutil.copy(os.path.join(repo, "res_model_data.csv"), raw)
-        shutil.copy(os.path.join(repo, "valdez_kwh_consumption.csv"), raw)
-        shutil.copy(os.path.join(repo, "ww_assumptions.csv"), raw)
-        shutil.copy(os.path.join(repo, "ww_data.csv"), raw)
-        shutil.copy(os.path.join(repo, "VERSION"), raw)
-        shutil.copy(os.path.join(repo, "community_list.csv"), raw)
-        shutil.copy(os.path.join(repo, "propane_price_estimates.csv"), raw)
-        shutil.copy(os.path.join(repo, "biomass_price_estimates.csv"), raw)
-        shutil.copy(os.path.join(repo, "generation_limits.csv"), raw)
+        
+        cli_lib.copy_model_data (repo, raw)
         #avaliable coms
         if self.flags.dev:
             coms = __DEV_COMS__
