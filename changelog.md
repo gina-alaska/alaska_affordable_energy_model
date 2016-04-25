@@ -1,5 +1,17 @@
 #Change Log
 
+## [0.10.1]
+### added
+- aaem/cli/cli_lib.py for cli functionality commomn to multiple commands
+- added modeled water and non-res columns to forecast comparsion summary
+
+### fixed
+- missing unknown columns in non-residential building summary
+- in correct display of unknown buildings in missing non-residential building summary
+
+### changed
+- the way addition building  in non-res component are calculated. No more -2
+
 ## [0.10.0]
 ### changed
 - preprocessor updated to take new keys for generation limits
