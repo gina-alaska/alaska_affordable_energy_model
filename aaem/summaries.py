@@ -392,6 +392,9 @@ def forecast_comparison_log (coms, res_dir):
             
             
             comp_res = float(res_kwh)
+            comp_wat = float(wat_kwh)
+            comp_com = float(com_kwh)
+            
             comp_non_res = float(com_kwh + wat_kwh)
             comp_total = float(com_kwh + wat_kwh + res_kwh)
             
@@ -418,26 +421,29 @@ def forecast_comparison_log (coms, res_dir):
             total_per = (abs(total_diff)/ (fc_total + comp_total))*100.0
             
             out.append([c,fc_res,comp_res,res_diff,res_per,
-                          fc_non_res,comp_non_res,non_res_diff,non_res_per,
+                          fc_non_res,comp_com,comp_wat,comp_non_res,
+                          non_res_diff,non_res_per,
                           fc_total,comp_total,total_diff,total_per])
             
         except (KeyError,AttributeError) as e:
             #~ print e
             pass
     data = DataFrame(out,columns = \
-                       ['community',
-                        'Forecast (trend line) Residential Consumption [kWh]',
-                        'Forecast (modeled) Residential Consumption [kWh]',
-                        'Difference Residential Consumption [kWh]',
-                        'Percent Difference Residential Consumption [%]',
-                        'Forecast (trend line) Non-Residential Consumption [kWh]',
-                        'Forecast (modeled) Non-Residential Consumption [kWh]',
-                        'Difference Non-Residential Consumption [kWh]',
-                        'Percent Difference Non-Residential Consumption [%]',
-                        'Forecast (trend line) Total Consumption [kWh]',
-                        'Forecast (modeled) Total Consumption [kWh]',
-                        'Difference Total Consumption [kWh]',
-                        'Percent Difference Total Consumption [%]']
+       ['community',
+        'Forecast (trend line) Residential Consumption [kWh]',
+        'Forecast (modeled) Residential Consumption [kWh]',
+        'Difference Residential Consumption [kWh]',
+        'Percent Difference Residential Consumption [%]',
+        'Forecast (trend line) Non-Residential Consumption [kWh]',
+        'Forecast (modeled) Non-Residential (non-residential) Consumption [kWh]',
+       'Forecast (modeled) Non-Residential (water/wastewater) Consumption [kWh]',
+        'Forecast (modeled) Non-Residential Consumption [kWh]',
+        'Difference Non-Residential Consumption [kWh]',
+        'Percent Difference Non-Residential Consumption [%]',
+        'Forecast (trend line) Total Consumption [kWh]',
+        'Forecast (modeled) Total Consumption [kWh]',
+        'Difference Total Consumption [kWh]',
+        'Percent Difference Total Consumption [%]']
                     ).set_index('community').round(2)
     f_name = os.path.join(res_dir,
                 'forecast_component_consumption_comparison_summary.csv')
