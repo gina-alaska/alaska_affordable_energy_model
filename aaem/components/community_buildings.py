@@ -100,15 +100,18 @@ class CommunityBuildings (AnnualSavings):
         """
         """
         with_estimates = deepcopy(self.comp_specs["com building data"])
-        
         try:
-            num = len(with_estimates.ix['Average'])
+            if 'Average' in set(with_estimates.ix['Average'].index) :
+                num = len(with_estimates.ix['Average'])
+            else:
+                num = 1
         except KeyError:
             pass
         
         with_estimates = with_estimates.groupby(with_estimates.index).sum()
         with_estimates.columns = \
                 [c+" with estimates" for c in with_estimates.columns]
+        
         summary = concat([self.buildings_df,with_estimates],axis=1)
         cols = self.buildings_df.columns[1:]
         cols = list(set(cols).difference("Water & Sewer"))
@@ -134,6 +137,7 @@ class CommunityBuildings (AnnualSavings):
                         ("in saving the building list the "
                          "standard order could not be used"))
             summary.to_csv(file_name)
+        
     
     def save_additional_output(self, path):
         """
@@ -213,9 +217,8 @@ class CommunityBuildings (AnnualSavings):
                 self.comp_specs["number buildings"]:
                 
                 self.add_additional_buildings()
-                
             
-    def add_additional_buildings (self, num_not_heated = 2):
+    def add_additional_buildings (self, num_not_heated = 0):
         """
             adds additional buildings to the building dataframe 
         (self.comp_specs['com building data'])

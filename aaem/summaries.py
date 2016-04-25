@@ -153,7 +153,12 @@ def building_log(coms, res_dir):
             
             num  = 0
             try:
-                num = len(estimates.ix['Average'])
+                
+                if 'Average' in set(estimates.ix['Average'].index):
+                    num = len(estimates.ix['Average'])
+                else:
+                    num = 1
+                
             except KeyError:
                 pass
             estimates = estimates.groupby(estimates.index).sum()
@@ -182,18 +187,25 @@ def building_log(coms, res_dir):
                         
                         n = num
                         sf_e = estimates['Square Feet']['Unknown']
+                        hf_used = \
+                            estimates['Fuel Oil']['Unknown']/mmbtu_to_gal_HF + \
+                            estimates['Natural Gas']['Unknown']/mmbtu_to_Mcf + \
+                            estimates['Propane']['Unknown']/mmbtu_to_gal_LP + \
+                            estimates['HW District']['Unknown']/mmbtu_to_cords
+                        elec_used = estimates['Electric']['Unknown']/mmbtu_to_kWh
                     else:
                         n = com.buildings_df['count'][t]
                         sf_e = estimates['Square Feet'][t]
+                        hf_used = \
+                            estimates['Fuel Oil'][t]/mmbtu_to_gal_HF + \
+                            estimates['Natural Gas'][t]/mmbtu_to_Mcf + \
+                            estimates['Propane'][t]/mmbtu_to_gal_LP + \
+                            estimates['HW District'][t]/mmbtu_to_cords
+                        elec_used = estimates['Electric'][t]/mmbtu_to_kWh
                     
                     
                     sf_m = com.buildings_df['Square Feet'][t]
-                    hf_used = \
-                        estimates['Fuel Oil'][t]/mmbtu_to_gal_HF + \
-                        estimates['Natural Gas'][t]/mmbtu_to_Mcf + \
-                        estimates['Propane'][t]/mmbtu_to_gal_LP + \
-                        estimates['HW District'][t]/mmbtu_to_cords
-                    elec_used = estimates['Electric'][t]/mmbtu_to_kWh
+                    
                     
                 except KeyError as e:
                     #~ print e
