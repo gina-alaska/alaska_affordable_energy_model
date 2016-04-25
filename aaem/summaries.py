@@ -8,12 +8,26 @@ from pandas import DataFrame, read_csv, concat
 import os
 import numpy as np
 
-from constants import mmbtu_to_kWh, mmbtu_to_gal_HF, mmbtu_to_gal_LP, mmbtu_to_Mcf, mmbtu_to_cords
+from constants import mmbtu_to_kWh, mmbtu_to_gal_HF
+from constants import mmbtu_to_gal_LP, mmbtu_to_Mcf, mmbtu_to_cords
 
 
 def res_log (coms, res_dir):
     """
-    create a 
+    creates a log for the residental component outputs by community
+    
+    pre:
+        coms: the run model outputs: a dictionary 
+                    {<"community_name">:
+                        {'model':<a run driver object>,
+                        'output dir':<a path to the given communites outputs>
+                        },
+                     ... repeated for each community
+                    }
+        res_dir: directory to save the log in
+    
+    post:
+        a csv file "residential_summary.csv" log is saved in res_dir   
     
     """
     out = []
@@ -54,6 +68,21 @@ def res_log (coms, res_dir):
     
 def com_log (coms, res_dir): 
     """
+    creates a log for the non-residental component outputs by community
+    
+    pre:
+        coms: the run model outputs: a dictionary 
+                    {<"community_name">:
+                        {'model':<a run driver object>,
+                        'output dir':<a path to the given communites outputs>
+                        },
+                     ... repeated for each community
+                    }
+        res_dir: directory to save the log in
+    
+    post:
+        a csv file "non-residential_summary.csv"log is saved in res_dir   
+    
     """
     out = []
     for c in sorted(coms.keys()):
@@ -93,6 +122,21 @@ def com_log (coms, res_dir):
     
 def building_log(coms, res_dir):
     """
+    creates a log for the non-residental component buildings outputs by community
+    
+    pre:
+        coms: the run model outputs: a dictionary 
+                    {<"community_name">:
+                        {'model':<a run driver object>,
+                        'output dir':<a path to the given communites outputs>
+                        },
+                     ... repeated for each community
+                    }
+        res_dir: directory to save the log in
+    
+    post:
+        a csv file "non-residential_summary.csv"log is saved in res_dir   
+    
     """
     out = []
     for c in sorted(coms.keys()):
@@ -160,8 +204,10 @@ def building_log(coms, res_dir):
                 elec.append(elec_used)
                 hf.append(hf_used)
                 
-            percent = com.buildings_df['Square Feet'].sum() / estimates['Square Feet'].sum()
-            percent2 = float(com.buildings_df['count'].sum())/(com.buildings_df['count'].sum()+num)
+            percent = com.buildings_df['Square Feet'].sum() /\
+                      estimates['Square Feet'].sum()
+            percent2 = float(com.buildings_df['count'].sum())/\
+                      (com.buildings_df['count'].sum()+num)
             
             if np.isnan(percent):
                 percent = 0.0
@@ -192,7 +238,9 @@ def building_log(coms, res_dir):
         hf.append("heating fuel used (mmbtu)")
 
     
-    data = DataFrame(out,columns = ['community','% sqft measured','% buildings from inventory'] + l + l + l + l + l
+    data = DataFrame(out,columns = ['community',
+                                '% sqft measured',
+                                '% buildings from inventory'] + l + l + l + l + l
                     ).set_index('community').round(2)
     f_name = os.path.join(res_dir,'non-residential_building_summary.csv')
     fd = open(f_name,'w')
@@ -209,6 +257,23 @@ def building_log(coms, res_dir):
     
 def village_log (coms, res_dir): 
     """
+        creates a log comparing the consumption and costs of the residential,
+    non-residential, and water/wastewater components
+    
+    pre:
+        coms: the run model outputs: a dictionary 
+                    {<"community_name">:
+                        {'model':<a run driver object>,
+                        'output dir':<a path to the given communites outputs>
+                        },
+                     ... repeated for each community
+                    }
+        res_dir: directory to save the log in
+    
+    post:
+        a csv file "village_sector_consumption_summary.csv"log is saved 
+    in res_dir   
+    
     """
     out = []
     for c in sorted(coms.keys()):
