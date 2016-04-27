@@ -414,6 +414,7 @@ class Preprocessor (object):
                     "Pressure/NA": "Pressure/Gravity",
                     "Pressure/ST/DF": "Pressure/Gravity",
                     "Washeteria":"Wash/HB",
+                    "None": "None",
                   }
 
 
@@ -438,6 +439,8 @@ class Preprocessor (object):
 
         try:
             sys_type = sys_map[ww_d["System Type"]]
+            if sys_type == "None":
+                raise ValueError, "no w/ww system"
             ww_a = read_csv(assumptions_file, comment = '#', index_col = 0)
             ww_a = ww_a.ix[sys_type]
             ww_a["assumption type used"] = sys_type
