@@ -182,6 +182,7 @@ class Preprocessor (object):
                 "# kWh/yr w/ retro: kWh/yr used post-retrofit\n"+ \
                 "# Implementation Cost: cost to refit \n"+ \
                 "# HR: heat recovery (units ???) \n"+ \
+                "# Biomass: (boolean) is biomass used \n"+ \
                 "# Steam District: ??? \n"+ \
                 "# -----------------------------" +\
                 "# source: wastewater_assumptions.csv (AEA)" +\
@@ -430,6 +431,10 @@ class Preprocessor (object):
             ww_d["HR Installed"] = False
 
 
+        try:
+            a = ww_d["Biomass"]
+        except KeyError:
+            ww_d["Biomass"] = False
 
         try:
             sys_type = sys_map[ww_d["System Type"]]
