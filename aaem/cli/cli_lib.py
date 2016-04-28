@@ -3,7 +3,7 @@ cli_lib.py
 
     functionality used by multiple cli commands
 """
-import os.path
+import os
 import shutil
 from aaem import summaries
 
@@ -62,3 +62,18 @@ def generate_summaries (coms, base):
     summaries.building_log(coms,os.path.join(base,'results'))
     summaries.fuel_oil_log(coms,os.path.join(base,'results'))
     summaries.forecast_comparison_log(coms,os.path.join(base,'results'))
+    
+def list_files (directory, root = None):
+    """ Function doc """
+    l = []
+    if root is None:
+        root = directory
+    for item in os.listdir(directory):
+        if item[0] == '.':
+            continue
+        if not os.path.isdir(os.path.join(directory,item)):
+            l.append(os.path.join(directory.replace(root,""),item))
+        else:
+            l += list_files(os.path.join(directory,item),root)
+    return l
+    
