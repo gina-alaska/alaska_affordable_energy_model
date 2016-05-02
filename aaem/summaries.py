@@ -200,7 +200,8 @@ def building_log(coms, res_dir):
                             estimates['Fuel Oil'][t]/mmbtu_to_gal_HF + \
                             estimates['Natural Gas'][t]/mmbtu_to_Mcf + \
                             estimates['Propane'][t]/mmbtu_to_gal_LP + \
-                            estimates['HW District'][t]/mmbtu_to_cords
+                            estimates['HW District'][t]/mmbtu_to_gal_HF +\
+                            estimates['Biomass'][t]/mmbtu_to_cords
                         elec_used = estimates['Electric'][t]/mmbtu_to_kWh
                     
                     

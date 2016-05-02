@@ -1290,9 +1290,13 @@ class Preprocessor (object):
                  "Fuel Oil", "Fuel Oil Post",
                  "HW District", "HW District Post",
                  "Natural Gas", "Natural Gas Post",
-                 "Propane", "Propane Post"]
-            data[l] = data[l].replace(r'\s+', np.nan, regex=True)
-            
+                 "Propane", "Propane Post",
+                 "Biomass","Biomass Post"]
+            #~ print "BEFORE"
+            #~ print data["HW District"]
+            data[l] = data[l].replace(r'\S+', np.nan, regex=True)
+            #~ print "AFTER"
+            #~ print data["HW District"]
 
             c = ["Building Type", "Square Feet",
                  "Audited", "Retrofits Done",
@@ -1301,7 +1305,8 @@ class Preprocessor (object):
                  "Fuel Oil", "Fuel Oil Post",
                  "HW District", "HW District Post",
                  "Natural Gas", "Natural Gas Post",
-                 "Propane", "Propane Post"]
+                 "Propane", "Propane Post",
+                 "Biomass","Biomass Post"]
             out_file = os.path.join(self.out_dir, "community_buildings.csv")
             fd = open(out_file,'w')
             fd.write(self.buildings_inventory_header())

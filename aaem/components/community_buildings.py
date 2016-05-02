@@ -277,7 +277,9 @@ class CommunityBuildings (AnnualSavings):
         """
         sqft_ests = self.comp_specs["com building estimates"]["Sqft"]
         data = self.comp_specs['com building data']
+        
         keys = set(data.T.keys())
+        #~ print keys
         measure = "Square Feet"
         
         for k in keys:
@@ -357,49 +359,46 @@ class CommunityBuildings (AnnualSavings):
         measure = "Fuel Oil"
         data = self.comp_specs['com building data']
         keys = data.T.keys()
-        d2 = data[["Square Feet", measure, "Natural Gas", 'Fuel Oil', 
-                    'HW District', 'Natural Gas',
-                    'Propane']].T.values.tolist()
-        d2.insert(0,keys.values.tolist())
-        d2 = np.array(d2).T
         keys = set(keys)
         
-        
-        # make estimats for heating fuel if there is no data avaiable for any fuel
-        for k in keys:
+        data["HDD ESTS"] = 0
+        data["GAL/SF"] = 0
+        for key in keys:
             try:
-                HDD_ratio = self.cd["HDD"]/HDD_ests.ix[k] # unitless
-                gal_sf = gal_sf_ests.ix[k] # (gal)/sqft
+                data["HDD ESTS"].ix[key] = self.cd["HDD"]/HDD_ests[key]
+                data["GAL/SF"].ix[key] = gal_sf_ests.ix[key] 
             except KeyError:
-                HDD_ratio = self.cd["HDD"]/HDD_ests.ix['Other'] # unitless
-                gal_sf = gal_sf_ests.ix['Other'] # (gal)/sqft
-            idx = np.logical_and(d2[:,0] == k, np.isnan(d2[:,2].astype(float)))
-            
-            idx2 = np.logical_or(np.logical_not(np.isnan(d2[:,3].astype(float))),
-                                np.logical_not(np.isnan(d2[:,4].astype(float))))
-            idx2 = np.logical_or(idx2, 
-                np.logical_not(np.isnan(d2[:,5].astype(float))))
-            idx2 = np.logical_or(idx2, 
-                np.logical_not(np.isnan(d2[:,6].astype(float))))
-            idx2 = np.logical_or(idx2, 
-                np.logical_not(np.isnan(d2[:,7].astype(float))))
-            #~ idx2 = np.logical_or(idx2, 
-                #~ np.logical_not(np.isnan(d2[:,8].astype(float))))
-            
-            idx = np.logical_and(idx,idx2)
-            sqft = d2[idx,1].astype(np.float64) # sqft
-            d2[idx,2] = sqft * HDD_ratio * gal_sf # gal/yr
+                data["HDD ESTS"].ix[key] = self.cd["HDD"]/HDD_ests.ix['Other'] # unitless
+                data["GAL/SF"].ix[key] = gal_sf_ests.ix['Other'] # (gal)/sqft
         
-        data[measure] = d2[:,2].astype(np.float64)     
-        data['Natural Gas'] = d2[:,3].astype(np.float64)                                         
-        self.baseline_fuel_Hoil_consumption = data[measure].sum()
+        
+        idx = data[['Fuel Oil', "Natural Gas",
+                    'HW District','Propane',"Biomass"]].isnull().all(1)
+        data['Fuel Oil'].ix[idx] = data[idx]['Square Feet'] * \
+                                   data[idx]['HDD ESTS'] * \
+                                   data[idx]['GAL/SF']
+        del data["GAL/SF"]
+        del data["HDD ESTS"]
+        
+
+                                           
+        self.baseline_fuel_Hoil_consumption = data['Fuel Oil'].sum()
         self.baseline_fuel_lng_consumption = data['Natural Gas'].sum()
+        self.baseline_fuel_hr_consumption = data['HW District'].sum()
+        self.baseline_fuel_propane_consumption = data['Propane'].sum()
+        self.baseline_fuel_biomass_consumption = data['Biomass'].sum()
         
-        print self.baseline_fuel_Hoil_consumption
-        print self.baseline_fuel_lng_consumption
+        
+        
         
         self.baseline_HF_consumption = \
-            self.baseline_fuel_Hoil_consumption / constants.mmbtu_to_gal_HF
+            self.baseline_fuel_Hoil_consumption / constants.mmbtu_to_gal_HF +\
+            self.baseline_fuel_hr_consumption/constants.mmbtu_to_gal_HF+\
+            self.baseline_fuel_lng_consumption/constants.mmbtu_to_Mcf+\
+            self.baseline_fuel_propane_consumption/constants.mmbtu_to_gal_LP+\
+            self.baseline_fuel_biomass_consumption/constants.mmbtu_to_cords
+
+            
         
     def calc_refit_pre_kWh (self):
         """ 
