@@ -374,9 +374,16 @@ class CommunityBuildings (AnnualSavings):
         
         idx = data[['Fuel Oil', "Natural Gas",
                     'HW District','Propane',"Biomass"]].isnull().all(1)
-        data['Fuel Oil'].ix[idx] = data[idx]['Square Feet'] * \
-                                   data[idx]['HDD ESTS'] * \
-                                   data[idx]['GAL/SF']
+        if not data["Natural Gas"].notnull().any():
+            data['Fuel Oil'].ix[idx] = data[idx]['Square Feet'] * \
+                                       data[idx]['HDD ESTS'] * \
+                                       data[idx]['GAL/SF']
+        else:
+            data['Natural Gas'].ix[idx] = data[idx]['Square Feet'] * \
+                                       data[idx]['HDD ESTS'] * \
+                                       data[idx]['GAL/SF'] / \
+                                       constants.mmbtu_to_gal_HF *\
+                                       constants.mmbtu_to_Mcf
         del data["GAL/SF"]
         del data["HDD ESTS"]
         
