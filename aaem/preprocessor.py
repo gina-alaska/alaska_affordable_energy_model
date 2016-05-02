@@ -182,6 +182,7 @@ class Preprocessor (object):
                 "# kWh/yr w/ retro: kWh/yr used post-retrofit\n"+ \
                 "# Implementation Cost: cost to refit \n"+ \
                 "# HR: heat recovery (units ???) \n"+ \
+                "# Biomass: (boolean) is biomass used \n"+ \
                 "# Steam District: ??? \n"+ \
                 "# -----------------------------" +\
                 "# source: wastewater_assumptions.csv (AEA)" +\
@@ -413,6 +414,7 @@ class Preprocessor (object):
                     "Pressure/NA": "Pressure/Gravity",
                     "Pressure/ST/DF": "Pressure/Gravity",
                     "Washeteria":"Wash/HB",
+                    "None": "None",
                   }
 
 
@@ -430,9 +432,15 @@ class Preprocessor (object):
             ww_d["HR Installed"] = False
 
 
+        try:
+            a = ww_d["Biomass"]
+        except KeyError:
+            ww_d["Biomass"] = False
 
         try:
             sys_type = sys_map[ww_d["System Type"]]
+            if sys_type == "None":
+                raise ValueError, "no w/ww system"
             ww_a = read_csv(assumptions_file, comment = '#', index_col = 0)
             ww_a = ww_a.ix[sys_type]
             ww_a["assumption type used"] = sys_type
@@ -1700,17 +1708,20 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
                        ]:
                 #~ print "loop"
                 try:
+                    
                     if pp_data[idx].purchase_type == key.split(' ')[1]:
                         electricity[key] = electricity[key].fillna(0) + \
                             (temp[key].fillna(0) - \
                                 temp['kwh_purchased'].fillna(0))
-                        continue
-                except (IndexError, AttributeError):
+                    else:
+                        electricity[key] = electricity[key].fillna(0) + \
+                                                            temp[key].fillna(0)
+                    continue
+                except (IndexError, AttributeError) as e:
                     electricity[key] = electricity[key].fillna(0) + \
                                                             temp[key].fillna(0)
-                #~ print key
-                #~ print electricity[key]
-        except AttributeError:
+                
+        except AttributeError as e :
             pass
     electricity['line loss'] = 1.0 - \
                         electricity['consumption']/electricity['net generation']

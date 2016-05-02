@@ -1,5 +1,13 @@
 #Change Log
 
+## [0.10.2]
+### added
+- biomass heating fuel to waterwaste/water components 
+- none added to waterwaste/water system type map in preprocessor. Acts like unknown system type.
+
+### fixed
+- correctet consumption summing of measured values 
+
 ## [0.10.1]
 ### added
 - aaem/cli/cli_lib.py for cli functionality commomn to multiple commands

@@ -683,7 +683,7 @@ class Forecast (object):
         plot.add_horizontal_line(ax1,0)
     
     
-        plot.create_legend(fig)
+        plot.create_legend(fig,.20)
         plot.save(fig,path)
         plot.clear(fig)
         

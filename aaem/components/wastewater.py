@@ -148,10 +148,12 @@ class WaterWastewaterSystems (AnnualSavings):
         """
         self.refit_HF_cost = np.zeros(self.project_life)
         fuel_cost = self.diesel_prices + self.cd['heating fuel premium']# $/gal
+        wood_price = self.cd['biomass price']
         # are there ever o&m costs
         # $/gal * gal/yr = $/year 
         self.refit_HF_cost += \
-                self.refit_fuel_Hoil_consumption * fuel_cost #+ others
+                self.refit_fuel_Hoil_consumption * fuel_cost +\
+                self.refit_fuel_biomass_consumption * wood_price
         
     def calc_base_heating_cost (self):
         """
@@ -166,9 +168,11 @@ class WaterWastewaterSystems (AnnualSavings):
         """
         self.baseline_HF_cost = np.zeros(self.project_life)
         fuel_cost = self.diesel_prices + self.cd['heating fuel premium'] #$/gal
-        # $/gal * gal/yr = $/year 
+        wood_price = self.cd['biomass price'] 
+        # $/gal * gal/yr + $/cors * cord/yr= $/year 
         self.baseline_HF_cost += \
-                self.baseline_fuel_Hoil_consumption * fuel_cost #$/yr + others?
+                self.baseline_fuel_Hoil_consumption * fuel_cost +\
+                self.baseline_fuel_biomass_consumption * wood_price
         
     def run (self):
         """
@@ -268,16 +272,27 @@ class WaterWastewaterSystems (AnnualSavings):
                             np.float64(self.comp_specs['data'].ix['HF Used']) +\
                     ((self.population_fc - self.pop) * pop_coeff)
         else:
-            hr_used = self.comp_specs['data'].ix["HR Installed"].values[0]
-            hr_used = hr_used == True
-            hr_coeff =  self.comp_specs['heat recovery multiplier'][hr_used]
+            hr = self.comp_specs['data'].ix["HR Installed"].values[0] == "TRUE"
+            hr_coeff =  self.comp_specs['heat recovery multiplier'][hr]
             self.baseline_HF_consumption = \
-                    ((self.hdd * hdd_coeff+ self.pop * pop_coeff) * hr_coeff) +\
-                    ((self.population_fc - self.pop) * pop_coeff)
+                    ((self.hdd * hdd_coeff+ self.pop * pop_coeff)  +\
+                    ((self.population_fc - self.pop) * pop_coeff))* hr_coeff
+        self.baseline_fuel_biomass_consumption = 0 
+        biomass = self.comp_specs['data'].ix['Biomass'].values[0] == "TRUE"
+        if biomass:
+            self.baseline_fuel_biomass_consumption = \
+                            self.baseline_HF_consumption / \
+                            constants.mmbtu_to_gal_HF * constants.mmbtu_to_cords
+            self.baseline_HF_consumption = 0
+
+        
         # don't want to detangle that
         self.baseline_fuel_Hoil_consumption = self.baseline_HF_consumption 
+
+        
         self.baseline_HF_consumption = \
-            self.baseline_HF_consumption/constants.mmbtu_to_gal_HF
+            self.baseline_fuel_Hoil_consumption/constants.mmbtu_to_gal_HF + \
+            self.baseline_fuel_biomass_consumption/constants.mmbtu_to_cords
             
     def calc_refit_kWh_consumption (self):
         """
@@ -322,7 +337,12 @@ class WaterWastewaterSystems (AnnualSavings):
                       np.float64(self.comp_specs['data'].ix['HF Used'])
         consumption = self.baseline_fuel_Hoil_consumption * percent
         self.refit_fuel_Hoil_consumption = consumption
-        self.refit_HF_consumption = consumption/constants.mmbtu_to_gal_HF
+        consumption = self.baseline_fuel_biomass_consumption * percent
+        self.refit_fuel_biomass_consumption = consumption
+        
+        self.refit_HF_consumption = \
+                self.refit_fuel_Hoil_consumption/constants.mmbtu_to_gal_HF +\
+                self.refit_fuel_biomass_consumption/constants.mmbtu_to_cords
         
     def calc_savings_kWh_consumption (self):
         """
@@ -347,10 +367,18 @@ class WaterWastewaterSystems (AnnualSavings):
             self.savings_HF_consumption arrays of gal/year savings(floats) 
         over the project lifetime
         """
-        self.savings_HF_consumption = self.baseline_HF_consumption -\
-                                       self.refit_HF_consumption
+        
         self.savings_fuel_Hoil_consumption = \
-            self.savings_HF_consumption*constants.mmbtu_to_gal_HF
+                self.baseline_fuel_Hoil_consumption - \
+                self.refit_fuel_Hoil_consumption
+        self.savings_fuel_biomass_consumption = \
+                self.baseline_fuel_biomass_consumption - \
+                self.refit_fuel_biomass_consumption
+        self.savings_HF_consumption = \
+                self.baseline_HF_consumption - \
+                self.refit_HF_consumption
+
+        
             
     def calc_capital_costs (self, cost_per_person = 450):
         """
