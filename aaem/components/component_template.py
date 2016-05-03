@@ -17,6 +17,13 @@ from aaem.diagnostics import diagnostics
 import aaem.constants as constants
 
 
+## steps for using
+### 1) copy this file as component_name.py and go throug this file folloing the 
+###    commented instructions
+### 2) add new components things to default yaml file
+### 3) add the component to __init__ in this directory
+
+
 
 # change to component name (i.e. 'residential buildings')
 COMPONENT_NAME = "<name>"
@@ -26,7 +33,6 @@ COMPONENT_NAME = "<name>"
 # (i.e. 'ResidentialBuildings')
 class ComponentName (AnnualSavings):
     """
-    for forecasting community building consumption/savings  
     """
     def __init__ (self, community_data, forecast, diag = None):
         """
