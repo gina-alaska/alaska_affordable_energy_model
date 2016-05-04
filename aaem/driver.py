@@ -25,14 +25,10 @@ import warnings
 import sys
 
 
-comp_lib = {
-    "residential buildings": "residential_buildings",
-    "non-residential buildings": "community_buildings",
-    "water wastewater": "wastewater",
-        }
 
 
-        
+from aaem.components import comp_lib
+
 
 
 class Driver (object):
