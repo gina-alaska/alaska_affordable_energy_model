@@ -374,7 +374,7 @@ class CommunityBuildings (AnnualSavings):
         
         idx = data[['Fuel Oil', "Natural Gas",
                     'HW District','Propane',"Biomass"]].isnull().all(1)
-        if not data["Natural Gas"].notnull().any():
+        if not self.cd['natural gas used']:
             data['Fuel Oil'].ix[idx] = data[idx]['Square Feet'] * \
                                        data[idx]['HDD ESTS'] * \
                                        data[idx]['GAL/SF']

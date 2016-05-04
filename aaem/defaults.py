@@ -13,6 +13,7 @@ absolute = """community:
   model electricity: True
   model heating fuel: True
  
+  natural gas used: False # is natural gas used in the community
  
   #AEA ASSUMPTIONS
   interest rate: .05 # rate as decimal <float> (ex. .05) 
