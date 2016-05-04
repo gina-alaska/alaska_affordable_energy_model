@@ -1,5 +1,13 @@
 #Change Log
 
+## [0.11.0]
+### added
+- other fuel types to non-residential buildings component
+- template for other components
+
+### changed
+- cli compare command
+
 ## [0.10.2]
 ### added
 - biomass heating fuel to waterwaste/water components 
