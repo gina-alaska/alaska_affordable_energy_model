@@ -298,11 +298,15 @@ class CommunityData (object):
             self.set_item('residential buildings','data',
                           self.load_pp_csv("residential_data.csv"))
             
+            self.get_item('residential buildings','data').\
+                        ix["Notes"]['value'] = np.nan
+            
             if self.get_item('residential buildings','data').\
                     ix["average kWh per house"]['value'] == "CALC_FOR_INTERTIE":
                 self.get_item('residential buildings','data').\
                         ix["average kWh per house"]['value'] = np.nan
-                self.get_item('residential buildings','data')['value'] =\
+                        
+            self.get_item('residential buildings','data')['value'] =\
                         self.get_item('residential buildings',
                                 'data')['value'].astype(float)
 

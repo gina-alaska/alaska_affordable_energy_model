@@ -194,10 +194,10 @@ class ResidentialBuildings(AnnualSavings):
                 "calculate Houses to retrofit was negative, setting to 0" )
         
         ## % as decimal 
-        self.percent_savings = rd["opportunity_total_percent_community_savings"]
+        #~ self.percent_savings = rd["opportunity_total_percent_community_savings"]
         
         
-        self.percent_savings = np.float64( self.percent_savings)
+        #~ self.percent_savings = np.float64( self.percent_savings)
         
         
         area = np.float64(rd["pre_avg_area"])
