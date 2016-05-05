@@ -47,7 +47,22 @@ class ResidentialBuildings(AnnualSavings):
         self.set_project_life_details(self.comp_specs["start year"],
                                       self.comp_specs["lifetime"],
                         self.forecast.end_year - self.comp_specs["start year"])
-    
+                        
+                     
+        yr = self.comp_specs['data'].ix['year']
+        self.base_pop = self.forecast.population.ix[yr].values[0][0]
+        
+        peps_per_house = float(self.base_pop) / \
+            self.comp_specs['data'].ix['total_occupied']
+        households = np.round(self.forecast.population / np.float64(peps_per_house))
+        households.columns = ["HH"] 
+        self.households = households.ix[self.start_year:self.end_year-1].T.values[0]
+        
+        
+        val = self.forecast.get_population(self.start_year)
+        HH =self.comp_specs['data'].ix['total_occupied']
+        self.init_HH = int(round(HH*(val / self.base_pop)))
+        
     def run (self):
         """ 
         
@@ -69,7 +84,7 @@ class ResidentialBuildings(AnnualSavings):
             self.calc_refit_kWh_consumption()
         
         if self.cd["model heating fuel"]:
-            self.calc_init_HH()
+            #~ self.calc_init_HH()
             self.calc_savings_opportunities()
             self.calc_init_consumption()
             self.calc_baseline_fuel_consumption()
@@ -255,8 +270,8 @@ class ResidentialBuildings(AnnualSavings):
         """
         rd = self.comp_specs['data'].T
         self.fuel_oil_percent = rd["Fuel Oil"]
-        HH = self.forecast.get_households(self.start_year,self.end_year)
-        
+        HH = self.households
+        #~ print HH
         area = np.float64(rd["pre_avg_area"])
         EUI = np.float64(rd["pre_avg_EUI"])
         
@@ -295,7 +310,7 @@ class ResidentialBuildings(AnnualSavings):
         """
         calculate the baseline kWh consumption for a community 
         """
-        HH = self.forecast.get_households(self.start_year,self.end_year)
+        HH = self.households
         self.baseline_kWh_consumption = self.avg_kWh_consumption_per_HH * HH 
         
     def calc_baseline_fuel_cost (self):
