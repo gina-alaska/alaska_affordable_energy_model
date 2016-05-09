@@ -345,16 +345,28 @@ class Forecast (object):
                 elif fuel == 'generation wind':
                     generation = self.cd.get_item('community',
                                                   'wind generation limit')
-                    if generation == 0:
-                        temp = gen_types[gen_types[fuel].notnull()]\
+                                                  
+                    measured = gen_types[gen_types[fuel].notnull()]\
                                                     [fuel].values[-3:]
-                        temp = np.mean(temp)
-                        if np.isnan(temp):
+                    measured = np.mean(measured)
+                    if generation == 0:
+                        
+                        if np.isnan(measured):
                             generation = 0
                         else:
                             msg = "generation(wind) using rolling average"
                             self.diagnostics.add_note('forecast', msg)
                             rolling = True
+                    else:
+                        wind_capacity_precent = self.cd.get_item('community',
+                                                    'wind generation precent')
+                        test_limit = wind_capacity_precent * generation
+                        if  measured > test_limit:
+                            msg = "generation(wind) using rolling average"
+                            self.diagnostics.add_note('forecast', msg)
+                            rolling = True
+                        else:
+                            generation = test_limit
                             
                 else:
                     if current_type == "generation natural gas" and \

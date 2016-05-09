@@ -47,6 +47,7 @@ absolute = """community:
   
   hydro generation limit: IMPORT # kWh 
   wind generation limit: IMPORT # kWh
+  wind generation precent: .2 # max percent of wind generation limit to use
 
   generation numbers: IMPORT
 
