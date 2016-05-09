@@ -1220,7 +1220,7 @@ class Preprocessor (object):
         count_file = os.path.join(self.data_dir,"com_num_buildings.csv")
         try:
             data = int(read_csv(count_file ,comment = "#", index_col = 0,
-                                                 header = 0).ix[self.com_id])
+                                                 header = 0).ix[self.com_id][0])
 
         except KeyError:
             try:
