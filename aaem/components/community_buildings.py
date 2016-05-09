@@ -389,13 +389,11 @@ class CommunityBuildings (AnnualSavings):
         
 
                                            
-        self.baseline_fuel_Hoil_consumption = data['Fuel Oil'].sum()
-        self.baseline_fuel_lng_consumption = data['Natural Gas'].sum()
-        self.baseline_fuel_hr_consumption = data['HW District'].sum()
-        self.baseline_fuel_propane_consumption = data['Propane'].sum()
-        self.baseline_fuel_biomass_consumption = data['Biomass'].sum()
-        
-        
+        self.baseline_fuel_Hoil_consumption = data['Fuel Oil'].fillna(0).sum()
+        self.baseline_fuel_lng_consumption = data['Natural Gas'].fillna(0).sum()
+        self.baseline_fuel_hr_consumption = data['HW District'].fillna(0).sum()
+        self.baseline_fuel_propane_consumption = data['Propane'].fillna(0).sum()
+        self.baseline_fuel_biomass_consumption = data['Biomass'].fillna(0).sum()
         
         
         self.baseline_HF_consumption = \

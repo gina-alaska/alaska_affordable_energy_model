@@ -1041,7 +1041,7 @@ class Forecast (object):
             "heating_fuel_water-wastewater_consumed [mmbtu/year]":
                     'heating oil - water wastewater',
             "heating_fuel_non-residential_consumed [mmbtu/year]":
-                    'heating oil - non - residential',
+                    'heating fuel(all) - non - residential',
             "heating_fuel_total_consumed [mmbtu/year]":'total'},
             c_dict)
         fig.subplots_adjust(right=.85)
