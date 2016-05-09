@@ -1,5 +1,13 @@
 #Change Log
 
+## [0.12.0]
+### changed
+- residential buildings component updated for new data format
+- community buildigns component updated for new data format
+- moved # houshold calculation to res component
+- wind generation capacity caclulation
+
+
 ## [0.11.0]
 ### added
 - other fuel types to non-residential buildings component
