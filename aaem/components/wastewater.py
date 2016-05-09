@@ -68,7 +68,11 @@ class WaterWastewaterSystems (AnnualSavings):
         
         
         self.hdd = self.cd["HDD"]
-        self.pop = self.forecast.base_pop
+        
+        
+        #~ print self.comp_specs['data']['value']
+        
+        self.pop = self.forecast.get_population(int(self.comp_specs['data']['value']['Year']))
         self.population_fc = self.forecast.get_population(self.start_year,
                                                                  self.end_year)
 

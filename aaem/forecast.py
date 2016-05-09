@@ -38,23 +38,24 @@ class Forecast (object):
         self.start_year = self.fc_specs["end year"]
         self.end_year = self.fc_specs["end year"]
         
-        yr = self.cd.get_item('residential buildings', 'data').ix['year']
-        self.base_pop = self.fc_specs['population'].ix[yr].values[0][0]
+        #~ yr = self.cd.get_item('residential buildings', 'data').ix['year']
+        #~ self.base_pop = self.fc_specs['population'].ix[yr].values[0][0]
         
         self.forecast_population()
         
         
         if self.cd.get_item("community","model electricity") is False:
-            self.base_res_consumption = None
-            self.base_non_res_consumption = None
-            self.base_total_consumption = None
+            #~ self.base_res_consumption = None
+            #~ self.base_non_res_consumption = None
+            #~ self.base_total_consumption = None
+            pass
         else:
-            kWh = self.fc_specs["electricity"]
-            self.base_res_consumption = \
-                float(kWh['consumption residential'].ix[yr])
-            self.base_non_res_consumption = \
-                float(kWh['consumption non-residential'].ix[yr])
-            self.base_total_consumption = float(kWh['consumption'].ix[yr])
+            #~ kWh = self.fc_specs["electricity"]
+            #~ self.base_res_consumption = \
+                #~ float(kWh['consumption residential'].ix[yr])
+            #~ self.base_non_res_consumption = \
+                #~ float(kWh['consumption non-residential'].ix[yr])
+            #~ self.base_total_consumption = float(kWh['consumption'].ix[yr])
             self.forecast_consumption()
             self.forecast_generation()
             try:
@@ -64,7 +65,7 @@ class Forecast (object):
             self.forecast_average_kW()
         
         self.cpi = self.cd.load_pp_csv("cpi.csv")
-        self.forecast_households()
+        #~ self.forecast_households()
         self.heat_demand_cols = []
         self.heating_fuel_cols = [] 
         self.electric_columns = []

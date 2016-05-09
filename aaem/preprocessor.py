@@ -452,7 +452,8 @@ class Preprocessor (object):
             ww_d['HDD HF'] = 0.0
             ww_d['pop kWh'] = 0.0
             ww_d['pop HF'] = 0.0
-
+            
+            ww_d["Year"] = 2010
             ww_d["assumption type used"] = "UNKNOWN"
             #~ ww_d.to_csv(out_file, mode = 'a')
             df = ww_d
