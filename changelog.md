@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.12.1]
+### fixed
+- community buildings values are now saved properly
+
 ## [0.12.0]
 ### changed
 - residential buildings component updated for new data format
