@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.12.2]
+### changed
+- all of a components code is in the comoponts .py file
+
 ## [0.12.1]
 ### fixed
 - community buildings values are now saved properly

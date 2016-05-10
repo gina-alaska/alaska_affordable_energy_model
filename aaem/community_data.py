@@ -14,9 +14,12 @@ import numpy as np
 ## fc - forecast
 ## com - non-residential buildings 
 from diesel_prices import DieselProjections
-from defaults import absolute
+from defaults import build_defaults
 from diagnostics import diagnostics
 from preprocessor import MODEL_FILES
+from aaem.components import comp_lib
+
+from importlib import import_module
 
 PATH = os.path.join
 class CommunityData (object):
@@ -161,14 +164,22 @@ class CommunityData (object):
         """
         #~ absolutes = os.path.join("absolute_defaults.yaml")
         #~ lib = self.read_config(absolutes)
-        lib = yaml.load(absolute)
-        keys = {}
-        for section in lib:
-            temp = []
-            for key in lib[section]:
-                temp.append(key)
-            keys[section]=temp
-        self.valid_keys = keys
+        
+        try:
+            if self.valid_keys:
+                pass
+        except AttributeError:
+        
+            lib = build_defaults(comp_lib)
+            #~ lib = yaml.load(absolute)
+            #~ print lib
+            keys = {}
+            for section in lib:
+                temp = []
+                for key in lib[section]:
+                    temp.append(key)
+                keys[section]=temp
+            self.valid_keys = keys
         
     def load_input(self, community_file, defaults_file = "defaults"):
         """ 
@@ -187,7 +198,8 @@ class CommunityData (object):
         
         
         #~ absolute_defaults = self.read_config(absolutes)
-        absolute_defaults = yaml.load(absolute)
+        #~ absolute_defaults = yaml.load(absolute)
+        absolute_defaults = build_defaults(comp_lib)
         if defaults_file == "defaults":
             client_defaults = absolute_defaults
         else:
@@ -293,26 +305,48 @@ class CommunityData (object):
                           int(self.load_pp_csv("hdd.csv").values[0][0]))
             except IOError:
                 raise IOError, "Heating Degree Days summary not found"
-
-        if  self.get_item('residential buildings','data') in IMPORT_FLAGS:
-            self.set_item('residential buildings','data',
-                          self.load_pp_csv("residential_data.csv"))
+        
+        
+        for comp in comp_lib:
+            c = comp_lib[comp]
+            #~ print c,',' ,comp
+            lib = import_module("aaem.components." + c).yaml_import_lib
+            keys = lib.keys()
+            for k in keys:
+                if self.get_item(comp, k) in IMPORT_FLAGS:
+                    self.set_item(comp,k, lib[k](self.data_dir))
+        
+        #~ comp_name = 'residential_buildings'
+        #~ lib = import_module("aaem.components." + comp_name).yaml_import_lib
+        
+        #~ lib['data']()
+        #~ self.set_item('residential buildings','data', lib['data'](self.data_dir))
+        
+        
+        
             
-            self.get_item('residential buildings','data').\
-                        ix["Notes"]['value'] = np.nan
+        
+        
+        
+        #~ if  self.get_item('residential buildings','data') in IMPORT_FLAGS:
+            #~ self.set_item('residential buildings','data',
+                          #~ self.load_pp_csv("residential_data.csv"))
             
-            if self.get_item('residential buildings','data').\
-                    ix["average kWh per house"]['value'] == "CALC_FOR_INTERTIE":
-                self.get_item('residential buildings','data').\
-                        ix["average kWh per house"]['value'] = np.nan
+            #~ self.get_item('residential buildings','data').\
+                        #~ ix["Notes"]['value'] = np.nan
+            
+            #~ if self.get_item('residential buildings','data').\
+                    #~ ix["average kWh per house"]['value'] == "CALC_FOR_INTERTIE":
+                #~ self.get_item('residential buildings','data').\
+                        #~ ix["average kWh per house"]['value'] = np.nan
                         
-            self.get_item('residential buildings','data')['value'] =\
-                        self.get_item('residential buildings',
-                                'data')['value'].astype(float)
+            #~ self.get_item('residential buildings','data')['value'] =\
+                        #~ self.get_item('residential buildings',
+                                #~ 'data')['value'].astype(float)
 
-        if self.get_item('water wastewater', "data") in IMPORT_FLAGS:
-            self.set_item('water wastewater', "data", 
-                          self.load_pp_csv("wastewater_data.csv"))
+        #~ if self.get_item('water wastewater', "data") in IMPORT_FLAGS:
+            #~ self.set_item('water wastewater', "data", 
+                          #~ self.load_pp_csv("wastewater_data.csv"))
 
         region = self.load_pp_csv("region.csv")
         if self.get_item('community',"region") in IMPORT_FLAGS:
@@ -343,20 +377,20 @@ class CommunityData (object):
             self.set_item("community", "elec non-fuel cost",
                             np.float(prices.ix["elec non-fuel cost"]))
 
-        if self.get_item('non-residential buildings',
-                                      "com building estimates") in IMPORT_FLAGS:
-            self.set_item('non-residential buildings',"com building estimates",
-                           self.load_pp_csv("com_building_estimates.csv"))
+        #~ if self.get_item('non-residential buildings',
+                                      #~ "com building estimates") in IMPORT_FLAGS:
+            #~ self.set_item('non-residential buildings',"com building estimates",
+                           #~ self.load_pp_csv("com_building_estimates.csv"))
                            
-        if self.get_item('non-residential buildings',
-                                        'com building data') in IMPORT_FLAGS:
-            self.set_item('non-residential buildings','com building data',
-                                    self.load_pp_csv("community_buildings.csv"))
+        #~ if self.get_item('non-residential buildings',
+                                        #~ 'com building data') in IMPORT_FLAGS:
+            #~ self.set_item('non-residential buildings','com building data',
+                                    #~ self.load_pp_csv("community_buildings.csv"))
                                     
-        if self.get_item('non-residential buildings',
-                                        'number buildings') in IMPORT_FLAGS:
-            self.set_item('non-residential buildings','number buildings',
-                int(self.load_pp_csv("com_num_buildings.csv").ix["Buildings"]))
+        #~ if self.get_item('non-residential buildings',
+                                        #~ 'number buildings') in IMPORT_FLAGS:
+            #~ self.set_item('non-residential buildings','number buildings',
+                #~ int(self.load_pp_csv("com_num_buildings.csv").ix["Buildings"]))
                 
         try:
             elec_summary = self.load_pp_csv("yearly_electricity_summary.csv")

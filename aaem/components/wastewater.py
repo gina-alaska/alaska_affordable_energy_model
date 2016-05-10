@@ -9,12 +9,71 @@ created: 2015/09/09
 
 """
 import numpy as np
+import os
+from pandas import DataFrame, read_csv
 
 from annual_savings import AnnualSavings
 from aaem.community_data import CommunityData
 from aaem.forecast import Forecast
 from aaem.diagnostics import diagnostics
 import aaem.constants as constants
+
+"""water wastewater:
+  enabled: False
+  lifetime:  ABSOLUTE DEFAULT # number years <int>  
+  start year:  ABSOLUTE DEFAULT # start year <int>
+  audit cost: 10000 # price <float> (ex. 10000)
+  average refit cost: 360.00 # cost/per person <float>
+  data: IMPORT
+
+  electricity refit reduction: .25 # decimal precent <float> percent saved by preforming electricity refit 
+  heating fuel refit reduction: .35 # decimal precent <float> percent saved by preforming heating fuel refit 
+  
+  
+  heat recovery multiplier:
+    True: .5 # precent as decimal <float> 
+    False: 1.0 # precent as decimal <float> 
+"""
+
+yaml = {'enabled': False,
+        'lifetime': 'ABSOLUTE DEFAULT',
+        'start year': 'ABSOLUTE DEFAULT',
+        'audit cost': 10000,
+        'average refit cost': 360.00,
+        'data': 'IMPORT',
+        'electricity refit reduction': .25,
+        'heating fuel refit reduction': .35,
+        'heat recovery multiplier': {True: .5, False: 1.0}
+            }
+        
+yaml_order = ['enabled','lifetime','start year','audit cost',
+             'average refit cost', 'data', 'electricity refit reduction',
+             'heating fuel refit reduction', 'heat recovery multiplier']
+
+yaml_comments = {
+    'enabled':'',
+    'lifetime': 'number years <int>',
+    'start year': 'start year <int>',
+    'audit cost': 'price <float> (ex. 10000)',
+    'average refit cost': 'cost/per person <float>',
+    'data': '',
+    'electricity refit reduction': 
+        'decimal precent <float> percent saved by preforming electricity refit',
+    'heating fuel refit reduction': 
+        'decimal precent <float> percent saved by heating fuel refit',
+    'heat recovery multiplier': ''
+    }
+
+def process_data_import(data_dir):
+    """
+    """
+    data_file = os.path.join(data_dir, "wastewater_data.csv")
+    
+    data = read_csv(data_file, comment = '#', index_col=0, header=0)    
+    
+    return data
+
+yaml_import_lib = {'data': process_data_import}
 
 class WaterWastewaterSystems (AnnualSavings):
     """
@@ -71,8 +130,9 @@ class WaterWastewaterSystems (AnnualSavings):
         
         
         #~ print self.comp_specs['data']['value']
-        
-        self.pop = self.forecast.get_population(int(self.comp_specs['data']['value']['Year']))
+        #~ print self.comp_specs['data']
+        self.pop = self.forecast.get_population(int(self.comp_specs['data']\
+                                                            ['value']['Year']))
         self.population_fc = self.forecast.get_population(self.start_year,
                                                                  self.end_year)
 

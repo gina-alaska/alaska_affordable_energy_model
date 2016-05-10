@@ -39,7 +39,7 @@ GLOSSARY:
 """
 import numpy as np
 from math import isnan
-from pandas import DataFrame,concat
+from pandas import DataFrame,concat,read_csv
 from copy import deepcopy
 import os
 
@@ -49,6 +49,70 @@ from aaem.forecast import Forecast
 from aaem.diagnostics import diagnostics
 import aaem.constants as constants
 
+"""
+non-residential buildings:
+  enabled: False
+  lifetime: ABSOLUTE DEFAULT # number years <int>  
+  start year: ABSOLUTE DEFAULT # start year <int>
+  average refit cost: 7.00 # cost/sqft. <float>
+  cohort savings multiplier: .26 # pecent as decimal <float>
+  com building data: IMPORT
+  number buildings: IMPORT
+  com building estimates: IMPORT"""
+
+yaml = {'enabled': False,
+        'lifetime': 'ABSOLUTE DEFAULT',
+        'start year': 'ABSOLUTE DEFAULT',
+        'average refit cost': 7.00,
+        'cohort savings multiplier': .26,
+        'com building data': 'IMPORT',
+        'number buildings': 'IMPORT',
+        'com building estimates': 'IMPORT'
+            }
+            
+yaml_order = {'enabled','lifetime','start year','average refit cost',
+                 'cohort savings multiplier','com building data',
+                 'number buildings', 'com building estimates'
+            }
+
+yaml_comments = {'enabled': '',
+                'lifetime': 'number years <int>',
+                'start year': 'start year <int>',
+                'average refit cost': 'cost/sqft. <float>',
+                'cohort savings multiplier': 'pecent as decimal <float>',
+                'com building data': '',
+                'number buildings': '',
+                'com building estimates': ''
+            }
+            
+def load_building_data (data_dir):
+    """ Function doc """
+    data_file = os.path.join(data_dir, "community_buildings.csv")
+    
+    data = read_csv(data_file, comment = '#', index_col=0, header=0)
+    
+    return data
+    
+def load_num_buildings (data_dir):
+    """ Function doc """
+    data_file = os.path.join(data_dir, "com_num_buildings.csv")
+    
+    data = read_csv(data_file, comment = '#', index_col=0, header=0)
+    
+    return int(data.ix["Buildings"])
+
+def load_building_estimates (data_dir):
+    """ Function doc """
+    data_file = os.path.join(data_dir, "com_building_estimates.csv")
+    
+    data = read_csv(data_file, comment = '#', index_col=0, header=0)
+    
+    return data
+    
+            
+yaml_import_lib = {'com building data': load_building_data,
+                   'number buildings': load_num_buildings,
+                   'com building estimates': load_building_estimates}
 
 class CommunityBuildings (AnnualSavings):
     """

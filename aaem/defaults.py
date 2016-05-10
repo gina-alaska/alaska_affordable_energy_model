@@ -4,6 +4,69 @@ defaults.py
 this file contains default yaml file info as strings
 """
 
+from importlib import import_module
+
+def importer (comp_name):
+    return import_module("aaem.components." + comp_name).yaml
+
+#~ a = importer('community_buildings')
+def build_defaults (comp_lib):
+    """
+    """
+    yml = {}
+    yml['community'] = {
+                        'name': 'ABSOLUTE DEFAULT NAME',
+                        'region': 'IMPORT',
+                        'current year': 'ABSOLUTE DEFAULT',
+                        'model financial': True,
+                        'model electricity': True,
+                        'model heating fuel': True,
+                        'natural gas used': False,
+                        'interest rate': .05, 
+                        'discount rate': .03,
+                        'heating fuel premium': 'IMPORT',
+                        'diesel generation efficiency': 'IMPORT',
+                        'generation': 'IMPORT',
+                        'consumption kWh': 'ABSOLUTE DEFAULT',
+                        'consumption HF': 'IMPORT',
+                        'line losses': 'IMPORT',
+                        'max line losses': .4,
+                        'default line losses': .1,
+                        'res non-PCE elec cost': 'IMPORT',
+                        'elec non-fuel cost': 'IMPORT',
+                        'HDD': 'IMPORT',
+                        'diesel prices': 'IMPORT',
+                        'electric non-fuel prices': 'IMPORT',
+                        'propane price': 'IMPORT',
+                        'biomass price': 'IMPORT',
+                        'natural gas price': 0,
+                        'hydro generation limit': 'IMPORT' ,
+                        'wind generation limit': 'IMPORT' ,
+                        'wind generation precent': .2,
+                        'generation numbers': 'IMPORT'
+                        }
+    yml['forecast'] = {'end year': 'ABSOLUTE DEFAULT',
+                       'population': 'IMPORT',
+                       'electricity': 'IMPORT' 
+                      }
+                      
+    yml['construction multipliers'] = {
+              "Aleutians": 1.4 ,
+              "Bering Straits": 1.8,
+              "Bristol Bay": 1.25 ,
+              "Copper River/Chugach": 1.1 ,
+              "Kodiak": 1.18,
+              "Lower Yukon-Kuskokwim": 1.6 ,
+              "North Slope": 1.8 ,
+              "Northwest Arctic": 1.7 ,
+              "Southeast": 1.15 ,
+              "Yukon-Koyukuk/Upper Tanana": 1.4 
+              }
+    for comp in comp_lib:
+        yml[comp] = importer(comp_lib[comp])
+    return yml
+
+
 ### This is the absolute default yaml string used by the model
 absolute = """community: 
   name: ABSOLUTE DEFAULT NAME # community name <string>

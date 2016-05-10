@@ -7,7 +7,7 @@ created 2015/09/30
 """
 import numpy as np
 from math import isnan
-from pandas import DataFrame
+from pandas import DataFrame, read_csv
 
 from annual_savings import AnnualSavings
 from aaem.community_data import CommunityData
@@ -15,6 +15,42 @@ from aaem.forecast import Forecast
 from aaem.diagnostics import diagnostics
 import aaem.constants as constants
 import os
+
+
+yaml = {'enabled': False,
+        'min kWh per household': 6000,
+        'lifetime': 'ABSOLUTE DEFAULT',
+        'start year': 'ABSOLUTE DEFAULT',
+        'average refit cost': 11000,
+        'data': 'IMPORT'}
+        
+yaml_order = ['enabled', 'min kWh per household', 'lifetime', 'start year',
+              'average refit cost', 'data']
+
+yaml_comments = {'enabled': '',
+        'min kWh per household': 
+                'minimum average consumed kWh/year per house<int>',
+        'lifetime': 'number years <int>',
+        'start year': 'start year <int>',
+        'average refit cost': 'cost/refit <float>',
+        'data': 'IMPORT'}
+        
+def process_data_import(data_dir):
+    """
+    """
+    data_file = os.path.join(data_dir, "residential_data.csv")
+    
+    data = read_csv(data_file, comment = '#', index_col=0, header=0)
+    
+    data.ix["Notes"]['value'] = np.nan
+    if data.ix["average kWh per house"]['value'] == "CALC_FOR_INTERTIE":
+        data.ix["average kWh per house"]['value'] = np.nan
+    data['value'] = data['value'].astype(float) 
+    
+    
+    return data
+        
+yaml_import_lib = {'data': process_data_import}
 
 class ResidentialBuildings(AnnualSavings):
     """
