@@ -45,7 +45,12 @@ yaml = {'enabled': False,
         'heating fuel refit reduction': .35,
         'heat recovery multiplier': {True: .5, False: 1.0}
             }
-        
+
+yaml_defaults = {'enabled': True,
+        'lifetime': 15,
+        'start year': 2017,
+        }
+
 yaml_order = ['enabled','lifetime','start year','audit cost',
              'average refit cost', 'data', 'electricity refit reduction',
              'heating fuel refit reduction', 'heat recovery multiplier']

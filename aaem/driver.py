@@ -537,7 +537,7 @@ def write_defaults(root, my_defaults = None):
     #TODO use my defaults instead
     def_file = open(os.path.join(root, "config", 
                                     "test_defaults.yaml"), 'w')
-    def_file.write(defaults.for_setup)
+    def_file.write(yaml.dump(defaults.build_setup_defaults(comp_lib)))
     def_file.close()
                 
 def write_driver (com_id, root):

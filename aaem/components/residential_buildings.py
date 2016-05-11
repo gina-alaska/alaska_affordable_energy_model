@@ -24,6 +24,11 @@ yaml = {'enabled': False,
         'average refit cost': 11000,
         'data': 'IMPORT'}
         
+yaml_defaults = {'enabled': True,
+        'lifetime': 15,
+        'start year': 2017,
+        }
+        
 yaml_order = ['enabled', 'min kWh per household', 'lifetime', 'start year',
               'average refit cost', 'data']
 

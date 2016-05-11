@@ -70,6 +70,11 @@ yaml = {'enabled': False,
         'com building estimates': 'IMPORT'
             }
             
+yaml_defaults = {'enabled': True,
+        'lifetime': 15,
+        'start year': 2017,
+        }
+            
 yaml_order = {'enabled','lifetime','start year','average refit cost',
                  'cohort savings multiplier','com building data',
                  'number buildings', 'com building estimates'

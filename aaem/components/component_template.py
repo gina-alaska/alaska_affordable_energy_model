@@ -29,6 +29,26 @@ import aaem.constants as constants
 COMPONENT_NAME = "<name>"
 
 
+
+
+yaml = {'enabled': False,
+        'lifetime': 'ABSOLUTE DEFAULT',
+        'start year': 'ABSOLUTE DEFAULT',
+        }
+        
+yaml_order = ['enabled', 'lifetime', 'start year']
+
+yaml_comments = {'enabled': '',
+        'lifetime': 'number years <int>',
+        'start year': 'start year <int>'}
+        
+def process_data_import(data_dir):
+    """
+    """
+    pass
+        
+yaml_import_lib = {}
+
 #   do a find and replace on ComponentName to name of component 
 # (i.e. 'ResidentialBuildings')
 class ComponentName (AnnualSavings):
@@ -115,7 +135,7 @@ class ComponentName (AnnualSavings):
         self.retrofit_kWh_consumption = np.zeros(self.project_life)
     
     # use this or change it see NOTE* above
-    def calc_savings_kWh_consumption():
+    def calc_savings_kWh_consumption(self):
         """
         calculate the savings in electricity consumption(in kWh) for a community
         
@@ -141,7 +161,7 @@ class ComponentName (AnnualSavings):
         self.retrofit_fuel_consumption = np.zeros(self.project_life)
         
     # use this or change it see NOTE* above
-    def calc_savings_fuel_consumption():
+    def calc_savings_fuel_consumption(self):
         """
         calculate the savings in fuel consumption(in mmbtu) for a community
         
@@ -168,7 +188,7 @@ class ComponentName (AnnualSavings):
         """
         """
         price = 0 
-        self.annual_electric_saving = self.savings_kWh_consumption * price
+        self.annual_electric_savings = self.savings_kWh_consumption * price
         
         
     # Make this do sruff. Remember the different fuel type prices if using
@@ -176,7 +196,7 @@ class ComponentName (AnnualSavings):
         """
         """
         price = 0 
-        self.annual_heating_saving = self.savings_fuel_consumption * price
+        self.annual_heating_savings = self.savings_fuel_consumption * price
 
 
 

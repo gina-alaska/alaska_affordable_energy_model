@@ -67,6 +67,23 @@ def build_defaults (comp_lib):
     return yml
 
 
+def build_setup_defaults (comp_lib):
+    """
+    """
+    yml = {}
+    yml['community'] = {'current year': 2014,
+                        'model financial': True,
+                        'model electricity': True,
+                        'model heating fuel': True,
+                        'interest rate': .05, 
+                        'discount rate': .03,
+                        }
+    yml['forecast'] = {'end year': 2040}
+                      
+    for comp in comp_lib:
+        yml[comp] = import_module("aaem.components." + comp_lib[comp]).yaml_defaults
+    return yml
+
 ### This is the absolute default yaml string used by the model
 absolute = """community: 
   name: ABSOLUTE DEFAULT NAME # community name <string>
