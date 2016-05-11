@@ -8,7 +8,8 @@ a template for adding components
 """
 import numpy as np
 from math import isnan
-from pandas import DataFrame,concat
+from pandas import DataFrame,concat,read_csv
+import os
 
 from annual_savings import AnnualSavings
 from aaem.community_data import CommunityData
@@ -28,26 +29,56 @@ import aaem.constants as constants
 yaml = {'enabled': False,
         'lifetime': 'ABSOLUTE DEFAULT',
         'start year': 'ABSOLUTE DEFAULT',
+        'average load limit': 100.0,
+        'percent generation to offset': .30,
+        'data':'IMPORT',
+        'minimum wind class': 3,
+        'wind cost': 'UNKNOWN',
+        'secondary load': True,
+        'secondary load cost': 200000,
+        'road needed for transmission line' : True,
+        'transmission line distance': 0,
+        'transmission line cost': { True:500000, False:250000},
+        'assumed capacity factor': .28,
+        'cost > 1000kW': 5801,
+        'cost < 1000kW': 10897,
+        
         }
         
 yaml_defaults = {'enabled': True,
         'lifetime': 15,
         'start year': 2017,
+        'average load limit': 0.0, # 0 For testing purposes REMOVE
         }
         
 yaml_order = ['enabled', 'lifetime', 'start year']
 
 yaml_comments = {'enabled': '',
         'lifetime': 'number years <int>',
-        'start year': 'start year <int>'}
+        'start year': 'start year <int>',
+        'average load limit': 
+                'lower limint in kW on averge load reqired to do project',
+        'percent generation to offset': '',
+        'minimum wind class': 'minimum wind class for feasability',
+        'secondary load': '',
+        'secondary load cost': '',
+        'road needed for transmission line':'',
+        'transmission line distance': 'miles',
+        'transmission line cost': 'cost/mile',
+        'assumed capacity factor': "TODO read in preprocessor",
+        }
        
         
 def process_data_import(data_dir):
     """
     """
-    pass
+    data_file = os.path.join(data_dir, "wind_power_data.csv")
+    
+    data = read_csv(data_file, comment = '#', index_col=0, header=0)
+    
+    return data['value'].to_dict()
         
-yaml_import_lib = {}
+yaml_import_lib = {'data':process_data_import}
 
 
 
@@ -85,6 +116,7 @@ class WindPower(AnnualSavings):
                         self.forecast.end_year - self.comp_specs["start year"])
                         
         ### ADD other intiatzation stuff
+        self.generation = self.forecast.get_generation(self.start_year)
         
     
     def run (self):
@@ -97,40 +129,138 @@ class WindPower(AnnualSavings):
             TODO: define output values. 
             the model is run and the output values are available
         """
-        if self.cd["model electricity"]:
-            # change these below
-            self.calc_baseline_kWh_consumption()
-            self.calc_retrofit_kWh_consumption()
-            self.calc_savings_kWh_consumption()
-            # NOTE*:
-            #   some times is it easier to find the savings and use that to
-            # calculate the retro fit values. If so, flip the function calls 
-            # around, and change the functionality of
-            # self.calc_savings_kWh_consumption() below
+        #~ print self.comp_specs['data']
+        self.calc_average_load()
+        self.calc_generation_offest_proposed()
+        if self.average_load > self.comp_specs['average load limit'] and\
+            self.comp_specs['data']['Assumed Wind Class'] > \
+                self.comp_specs['minimum wind class'] and \
+                self.generation_offest_proposed > 0:
+        # if the average load is greater that the lower limit run this component
+        # else skip    
             
+            if self.cd["model electricity"]:
+                # change these below
+                self.calc_baseline_kWh_consumption()
+                self.calc_retrofit_kWh_consumption()
+                self.calc_savings_kWh_consumption()
+                # NOTE*:
+                #   some times is it easier to find the savings and use that to
+                # calculate the retro fit values. If so, flip the function calls 
+                # around, and change the functionality of
+                # self.calc_savings_kWh_consumption() below
+                
+            
+            if self.cd["model heating fuel"]:
+                # change these below
+                self.calc_baseline_fuel_consumption()
+                self.calc_retrofit_fuel_consumption()
+                self.calc_savings_fuel_consumption()
+                # see NOTE*
         
-        if self.cd["model heating fuel"]:
-            # change these below
-            self.calc_baseline_fuel_consumption()
-            self.calc_retrofit_fuel_consumption()
-            self.calc_savings_fuel_consumption()
-            # see NOTE*
-        
-        if self.cd["model financial"]:
-            # AnnualSavings functions (don't need to write)
-            self.get_diesel_prices()
-            
-            # change these below
-            self.calc_capital_costs()
-            self.calc_annual_electric_savings()
-            self.calc_annual_heating_savings()
-            
-            # AnnualSavings functions (don't need to write)
-            self.calc_annual_total_savings()
-            self.calc_annual_costs(self.cd['interest rate'])
-            self.calc_annual_net_benefit()
-            self.calc_npv(self.cd['discount rate'], self.cd["current year"])
+            if self.cd["model financial"]:
+                # AnnualSavings functions (don't need to write)
+                self.get_diesel_prices()
+                
+                # change these below
+                self.calc_capital_costs()
+                self.calc_annual_electric_savings()
+                self.calc_annual_heating_savings()
+                
+                # AnnualSavings functions (don't need to write)
+                self.calc_annual_total_savings()
+                self.calc_annual_costs(self.cd['interest rate'])
+                self.calc_annual_net_benefit()
+                self.calc_npv(self.cd['discount rate'], self.cd["current year"])
+        else:
+            self.diagnostics.add_note(self.component_name, 
+            "communites average load is not large enough to consider project")
  
+ 
+    def calc_average_load (self):
+        """ Function doc """
+        
+        self.average_load = self.generation / constants.hours_per_year
+        
+    def calc_generation_offest_proposed (self):
+        """
+        """
+        self.generation_offest_proposed = 0
+        offset = self.generation*self.comp_specs['percent generation to offset']
+        
+        if self.comp_specs['data']['Wind Potential'] in ['H','M'] and \
+           int(self.comp_specs['data']['existing wind']) < \
+                (round(offset/25) * 25):
+            self.generation_offest_proposed = round(offset/25) * 25 - \
+                    int(self.comp_specs['data']['existing wind'])
+        
+        self.total_wind_generation = self.generation_offest_proposed + \
+                            int(self.comp_specs['data']['existing wind'])
+        
+        
+        self.proposed_generation_wind =  self.generation_offest_proposed * \
+                                    self.comp_specs['assumed capacity factor']*\
+                                    constants.hours_per_year
+        print self.generation_offest_proposed
+        print self.total_wind_generation 
+        
+    def calc_transmission_losses (self):
+        """ Function doc """
+        self.transmission_losses = self.proposed_generation_wind * \
+                                                        self.cd['line losses']
+        
+    def calc_exess_energy (self):
+        """"""
+        self.exess_energy = \
+            (self.proposed_generation_wind - self.transmission_losses) * 15
+            
+    def calc_net_generation_wind (self):
+        """ Function doc """
+        self.net_generation_wind = self.proposed_generation_wind  - \
+                                    self.transmission_losses  -\
+                                    self.exess_energy
+            
+    def calc_electric_diesel_reduction (self):
+        """ Function doc """
+        gen_eff = self.cd["diesel generation efficiency"]
+        if gen_eff>13:
+            gen_eff = 13
+            
+        self.electric_diesel_reduction = self.net_generation_wind / gen_eff
+        
+    def calc_diesel_equiv_captured (self):
+        """
+        """
+        if self.proposed_generation_wind == 0:
+            exess_percent = 0
+        else:
+            exess_percent = self.exess_energy / self.proposed_generation_wind
+        exess_captured_percent = exess_percent * .7
+        if self.comp_specs['secondary load']:
+            net_exess_energy = exess_captured_percent * \
+                                self.proposed_generation_wind 
+        else:
+            net_exess_energy = 0
+        #todo fix conversion
+        self.diesel_equiv_captured = net_exess_energy * 0.99/0.138/0.8/293  
+        
+    def calc_loss_heat_recovery (self):
+        """ """
+        hr_used = True # TODO add to yaml
+        self.loss_heat_recovery = 0
+        if hr_used:
+            self.loss_heat_recovery = self.electric_diesel_reduction * .15 # TODO
+        
+    def calc_reduction_diesel_used (self):
+        """ """
+        self.reduction_diesel_used = self.diesel_equiv_captured - \
+                                     self.loss_heat_recovery
+                                     
+    def calc_maintainance_cost (self):
+        """ """
+        self.maintainance_cost = .01 * self.capital_costs
+        
+        
     # Make this do stuff
     def calc_baseline_kWh_consumption (self):
         """ Function doc """
@@ -187,7 +317,29 @@ class WindPower(AnnualSavings):
     # Make this do stuff
     def calc_capital_costs (self):
         """ Function Doc"""
-        self.capital_costs = np.nan
+        powerhouse_control_cost = 0
+        if not self.cd['switchgear suatable for RE']:
+            powerhouse_control_cost = self.cd['switchgear cost']
+        
+        road_needed = self.comp_specs['road needed for transmission line']
+        transmission_line_cost = self.comp_specs['transmission line distance']*\
+            self.comp_specs['transmission line cost'][road_needed]
+        
+        secondary_load_cost = 0
+        if self.comp_specs['secondary load']:
+            secondary_load_cost = self.comp_specs['secondary load cost']
+            
+        if str(self.comp_specs['wind cost']) != 'UNKNOWN':
+            wind_cost = str(self.comp_specs['wind cost'])
+        else:
+            if self.generation_offest_proposed >= 1000:
+                cost = self.comp_specs['cost > 1000kW']
+            else:
+                cost = self.comp_specs['cost < 1000kW']
+            wind_cost = self.generation_offest_proposed * cost
+        
+        self.capital_costs = powerhouse_control_cost + transmission_line_cost +\
+                             secondary_load_cost
         
     
     # Make this do stuff

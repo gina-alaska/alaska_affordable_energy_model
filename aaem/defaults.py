@@ -43,7 +43,9 @@ def build_defaults (comp_lib):
                         'hydro generation limit': 'IMPORT' ,
                         'wind generation limit': 'IMPORT' ,
                         'wind generation precent': .2,
-                        'generation numbers': 'IMPORT'
+                        'generation numbers': 'IMPORT',
+                        'switchgear suatable for RE': False,
+                        'switchgear cost': 150000 
                         }
     yml['forecast'] = {'end year': 'ABSOLUTE DEFAULT',
                        'population': 'IMPORT',
