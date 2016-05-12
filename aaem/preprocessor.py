@@ -12,25 +12,13 @@ import numpy as np
 #~ from forecast import growth
 from datetime import datetime
 
+from importlib import import_module
+
+from aaem.components import comp_lib
 
 GENERATION_AVG = .03
 
-MODEL_FILES = {"DIESEL_PRICES": "diesel_fuel_prices.csv",
-               "HDD": "hdd.csv",
-               "CPI": "cpi.csv",
-               "COM_BUILDING_EST": "com_building_estimates.csv",
-               "COM_BUILDING_INV": "community_buildings.csv",
-               "COM_BUILFING_COUNT": "com_num_buildings.csv",
-               "INTERTIES": "interties.csv",
-               "PRICES": "prices.csv",
-               "REGION": "region.csv",
-               "RES_DATA": "residential_data.csv",
-               "WWW_DATA": "wastewater_data.csv",
-               "POPULATION": "population.csv",
-               "ELECTRICITY": "yearly_electricity_summary.csv",
-               "PRICES_NONELECTRIC": 'prices_non-electric_fixed.csv',
-               "COPIES":'copies.csv',
-               "GENERATION_LIMITS":'generation_limits.csv'}
+
 
 def growth(xs, ys , x):
     """
@@ -57,6 +45,25 @@ def growth(xs, ys , x):
 
 
 class Preprocessor (object):
+    MODEL_FILES = {"DIESEL_PRICES": "diesel_fuel_prices.csv",
+               "HDD": "hdd.csv",
+               "CPI": "cpi.csv",
+               "COM_BUILDING_EST": "com_building_estimates.csv",
+               "COM_BUILDING_INV": "community_buildings.csv",
+               "COM_BUILFING_COUNT": "com_num_buildings.csv",
+               "INTERTIES": "interties.csv",
+               "PRICES": "prices.csv",
+               "REGION": "region.csv",
+               "RES_DATA": "residential_data.csv",
+               "WWW_DATA": "wastewater_data.csv",
+               "POPULATION": "population.csv",
+               "ELECTRICITY": "yearly_electricity_summary.csv",
+               "PRICES_NONELECTRIC": 'prices_non-electric_fixed.csv',
+               "COPIES":'copies.csv',
+               "GENERATION_LIMITS":'generation_limits.csv',
+               }
+    
+    
     def __init__ (self, com_id, data_dir, out_dir, diag = None):
         if diag == None:
             diag = diagnostics()
@@ -119,7 +126,14 @@ class Preprocessor (object):
         self.wastewater()
         self.generation_limits()
 
-
+        for comp in comp_lib:
+            try:
+                l = import_module("aaem.components." +comp_lib[comp]).\
+                                                            preprocess_funcs
+            except AttributeError:
+                continue
+            for fn in l:
+                fn(self)
 
 
 
@@ -1783,34 +1797,40 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
 
     
 
-    diagnostics.add_note("Intertie(diesel_fuel_prices)", "from parent")
-    shutil.copy(os.path.join(parent_dir,"diesel_fuel_prices.csv"), out_dir)
-    diagnostics.add_note("Intertie(hdd)", "from parent")
-    shutil.copy(os.path.join(parent_dir,"hdd.csv"), out_dir)
-    diagnostics.add_note("Intertie(cpi)", "from parent (constant for state)")
-    shutil.copy(os.path.join(parent_dir,"cpi.csv"), out_dir)
-    diagnostics.add_note("Intertie(com_bulding_estimates)", "from parent")
-    shutil.copy(os.path.join(parent_dir,"com_building_estimates.csv"), out_dir)
-    diagnostics.add_note("Intertie(community_buildigns)", "from parent")
-    shutil.copy(os.path.join(parent_dir,"community_buildings.csv"), out_dir)
-    diagnostics.add_note("Intertie(com_num_buildings)", "from parent")
-    shutil.copy(os.path.join(parent_dir,"com_num_buildings.csv"), out_dir)
-    diagnostics.add_note("Intertie(interties)", "from parent")
-    shutil.copy(os.path.join(parent_dir,"interties.csv"), out_dir)
-    diagnostics.add_note("Intertie(prices)", "from parent")
-    shutil.copy(os.path.join(parent_dir,"prices.csv"), out_dir)
-    diagnostics.add_note("Intertie(region)", "from parent")
-    shutil.copy(os.path.join(parent_dir,"region.csv"), out_dir)
-    diagnostics.add_note("Intertie(residential_dat)", "from parent")
-    shutil.copy(os.path.join(parent_dir,"residential_data.csv"), out_dir)
-    diagnostics.add_note("Intertie(wastewater_data)", "from parent")
-    shutil.copy(os.path.join(parent_dir,"wastewater_data.csv"), out_dir)
-    shutil.copy(os.path.join(parent_dir,
-            MODEL_FILES["PRICES_NONELECTRIC"]),out_dir)                  
-    shutil.copy(os.path.join(parent_dir,
-            MODEL_FILES["COPIES"]),out_dir) 
-    shutil.copy(os.path.join(parent_dir,
-            MODEL_FILES["GENERATION_LIMITS"]),out_dir)
-             
+    #~ diagnostics.add_note("Intertie(diesel_fuel_prices)", "from parent")
+    #~ shutil.copy(os.path.join(parent_dir,"diesel_fuel_prices.csv"), out_dir)
+    #~ diagnostics.add_note("Intertie(hdd)", "from parent")
+    #~ shutil.copy(os.path.join(parent_dir,"hdd.csv"), out_dir)
+    #~ diagnostics.add_note("Intertie(cpi)", "from parent (constant for state)")
+    #~ shutil.copy(os.path.join(parent_dir,"cpi.csv"), out_dir)
+    #~ diagnostics.add_note("Intertie(com_bulding_estimates)", "from parent")
+    #~ shutil.copy(os.path.join(parent_dir,"com_building_estimates.csv"), out_dir)
+    #~ diagnostics.add_note("Intertie(community_buildigns)", "from parent")
+    #~ shutil.copy(os.path.join(parent_dir,"community_buildings.csv"), out_dir)
+    #~ diagnostics.add_note("Intertie(com_num_buildings)", "from parent")
+    #~ shutil.copy(os.path.join(parent_dir,"com_num_buildings.csv"), out_dir)
+    #~ diagnostics.add_note("Intertie(interties)", "from parent")
+    #~ shutil.copy(os.path.join(parent_dir,"interties.csv"), out_dir)
+    #~ diagnostics.add_note("Intertie(prices)", "from parent")
+    #~ shutil.copy(os.path.join(parent_dir,"prices.csv"), out_dir)
+    #~ diagnostics.add_note("Intertie(region)", "from parent")
+    #~ shutil.copy(os.path.join(parent_dir,"region.csv"), out_dir)
+    #~ diagnostics.add_note("Intertie(residential_dat)", "from parent")
+    #~ shutil.copy(os.path.join(parent_dir,"residential_data.csv"), out_dir)
+    #~ diagnostics.add_note("Intertie(wastewater_data)", "from parent")
+    #~ shutil.copy(os.path.join(parent_dir,"wastewater_data.csv"), out_dir)
+    #~ shutil.copy(os.path.join(parent_dir,
+            #~ MODEL_FILES["PRICES_NONELECTRIC"]),out_dir)                  
+    #~ shutil.copy(os.path.join(parent_dir,
+            #~ MODEL_FILES["COPIES"]),out_dir) 
+    #~ shutil.copy(os.path.join(parent_dir,
+            #~ MODEL_FILES["GENERATION_LIMITS"]),out_dir)
+    #~ shutil.copy(os.path.join(parent_dir,
+            #~ MODEL_FILES["WIND_DATA"]),out_dir)  
+            
+    for f in Preprocessor.MODEL_FILES:
+        shutil.copy(os.path.join(parent_dir,
+            Preprocessor.MODEL_FILES[f]),out_dir) 
+              
 
     return pp_data

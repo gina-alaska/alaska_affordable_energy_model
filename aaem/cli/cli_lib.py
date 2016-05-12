@@ -7,7 +7,7 @@ import os
 import shutil
 from pandas import read_csv, concat
 from aaem import summaries
-
+from aaem.components import get_raw_data_files
 
 
 def copy_model_data (repo, raw):
@@ -46,6 +46,12 @@ def copy_model_data (repo, raw):
     shutil.copy(os.path.join(repo, "propane_price_estimates.csv"), raw)
     shutil.copy(os.path.join(repo, "biomass_price_estimates.csv"), raw)
     shutil.copy(os.path.join(repo, "generation_limits.csv"), raw)
+    #~ shutil.copy(os.path.join(repo, "wind_data_existing.csv"), raw)
+    #~ shutil.copy(os.path.join(repo, "wind_data_potential.csv"), raw)
+    
+    for f in get_raw_data_files():
+        shutil.copy(os.path.join(repo, f), raw)
+    
   
 def generate_summaries (coms, base):
     """

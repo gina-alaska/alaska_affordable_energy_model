@@ -7,7 +7,7 @@ from community_data import CommunityData
 from forecast import Forecast
 import plot
 from diagnostics import diagnostics
-from preprocessor import preprocess, MODEL_FILES
+from preprocessor import preprocess, Preprocessor
 import defaults
 from constants import mmbtu_to_kWh, mmbtu_to_gal_HF
 import shutil
@@ -447,7 +447,7 @@ def setup (coms, data_repo, model_root,
             except OSError:
                     pass
 
-            for fname in MODEL_FILES.values():
+            for fname in Preprocessor.MODEL_FILES.values():
                 try:
                         
                     shutil.copy(os.path.join(model_root, 'setup',
@@ -489,7 +489,7 @@ def setup (coms, data_repo, model_root,
                 except OSError:
                     pass
 
-                for fname in MODEL_FILES.values():
+                for fname in Preprocessor.MODEL_FILES.values():
                     try:
                         
                         shutil.copy(os.path.join(model_root, 'setup',
