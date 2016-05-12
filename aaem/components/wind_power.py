@@ -46,9 +46,9 @@ yaml = {'enabled': False,
         }
         
 yaml_defaults = {'enabled': True,
-        'lifetime': 15,
+        'lifetime': 20,
         'start year': 2017,
-        'average load limit': 0.0, # 0 For testing purposes REMOVE
+        #~ 'average load limit': 0.0, # 0 For testing purposes REMOVE
         }
         
 yaml_order = ['enabled', 'lifetime', 'start year']
@@ -178,7 +178,7 @@ class WindPower(AnnualSavings):
                         self.forecast.end_year - self.comp_specs["start year"])
                         
         ### ADD other intiatzation stuff
-        self.generation = self.forecast.get_generation(self.start_year)
+        
         
     
     def run (self):
@@ -192,11 +192,19 @@ class WindPower(AnnualSavings):
             the model is run and the output values are available
         """
         #~ #~ print self.comp_specs['data']
-        self.calc_average_load()
-        self.calc_generation_wind_proposed()
+        try:
+            self.generation = self.forecast.get_generation(self.start_year)
+            self.calc_average_load()
+            self.calc_generation_wind_proposed()
+        except:
+            self.diagnostics.add_warning(self.component_name, 
+            "could not be run")
+            return
+ 
+        
         #~ #~ print self.comp_specs['data']['Assumed Wind Class']
         if self.average_load > self.comp_specs['average load limit'] and\
-            int(float(self.comp_specs['data']['Assumed Wind Class'])) > \
+            float(self.comp_specs['data']['Assumed Wind Class']) > \
                 self.comp_specs['minimum wind class'] and \
                 self.load_offset_proposed > 0:
         # if the average load is greater that the lower limit run this component
@@ -249,7 +257,7 @@ class WindPower(AnnualSavings):
             self.diagnostics.add_note(self.component_name, 
             "communites average load is not large enough to consider project")
         #~ print self.benefit_cost_ratio
- 
+        
     def calc_average_load (self):
         """
             calculate the average load of the system
@@ -332,7 +340,7 @@ class WindPower(AnnualSavings):
             calculate the reduction in diesel due to the proposed wind
         """
         gen_eff = self.cd["diesel generation efficiency"]
-        if gen_eff>13:
+        if gen_eff>13 or gen_eff==0:
             gen_eff = 13
             
         self.electric_diesel_reduction = self.net_generation_wind / gen_eff
