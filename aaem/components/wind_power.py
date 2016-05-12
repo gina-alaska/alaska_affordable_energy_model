@@ -251,7 +251,7 @@ class WindPower(AnnualSavings):
                 self.calc_annual_costs(self.cd['interest rate'])
                 self.calc_annual_net_benefit()
                 self.calc_npv(self.cd['discount rate'], self.cd["current year"])
-                print self.benefit_cost_ratio
+                #~ print self.benefit_cost_ratio
         else:
             #~ print "wind project not feasiable"
             self.diagnostics.add_note(self.component_name, 
