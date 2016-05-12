@@ -41,13 +41,41 @@ yaml_order = ['enabled', 'lifetime', 'start year']
 yaml_comments = {'enabled': '',
         'lifetime': 'number years <int>',
         'start year': 'start year <int>'}
-        
+       
+# samole yaml import interface
 def process_data_import(data_dir):
     """
     """
     pass
+    
+yaml_import_lib = {}# fill in
+    
+# fill in
+def preprocess_header (ppo):
+    """
+    """
+    return  "# " + ppo.com_id + " compdata data\n"+ \
+            ppo.comments_dataframe_divide
+    
+# complete
+def preprocess (ppo):
+    """"""
+    
+    out_file = os.path.join(ppo.out_dir,"wind_power_data.csv")
+
+    fd = open(out_file,'w')
+    fd.write(preprocess_header(ppo))
+    fd.close()
+
+    # create data and uncomment this
+    #~ data.to_csv(out_file, mode = 'a',header=False)
+    
+    ppo.MODEL_FILES['COMP_DATA'] = "comp_data.csv" # change this
+
+raw_data_files = []# fillin
+preprocess_funcs = [preprocess]    
+    
         
-yaml_import_lib = {}
 
 #   do a find and replace on ComponentName to name of component 
 # (i.e. 'ResidentialBuildings')
