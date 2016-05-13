@@ -594,7 +594,17 @@ class CommunityData (object):
         self.set_item("community","generation numbers", "IMPORT")
         self.set_item("community","generation", "IMPORT")
         
+        for comp in comp_lib:
+            c = comp_lib[comp]
+            try:
+                lis= import_module("aaem.components." + c).yaml_not_to_save
+            except AttributeError:
+                continue
+            for item in lis:
+                self.set_item(comp,item, "IMPORT")
+        
         fd = open(fname, 'w')
+        
         text = yaml.dump(self.model_inputs, default_flow_style=False) 
         comment = \
         ("# some of the items may reference files the input data directory\n"

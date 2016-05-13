@@ -10,6 +10,7 @@ import numpy as np
 from math import isnan
 from pandas import DataFrame,concat,read_csv
 import os
+import shutil
 
 from annual_savings import AnnualSavings
 from aaem.community_data import CommunityData
@@ -37,18 +38,14 @@ yaml = {'enabled': False,
         'secondary load': True,
         'secondary load cost': 200000,
         'road needed for transmission line' : True,
-        'transmission line distance': 0,
+        'transmission line distance': 1,
         'transmission line cost': { True:500000, False:250000},
-        #~ 'assumed capacity factor': .28,
-        'cost > 1000kW': 5801,
-        'cost < 1000kW': 10897,
-        
+        'costs': 'IMPORT'
         }
         
 yaml_defaults = {'enabled': True,
         'lifetime': 20,
         'start year': 2017,
-        #~ 'average load limit': 0.0, # 0 For testing purposes REMOVE
         }
         
 yaml_order = ['enabled', 'lifetime', 'start year']
@@ -63,7 +60,7 @@ yaml_comments = {'enabled': '',
         'secondary load': '',
         'secondary load cost': '',
         'road needed for transmission line':'',
-        'transmission line distance': 'miles',
+        'transmission line distance': 'miles defaults to 1 mile',
         'transmission line cost': 'cost/mile',
         'assumed capacity factor': "TODO read in preprocessor",
         }
@@ -77,10 +74,23 @@ def process_data_import(data_dir):
     data = read_csv(data_file, comment = '#', index_col=0, header=0)
     
     return data['value'].to_dict()
-  
-  
+    
+def load_wind_costs_table (data_dir):
+    """
+    """
+    data_file = os.path.join(data_dir, "wind_costs.csv")
+    
+    data = read_csv(data_file, comment = '#', index_col=0, header=0)
+    
+    data.index =data.index.astype(str)
+    #~ print data.to_dict()
+    #~ print data['$/kW'].to_dict()
+    #~ print data
+    return data#['$/kW'].to_dict()
+    
 
-yaml_import_lib = {'data':process_data_import}
+yaml_import_lib = {'data':process_data_import,
+                   'costs':load_wind_costs_table}
 
 
 
@@ -118,7 +128,7 @@ def wind_preprocess (ppo):
     try:
         capa = assumptions.ix[int(float(potential.ix['Assumed Wind Class']))]
         capa = capa.ix['REF V-VI Net CF']
-    except TypeError:
+    except (TypeError,KeyError):
         capa = 0
     #~ print capa
     
@@ -136,12 +146,27 @@ def wind_preprocess (ppo):
     potential.to_csv(out_file, mode = 'a',header=False)
     #~ self.wastewater_data = df
     ppo.MODEL_FILES['WIND_DATA'] = "wind_power_data.csv"
+    
+def copy_wind_cost_table(ppo):
+    """
+    copies wind cost tabel file to each community
+    """
+    
+    data_dir = ppo.data_dir
+    out_dir = ppo.out_dir
+    com_id = ppo.com_id
+    shutil.copy(os.path.join(data_dir,"wind_costs.csv"), out_dir)
+    ppo.MODEL_FILES['WIND_COSTS'] = "wind_costs.csv"
 
 raw_data_files = ['wind_class_assumptions.csv',
+                  'wind_costs.csv',
                   "wind_data_existing.csv",
                   "wind_data_potential.csv"]
-preprocess_funcs = [wind_preprocess]
+                  
+preprocess_funcs = [wind_preprocess, copy_wind_cost_table]
 
+
+yaml_not_to_save = ['costs']
 
 
 
@@ -192,6 +217,7 @@ class WindPower(AnnualSavings):
             the model is run and the output values are available
         """
         #~ #~ print self.comp_specs['data']
+        self.run = True
         try:
             self.generation = self.forecast.get_generation(self.start_year)
             self.calc_average_load()
@@ -199,7 +225,9 @@ class WindPower(AnnualSavings):
         except:
             self.diagnostics.add_warning(self.component_name, 
             "could not be run")
+            self.run = False
             return
+            
  
         
         #~ #~ print self.comp_specs['data']['Assumed Wind Class']
@@ -254,6 +282,7 @@ class WindPower(AnnualSavings):
                 #~ print self.benefit_cost_ratio
         else:
             #~ print "wind project not feasiable"
+            self.run = False
             self.diagnostics.add_note(self.component_name, 
             "communites average load is not large enough to consider project")
         #~ print self.benefit_cost_ratio
@@ -412,10 +441,17 @@ class WindPower(AnnualSavings):
         if str(self.comp_specs['wind cost']) != 'UNKNOWN':
             wind_cost = str(self.comp_specs['wind cost'])
         else:
-            if self.load_offset_proposed >= 1000:
-                cost = self.comp_specs['cost > 1000kW']
-            else:
-                cost = self.comp_specs['cost < 1000kW']
+            for i in range(len(self.comp_specs['costs'])):
+                if int(self.comp_specs['costs'].iloc[i].name) < \
+                                            self.load_offset_proposed:
+                    if i == len(self.comp_specs['costs']) - 1:
+                        cost = float(self.comp_specs['costs'].iloc[i])
+                        break
+                    continue
+               
+                cost = float(self.comp_specs['costs'].iloc[i])
+                break
+        
             wind_cost = self.load_offset_proposed * cost
         
         self.capital_costs = powerhouse_control_cost + transmission_line_cost +\
@@ -458,7 +494,97 @@ class WindPower(AnnualSavings):
         #~ print 'self.annual_heating_savings',self.annual_heating_savings
 
 
+    def save_component_csv (self, directory):
+        """
+        save the output from the component.
+        """
+        if not self.run:
+            fname = os.path.join(directory,
+                                   self.component_name + "_output.csv")
+            fname = fname.replace(" ","_")
+        
+            fd = open(fname, 'w')
+            fd.write("Wind Power minimum requirments not met\n")
+            fd.close()
+            return
+        
+        
+        years = np.array(range(self.project_life)) + self.start_year
 
+        df = DataFrame({
+                'Capacity [kW]':self.load_offset_proposed,
+                "Generation [kWh/yr]": self.net_generation_wind,
+                'kWh to secondary load':self.diesel_equiv_captured,
+                'assumed capacity factor':
+                    float(self.comp_specs['data']['assumed capacity factor']),
+                'Diesel saved [Gal/yr]' :self.reduction_diesel_used,
+                'Heat Recovery Lost [Gal/yr]':self.loss_heat_recovery,
+                "Heat Recovery Cost Savings": 
+                                        self.get_heating_savings_costs(),
+                "Electricity Cost Savings": 
+                                    self.get_electric_savings_costs(),
+                "Project Capital Cost": self.get_capital_costs(),
+                "Total Cost Savings": self.get_total_savings_costs(),
+                "Net Benefit": self.get_net_beneft(),
+                       }, years)
+
+        df["community"] = self.cd['name']
+        
+        ol = ["community",'Capacity [kW]','kWh to secondary load','assumed capacity factor','Diesel saved [Gal/yr]','Heat Recovery Lost [Gal/yr]',
+              "Generation [kWh/yr]",
+                "Heat Recovery Cost Savings",
+                "Electricity Cost Savings",
+                "Project Capital Cost",
+                "Total Cost Savings",
+                "Net Benefit"]
+        fname = os.path.join(directory,
+                                   self.component_name + "_output.csv")
+        fname = fname.replace(" ","_")
+        
+        
+        fin_str = "Enabled" if self.cd["model financial"] else "Disabled"
+        fd = open(fname, 'w')
+        fd.write(("# " + self.component_name + " model outputs\n"
+                  #~ "# Finacial Component: " + fin_str + '\n'
+                  #~ "# --- Cost Benefit Information ---\n"
+                  #~ "# NPV Benefits: " + str(self.get_NPV_benefits()) + '\n'
+                  #~ "# NPV Cost: " + str(self.get_NPV_benefits()) + '\n'
+                  #~ "# NPV Net Benefit: " + str(self.get_NPV_benefits()) + '\n'
+                  #~ "# Benefit Cost Ratio: " + str(self.get_BC_ratio()) + '\n'
+                  #~ "# --------------------------------\n"
+          "# year: year for projection \n"
+          "# Heating Oil Consumption Baseline: Heating "
+                                        "Fuel used with no retrofits(mmbtu)\n"
+          "# Heating Oil Consumption Retrofit: Heating "
+                                        "Fuel used with retrofits(mmbtu) \n"
+          "# Heating Oil Consumption Savings:  Heating fuel savings (mmbtu)\n"
+          "# Heating Oil Cost Baseline: Cost Heating "
+                                        "Fuel used with no retrofits \n"
+          "# Heating Oil Cost Retrofit: Cost Heating "
+                                        "Fuel used with retrofits \n"
+          "# Heating Oil Cost Savings: Cost Heating Oil savings \n"
+          "# Electricity Consumption Baseline: kWh used with no retrofits \n"
+          "# Electricity Consumption Retrofit: kWh used with retrofits \n"
+          "# Electricity Consumption Savings: kWh savings \n"
+          "# Electricity Cost Baseline: Cost kWh used with no retrofits\n"
+          "# Electricity Cost Retrofit: Cost kWh used with retrofits \n"
+          "# Electricity Cost Savings: Cost kWh savings \n"
+          "# Project Capital Cost: Cost of retrofits \n"
+          "# Total Cost Savings: savings from retrofits\n"
+          "# Net Benefit: benefit from retrofits\n"
+                  )) 
+        fd.close()
+        
+        # save npv stuff
+        df2 = DataFrame([self.get_NPV_benefits(),self.get_NPV_costs(),
+                            self.get_NPV_net_benefit(),self.get_BC_ratio()],
+                       ['NPV Benefits','NPV Cost',
+                            'NPV Net Benefit','Benefit Cost Ratio'])
+        df2.to_csv(fname, header = False, mode = 'a')
+        
+        # save to end of project(actual lifetime)
+        df[ol].ix[:self.actual_end_year].to_csv(fname, index_label="year", 
+                                                                    mode = 'a')
         
     
 component = WindPower
