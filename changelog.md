@@ -1,5 +1,12 @@
 #Change Log
 
+## [0.13.0]
+### added
+- wind component
+
+### changed
+- some component_template.py modifcations 
+
 ## [0.12.2]
 ### changed
 - all of a components code is in the comoponts .py file
