@@ -1,10 +1,7 @@
 """
-component_template.py
+wind_power.py
 
-a template for adding components
-
-
-
+wind power component
 """
 import numpy as np
 from math import isnan
@@ -18,15 +15,7 @@ from aaem.forecast import Forecast
 from aaem.diagnostics import diagnostics
 import aaem.constants as constants
 
-
-## steps for using
-### 1) copy this file as component_name.py and go throug this file folloing the 
-###    commented instructions
-### 2) add new components things to default yaml file
-### 3) add the component to __init__ in this directory
-
-
-
+## List of yaml key/value pairs
 yaml = {'enabled': False,
         'lifetime': 'ABSOLUTE DEFAULT',
         'start year': 'ABSOLUTE DEFAULT',
@@ -42,14 +31,17 @@ yaml = {'enabled': False,
         'transmission line cost': { True:500000, False:250000},
         'costs': 'IMPORT'
         }
-        
+      
+## default values for yaml key/Value pairs
 yaml_defaults = {'enabled': True,
         'lifetime': 20,
         'start year': 2017,
         }
-        
+
+## order to save yaml
 yaml_order = ['enabled', 'lifetime', 'start year']
 
+## comments for the yaml key/value pairs
 yaml_comments = {'enabled': '',
         'lifetime': 'number years <int>',
         'start year': 'start year <int>',
@@ -65,44 +57,64 @@ yaml_comments = {'enabled': '',
         'assumed capacity factor': "TODO read in preprocessor",
         }
        
-        
+## Functions for CommunityData IMPORT keys
 def process_data_import(data_dir):
     """
+    Loads wind_power_data.csv
+    
+    pre:
+        wind_power_data.csv exists at data_dir
+    post:
+        the values in wind_power_data.csv are returned as a dictionary 
     """
     data_file = os.path.join(data_dir, "wind_power_data.csv")
-    
     data = read_csv(data_file, comment = '#', index_col=0, header=0)
-    
     return data['value'].to_dict()
     
 def load_wind_costs_table (data_dir):
     """
+    loads the wind cost table
+    
+    pre:
+        wind_costs.csv exists at data_dir
+    post:
+        the wind cost values are returned as a pandas DataFrame
     """
     data_file = os.path.join(data_dir, "wind_costs.csv")
-    
     data = read_csv(data_file, comment = '#', index_col=0, header=0)
-    
     data.index =data.index.astype(str)
-    #~ print data.to_dict()
-    #~ print data['$/kW'].to_dict()
-    #~ print data
-    return data#['$/kW'].to_dict()
+    return data
     
-
+## library of keys and functions for CommunityData IMPORT Keys
 yaml_import_lib = {'data':process_data_import,
                    'costs':load_wind_costs_table}
 
-
-
+## wind preprocessing functons 
 def wind_preprocess_header (ppo):
     """
+    wind preporcess header
+    
+    pre:
+        ppo: a Preprocessor object
+    post:
+        returns the header for the wind data preprocessed csv file
     """
+    ## TODO Expand
     return  "# " + ppo.com_id + " wind data\n"+ \
             ppo.comments_dataframe_divide
     
-    
 def wind_preprocess (ppo):
-    """"""
+    """
+    Reprocesses the wind data
+    
+    pre:
+        ppo is a Preprocessor object. wind_class_assumptions, 
+    wind_data_existing.csv and wind_data_potential.csv file exist at 
+    ppo.data_dir's location 
+    
+    post:
+        preprocessed wind data is saved at ppo.out_dir as wind_power_data.csv
+    """
     try:
         existing = read_csv(os.path.join(ppo.data_dir,"wind_data_existing.csv"),
                         comment = '#',index_col = 0).ix[ppo.com_id]
@@ -111,8 +123,9 @@ def wind_preprocess (ppo):
         existing = 0
     #~ #~ print existing
     try:
-        potential = read_csv(os.path.join(ppo.data_dir,"wind_data_potential.csv"),
-                        comment = '#',index_col = 0).ix[ppo.com_id]
+        potential = read_csv(os.path.join(ppo.data_dir,
+                                "wind_data_potential.csv"),
+                            comment = '#',index_col = 0).ix[ppo.com_id]
     except KeyError:
         potential = DataFrame(index = ['Wind Potential','Wind-Resource',
                                        'Assumed Wind Class',
@@ -121,8 +134,9 @@ def wind_preprocess (ppo):
                                        'Load','Certainty',
                                        'Estimated Generation','Estimated Cost',
                                        'Note','Resource Note'])
-    assumptions = read_csv(os.path.join(ppo.data_dir,"wind_class_assumptions.csv"),
-                        comment = '#',index_col = 0)
+    assumptions = read_csv(os.path.join(ppo.data_dir,
+                                "wind_class_assumptions.csv"),
+                           comment = '#',index_col = 0)
     
     
     try:
@@ -149,33 +163,34 @@ def wind_preprocess (ppo):
     
 def copy_wind_cost_table(ppo):
     """
-    copies wind cost tabel file to each community
-    """
+    copies wind cost table file to each community
     
+    pre:
+        ppo is a Preprocessor object. wind_costs.csv exists at ppo.data_dir
+    post:
+        wind_costs.csv is copied from ppo.data_dir to ppo.out_dir 
+    """
     data_dir = ppo.data_dir
     out_dir = ppo.out_dir
-    com_id = ppo.com_id
     shutil.copy(os.path.join(data_dir,"wind_costs.csv"), out_dir)
     ppo.MODEL_FILES['WIND_COSTS'] = "wind_costs.csv"
+## end wind preprocessing functions
 
+## List of raw data files required for wind power preproecssing 
 raw_data_files = ['wind_class_assumptions.csv',
                   'wind_costs.csv',
                   "wind_data_existing.csv",
                   "wind_data_potential.csv"]
-                  
+
+## list of wind preprocessing functions
 preprocess_funcs = [wind_preprocess, copy_wind_cost_table]
 
-
+## list of data keys not to save when writing the CommunityData output
 yaml_not_to_save = ['costs']
 
-
-
-# change to component name (i.e. 'residential buildings')
 COMPONENT_NAME = "wind power"
 
 
-#   do a find and replace on WindPowerto name of component 
-# (i.e. 'ResidentialBuildings')
 class WindPower(AnnualSavings):
     """
     """
@@ -230,7 +245,8 @@ class WindPower(AnnualSavings):
             
  
         
-        #~ #~ print self.comp_specs['data']['Assumed Wind Class']
+        #~ #~ print self.comp_specs['data']['Assumed Wind Class'] 
+        # ??? some kind of failure message
         if self.average_load > self.comp_specs['average load limit'] and\
             float(self.comp_specs['data']['Assumed Wind Class']) > \
                 self.comp_specs['minimum wind class'] and \
@@ -319,7 +335,7 @@ class WindPower(AnnualSavings):
         
         if self.comp_specs['data']['Wind Potential'] in ['H','M'] and \
            int(float(self.comp_specs['data']['existing wind'])) < \
-                (round(offset/25) * 25):
+                (round(offset/25) * 25): # ???
             self.load_offset_proposed = round(offset/25) * 25 - \
                     float(self.comp_specs['data']['existing wind'])
         
@@ -350,7 +366,7 @@ class WindPower(AnnualSavings):
             calculate the excess energy
             TODO add more:
         """
-        #TODO: .15
+        #TODO: .15 # ???
         self.exess_energy = \
             (self.generation_wind_proposed - self.transmission_losses) * .15
         #~ print 'self.exess_energy',self.exess_energy
@@ -369,7 +385,8 @@ class WindPower(AnnualSavings):
             calculate the reduction in diesel due to the proposed wind
         """
         gen_eff = self.cd["diesel generation efficiency"]
-        if gen_eff>13 or gen_eff==0:
+        # ???
+        if gen_eff>13 or gen_eff==0 or np.isnan(gen_eff):
             gen_eff = 13
             
         self.electric_diesel_reduction = self.net_generation_wind / gen_eff
@@ -389,7 +406,7 @@ class WindPower(AnnualSavings):
                                 self.generation_wind_proposed 
         else:
             net_exess_energy = 0
-        #todo fix conversion
+        #todo fix conversion # ???
         self.diesel_equiv_captured = net_exess_energy * 0.99/0.138/0.8/293  
         #~ print 'self.diesel_equiv_captured ',self.diesel_equiv_captured 
         
@@ -399,7 +416,7 @@ class WindPower(AnnualSavings):
         """
         hr_used = True # TODO add to yaml
         self.loss_heat_recovery = 0
-        if hr_used:
+        if hr_used: # ???
             self.loss_heat_recovery = self.electric_diesel_reduction * .15 # TODO
         #~ print 'self.loss_heat_recovery',self.loss_heat_recovery
         
@@ -510,7 +527,9 @@ class WindPower(AnnualSavings):
         
         
         years = np.array(range(self.project_life)) + self.start_year
-
+    
+        # ??? +/- 
+        # ???
         df = DataFrame({
                 'Capacity [kW]':self.load_offset_proposed,
                 "Generation [kWh/yr]": self.net_generation_wind,
@@ -518,7 +537,7 @@ class WindPower(AnnualSavings):
                 'assumed capacity factor':
                     float(self.comp_specs['data']['assumed capacity factor']),
                 'Diesel saved [Gal/yr]' :self.reduction_diesel_used,
-                'Heat Recovery Lost [Gal/yr]':self.loss_heat_recovery,
+                'Heat Recovery Lost [Gal/yr]':self.loss_heat_recovery, 
                 "Heat Recovery Cost Savings": 
                                         self.get_heating_savings_costs(),
                 "Electricity Cost Savings": 
@@ -530,7 +549,9 @@ class WindPower(AnnualSavings):
 
         df["community"] = self.cd['name']
         
-        ol = ["community",'Capacity [kW]','kWh to secondary load','assumed capacity factor','Diesel saved [Gal/yr]','Heat Recovery Lost [Gal/yr]',
+        ol = ["community",'Capacity [kW]','kWh to secondary load',
+              'assumed capacity factor','Diesel saved [Gal/yr]',
+              'Heat Recovery Lost [Gal/yr]',
               "Generation [kWh/yr]",
                 "Heat Recovery Cost Savings",
                 "Electricity Cost Savings",
@@ -593,8 +614,4 @@ def test ():
     """
     tests the class using the manley data.
     """
-    manley_data = CommunityData("../test_case/input_data/","../test_case/baseline_results/config_used.yaml")
-    fc = Forecast(manley_data)
-    comp = ComponentName(manley_data, fc)
-    comp.run()
-    return comp,fc # return the object for further testing
+    pass

@@ -532,4 +532,50 @@ def forecast_comparison_log (coms, res_dir):
     data.to_csv(f_name, mode='a')
     
     
-
+def wind_summary (coms, res_dir):
+    """ """
+    out = []
+    for c in sorted(coms.keys()):
+        #~ if c+"_intertie" in coms.keys():
+            #~ continue
+        try:
+            # ??? NPV or year one
+            wind = coms[c]['model'].comps_used['wind power']
+            l = [c, wind.load_offset_proposed,
+            wind.net_generation_wind,
+            wind.diesel_equiv_captured,
+            float(wind.comp_specs['data']['assumed capacity factor']),
+            wind.reduction_diesel_used,
+            wind.cd["diesel generation efficiency"],
+            wind.loss_heat_recovery,
+            wind.get_NPV_benefits(),
+            wind.get_NPV_costs(),
+            wind.get_NPV_net_benefit(),
+            wind.get_BC_ratio()]
+            out.append(l)
+        except (KeyError,AttributeError) as e:
+            #~ print e
+            pass
+        
+    data = DataFrame(out,columns = \
+       ['community',
+        'load offset proposed [kW]',
+        'Net Generation [kWh]',
+        'Diesel Equivalent Captured [gal]',
+        'Assumed Capacity Factor [%]',
+        'reduction diesel used[gal]',
+        'diesel generator efficiency', 
+        'Loss of head Recovered [gal]',
+        'NPV benefits [$]',
+        'NPV Costs [$]',
+        'NPV Net benefit [$]',
+        'Benefit Cost Ratio']
+                    ).set_index('community').round(2)
+    f_name = os.path.join(res_dir,
+                'wind_power_summary.csv')
+    fd = open(f_name,'w')
+    fd.write(("# wind summary\n"))
+    fd.close()
+    data.to_csv(f_name, mode='a')
+    
+    
