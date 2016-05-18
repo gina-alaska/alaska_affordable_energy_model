@@ -536,12 +536,17 @@ def wind_summary (coms, res_dir):
     """ """
     out = []
     for c in sorted(coms.keys()):
-        #~ if c+"_intertie" in coms.keys():
-            #~ continue
+        it = coms[c]['model'].cd.intertie
+        if it is None:
+            it = 'parent'
+        if it == 'child':
+            continue
         try:
             # ??? NPV or year one
             wind = coms[c]['model'].comps_used['wind power']
-            l = [c, wind.load_offset_proposed,
+            l = [c, 
+            wind.average_load,
+            wind.load_offset_proposed,
             wind.net_generation_wind,
             wind.diesel_equiv_captured,
             float(wind.comp_specs['data']['assumed capacity factor']),
@@ -559,6 +564,7 @@ def wind_summary (coms, res_dir):
         
     data = DataFrame(out,columns = \
        ['community',
+        'average load [kw]',
         'load offset proposed [kW]',
         'Net Generation [kWh]',
         'Diesel Equivalent Captured [gal]',

@@ -332,10 +332,11 @@ class WindPower(AnnualSavings):
         self.load_offset_proposed = 0
         offset = self.average_load*\
                 self.comp_specs['percent generation to offset']
-        
+        #~ self.comp_specs['data']['existing wind'] = 0
         if self.comp_specs['data']['Wind Potential'] in ['H','M'] and \
            int(float(self.comp_specs['data']['existing wind'])) < \
                 (round(offset/25) * 25): # ???
+            #~ print "True"
             self.load_offset_proposed = round(offset/25) * 25 - \
                     float(self.comp_specs['data']['existing wind'])
         
