@@ -63,13 +63,14 @@ def generate_summaries (coms, base):
     post:
         summaries are written
     """
+    print "summaries"
     summaries.res_log(coms,os.path.join(base,'results'))
     summaries.com_log(coms,os.path.join(base,'results'))
     summaries.village_log(coms,os.path.join(base,'results'))
     summaries.building_log(coms,os.path.join(base,'results'))
     summaries.fuel_oil_log(coms,os.path.join(base,'results'))
     summaries.forecast_comparison_log(coms,os.path.join(base,'results'))
-    summaries.wind_summary(coms,os.path.join(base,'results'))
+    summaries.call_comp_summaries(coms,os.path.join(base,'results'))
     
 def list_files (directory, root = None):
     """ Function doc """

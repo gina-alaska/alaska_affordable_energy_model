@@ -7,6 +7,7 @@ functions for the creation of log and summary files form model results
 from pandas import DataFrame, read_csv, concat
 import os
 import numpy as np
+from importlib import import_module
 
 from constants import mmbtu_to_kWh, mmbtu_to_gal_HF
 from constants import mmbtu_to_gal_LP, mmbtu_to_Mcf, mmbtu_to_cords
@@ -532,56 +533,31 @@ def forecast_comparison_log (coms, res_dir):
     data.to_csv(f_name, mode='a')
     
     
-def wind_summary (coms, res_dir):
-    """ """
-    out = []
-    for c in sorted(coms.keys()):
-        it = coms[c]['model'].cd.intertie
-        if it is None:
-            it = 'parent'
-        if it == 'child':
-            continue
-        try:
-            # ??? NPV or year one
-            wind = coms[c]['model'].comps_used['wind power']
-            l = [c, 
-            wind.average_load,
-            wind.load_offset_proposed,
-            wind.net_generation_wind,
-            wind.diesel_equiv_captured,
-            float(wind.comp_specs['data']['assumed capacity factor']),
-            wind.reduction_diesel_used,
-            wind.cd["diesel generation efficiency"],
-            wind.loss_heat_recovery,
-            wind.get_NPV_benefits(),
-            wind.get_NPV_costs(),
-            wind.get_NPV_net_benefit(),
-            wind.get_BC_ratio()]
-            out.append(l)
-        except (KeyError,AttributeError) as e:
-            #~ print e
-            pass
-        
-    data = DataFrame(out,columns = \
-       ['community',
-        'average load [kw]',
-        'load offset proposed [kW]',
-        'Net Generation [kWh]',
-        'Diesel Equivalent Captured [gal]',
-        'Assumed Capacity Factor [%]',
-        'reduction diesel used[gal]',
-        'diesel generator efficiency', 
-        'Loss of head Recovered [gal]',
-        'NPV benefits [$]',
-        'NPV Costs [$]',
-        'NPV Net benefit [$]',
-        'Benefit Cost Ratio']
-                    ).set_index('community').round(2)
-    f_name = os.path.join(res_dir,
-                'wind_power_summary.csv')
-    fd = open(f_name,'w')
-    fd.write(("# wind summary\n"))
-    fd.close()
-    data.to_csv(f_name, mode='a')
+def call_comp_summaries (coms, res_dir):
+    """ 
+        calls summary fils that may exist in each component 
     
+    pre:
+        coms: the run model outputs: a dictionary 
+                    {<"community_name">:
+                        {'model':<a run driver object>,
+                        'output dir':<a path to the given communites outputs>
+                        },
+                     ... repeated for each community
+                    }
+        res_dir: directory to save the log in
+        
+    post:
+        summaries may be saved
+    """
+    print "HERE"
+    for comp in comp_lib:
+        print "HERE"
+        try:
+            log = import_module("aaem.components." +comp_lib[comp]).\
+                                                        component_summary
+            log(coms, res_dir)
+        except AttributeError:
+            continue
+           
     
