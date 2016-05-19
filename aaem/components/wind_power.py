@@ -22,7 +22,7 @@ yaml = {'enabled': False,
         'average load limit': 100.0,
         'percent generation to offset': 1.00,
         'data':'IMPORT',
-        'minimum wind class': 3,
+         #'minimum wind class': 3,
         'wind cost': 'UNKNOWN',
         'secondary load': True,
         'secondary load cost': 200000,
@@ -366,7 +366,7 @@ class WindPower(AnnualSavings):
         
         #~ #~ print self.comp_specs['data']['Assumed Wind Class'] 
         # ??? some kind of failure message
-        if self.average_load > self.comp_specs['average load limit']# and\
+        if self.average_load > self.comp_specs['average load limit']: #and\
             #~ float(self.comp_specs['data']['Assumed Wind Class']) > \
                 #~ self.comp_specs['minimum wind class'] and \
                 #~ self.load_offset_proposed > 0:
@@ -452,8 +452,7 @@ class WindPower(AnnualSavings):
         offset = self.average_load*\
                 self.comp_specs['percent generation to offset']
         #~ self.comp_specs['data']['existing wind'] = 0
-        if self.comp_specs['data']['Wind Potential'] in ['H','M'] and \
-           int(float(self.comp_specs['data']['existing wind'])) < \
+        if int(float(self.comp_specs['data']['existing wind'])) < \
                 (round(offset/25) * 25): # ???
             #~ print "True"
             self.load_offset_proposed = round(offset/25) * 25 - \
