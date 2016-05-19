@@ -63,7 +63,6 @@ def generate_summaries (coms, base):
     post:
         summaries are written
     """
-    print "summaries"
     summaries.res_log(coms,os.path.join(base,'results'))
     summaries.com_log(coms,os.path.join(base,'results'))
     summaries.village_log(coms,os.path.join(base,'results'))

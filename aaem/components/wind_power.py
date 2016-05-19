@@ -29,7 +29,13 @@ yaml = {'enabled': False,
         'road needed for transmission line' : True,
         'transmission line distance': 1,
         'transmission line cost': { True:500000, False:250000},
-        'costs': 'IMPORT'
+        'costs': 'IMPORT',
+        'percent excess energy': .15,
+        'percent excess energy capturable': .7,
+        'efficiency electric boiler': .99,
+        'efficiency heating oil boiler': .8,
+        'percent heat recovered': .15,
+        'percent o&m': .01
         }
       
 ## default values for yaml key/Value pairs
@@ -138,6 +144,17 @@ def wind_preprocess (ppo):
                                 "wind_class_assumptions.csv"),
                            comment = '#',index_col = 0)
     
+    try:
+        diesel = read_csv(os.path.join(ppo.data_dir,
+                                "diesel_data.csv"),
+                           comment = '#',index_col = 0).ix[ppo.com_id]
+    #~ print '\n\n\n\n'
+    #~ print diesel
+    #~ print '\n\n\n\n'
+    
+        hr = str(diesel['Waste Heat Recovery Opperational'])
+    except KeyError:
+        hr = 'nan'
     
     try:
         capa = assumptions.ix[int(float(potential.ix['Assumed Wind Class']))]
@@ -154,6 +171,7 @@ def wind_preprocess (ppo):
     fd.write("key,value\n")
     fd.write("existing wind," + str(existing) +'\n')
     fd.write('assumed capacity factor,' +str(capa) +'\n')
+    fd.write('Heat Recovery Opperational,' + str(hr) +'\n')
     fd.close()
 
     #~ df = concat([ww_d,ww_a])
@@ -180,7 +198,8 @@ def copy_wind_cost_table(ppo):
 raw_data_files = ['wind_class_assumptions.csv',
                   'wind_costs.csv',
                   "wind_data_existing.csv",
-                  "wind_data_potential.csv"]
+                  "wind_data_potential.csv",
+                  "diesel_data.csv"]
 
 ## list of wind preprocessing functions
 preprocess_funcs = [wind_preprocess, copy_wind_cost_table]
@@ -201,19 +220,45 @@ def component_summary (coms, res_dir):
         try:
             # ??? NPV or year one
             wind = coms[c]['model'].comps_used['wind power']
-            l = [c, 
-            wind.average_load,
-            wind.load_offset_proposed,
-            wind.net_generation_wind,
-            wind.diesel_equiv_captured,
-            float(wind.comp_specs['data']['assumed capacity factor']),
-            wind.reduction_diesel_used,
-            wind.cd["diesel generation efficiency"],
-            wind.loss_heat_recovery,
-            wind.get_NPV_benefits(),
-            wind.get_NPV_costs(),
-            wind.get_NPV_net_benefit(),
-            wind.get_BC_ratio()]
+            
+            average_load = wind.average_load
+            potential = wind.comp_specs['data']['Wind Potential']
+            wind_class = float(wind.comp_specs['data']['Assumed Wind Class']) 
+            proposed_load =  wind.load_offset_proposed
+            
+            try:
+                #~ offset = wind.load_offset_proposed
+                net_gen_wind = wind.net_generation_wind
+                decbb = wind.diesel_equiv_captured
+                
+                
+                loss_heat = wind.loss_heat_recovery
+                
+                
+                diesel_red = wind.reduction_diesel_used
+                cap_fac = float(wind.comp_specs['data']\
+                                    ['assumed capacity factor'])
+                eff = wind.cd["diesel generation efficiency"]
+                
+            except AttributeError:
+                offset = 0
+                net_gen_wind = 0
+                decbb = 0
+                
+                cap_fac = 0
+                loss_heat = 0
+                
+                diesel_red = 0
+                eff = wind.cd["diesel generation efficiency"]    
+            
+            l = [c, average_load, potential, wind_class, proposed_load,
+                 net_gen_wind, decbb, loss_heat, diesel_red, 
+                 cap_fac, eff,
+                 wind.get_NPV_benefits(),
+                 wind.get_NPV_costs(),
+                 wind.get_NPV_net_benefit(),
+                 wind.get_BC_ratio()
+            ]
             out.append(l)
         except (KeyError,AttributeError) as e:
             #~ print e
@@ -222,18 +267,20 @@ def component_summary (coms, res_dir):
     data = DataFrame(out,columns = \
        ['community',
         'average load [kw]',
+        'resource potential',
+        'assumed wind class',
         'load offset proposed [kW]',
         'Net Generation [kWh]',
-        'Diesel Equivalent Captured [gal]',
+        'Diesel Equivalent Captured by Boilers [gal]',
+        'Loss of Recovered Heat[gal]',
+        'Net reduction reduction Diesel[gal]',
         'Assumed Capacity Factor [%]',
-        'reduction diesel used[gal]',
-        'diesel generator efficiency', 
-        'Loss of head Recovered [gal]',
+        'diesel generator efficiency',
         'NPV benefits [$]',
         'NPV Costs [$]',
         'NPV Net benefit [$]',
         'Benefit Cost Ratio']
-                    ).set_index('community').round(2)
+                    ).set_index('community')#.round(2)
     f_name = os.path.join(res_dir,
                 'wind_power_summary.csv')
     fd = open(f_name,'w')
@@ -258,6 +305,7 @@ class WindPower(AnnualSavings):
         post:
             the model can be run
         """
+        
         self.diagnostics = diag
         if self.diagnostics == None:
             self.diagnostics = diagnostics()
@@ -422,9 +470,10 @@ class WindPower(AnnualSavings):
             calculate the excess energy
             TODO add more:
         """
-        #TODO: .15 # ???
+        #~ print sorted(self.cd.keys())
         self.exess_energy = \
-            (self.generation_wind_proposed - self.transmission_losses) * .15
+            (self.generation_wind_proposed - self.transmission_losses) * \
+            self.comp_specs['percent excess energy']
         #~ print 'self.exess_energy',self.exess_energy
             
     def calc_net_generation_wind (self):
@@ -456,24 +505,32 @@ class WindPower(AnnualSavings):
             exess_percent = 0
         else:
             exess_percent = self.exess_energy / self.generation_wind_proposed
-        exess_captured_percent = exess_percent * .7
+        exess_captured_percent = exess_percent * \
+                    self.comp_specs['percent excess energy capturable']
         if self.comp_specs['secondary load']:
             net_exess_energy = exess_captured_percent * \
                                 self.generation_wind_proposed 
         else:
             net_exess_energy = 0
-        #todo fix conversion # ???
-        self.diesel_equiv_captured = net_exess_energy * 0.99/0.138/0.8/293  
+       
+        #~ conversion = 0.99/0.138/0.8/293 
+        conversion = self.comp_specs['efficiency electric boiler']/ \
+                     (1/constants.mmbtu_to_gal_HF)/ \
+                     self.comp_specs['efficiency heating oil boiler']/\
+                     (constants.mmbtu_to_kWh)
+        self.diesel_equiv_captured = net_exess_energy * conversion
+             
         #~ print 'self.diesel_equiv_captured ',self.diesel_equiv_captured 
         
     def calc_loss_heat_recovery (self):
         """ 
              calulate the somthing ???
         """
-        hr_used = True # TODO add to yaml
+        hr_used = self.comp_specs['data']['Heat Recovery Opperational']
         self.loss_heat_recovery = 0
-        if hr_used: # ???
-            self.loss_heat_recovery = self.electric_diesel_reduction * .15 # TODO
+        if hr_used == 'Yes': 
+            self.loss_heat_recovery = self.electric_diesel_reduction * \
+            self.comp_specs['percent heat recovered']
         #~ print 'self.loss_heat_recovery',self.loss_heat_recovery
         
     def calc_reduction_diesel_used (self):
@@ -488,7 +545,7 @@ class WindPower(AnnualSavings):
         """ 
             calculate the maintainance cost
         """
-        self.maintainance_cost = .01 * self.capital_costs
+        self.maintainance_cost = self.comp_specs['percent o&m'] * self.capital_costs
         #~ print 'self.maintainance_cost',self.maintainance_cost
         
 

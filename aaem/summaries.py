@@ -11,7 +11,7 @@ from importlib import import_module
 
 from constants import mmbtu_to_kWh, mmbtu_to_gal_HF
 from constants import mmbtu_to_gal_LP, mmbtu_to_Mcf, mmbtu_to_cords
-
+from aaem.components import comp_lib
 
 def res_log (coms, res_dir):
     """
@@ -550,9 +550,7 @@ def call_comp_summaries (coms, res_dir):
     post:
         summaries may be saved
     """
-    print "HERE"
     for comp in comp_lib:
-        print "HERE"
         try:
             log = import_module("aaem.components." +comp_lib[comp]).\
                                                         component_summary
