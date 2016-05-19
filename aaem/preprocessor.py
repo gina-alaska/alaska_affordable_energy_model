@@ -347,21 +347,24 @@ class Preprocessor (object):
         """
         in_file = os.path.join(self.data_dir,"population.csv")
 
-        pop_data = read_csv(in_file, index_col = 0) # update to GNIS
+        pop_data = read_csv(in_file, index_col = 1) # update to GNIS
         pop_source = "ICER's population forecast"
-        try:
-            pops = DataFrame(pop_data.ix[self.com_id]["2003":str(end_year)])
-        except KeyError:
-            in_file = os.path.join(self.data_dir,"population_neil.csv")
-            pop_data = read_csv(in_file, index_col = 0) # update to GNIS
-            pop_source = "Neil's Calculations"
-            pops = DataFrame(pop_data.ix[self.com_id]["2003":str(end_year)])
+        
+        pops = self.get_communities_data(pop_data)
+        pops = DataFrame(pops.iloc[0]["2003":str(end_year)])
+        #~ try:
+            #~ pops = DataFrame(pop_data.ix[self.com_id]["2003":str(end_year)])
+        #~ except KeyError:
+            #~ in_file = os.path.join(self.data_dir,"population_neil.csv")
+            #~ pop_data = read_csv(in_file, index_col = 0) # update to GNIS
+            #~ pop_source = "Neil's Calculations"
+            #~ pops = DataFrame(pop_data.ix[self.com_id]["2003":str(end_year)])
 
         if (pops.values < threshold).any():
             self.diagnostics.add_warning("Population",
                                             "population < " + str(threshold))
 
-        p = pops.T.values[0]
+        p = pops.T.values
         k = pops.T.keys().values
         for idx in range(1,len(p)):
             #~ print idx
@@ -375,8 +378,8 @@ class Preprocessor (object):
                                             " to " + k[idx])
 
         pops.columns  = ["population"]
-        p_map=concat([pops[:str(currnet_year-1)].astype(bool).replace(True, "M"),
-                      pops[str(currnet_year):].astype(bool).replace(True, "P")])
+        p_map=concat([pops[:str(currnet_year-1)].astype(bool).replace(True, "I"),
+                      pops[str(currnet_year):].astype(bool).replace(True, "I")])
         p_map.columns  = [p_map.columns[0] + "_qualifier"]
         out_file = os.path.join(self.out_dir,"population.csv")
         fd = open(out_file,'w')
@@ -384,8 +387,8 @@ class Preprocessor (object):
         fd.close()
 
 
-        df = concat([pops,p_map],axis = 1)
-        df.to_csv(out_file,mode="a")
+        df = concat([pops,p_map],axis = 1).fillna(0)
+        df.to_csv(out_file,mode="a",index_label='year')
         self.population_data = df
         self.population_data.index = self.population_data.index.astype(int)
 

@@ -649,6 +649,7 @@ class Forecast (object):
         fd.write("# Qualifier info: \n")
         fd.write("#   M indicates a measured value \n")
         fd.write("#   P indicates a projected value \n")
+        fd.write("#   I indicates a value carried over from the input data. May be projected or measured see input data metadata.\n")
         
         fd.close()
             
@@ -665,7 +666,7 @@ class Forecast (object):
             return
             
         path = path+ "electricity_forecast.png"
-        start = self.p_map[self.p_map['population_qualifier'] == 'P'].index[0]
+        start = self.c_map[self.c_map['consumption_qualifier'] == 'P'].index[0]
         df2 = self.electric_dataframe[['population',
                             'total_electricity_consumed [kWh/year]',
                             'total_electricity_generation [kWh/year]',
@@ -760,6 +761,7 @@ class Forecast (object):
         fd.write("# Qualifier info: \n")
         fd.write("#   M indicates a measured value \n")
         fd.write("#   P indicates a projected value \n")
+        fd.write("#   I indicates a value carried over from the input data. May be projected or measured see input data metadata.\n")
         fd.close()
         self.generation_forecast_dataframe.to_csv(out_file, 
                                         index_label="year", mode = 'a')  
@@ -818,7 +820,7 @@ class Forecast (object):
         plot.plot_dataframe(ax1,df2,ax,['population'],png_dict,c_dict)
         fig.subplots_adjust(right=.85)
         fig.subplots_adjust(left=.12)
-        start = self.p_map[self.p_map['population_qualifier'] == 'P'].index[0]
+        start = self.c_map[self.c_map['consumption_qualifier'] == 'P'].index[0]
         plot.add_vertical_line(ax,start, 'forecasting starts' )
         plot.add_horizontal_line(ax1,0)
         plot.create_legend(fig,.20)
@@ -877,6 +879,7 @@ class Forecast (object):
         fd.write("# Qualifier info: \n")
         fd.write("#   M indicates a measured value \n")
         fd.write("#   P indicates a projected value \n")
+        fd.write("#   I indicates a value carried over from the input data. May be projected or measured see input data metadata.\n")
         fd.close()
         
         data.index = data.index.values.astype(int)
@@ -886,7 +889,7 @@ class Forecast (object):
         """
         """
         path = path+ "heat_demand_forecast.png"
-        start = self.p_map[self.p_map['population_qualifier'] == 'P'].index[0]
+        #~ start = self.c_map[self.c_map['consumption_qualifier'] == 'P'].index[0]
         
         cols = ['population']
         for col in self.heat_demand_dataframe.columns:
@@ -914,7 +917,7 @@ class Forecast (object):
                         c_dict)
         fig.subplots_adjust(right=.85)
         fig.subplots_adjust(left=.12)
-        plot.add_vertical_line(ax,start, 'forecasting starts' )
+        #~ plot.add_vertical_line(ax,start, 'forecasting starts' )
         plot.add_horizontal_line(ax1,0)
     
         plot.create_legend(fig,.2)
@@ -987,6 +990,7 @@ class Forecast (object):
         fd.write("# Qualifier info: \n")
         fd.write("#   M indicates a measured value \n")
         fd.write("#   P indicates a projected value \n")
+        fd.write("#   I indicates a value carried over from the input data. May be projected or measured see input data metadata.\n")
         fd.close()
 
         data.index = data.index.values.astype(int)
@@ -995,7 +999,7 @@ class Forecast (object):
     def save_heating_fuel_png (self, path):
         """"""
         path = path+ "heating_fuel_forecast.png"
-        start = self.p_map[self.p_map['population_qualifier'] == 'P'].index[0]
+        #~ start = self.c_map[self.c_map['consumption_qualifier'] == 'P'].index[0]
         
         cols = ['population']
         for col in self.heating_fuel_dataframe.columns:
@@ -1046,7 +1050,7 @@ class Forecast (object):
             c_dict)
         fig.subplots_adjust(right=.85)
         fig.subplots_adjust(left=.12)
-        plot.add_vertical_line(ax,start, 'forecasting starts' )
+        #~ plot.add_vertical_line(ax,start, 'forecasting starts' )
         plot.add_horizontal_line(ax1,0)
     
         plot.create_legend(fig,.30)
