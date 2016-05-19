@@ -34,7 +34,6 @@ def copy_model_data (repo, raw):
     shutil.copy(os.path.join(repo, "interties.csv"), raw)
     shutil.copy(os.path.join(repo, "non_res_buildings.csv"), raw)
     shutil.copy(os.path.join(repo, "population.csv"), raw)
-    shutil.copy(os.path.join(repo, "population_neil.csv"), raw)
     shutil.copy(os.path.join(repo, "purchased_power_lib.csv"), raw)
     shutil.copy(os.path.join(repo, "res_fuel_source.csv"), raw)
     shutil.copy(os.path.join(repo, "res_model_data.csv"), raw)
@@ -46,8 +45,6 @@ def copy_model_data (repo, raw):
     shutil.copy(os.path.join(repo, "propane_price_estimates.csv"), raw)
     shutil.copy(os.path.join(repo, "biomass_price_estimates.csv"), raw)
     shutil.copy(os.path.join(repo, "generation_limits.csv"), raw)
-    #~ shutil.copy(os.path.join(repo, "wind_data_existing.csv"), raw)
-    #~ shutil.copy(os.path.join(repo, "wind_data_potential.csv"), raw)
     
     for f in get_raw_data_files():
         shutil.copy(os.path.join(repo, f), raw)
