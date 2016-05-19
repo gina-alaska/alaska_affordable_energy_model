@@ -222,10 +222,11 @@ def component_summary (coms, res_dir):
             wind = coms[c]['model'].comps_used['wind power']
             
             average_load = wind.average_load
-            potential = wind.comp_specs['data']['Wind Potential']
+            existing_load = wind.comp_specs['data']['existing wind']
             wind_class = float(wind.comp_specs['data']['Assumed Wind Class']) 
             proposed_load =  wind.load_offset_proposed
-            
+            cap_fac = float(wind.comp_specs['data']['assumed capacity factor'])
+            heat_rec_opp = wind.comp_specs['data']['Heat Recovery Opperational']
             try:
                 #~ offset = wind.load_offset_proposed
                 net_gen_wind = wind.net_generation_wind
@@ -236,8 +237,7 @@ def component_summary (coms, res_dir):
                 
                 
                 diesel_red = wind.reduction_diesel_used
-                cap_fac = float(wind.comp_specs['data']\
-                                    ['assumed capacity factor'])
+                
                 eff = wind.cd["diesel generation efficiency"]
                 
             except AttributeError:
@@ -245,19 +245,33 @@ def component_summary (coms, res_dir):
                 net_gen_wind = 0
                 decbb = 0
                 
-                cap_fac = 0
                 loss_heat = 0
                 
                 diesel_red = 0
                 eff = wind.cd["diesel generation efficiency"]    
+                
+            try:
+                red_per_year = net_gen_wind / eff
+            except ZeroDivisionError:
+                red_per_year = 0
             
-            l = [c, average_load, potential, wind_class, proposed_load,
-                 net_gen_wind, decbb, loss_heat, diesel_red, 
-                 cap_fac, eff,
-                 wind.get_NPV_benefits(),
-                 wind.get_NPV_costs(),
-                 wind.get_NPV_net_benefit(),
-                 wind.get_BC_ratio()
+            l = [c, 
+                wind_class, 
+                average_load, 
+                proposed_load,
+                existing_load,
+                cap_fac,
+                net_gen_wind,
+                decbb, 
+                loss_heat, 
+                heat_rec_opp,
+                diesel_red, 
+                red_per_year,
+                eff,
+                wind.get_NPV_benefits(),
+                wind.get_NPV_costs(),
+                wind.get_NPV_net_benefit(),
+                wind.get_BC_ratio()
             ]
             out.append(l)
         except (KeyError,AttributeError) as e:
@@ -265,22 +279,24 @@ def component_summary (coms, res_dir):
             pass
         
     data = DataFrame(out,columns = \
-       ['community',
-        'average load [kw]',
-        'resource potential',
-        'assumed wind class',
-        'load offset proposed [kW]',
-        'Net Generation [kWh]',
-        'Diesel Equivalent Captured by Boilers [gal]',
-        'Loss of Recovered Heat[gal]',
-        'Net reduction reduction Diesel[gal]',
+       ['Community',
+        'Assumed Wind Class',
+        'Average Load [kw]',
+        'Wind Capacity Proposed [kW]',
+        'Existing Wind Capacity [kW]',
         'Assumed Capacity Factor [%]',
-        'diesel generator efficiency',
+        'Net Generation [kWh]',
+        'Heating Oil Equivalent Captured by Seconday Load [gal]',
+        'Loss of Recovered Heat[gal]',
+        'Heat Recovery Opperational',
+        'Net in Heating Oil Consumption [gal]',
+        'Reduction in Utility Diesel Consumed per year',
+        'Diesel Denerator Efficiency',
         'NPV benefits [$]',
         'NPV Costs [$]',
         'NPV Net benefit [$]',
         'Benefit Cost Ratio']
-                    ).set_index('community')#.round(2)
+                    ).set_index('Community')#.round(2)
     f_name = os.path.join(res_dir,
                 'wind_power_summary.csv')
     fd = open(f_name,'w')
@@ -350,10 +366,10 @@ class WindPower(AnnualSavings):
         
         #~ #~ print self.comp_specs['data']['Assumed Wind Class'] 
         # ??? some kind of failure message
-        if self.average_load > self.comp_specs['average load limit'] and\
-            float(self.comp_specs['data']['Assumed Wind Class']) > \
-                self.comp_specs['minimum wind class'] and \
-                self.load_offset_proposed > 0:
+        if self.average_load > self.comp_specs['average load limit']# and\
+            #~ float(self.comp_specs['data']['Assumed Wind Class']) > \
+                #~ self.comp_specs['minimum wind class'] and \
+                #~ self.load_offset_proposed > 0:
         # if the average load is greater that the lower limit run this component
         # else skip    
             
