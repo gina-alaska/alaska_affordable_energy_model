@@ -5,6 +5,7 @@ comp_lib = {
     "non-residential buildings": "community_buildings",
     "water wastewater": "wastewater",
     "wind power": "wind_power",
+    'solar power': "solar_power",
         }
 
 
