@@ -1,5 +1,10 @@
 #Change Log
 
+## [0.13.1]
+### changed
+- wind summary file
+- tuned the wind component
+
 ## [0.13.0]
 ### added
 - wind component
