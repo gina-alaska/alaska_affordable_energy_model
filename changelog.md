@@ -1,5 +1,10 @@
 #Change Log
 
+## [0.13.2]
+### changed
+- preprocessing of population data index
+- forecast csv files have I qualifer added
+
 ## [0.13.1]
 ### changed
 - wind summary file
