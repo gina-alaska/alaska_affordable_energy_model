@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.13.3]
+### fixed
+- list of data files to copy in cli_lib
+
 ## [0.13.2]
 ### changed
 - preprocessing of population data index
