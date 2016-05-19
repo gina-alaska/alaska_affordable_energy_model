@@ -23,41 +23,45 @@ import aaem.constants as constants
 ### 2) add new components things to default yaml file
 ### 3) add the component to __init__ in this directory
 
-
-
 # change to component name (i.e. 'residential buildings')
 COMPONENT_NAME = "<name>"
 
-
-
-
+## List of yaml key/value pairs
 yaml = {'enabled': False,
         'lifetime': 'ABSOLUTE DEFAULT',
         'start year': 'ABSOLUTE DEFAULT',
         }
-        
+
+## default values for yaml key/Value pairs
+yaml_defaults = {'enabled': True,
+        'lifetime': 20,
+        'start year': 2017,
+        }
+    
+## order to save yaml
 yaml_order = ['enabled', 'lifetime', 'start year']
 
+## comments for the yaml key/value pairs
 yaml_comments = {'enabled': '',
         'lifetime': 'number years <int>',
         'start year': 'start year <int>'}
        
-# samole yaml import interface
+## Functions for CommunityData IMPORT keys
 def process_data_import(data_dir):
     """
     """
     pass
     
+## library of keys and functions for CommunityData IMPORT Keys
 yaml_import_lib = {}# fill in
     
-# fill in
+## preprocessing functons 
 def preprocess_header (ppo):
     """
     """
     return  "# " + ppo.com_id + " compdata data\n"+ \
             ppo.comments_dataframe_divide
     
-# complete
 def preprocess (ppo):
     """"""
     
@@ -72,10 +76,20 @@ def preprocess (ppo):
     
     ppo.MODEL_FILES['COMP_DATA'] = "comp_data.csv" # change this
 
+## List of raw data files required for wind power preproecssing 
 raw_data_files = []# fillin
-preprocess_funcs = [preprocess]    
+
+## list of wind preprocessing functions
+preprocess_funcs = [preprocess]
+
+## list of data keys not to save when writing the CommunityData output
+yaml_not_to_save = []
     
-        
+## component summary
+def component_summary (coms, res_dir):
+    """
+    """
+    pass
 
 #   do a find and replace on ComponentName to name of component 
 # (i.e. 'ResidentialBuildings')
@@ -226,10 +240,6 @@ class ComponentName (AnnualSavings):
         price = 0 
         self.annual_heating_savings = self.savings_fuel_consumption * price
 
-
-
-        
-    
 component = ComponentName
 
 def test ():
