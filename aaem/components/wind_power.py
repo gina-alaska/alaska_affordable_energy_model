@@ -140,9 +140,29 @@ def wind_preprocess (ppo):
                                        'Load','Certainty',
                                        'Estimated Generation','Estimated Cost',
                                        'Note','Resource Note'])
+                                       
+    try:
+        intertie = read_csv(os.path.join(ppo.data_dir,
+                            "wind_data_interties.csv"),
+                            comment = '#',
+                            index_col = 0).ix[ppo.com_id+"_intertie"]
+        intertie = int(intertie['Highest Wind Class on Intertie'])
+    except KeyError:
+        intertie = 0
+    
+    try:
+        if intertie > int(potential['Assumed Wind Class']):
+            potential.ix['Assumed Wind Class'] = intertie
+            ppo.diagnostics.add_note("wind", 
+                    "Wind class updated to max on intertie")
+        
+    except KeyError:
+        pass
+    
     assumptions = read_csv(os.path.join(ppo.data_dir,
                                 "wind_class_assumptions.csv"),
                            comment = '#',index_col = 0)
+                           
     
     try:
         diesel = read_csv(os.path.join(ppo.data_dir,
@@ -199,7 +219,8 @@ raw_data_files = ['wind_class_assumptions.csv',
                   'wind_costs.csv',
                   "wind_data_existing.csv",
                   "wind_data_potential.csv",
-                  "diesel_data.csv"]
+                  "diesel_data.csv",
+                  'wind_data_interties.csv']
 
 ## list of wind preprocessing functions
 preprocess_funcs = [wind_preprocess, copy_wind_cost_table]
