@@ -32,6 +32,16 @@ COMPONENT_NAME = "solar power"
 yaml = {'enabled': False,
         'lifetime': 'ABSOLUTE DEFAULT',
         'start year': 'ABSOLUTE DEFAULT',
+        'average load limit': 50.0,
+        'data': 'IMPORT',
+        'cost': 'UNKNOWN',
+        'cost per kW': 8000,
+        'road needed': False,
+        'road needed for transmission line' : True,
+        'transmission line distance': 0,
+        'percent o&m': .01,
+        'percent generation to offset': .30,
+        'percent solar degradation': .992
         }
 
 ## default values for yaml key/Value pairs
@@ -44,18 +54,35 @@ yaml_defaults = {'enabled': True,
 yaml_order = ['enabled', 'lifetime', 'start year']
 
 ## comments for the yaml key/value pairs
-yaml_comments = {'enabled': '',
+yaml_comments = {'enabled': '<boolean>',
         'lifetime': 'number years <int>',
-        'start year': 'start year <int>'}
+        'start year': 'start year <int>',
+        'average load limit': 'lower limit on the average load <float>',
+        'data': 'data for component',
+        'cost': 
+            'cost in $ for project if known otherwise UNKNOWN <float|string>',
+        'cost per kW': 
+            'dollar cost per kW if cost of the project is UNKNOWN <float>',
+        'road needed for transmission line' : '<boolean>',
+        'transmission line distance': 
+            'distance in miles of proposed transmission line <float>',
+        'percent o&m': 
+            ('yearly maintainence cost'
+             ' as percent as decimal of total cost <float>'),
+        'percent generation to offset': 
+            'pecent of the generation in kW to offset with solar power <float>',
+        'percent solar degradation': 'pre'
+         }
        
 ## Functions for CommunityData IMPORT keys
 def process_data_import(data_dir):
     """
     """
-    pass
+    return {"HR Opperational":True,
+            'Output per 10kW Solar PV':8000}
 
 ## library of keys and functions for CommunityData IMPORT Keys
-yaml_import_lib = {}# fill in
+yaml_import_lib = {'data':process_data_import,}
     
 ## preprocessing functons 
 def preprocess_header (ppo):
@@ -137,24 +164,27 @@ class SolarPower (AnnualSavings):
             TODO: define output values. 
             the model is run and the output values are available
         """
-        if self.cd["model electricity"]:
-            # change these below
-            self.calc_baseline_kWh_consumption()
-            self.calc_retrofit_kWh_consumption()
-            self.calc_savings_kWh_consumption()
-            # NOTE*:
-            #   some times is it easier to find the savings and use that to
-            # calculate the retro fit values. If so, flip the function calls 
-            # around, and change the functionality of
-            # self.calc_savings_kWh_consumption() below
+        self.calc_average_load()
+        self.calc_proposed_generation()
+        return
+        #~ if self.cd["model electricity"]:
+            #~ # change these below
+            #~ self.calc_baseline_kWh_consumption()
+            #~ self.calc_retrofit_kWh_consumption()
+            #~ self.calc_savings_kWh_consumption()
+            #~ # NOTE*:
+            #~ #   some times is it easier to find the savings and use that to
+            #~ # calculate the retro fit values. If so, flip the function calls 
+            #~ # around, and change the functionality of
+            #~ # self.calc_savings_kWh_consumption() below
             
         
-        if self.cd["model heating fuel"]:
-            # change these below
-            self.calc_baseline_fuel_consumption()
-            self.calc_retrofit_fuel_consumption()
-            self.calc_savings_fuel_consumption()
-            # see NOTE*
+        #~ if self.cd["model heating fuel"]:
+            #~ # change these below
+            #~ self.calc_baseline_fuel_consumption()
+            #~ self.calc_retrofit_fuel_consumption()
+            #~ self.calc_savings_fuel_consumption()
+            #~ # see NOTE*
         
         if self.cd["model financial"]:
             # AnnualSavings functions (don't need to write)
@@ -162,6 +192,7 @@ class SolarPower (AnnualSavings):
             
             # change these below
             self.calc_capital_costs()
+            self.calc_maintainance_cost()
             self.calc_annual_electric_savings()
             self.calc_annual_heating_savings()
             
@@ -170,6 +201,33 @@ class SolarPower (AnnualSavings):
             self.calc_annual_costs(self.cd['interest rate'])
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
+            
+    def calc_average_load (self):
+        """ """
+        self.generation = self.forecast.get_generation(self.start_year)
+        self.average_load = self.generation / constants.hours_per_year
+        print self.average_load
+        
+    def calc_proposed_generation (self):
+        """ Function doc """
+        self.proposed_load = self.average_load * \
+                        self.comp_specs['percent generation to offset']
+        self.generation_proposed = self.proposed_load *\
+                        self.comp_specs['data']['Output per 10kW Solar PV'] /\
+                        10
+                        
+        self.generation_proposed = self.generation_proposed *\
+                            self.comp_specs['percent solar degradation']**\
+                            np.arange(self.project_life)
+        print 'self.calc_proposed_generation'
+        print self.proposed_load
+        print self.generation_proposed
+        
+    def clac_maintainence_cost (self):
+        """ """
+        self.maintainence_cost = self.capital_costs * \
+                    self.comp_specs['percent o&m']
+        
  
     # Make this do stuff
     def calc_baseline_kWh_consumption (self):
@@ -227,14 +285,25 @@ class SolarPower (AnnualSavings):
     # Make this do stuff
     def calc_capital_costs (self):
         """ Function Doc"""
-        self.capital_costs = np.nan
-        
+        component_cost = slef.comp_specs['cost']
+        if str(component_cost) == 'UNKNOWN':
+            component_cost = self.proposed_load * slef.comp_specs['cost per kW']
+            
+        powerhouse_cost = 0
+        if not self.cd['switchgear suatable for RE']:
+            powerhouse_cost = self.cd['switchgear cost']
+            
+        self.capital_costs = powerhouse_cost + component_cost
+        print 'self.calc_capital_costs'
+        print self.capital_costs
     
     # Make this do stuff
     def calc_annual_electric_savings (self):
         """
         """
-        price = 0 
+        self.proposed_generation_cost = self.maintainance_cost
+        
+        
         self.annual_electric_savings = self.savings_kWh_consumption * price
         
         
