@@ -41,7 +41,8 @@ yaml = {'enabled': False,
         'transmission line distance': 0,
         'percent o&m': .01,
         'percent generation to offset': .30,
-        'percent solar degradation': .992
+        'percent solar degradation': .992,
+        'o&m cost per kWh': .02,
         }
 
 ## default values for yaml key/Value pairs
@@ -67,11 +68,14 @@ yaml_comments = {'enabled': '<boolean>',
         'transmission line distance': 
             'distance in miles of proposed transmission line <float>',
         'percent o&m': 
-            ('yearly maintainence cost'
+            ('yearly maintenance cost'
              ' as percent as decimal of total cost <float>'),
         'percent generation to offset': 
             'pecent of the generation in kW to offset with solar power <float>',
-        'percent solar degradation': 'pre'
+        'percent solar degradation': 
+            ('the precent of the of solar panel'
+             ' that carries over from the previous year'),
+        'o&m cost per kWh': 'cost of repairs for generator per kWh <float>',
          }
        
 ## Functions for CommunityData IMPORT keys
@@ -164,27 +168,16 @@ class SolarPower (AnnualSavings):
             TODO: define output values. 
             the model is run and the output values are available
         """
-        self.calc_average_load()
-        self.calc_proposed_generation()
-        return
-        #~ if self.cd["model electricity"]:
-            #~ # change these below
-            #~ self.calc_baseline_kWh_consumption()
-            #~ self.calc_retrofit_kWh_consumption()
-            #~ self.calc_savings_kWh_consumption()
-            #~ # NOTE*:
-            #~ #   some times is it easier to find the savings and use that to
-            #~ # calculate the retro fit values. If so, flip the function calls 
-            #~ # around, and change the functionality of
-            #~ # self.calc_savings_kWh_consumption() below
-            
+        self.run = True
         
-        #~ if self.cd["model heating fuel"]:
-            #~ # change these below
-            #~ self.calc_baseline_fuel_consumption()
-            #~ self.calc_retrofit_fuel_consumption()
-            #~ self.calc_savings_fuel_consumption()
-            #~ # see NOTE*
+        try:
+            self.calc_average_load()
+            self.calc_proposed_generation()
+        except:
+            self.diagnostics.add_warning(self.component_name, 
+            "could not be run")
+            self.run = False
+            return
         
         if self.cd["model financial"]:
             # AnnualSavings functions (don't need to write)
@@ -192,7 +185,7 @@ class SolarPower (AnnualSavings):
             
             # change these below
             self.calc_capital_costs()
-            self.calc_maintainance_cost()
+            self.calc_maintenance_cost()
             self.calc_annual_electric_savings()
             self.calc_annual_heating_savings()
             
@@ -206,7 +199,7 @@ class SolarPower (AnnualSavings):
         """ """
         self.generation = self.forecast.get_generation(self.start_year)
         self.average_load = self.generation / constants.hours_per_year
-        print self.average_load
+        #~ print self.average_load
         
     def calc_proposed_generation (self):
         """ Function doc """
@@ -219,102 +212,71 @@ class SolarPower (AnnualSavings):
         self.generation_proposed = self.generation_proposed *\
                             self.comp_specs['percent solar degradation']**\
                             np.arange(self.project_life)
-        print 'self.calc_proposed_generation'
-        print self.proposed_load
-        print self.generation_proposed
+        #~ print 'self.calc_proposed_generation'
+        #~ print self.proposed_load
+        #~ print self.generation_proposed
         
-    def clac_maintainence_cost (self):
+    def calc_maintenance_cost (self):
         """ """
-        self.maintainence_cost = self.capital_costs * \
+        self.maintenance_cost = self.capital_costs * \
                     self.comp_specs['percent o&m']
-        
- 
-    # Make this do stuff
-    def calc_baseline_kWh_consumption (self):
-        """ Function doc """
-        self.baseline_kWh_consumption = np.zeros(self.project_life)
-    
-    # Make this do stuff
-    def calc_retrofit_kWh_consumption (self):
-        """ Function doc """
-        self.retrofit_kWh_consumption = np.zeros(self.project_life)
-    
-    # use this or change it see NOTE* above
-    def calc_savings_kWh_consumption(self):
-        """
-        calculate the savings in electricity consumption(in kWh) for a community
-        
-        pre:
-            self.baseline_kWh_consumption and self.retrofit_kWh_consumption
-        should be array of the same length or scaler numbers (units kWh)
-    
-        post:
-            self.savings_kWh_consumption is an array or scaler of numbers 
-        (units kWh)
-        """
-        self.savings_kWh_consumption = self.baseline_kWh_consumption -\
-                                       self.retrofit_kWh_consumption
-        
-    # Make this do stuff
-    def calc_baseline_fuel_consumption (self):
-        """ Function doc """
-        self.baseline_fuel_consumption = np.zeros(self.project_life)
-     
-    # Make this do stuff
-    def calc_retrofit_fuel_consumption (self):
-        """ Function doc """
-        self.retrofit_fuel_consumption = np.zeros(self.project_life)
-        
-    # use this or change it see NOTE* above
-    def calc_savings_fuel_consumption(self):
-        """
-        calculate the savings in fuel consumption(in mmbtu) for a community
-        
-        pre:
-            self.baseline_fuel_consumption and self.retrofit_fue;_consumption
-        should be array of the same length or scaler numbers (units mmbtu)
-    
-        post:
-            self.savings_fuel_consumption is an array or scaler of numbers 
-        (units mmbtu)
-        """
-        self.savings_fuel_consumption = self.baseline_fuel_consumption -\
-                                        self.retrofit_fuel_consumption
-    
+        #~ print "self.calc_maintenance_cost"
+        #~ print self.maintenance_cost
     
     # Make this do stuff
     def calc_capital_costs (self):
         """ Function Doc"""
-        component_cost = slef.comp_specs['cost']
+        component_cost = self.comp_specs['cost']
         if str(component_cost) == 'UNKNOWN':
-            component_cost = self.proposed_load * slef.comp_specs['cost per kW']
+            component_cost = self.proposed_load * self.comp_specs['cost per kW']
             
         powerhouse_cost = 0
         if not self.cd['switchgear suatable for RE']:
             powerhouse_cost = self.cd['switchgear cost']
             
         self.capital_costs = powerhouse_cost + component_cost
-        print 'self.calc_capital_costs'
-        print self.capital_costs
+        #~ print 'self.calc_capital_costs'
+        #~ print self.capital_costs
     
     # Make this do stuff
     def calc_annual_electric_savings (self):
         """
         """
-        self.proposed_generation_cost = self.maintainance_cost
+        self.proposed_generation_cost = self.maintenance_cost
         
         
-        self.annual_electric_savings = self.savings_kWh_consumption * price
+        price = self.diesel_prices# + self.cd['heating fuel premium'])
+        gen_eff = self.cd["diesel generation efficiency"]
+        # ???
+        if gen_eff>13 or gen_eff==0 or np.isnan(gen_eff):
+            gen_eff = 13
+        self.fuel_used = self.generation_proposed/gen_eff
+        
+        # fuel cost + maintance cost
+        self.baseline_generation_cost = (self.fuel_used * price) +\
+                (self.generation_proposed * self.comp_specs['o&m cost per kWh'])
+        
+        self.annual_electric_savings = self.baseline_generation_cost - \
+                                       self.proposed_generation_cost
+                                       
+        #~ print self.baseline_generation_cost
+        #~ print self.proposed_generation_cost
+        #~ print self.annual_electric_savings
         
         
     # Make this do sruff. Remember the different fuel type prices if using
     def calc_annual_heating_savings (self):
         """
         """
-        price = 0 
-        self.annual_heating_savings = self.savings_fuel_consumption * price
-
-
+        gen_eff = self.cd["diesel generation efficiency"]
+        if gen_eff>13 or gen_eff==0 or np.isnan(gen_eff):
+            gen_eff = 13
+        self.fuel_used = self.generation_proposed/gen_eff * .15
+    
+        price = (self.diesel_prices + self.cd['heating fuel premium'])
+        self.annual_heating_savings = self.fuel_used * price
+        #~ print self.fuel_used
+        #~ print self.annual_heating_savings
 
         
     
