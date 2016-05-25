@@ -1,5 +1,12 @@
 #Change Log
 
+## [0.14.0]
+### added
+- solar power component
+
+### changed
+- handling of diesel data
+
 ## [0.13.4]
 ### removed
 - wind class and potential minimum requirments
