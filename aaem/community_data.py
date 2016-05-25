@@ -539,6 +539,19 @@ class CommunityData (object):
             except ValueError:
                 self.set_item('community','wind generation limit',
                                 float(0))
+                                
+        diesel_data = self.load_pp_csv("diesel_data.csv")
+        
+        if self.get_item('community', 
+                            'switchgear suatable for RE') in IMPORT_FLAGS:
+            sgs = diesel_data.ix['Switchgear Suitable']['value'] == 'Yes'
+            self.set_item('community','switchgear suatable for RE',sgs)
+        
+        if self.get_item('community', 
+                            'heat recovery operational') in IMPORT_FLAGS:
+            hro = diesel_data.ix['Waste Heat Recovery Opperational']\
+                                                            ['value'] == 'Yes'
+            self.set_item('community','heat recovery operational',hro)
             
         
     def load_pp_csv(self, f_name):

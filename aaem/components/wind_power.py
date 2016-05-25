@@ -162,19 +162,6 @@ def wind_preprocess (ppo):
     assumptions = read_csv(os.path.join(ppo.data_dir,
                                 "wind_class_assumptions.csv"),
                            comment = '#',index_col = 0)
-                           
-    
-    try:
-        diesel = read_csv(os.path.join(ppo.data_dir,
-                                "diesel_data.csv"),
-                           comment = '#',index_col = 0).ix[ppo.com_id]
-    #~ print '\n\n\n\n'
-    #~ print diesel
-    #~ print '\n\n\n\n'
-    
-        hr = str(diesel['Waste Heat Recovery Opperational'])
-    except KeyError:
-        hr = 'nan'
     
     try:
         capa = assumptions.ix[int(float(potential.ix['Assumed Wind Class']))]
@@ -191,7 +178,6 @@ def wind_preprocess (ppo):
     fd.write("key,value\n")
     fd.write("existing wind," + str(existing) +'\n')
     fd.write('assumed capacity factor,' +str(capa) +'\n')
-    fd.write('Heat Recovery Opperational,' + str(hr) +'\n')
     fd.close()
 
     #~ df = concat([ww_d,ww_a])
@@ -562,9 +548,9 @@ class WindPower(AnnualSavings):
         """ 
              calulate the somthing ???
         """
-        hr_used = self.comp_specs['data']['Heat Recovery Opperational']
+        hr_used = self.cd['heat recovery operational']
         self.loss_heat_recovery = 0
-        if hr_used == 'Yes': 
+        if hr_used:# == 'Yes': 
             self.loss_heat_recovery = self.electric_diesel_reduction * \
             self.comp_specs['percent heat recovered']
         #~ print 'self.loss_heat_recovery',self.loss_heat_recovery
