@@ -6,9 +6,11 @@ a template for adding components
 
 
 """
+import os
+
 import numpy as np
 from math import isnan
-from pandas import DataFrame,concat
+from pandas import DataFrame,concat,read_csv
 
 from annual_savings import AnnualSavings
 from aaem.community_data import CommunityData
@@ -82,8 +84,12 @@ yaml_comments = {'enabled': '<boolean>',
 def process_data_import(data_dir):
     """
     """
-    return {"HR Opperational":True,
-            'Output per 10kW Solar PV':8000}
+    data_file = os.path.join(data_dir, "solar_power_data.csv")
+    data = read_csv(data_file, comment = '#', index_col=0, header=0)
+    data = data['value'].to_dict()
+    data["HR Opperational"] = data["HR Opperational"] == 'True'
+    data['Output per 10kW Solar PV'] = float(data['Output per 10kW Solar PV'])
+    return data
 
 ## library of keys and functions for CommunityData IMPORT Keys
 yaml_import_lib = {'data':process_data_import,}
@@ -98,11 +104,18 @@ def preprocess_header (ppo):
 
 def preprocess (ppo):
     """"""
-    return
-    out_file = os.path.join(ppo.out_dir,"wind_power_data.csv")
+    data = read_csv(os.path.join(ppo.data_dir,"solar_data.csv"),
+                        comment = '#',index_col = 0).ix[ppo.com_id]
+    
+    val =  data['Output per 10kW Solar PV']
+    #~ return
+    out_file = os.path.join(ppo.out_dir,"solar_power_data.csv")
 
     fd = open(out_file,'w')
     fd.write(preprocess_header(ppo))
+    fd.write("key,value\n")
+    fd.write('Output per 10kW Solar PV,' + str(val) + '\n')
+    fd.write("HR Opperational,True\n")
     fd.close()
 
     # create data and uncomment this
@@ -111,7 +124,7 @@ def preprocess (ppo):
     ppo.MODEL_FILES['SOLAR_DATA'] = "solar_power_data.csv" # change this
 
 ## List of raw data files required for wind power preproecssing 
-raw_data_files = []# fillin
+raw_data_files = ['solar_data.csv']# fillin
 
 ## list of wind preprocessing functions
 preprocess_funcs = [preprocess]
@@ -123,7 +136,36 @@ yaml_not_to_save = []
 def component_summary (coms, res_dir):
     """
     """
-    pass
+    out = []
+    for c in sorted(coms.keys()):
+        it = coms[c]['model'].cd.intertie
+        if it is None:
+            it = 'parent'
+        if it == 'child':
+            continue
+        try:
+            solar = coms[c]['model'].comps_used['solar power']
+            
+            assumed_out = solar.comp_specs['data']['Output per 10kW Solar PV']
+            
+            average_load = solar.average_load
+            
+            proposed_capacity = solar.proposed_load + 0
+            
+            existing_capacity = 0
+            
+            capa_fac = 0
+            
+            net_gen = solar.generation_proposed [0]
+            
+            secondary_load = 0
+            
+            loss_heat = self.fuel_used
+            
+            print c, assumed_out, average_load, proposed_capacity, existing_capacity,capa_fac,net_gen,secondary_load,loss_heat
+        except (KeyError,AttributeError) as e:
+            print e
+            pass
     
         
 
