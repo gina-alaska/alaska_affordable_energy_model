@@ -388,6 +388,69 @@ class SolarPower (AnnualSavings):
         self.annual_heating_savings = self.fuel_displaced * price
         #~ print self.fuel_displaced
         #~ print self.annual_heating_savings
+        
+    def save_component_csv (self, directory):
+        """
+        save the output from the component.
+        """
+        if not self.run:
+            fname = os.path.join(directory,
+                                   self.component_name + "_output.csv")
+            fname = fname.replace(" ","_")
+        
+            fd = open(fname, 'w')
+            fd.write("Wind Power minimum requirments not met\n")
+            fd.close()
+            return
+        
+        
+        years = np.array(range(self.project_life)) + self.start_year
+    
+        # ??? +/- 
+        # ???
+        df = DataFrame({
+                'Capacity [kW]':self.proposed_load,
+                "Generation [kWh/yr]": self.generation_proposed,
+                'Heating Fuel Displaced[Gal]':self.fuel_displaced,
+                "Heat Recovery Cost Savings": 
+                                        self.get_heating_savings_costs(),
+                "Electricity Cost Savings": 
+                                    self.get_electric_savings_costs(),
+                "Project Capital Cost": self.get_capital_costs(),
+                "Total Cost Savings": self.get_total_savings_costs(),
+                "Net Benefit": self.get_net_beneft(),
+                       }, years)
+
+        df["community"] = self.cd['name']
+        
+        ol = ["community",'Capacity [kW]',
+                "Generation [kWh/yr]",
+                'Heating Fuel Displaced[Gal]',
+                "Heat Recovery Cost Savings",
+                "Electricity Cost Savings",
+                "Project Capital Cost",
+                "Total Cost Savings",
+                "Net Benefit"]
+        fname = os.path.join(directory,
+                                   self.component_name + "_output.csv")
+        fname = fname.replace(" ","_")
+        
+        
+        fin_str = "Enabled" if self.cd["model financial"] else "Disabled"
+        fd = open(fname, 'w')
+        fd.write("# " + self.component_name + " model outputs\n") 
+        fd.close()
+        
+        # save npv stuff
+        df2 = DataFrame([self.get_NPV_benefits(),self.get_NPV_costs(),
+                            self.get_NPV_net_benefit(),self.get_BC_ratio()],
+                       ['NPV Benefits','NPV Cost',
+                            'NPV Net Benefit','Benefit Cost Ratio'])
+        df2.to_csv(fname, header = False, mode = 'a')
+        
+        # save to end of project(actual lifetime)
+        df[ol].ix[:self.actual_end_year].to_csv(fname, index_label="year", 
+                                                                    mode = 'a')
 
         
     
