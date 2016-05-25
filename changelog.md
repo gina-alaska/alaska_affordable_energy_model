@@ -1,5 +1,16 @@
 #Change Log
 
+## [0.13.4]
+### removed
+- wind class and potential minimum requirments
+
+### changed
+- wind log file columns
+- wind defalut yaml options
+
+### added
+- wind interties for wind class
+
 ## [0.13.3]
 ### fixed
 - list of data files to copy in cli_lib

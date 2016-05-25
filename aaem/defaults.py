@@ -44,8 +44,11 @@ def build_defaults (comp_lib):
                         'wind generation limit': 'IMPORT' ,
                         'wind generation precent': .2,
                         'generation numbers': 'IMPORT',
-                        'switchgear suatable for RE': False,
-                        'switchgear cost': 150000 
+                        'switchgear suatable for RE': 'IMPORT',
+                        'switchgear cost': 150000,
+                        'heat recovery operational': 'IMPORT',
+                        
+                        
                         }
     yml['forecast'] = {'end year': 'ABSOLUTE DEFAULT',
                        'population': 'IMPORT',

@@ -125,6 +125,7 @@ class Preprocessor (object):
         self.buildings(base_pop)
         self.wastewater()
         self.generation_limits()
+        self.diesel_data()
 
         for comp in comp_lib:
             try:
@@ -332,6 +333,19 @@ class Preprocessor (object):
                 "# generated: " + str(datetime.now()).split('.')[0] +"\n"
                 "# units are in kWh\n")
         
+    def diesel_data_header(self):
+        return ('# '   + self.com_id + " diesel data\n"
+                "# generated: " + str(datetime.now()).split('.')[0] +"\n"
+                "# Total Number of generators, \n"
+                "# Total Capacity (in kW), capacity of generators\n"
+                "# Largest generator (in kW), capacity of largest generator\n"
+                "# Sizing, \n"
+                '# Number to replace ("Poor"),\n'
+                '# Switchgear Suitable,\n'
+                '# Waste Heat Recovery Opperational,\n'
+                '# Add waste heat Avail,\n'
+                '# Est. current annual heating fuel gallons displaced,\n'
+                '# Est. potential annual heating fuel gallons displaced,\n')
 
     ## PROCESS FUNCTIONS #######################################################
     def population (self, threshold = 20, end_year = 2040,
@@ -1466,6 +1480,28 @@ class Preprocessor (object):
         fd.write("hydro," + str(hydro) +"\n")
         fd.write("wind," + str(wind) +"\n")
         fd.close()
+        
+    def diesel_data (self):
+        """
+            preprocess the diesel data
+        """
+        
+        diesel = read_csv(os.path.join(self.data_dir, "diesel_data.csv"),
+                       comment = '#',index_col = 0)
+        diesel = self.get_communities_data(diesel)
+        
+        if len(diesel) == 0:
+            diesel.ix[self.com_id] = 'N/a'
+        
+        out_file = os.path.join(self.out_dir, "diesel_data.csv")
+        fd = open(out_file,'w')
+        fd.write(self.diesel_data_header())
+        fd.write('key,value\n')
+        fd.close()
+        diesel.T.fillna('N/a').to_csv(out_file, mode = 'a',header = False)
+        self.MODEL_FILES['DIESEL_DATA'] = "diesel_data.csv"
+        
+        
         
         
     def get_communities_data(self, dataframe):
