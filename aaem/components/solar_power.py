@@ -87,7 +87,6 @@ def process_data_import(data_dir):
     data_file = os.path.join(data_dir, "solar_power_data.csv")
     data = read_csv(data_file, comment = '#', index_col=0, header=0)
     data = data['value'].to_dict()
-    data["HR Opperational"] = data["HR Opperational"] == 'True'
     data['Output per 10kW Solar PV'] = float(data['Output per 10kW Solar PV'])
     return data
 
@@ -115,7 +114,7 @@ def preprocess (ppo):
     fd.write(preprocess_header(ppo))
     fd.write("key,value\n")
     fd.write('Output per 10kW Solar PV,' + str(val) + '\n')
-    fd.write("HR Opperational,True\n")
+    #~ fd.write("HR Opperational,True\n")
     fd.close()
 
     # create data and uncomment this
@@ -160,13 +159,80 @@ def component_summary (coms, res_dir):
             
             secondary_load = 0
             
-            loss_heat = self.fuel_used
+            loss_heat = solar.fuel_displaced[0]
             
-            print c, assumed_out, average_load, proposed_capacity, existing_capacity,capa_fac,net_gen,secondary_load,loss_heat
+            hr_op = solar.cd['heat recovery operational']
+            
+            net_heating =  secondary_load - loss_heat
+            
+            eff = solar.cd["diesel generation efficiency"]
+            
+            try:
+                red_per_year = net_heating / eff
+            except ZeroDivisionError:
+                red_per_year = 0
+            
+            l = [c, 
+                 assumed_out,
+                 average_load,
+                 
+                 proposed_capacity,
+                 existing_capacity,
+                 
+                 capa_fac,
+                 net_gen,
+                 
+                 secondary_load,
+                 loss_heat,
+                 
+                 hr_op,
+                 net_heating,
+                 red_per_year,
+                 eff,
+                 solar.get_NPV_benefits(),
+                 solar.get_NPV_costs(),
+                 solar.get_NPV_net_benefit(),
+                 solar.get_BC_ratio()
+            ]
+            out.append(l)
+            
+            #~ print c, assumed_out, average_load, proposed_capacity, existing_capacity,capa_fac,net_gen,secondary_load,loss_heat
         except (KeyError,AttributeError) as e:
-            print e
+            #~ print e
             pass
     
+    data = DataFrame(out,columns = \
+       ['Community',
+        'Assumed  Output per 10kW Solar PV Array',
+        'Average Load [kw]',
+        
+        'Solar Capacity Proposed [kW]',
+        'Existing Solar Capacity [kW]',
+        
+        'Assumed Capacity Factor [%]',
+        'Net Generation [kWh]',
+        
+        'Heating Oil Equivalent Captured by Seconday Load [gal] ',
+        'Loss of Recovered Heat[gal]',
+        
+        'Heat Recovery Opperational',
+        'Net in Heating Oil Consumption [gal]',
+        
+        'Reduction in Utility Diesel Consumed per year',
+        'Diesel Generator Efficiency',
+        
+        'NPV benefits [$]',
+        'NPV Costs [$]',
+        
+        'NPV Net benefit [$]',
+        'Benefit Cost Ratio']
+                    ).set_index('Community')#.round(2)
+    f_name = os.path.join(res_dir,
+                'solar_power_summary.csv')
+    fd = open(f_name,'w')
+    fd.write(("# solar summary\n"))
+    fd.close()
+    data.to_csv(f_name, mode='a')
         
 
 #   do a find and replace on ComponentName to name of component 
@@ -292,10 +358,10 @@ class SolarPower (AnnualSavings):
         # ???
         if gen_eff>13 or gen_eff==0 or np.isnan(gen_eff):
             gen_eff = 13
-        self.fuel_used = self.generation_proposed/gen_eff
+        self.generation_fuel_used = self.generation_proposed/gen_eff
         
         # fuel cost + maintance cost
-        self.baseline_generation_cost = (self.fuel_used * price) +\
+        self.baseline_generation_cost = (self.generation_fuel_used * price) +\
                 (self.generation_proposed * self.comp_specs['o&m cost per kWh'])
         
         self.annual_electric_savings = self.baseline_generation_cost - \
@@ -313,11 +379,14 @@ class SolarPower (AnnualSavings):
         gen_eff = self.cd["diesel generation efficiency"]
         if gen_eff>13 or gen_eff==0 or np.isnan(gen_eff):
             gen_eff = 13
-        self.fuel_used = self.generation_proposed/gen_eff * .15
+        if self.cd['heat recovery operational']:
+            self.fuel_displaced = self.generation_proposed/gen_eff * .15
+        else:
+            self.fuel_displaced = self.generation_proposed * 0
     
         price = (self.diesel_prices + self.cd['heating fuel premium'])
-        self.annual_heating_savings = self.fuel_used * price
-        #~ print self.fuel_used
+        self.annual_heating_savings = self.fuel_displaced * price
+        #~ print self.fuel_displaced
         #~ print self.annual_heating_savings
 
         
