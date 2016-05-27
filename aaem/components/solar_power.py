@@ -143,6 +143,8 @@ def component_summary (coms, res_dir):
         if it == 'child':
             continue
         try:
+            
+           
             solar = coms[c]['model'].comps_used['solar power']
             
             assumed_out = solar.comp_specs['data']['Output per 10kW Solar PV']
@@ -152,23 +154,31 @@ def component_summary (coms, res_dir):
             proposed_capacity = solar.proposed_load + 0
             
             existing_capacity = 0
+        
+        
+            try:
+                net_gen = solar.generation_proposed [0]
+                
+                
+                loss_heat = solar.fuel_displaced[0]
+                
+                hr_op = solar.cd['heat recovery operational']
+                
+                net_heating =   -1* loss_heat
+                
+                eff = solar.cd["diesel generation efficiency"]
+            except AttributeError:
+                net_gen = 0
             
-            capa_fac = 0
-            
-            net_gen = solar.generation_proposed [0]
-            
-            secondary_load = 0
-            
-            loss_heat = solar.fuel_displaced[0]
-            
-            hr_op = solar.cd['heat recovery operational']
-            
-            net_heating =  secondary_load - loss_heat
-            
-            eff = solar.cd["diesel generation efficiency"]
+                loss_heat = 0
+                hr_op = solar.cd['heat recovery operational']
+                
+                net_heating = 0
+                
+                eff = solar.cd["diesel generation efficiency"]
             
             try:
-                red_per_year = net_heating / eff
+                red_per_year = net_gen / eff
             except ZeroDivisionError:
                 red_per_year = 0
             
@@ -178,11 +188,8 @@ def component_summary (coms, res_dir):
                  
                  proposed_capacity,
                  existing_capacity,
-                 
-                 capa_fac,
                  net_gen,
                  
-                 secondary_load,
                  loss_heat,
                  
                  hr_op,
@@ -196,7 +203,6 @@ def component_summary (coms, res_dir):
             ]
             out.append(l)
             
-            #~ print c, assumed_out, average_load, proposed_capacity, existing_capacity,capa_fac,net_gen,secondary_load,loss_heat
         except (KeyError,AttributeError) as e:
             #~ print e
             pass
@@ -208,11 +214,8 @@ def component_summary (coms, res_dir):
         
         'Solar Capacity Proposed [kW]',
         'Existing Solar Capacity [kW]',
-        
-        'Assumed Capacity Factor [%]',
+    
         'Net Generation [kWh]',
-        
-        'Heating Oil Equivalent Captured by Seconday Load [gal] ',
         'Loss of Recovered Heat[gal]',
         
         'Heat Recovery Opperational',
@@ -286,6 +289,15 @@ class SolarPower (AnnualSavings):
             "could not be run")
             self.run = False
             return
+            
+        
+        if self.average_load < self.comp_specs['average load limit'] or \
+           not self.proposed_load > 0:
+            self.diagnostics.add_note(self.component_name, 
+            "model did not meet minimum generation requirments")
+            self.run = False
+            return
+        
         
         if self.cd["model financial"]:
             # AnnualSavings functions (don't need to write)
@@ -303,9 +315,18 @@ class SolarPower (AnnualSavings):
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
             
+            
+            #~ print self.get_NPV_benefits()
+            #~ print self.get_NPV_costs()
+            #~ print self.get_NPV_net_benefit()
+            #~ print self.get_BC_ratio()
+            
+            
     def calc_average_load (self):
         """ """
-        self.generation = self.forecast.get_generation(self.start_year)
+        #~ self.generation = self.forecast.get_generation(self.start_year)
+        self.generation = self.forecast.generation_by_type['generation diesel']\
+                                                            [self.start_year]
         self.average_load = self.generation / constants.hours_per_year
         #~ print self.average_load
         
@@ -356,7 +377,7 @@ class SolarPower (AnnualSavings):
         price = self.diesel_prices# + self.cd['heating fuel premium'])
         gen_eff = self.cd["diesel generation efficiency"]
         # ???
-        if gen_eff>13 or gen_eff==0 or np.isnan(gen_eff):
+        if gen_eff==0 or np.isnan(gen_eff):
             gen_eff = 13
         self.generation_fuel_used = self.generation_proposed/gen_eff
         
@@ -377,8 +398,8 @@ class SolarPower (AnnualSavings):
         """
         """
         gen_eff = self.cd["diesel generation efficiency"]
-        if gen_eff>13 or gen_eff==0 or np.isnan(gen_eff):
-            gen_eff = 13
+        if gen_eff==0 or np.isnan(gen_eff):
+            gen_eff = 12
         if self.cd['heat recovery operational']:
             self.fuel_displaced = self.generation_proposed/gen_eff * .15
         else:

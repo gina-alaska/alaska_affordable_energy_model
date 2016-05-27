@@ -412,7 +412,7 @@ class CommunityData (object):
             consumption = elec_summary[["consumption","consumption residential",
                                 "consumption non-residential"]]
             line_losses = np.float(elec_summary["line loss"][-3:].mean())
-            diesel_gen_eff = np.float(elec_summary['efficiency'].values[-1])
+            diesel_gen_eff = np.float(elec_summary['efficiency'].values[-3:].mean())
             net_gen = elec_summary["net generation"]
             gen_by_type = elec_summary[['generation diesel', 'generation hydro',
                                        'generation natural gas',
