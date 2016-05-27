@@ -1868,6 +1868,8 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
             #~ MODEL_FILES["WIND_DATA"]),out_dir)  
             
     for f in Preprocessor.MODEL_FILES:
+        if f in ["ELECTRICITY",]:
+            continue
         shutil.copy(os.path.join(parent_dir,
             Preprocessor.MODEL_FILES[f]),out_dir) 
               
