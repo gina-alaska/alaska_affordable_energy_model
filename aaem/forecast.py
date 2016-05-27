@@ -86,6 +86,9 @@ class Forecast (object):
         self.yearly_total_kWh = DataFrame({"year":years,
                           "total":kWh['consumption'].values}).set_index("year")
         self.average_nr_kWh = kWh['consumption non-residential'].values[-3:].mean()
+        if np.isnan(self.average_nr_kWh):
+            temp = kWh['consumption non-residential']
+            self.average_nr_kWh = temp[ np.logical_not(np.isnan(temp))].mean() 
         self.yearly_nr_kWh = DataFrame({"year":years,
                           "total":kWh['consumption non-residential'].values}).set_index("year")
         #~ print self.average_nr_kWh
@@ -142,6 +145,8 @@ class Forecast (object):
         population = self.population.ix[idx].T.values[0]
         self.measured_consumption = self.yearly_total_kWh.ix[idx] 
         consumption = self.yearly_res_kWh.ix[idx].T.values[0]
+        print consumption
+        print population
         if len(population) < 10:
             self.diagnostics.add_warning("forecast", 
                   "the data range is < 10 matching years for "\
@@ -156,6 +161,8 @@ class Forecast (object):
         except TypeError:
             raise RuntimeError, "Known population & consumption do not overlap"
         
+        print m, b 
+        print self.average_nr_kWh
         fc_consumption = (m * self.population + b) + self.average_nr_kWh
 
         start = int(self.measured_consumption.index[-1] + 1)
@@ -201,6 +208,7 @@ class Forecast (object):
         self.consumption.columns = ["consumption kWh"]
         self.consumption.index = self.consumption.index.values.astype(int)
         self.start_year = int(self.yearly_res_kWh.T.keys()[-1])
+        print self.consumption
         
     def forecast_generation (self):
         """
@@ -234,7 +242,9 @@ class Forecast (object):
             pass
     
         self.generation.columns = ["kWh generation"]
-            
+        print self.generation
+        
+        
     def forecast_generation_by_type (self):
         """
         forecasts the generation by each fuel type
@@ -601,7 +611,7 @@ class Forecast (object):
                            kWh_gen.round().astype(int), g_map] ,axis=1)
         except ValueError:
             self.electric_dataframe = None
-            
+        print self.electric_dataframe
     
     
     def save_electric (self, csv_path, png_path):
