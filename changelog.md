@@ -1,6 +1,21 @@
 #Change Log
 
 ## [0.14.0]
+### fixed
+- setup function for natural gas
+- plotting of intertie electricity forecasts
+- wind power summary not being generated is fixed
+
+### changed
+- solar power output format
+- number of years used in caclulating gennerator efficiency (was 1: now 3)
+- solar capacity is detrimied as percent of diesel generation
+
+### added
+- solar power minumum run conditions
+
+
+## [0.14.0]
 ### added
 - solar power component
 
