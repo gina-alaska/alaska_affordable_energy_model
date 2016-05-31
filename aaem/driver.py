@@ -595,7 +595,7 @@ def write_config (com_id, root):
         config_text += (
 "  # added to ensure model for north slope \n"
 "  natural gas price: 3 # $cost/Mcf <float> (ex. .83)\n"
-"  natural gas used: False # is natural gas used in the community\n"
+"  natural gas used: True # is natural gas used in the community\n"
  
 )
     #~ print config_text
