@@ -439,6 +439,8 @@ class WindPower(AnnualSavings):
         post:
             self.average_load is a number (kW/yr)
         """
+        self.generation = self.forecast.generation_by_type['generation diesel']\
+                                                            [self.start_year]
         self.average_load = self.generation / constants.hours_per_year
         #~ print 'self.average_load',self.average_load
         
@@ -456,8 +458,11 @@ class WindPower(AnnualSavings):
             self.generation_wind_proposed is a number (kWh/yr)
         """
         self.load_offset_proposed = 0
+        
         offset = self.average_load*\
                 self.comp_specs['percent generation to offset']
+        if self.forecast.generation_by_type['generation hydro'].sum().fillna(0) != 0:
+            offset *= 2
         #~ self.comp_specs['data']['existing wind'] = 0
         if int(float(self.comp_specs['data']['existing wind'])) < \
                 (round(offset/25) * 25): # ???
