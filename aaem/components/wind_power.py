@@ -233,7 +233,7 @@ def component_summary (coms, res_dir):
             wind_class = float(wind.comp_specs['data']['Assumed Wind Class']) 
             proposed_load =  wind.load_offset_proposed
             cap_fac = float(wind.comp_specs['data']['assumed capacity factor'])
-            heat_rec_opp = wind.comp_specs['data']['Heat Recovery Opperational']
+            heat_rec_opp = wind.cd['heat recovery operational']
             try:
                 #~ offset = wind.load_offset_proposed
                 net_gen_wind = wind.net_generation_wind
