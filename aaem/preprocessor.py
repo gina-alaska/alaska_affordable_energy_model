@@ -1160,7 +1160,8 @@ class Preprocessor (object):
             ## other values
             temp['fuel used'] = temp['fuel_used_gal']
             temp['line loss'] = 1.0 - temp['consumption']/temp['net generation']
-            temp['efficiency'] = temp['generation'] / temp['fuel_used_gal']
+            temp['efficiency'] = temp['generation diesel'] / temp['fuel_used_gal']
+            
             sums.append(temp)
         ## pull out diesel & hydro
         df_diesel = DataFrame(sums)[["year",
@@ -1588,7 +1589,8 @@ def preprocess (data_dir, out_dir, com_id, dev = False):
         pp = [com_id]
 
     diag.save_messages(os.path.join(out_dir,
-                               str(com_id.replace(" ","_")) + "_preprocessor_diagnostis.csv"))
+                       str(com_id.replace(" ","_")) +\
+                            "_preprocessor_diagnostics.csv"))
     return pp
 
 
