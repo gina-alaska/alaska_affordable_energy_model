@@ -19,14 +19,6 @@ from aaem.diagnostics import diagnostics
 import aaem.constants as constants
 
 
-## steps for using
-### 1) copy this file as component_name.py and go throug this file folloing the 
-###    commented instructions
-### 2) add new components things to default yaml file
-### 3) add the component to __init__ in this directory
-
-
-
 # change to component name (i.e. 'residential buildings')
 COMPONENT_NAME = "solar power"
 
@@ -345,6 +337,15 @@ class SolarPower (AnnualSavings):
         """ Function doc """
         self.proposed_load = self.average_load * \
                         self.comp_specs['percent generation to offset']
+                        
+        
+        
+        self.proposed_load = max(self.proposed_load - \
+                            self.comp_specs['data']['Installed Capacity'], 0)
+        
+        #~ self.total_load = self.proposed_load + \
+                        #~ self.comp_specs['data']['Installed Capacity']               
+        
         self.generation_proposed = self.proposed_load *\
                         self.comp_specs['data']['Output per 10kW Solar PV'] /\
                         10

@@ -15,6 +15,11 @@ from aaem.forecast import Forecast
 from aaem.diagnostics import diagnostics
 import aaem.constants as constants
 
+#TODO 2016/06/01
+# ambler
+
+
+
 ## List of yaml key/value pairs
 yaml = {'enabled': False,
         'lifetime': 'ABSOLUTE DEFAULT',
@@ -289,7 +294,7 @@ def component_summary (coms, res_dir):
     data = DataFrame(out,columns = \
        ['Community',
         'Assumed Wind Class',
-        'Average Load [kw]',
+        'Average Diesel Load [kw]',
         'Wind Capacity Proposed [kW]',
         'Existing Wind Capacity [kW]',
         'Assumed Capacity Factor [%]',
