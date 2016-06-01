@@ -1,6 +1,11 @@
 #Change Log
 
 ## [0.14.2]
+### changed 
+- solar and wind output headers
+- subtracts existing solar load from propoesed when calculating proposed
+
+## [0.14.2]
 ### added
 - notes column to solar and wind summaries
 - existing solar data to solar summary
