@@ -597,22 +597,24 @@ class CommunityData (object):
         """
         ## save work around 
         import copy
+
         copy = copy.deepcopy(self.model_inputs)
         #~ rel = os.path.relpath(os.path.dirname(fname),os.path.join("model",".."))
         #~ rt = os.path.join(rel,"input_data")
-        self.set_item('residential buildings','data', "IMPORT")
-        self.set_item('non-residential buildings',
-                                                'com building data', "IMPORT")
-        self.set_item('non-residential buildings',
-                                           "com building estimates", "IMPORT")
+        
+        
+        
+        copy['residential buildings']['data'] = "IMPORT"
+        copy['non-residential buildings']['com building data'] = "IMPORT"
+        copy['non-residential buildings']["com building estimates"] =  "IMPORT"
 
-        self.set_item('community', "diesel prices", "IMPORT")
-        self.set_item('forecast', "electricity", "IMPORT")
-        self.set_item('forecast', "population", "IMPORT")
-        self.set_item('water wastewater', "data", "IMPORT")
-        self.set_item("community","electric non-fuel prices","IMPORT")
-        self.set_item("community","generation numbers", "IMPORT")
-        self.set_item("community","generation", "IMPORT")
+        copy['community']["diesel prices"]="IMPORT"
+        copy['forecast']["electricity"] = "IMPORT"
+        copy['forecast']["population"] = "IMPORT"
+        copy['water wastewater']["data"] = "IMPORT"
+        copy["community"]["electric non-fuel prices"] = "IMPORT"
+        copy["community"]["generation numbers"] =  "IMPORT"
+        copy["community"]["generation"] = "IMPORT"
         
         for comp in comp_lib:
             c = comp_lib[comp]
@@ -621,11 +623,10 @@ class CommunityData (object):
             except AttributeError:
                 continue
             for item in lis:
-                self.set_item(comp,item, "IMPORT")
+                copy[comp][item] =  "IMPORT"
         
         fd = open(fname, 'w')
-        
-        text = yaml.dump(self.model_inputs, default_flow_style=False) 
+        text = yaml.dump(copy, default_flow_style=False) 
         comment = \
         ("# some of the items may reference files the input data directory\n"
          "# residential buildings(data)-> residential_data.csv\n" 
@@ -643,8 +644,8 @@ class CommunityData (object):
         fd.write(comment + text.replace("IMPORT","--see input_data"))
         fd.close()
 
-        del self.model_inputs
-        self.model_inputs = copy
+        del copy
+        #~ self.model_inputs = copy
         #~ return comment + text
         
 def test(data, overrides, defaults):

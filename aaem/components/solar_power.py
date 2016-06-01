@@ -105,6 +105,12 @@ def preprocess (ppo):
     """"""
     data = read_csv(os.path.join(ppo.data_dir,"solar_data.csv"),
                         comment = '#',index_col = 0).ix[ppo.com_id]
+    try:
+        existing = read_csv(os.path.join(ppo.data_dir,"solar_data_existing.csv"),
+                        comment = '#',index_col = 0).ix[ppo.com_id]
+        existing = existing['Installed Capacity (kW)']
+    except KeyError:
+        existing = 0 
     
     val =  data['Output per 10kW Solar PV']
     #~ return
@@ -113,6 +119,7 @@ def preprocess (ppo):
     fd = open(out_file,'w')
     fd.write(preprocess_header(ppo))
     fd.write("key,value\n")
+    fd.write("Installed Capacity," + str(existing) + '\n')
     fd.write('Output per 10kW Solar PV,' + str(val) + '\n')
     #~ fd.write("HR Opperational,True\n")
     fd.close()
@@ -120,16 +127,16 @@ def preprocess (ppo):
     # create data and uncomment this
     #~ data.to_csv(out_file, mode = 'a',header=False)
     
-    ppo.MODEL_FILES['SOLAR_DATA'] = "solar_power_data.csv" # change this
+    ppo.MODEL_FILES['SOLAR_DATA'] = "solar_power_data.csv"
 
 ## List of raw data files required for wind power preproecssing 
-raw_data_files = ['solar_data.csv']# fillin
+raw_data_files = ['solar_data.csv', 'solar_data_existing.csv']
 
 ## list of wind preprocessing functions
 preprocess_funcs = [preprocess]
 
 ## list of data keys not to save when writing the CommunityData output
-yaml_not_to_save = []
+yaml_not_to_save = ["data"]
     
 ## component summary
 def component_summary (coms, res_dir):
@@ -146,14 +153,14 @@ def component_summary (coms, res_dir):
             
            
             solar = coms[c]['model'].comps_used['solar power']
-            
+
             assumed_out = solar.comp_specs['data']['Output per 10kW Solar PV']
             
             average_load = solar.average_load
             
             proposed_capacity = solar.proposed_load + 0
             
-            existing_capacity = 0
+            existing_capacity = solar.comp_specs['data']['Installed Capacity']
         
         
             try:
@@ -210,7 +217,7 @@ def component_summary (coms, res_dir):
     data = DataFrame(out,columns = \
        ['Community',
         'Assumed  Output per 10kW Solar PV Array',
-        'Average Load [kw]',
+        'Average Diesel Load [kw]',
         
         'Solar Capacity Proposed [kW]',
         'Existing Solar Capacity [kW]',
@@ -299,6 +306,9 @@ class SolarPower (AnnualSavings):
             return
         
         
+        self.calc_generation_fuel_used()
+        self.calc_fuel_displaced()
+        
         if self.cd["model financial"]:
             # AnnualSavings functions (don't need to write)
             self.get_diesel_prices()
@@ -345,6 +355,23 @@ class SolarPower (AnnualSavings):
         #~ print self.proposed_load
         #~ print self.generation_proposed
         
+    def calc_generation_fuel_used (self):
+        gen_eff = self.cd["diesel generation efficiency"]
+        # ???
+        if gen_eff==0 or np.isnan(gen_eff):
+            gen_eff = 12
+        self.generation_fuel_used = self.generation_proposed/gen_eff
+        
+    def calc_fuel_displaced (self):
+        """ Function doc """
+        gen_eff = self.cd["diesel generation efficiency"]
+        if gen_eff==0 or np.isnan(gen_eff):
+            gen_eff = 12
+        if self.cd['heat recovery operational']:
+            self.fuel_displaced = self.generation_proposed/gen_eff * .15
+        else:
+            self.fuel_displaced = self.generation_proposed * 0
+        
     def calc_maintenance_cost (self):
         """ """
         self.maintenance_cost = self.capital_costs * \
@@ -352,7 +379,6 @@ class SolarPower (AnnualSavings):
         #~ print "self.calc_maintenance_cost"
         #~ print self.maintenance_cost
     
-    # Make this do stuff
     def calc_capital_costs (self):
         """ Function Doc"""
         component_cost = self.comp_specs['cost']
@@ -367,7 +393,7 @@ class SolarPower (AnnualSavings):
         #~ print 'self.calc_capital_costs'
         #~ print self.capital_costs
     
-    # Make this do stuff
+
     def calc_annual_electric_savings (self):
         """
         """
@@ -375,8 +401,12 @@ class SolarPower (AnnualSavings):
         
         
         price = self.diesel_prices# + self.cd['heating fuel premium'])
+<<<<<<< HEAD
         gen_eff = self.cd["diesel generation efficiency"]
         self.generation_fuel_used = self.generation_proposed/gen_eff
+=======
+        
+>>>>>>> solar_more_changes
         
         # fuel cost + maintance cost
         self.baseline_generation_cost = (self.generation_fuel_used * price) +\
@@ -394,12 +424,6 @@ class SolarPower (AnnualSavings):
     def calc_annual_heating_savings (self):
         """
         """
-        gen_eff = self.cd["diesel generation efficiency"]
-        if self.cd['heat recovery operational']:
-            self.fuel_displaced = self.generation_proposed/gen_eff * .15
-        else:
-            self.fuel_displaced = self.generation_proposed * 0
-    
         price = (self.diesel_prices + self.cd['heating fuel premium'])
         self.annual_heating_savings = self.fuel_displaced * price
         #~ print self.fuel_displaced
