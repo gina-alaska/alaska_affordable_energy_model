@@ -50,7 +50,7 @@ yaml = {'enabled': False,
 ## default values for yaml key/Value pairs
 yaml_defaults = {'enabled': True,
         'lifetime': 20,
-        'start year': 2017,
+        'start year': 2020,
         }
     
 ## order to save yaml
@@ -174,6 +174,7 @@ def component_summary (coms, res_dir):
                 net_heating =   -1* loss_heat
                 
                 eff = solar.cd["diesel generation efficiency"]
+                red_per_year = solar.generation_fuel_used[0]
             except AttributeError:
                 net_gen = 0
             
@@ -183,10 +184,6 @@ def component_summary (coms, res_dir):
                 net_heating = 0
                 
                 eff = solar.cd["diesel generation efficiency"]
-            
-            try:
-                red_per_year = net_gen / eff
-            except ZeroDivisionError:
                 red_per_year = 0
             
             l = [c, 
@@ -206,7 +203,8 @@ def component_summary (coms, res_dir):
                  solar.get_NPV_benefits(),
                  solar.get_NPV_costs(),
                  solar.get_NPV_net_benefit(),
-                 solar.get_BC_ratio()
+                 solar.get_BC_ratio(),
+                 solar.reason
             ]
             out.append(l)
             
@@ -235,7 +233,8 @@ def component_summary (coms, res_dir):
         'NPV Costs [$]',
         
         'NPV Net benefit [$]',
-        'Benefit Cost Ratio']
+        'Benefit Cost Ratio',
+        'notes']
                     ).set_index('Community')#.round(2)
     f_name = os.path.join(res_dir,
                 'solar_power_summary.csv')
@@ -287,7 +286,7 @@ class SolarPower (AnnualSavings):
             the model is run and the output values are available
         """
         self.run = True
-        
+        self.reason = "OK"
         try:
             self.calc_average_load()
             self.calc_proposed_generation()
@@ -295,6 +294,7 @@ class SolarPower (AnnualSavings):
             self.diagnostics.add_warning(self.component_name, 
             "could not be run")
             self.run = False
+            self.reason = "could not find average load or proposed generation"
             return
             
         
@@ -303,6 +303,7 @@ class SolarPower (AnnualSavings):
             self.diagnostics.add_note(self.component_name, 
             "model did not meet minimum generation requirments")
             self.run = False
+            self.reason = "average load too small or proposed load <= 0"
             return
         
         
@@ -357,16 +358,11 @@ class SolarPower (AnnualSavings):
         
     def calc_generation_fuel_used (self):
         gen_eff = self.cd["diesel generation efficiency"]
-        # ???
-        if gen_eff==0 or np.isnan(gen_eff):
-            gen_eff = 12
         self.generation_fuel_used = self.generation_proposed/gen_eff
         
     def calc_fuel_displaced (self):
         """ Function doc """
         gen_eff = self.cd["diesel generation efficiency"]
-        if gen_eff==0 or np.isnan(gen_eff):
-            gen_eff = 12
         if self.cd['heat recovery operational']:
             self.fuel_displaced = self.generation_proposed/gen_eff * .15
         else:
@@ -400,14 +396,7 @@ class SolarPower (AnnualSavings):
         self.proposed_generation_cost = self.maintenance_cost
         
         
-        price = self.diesel_prices# + self.cd['heating fuel premium'])
-<<<<<<< HEAD
-        gen_eff = self.cd["diesel generation efficiency"]
-        self.generation_fuel_used = self.generation_proposed/gen_eff
-=======
-        
->>>>>>> solar_more_changes
-        
+        price = self.diesel_prices
         # fuel cost + maintance cost
         self.baseline_generation_cost = (self.generation_fuel_used * price) +\
                 (self.generation_proposed * self.comp_specs['o&m cost per kWh'])

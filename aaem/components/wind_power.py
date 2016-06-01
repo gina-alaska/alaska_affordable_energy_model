@@ -41,7 +41,7 @@ yaml = {'enabled': False,
 ## default values for yaml key/Value pairs
 yaml_defaults = {'enabled': True,
         'lifetime': 20,
-        'start year': 2017,
+        'start year': 2020,
         }
 
 ## order to save yaml
