@@ -376,9 +376,6 @@ class SolarPower (AnnualSavings):
         
         price = self.diesel_prices# + self.cd['heating fuel premium'])
         gen_eff = self.cd["diesel generation efficiency"]
-        # ???
-        if gen_eff==0 or np.isnan(gen_eff):
-            gen_eff = 13
         self.generation_fuel_used = self.generation_proposed/gen_eff
         
         # fuel cost + maintance cost
@@ -398,8 +395,6 @@ class SolarPower (AnnualSavings):
         """
         """
         gen_eff = self.cd["diesel generation efficiency"]
-        if gen_eff==0 or np.isnan(gen_eff):
-            gen_eff = 12
         if self.cd['heat recovery operational']:
             self.fuel_displaced = self.generation_proposed/gen_eff * .15
         else:

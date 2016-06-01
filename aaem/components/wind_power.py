@@ -512,9 +512,6 @@ class WindPower(AnnualSavings):
             calculate the reduction in diesel due to the proposed wind
         """
         gen_eff = self.cd["diesel generation efficiency"]
-        # ???
-        if gen_eff>13 or gen_eff==0 or np.isnan(gen_eff):
-            gen_eff = 13
             
         self.electric_diesel_reduction = self.net_generation_wind / gen_eff
         #~ print 'self.electric_diesel_reduction',self.electric_diesel_reduction
