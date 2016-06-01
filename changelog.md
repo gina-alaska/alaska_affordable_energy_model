@@ -1,6 +1,21 @@
 #Change Log
 
-## [0.14.0]
+## [0.14.2]
+### added
+- notes column to solar and wind summaries
+- existing solar data to solar summary
+
+### changed
+- disel generato efficiency is now validated in community data
+- caclulation of propsed offset for wind where hydro is present
+- default starting date for RE projects is 2020
+
+### fixed
+- PCE generator efficiency is now calculated from only the diesel generation 
+
+
+
+## [0.14.1]
 ### fixed
 - setup function for natural gas
 - plotting of intertie electricity forecasts
