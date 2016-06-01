@@ -32,6 +32,7 @@ def build_defaults (comp_lib):
                         'line losses': 'IMPORT',
                         'max line losses': .4,
                         'default line losses': .1,
+                        'default diesel generator efficiency': 12,
                         'res non-PCE elec cost': 'IMPORT',
                         'elec non-fuel cost': 'IMPORT',
                         'HDD': 'IMPORT',

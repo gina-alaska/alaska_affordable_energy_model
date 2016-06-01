@@ -453,7 +453,14 @@ class CommunityData (object):
     
         if self.get_item('community',
                                 'diesel generation efficiency')in IMPORT_FLAGS:
-            self.set_item('community','diesel generation efficiency', 
+            if diesel_gen_eff is None\
+               or diesel_gen_eff == 0 \
+               or np.isnan(diesel_gen_eff):
+                self.set_item('community','diesel generation efficiency', 
+                                self.get_item('community',
+                                    "default diesel generator efficiency"))
+            else:
+                self.set_item('community','diesel generation efficiency', 
                                                             diesel_gen_eff)
         try:
             if self.get_item('community',"generation") in IMPORT_FLAGS:
