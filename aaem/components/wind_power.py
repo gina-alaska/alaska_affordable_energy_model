@@ -241,7 +241,7 @@ def component_summary (coms, res_dir):
                 
                 
                 loss_heat = wind.loss_heat_recovery
-                
+                electric_diesel_reduction=wind.electric_diesel_reduction
                 
                 diesel_red = wind.reduction_diesel_used
                 
@@ -251,16 +251,16 @@ def component_summary (coms, res_dir):
                 offset = 0
                 net_gen_wind = 0
                 decbb = 0
-                
+                electric_diesel_reduction=0
                 loss_heat = 0
                 
                 diesel_red = 0
                 eff = wind.cd["diesel generation efficiency"]    
                 
-            try:
-                red_per_year = net_gen_wind / eff
-            except ZeroDivisionError:
-                red_per_year = 0
+            #~ try:
+                #~ red_per_year = net_gen_wind / eff
+            #~ except ZeroDivisionError:
+                #~ red_per_year = 0
             
             l = [c, 
                 wind_class, 
@@ -273,12 +273,13 @@ def component_summary (coms, res_dir):
                 loss_heat, 
                 heat_rec_opp,
                 diesel_red, 
-                red_per_year,
+                electric_diesel_reduction,
                 eff,
                 wind.get_NPV_benefits(),
                 wind.get_NPV_costs(),
                 wind.get_NPV_net_benefit(),
-                wind.get_BC_ratio()
+                wind.get_BC_ratio(),
+                wind.reason
             ]
             out.append(l)
         except (KeyError,AttributeError) as e:
@@ -302,7 +303,8 @@ def component_summary (coms, res_dir):
         'NPV benefits [$]',
         'NPV Costs [$]',
         'NPV Net benefit [$]',
-        'Benefit Cost Ratio']
+        'Benefit Cost Ratio',
+        'notes']
                     ).set_index('Community')#.round(2)
     f_name = os.path.join(res_dir,
                 'wind_power_summary.csv')
@@ -358,7 +360,7 @@ class WindPower(AnnualSavings):
         """
         #~ #~ print self.comp_specs['data']
         self.run = True
-        
+        self.reason = "OK"
         try:
             self.generation = self.forecast.get_generation(self.start_year)
             self.calc_average_load()
@@ -367,6 +369,7 @@ class WindPower(AnnualSavings):
             self.diagnostics.add_warning(self.component_name, 
             "could not be run")
             self.run = False
+            self.reason = "could not find average load or proposed generation"
             return
             
  
@@ -425,6 +428,7 @@ class WindPower(AnnualSavings):
         else:
             #~ print "wind project not feasiable"
             self.run = False
+            self.reason = "average load too small"
             self.diagnostics.add_note(self.component_name, 
             "communites average load is not large enough to consider project")
         #~ print self.benefit_cost_ratio
@@ -461,7 +465,8 @@ class WindPower(AnnualSavings):
         
         offset = self.average_load*\
                 self.comp_specs['percent generation to offset']
-        if self.forecast.generation_by_type['generation hydro'].sum().fillna(0) != 0:
+        #~ print self.forecast.generation_by_type['generation hydro'].sum()
+        if self.forecast.generation_by_type['generation hydro'].fillna(0).sum() > 0:
             offset *= 2
         #~ self.comp_specs['data']['existing wind'] = 0
         if int(float(self.comp_specs['data']['existing wind'])) < \
@@ -517,11 +522,15 @@ class WindPower(AnnualSavings):
             calculate the reduction in diesel due to the proposed wind
         """
         gen_eff = self.cd["diesel generation efficiency"]
-        # ???
-        if gen_eff>13 or gen_eff==0 or np.isnan(gen_eff):
-            gen_eff = 13
             
         self.electric_diesel_reduction = self.net_generation_wind / gen_eff
+        
+        electric_diesel = self.generation/gen_eff
+        if self.electric_diesel_reduction > electric_diesel:
+            self.electric_diesel_reduction = electric_diesel
+            
+        
+        
         #~ print 'self.electric_diesel_reduction',self.electric_diesel_reduction
         
     def calc_diesel_equiv_captured (self):
