@@ -34,7 +34,8 @@ yaml = {'enabled': False,
         'road needed for transmission line' : True,
         'transmission line distance': 0,
         'percent o&m': .01,
-        'percent generation to offset': .30,
+        'percent generation to offset': .15,
+        'switch gear needed for solar': False,
         'percent solar degradation': .992,
         'o&m cost per kWh': .02,
         }
@@ -383,7 +384,8 @@ class SolarPower (AnnualSavings):
             component_cost = self.proposed_load * self.comp_specs['cost per kW']
             
         powerhouse_cost = 0
-        if not self.cd['switchgear suatable for RE']:
+        if not self.cd['switchgear suatable for RE'] and \
+            self.comp_specs['switch gear needed for solar']:
             powerhouse_cost = self.cd['switchgear cost']
             
         self.capital_costs = powerhouse_cost + component_cost
