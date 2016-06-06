@@ -692,6 +692,8 @@ class Preprocessor (object):
         try:
             if self.com_id == "Craig":
                 data = data.loc[["Craig","Craig, Klawock"]]
+            elif self.com_id == "Klukwan":
+                data = data.loc[["Klukwan","Chilkat Valley"]]
             else:
                 data = data.ix[self.com_id]
         except KeyError:
@@ -705,7 +707,7 @@ class Preprocessor (object):
                                          "unbilled_kwh", "fuel_cost"]]
 
         last_year = data["year"].max()
-        while len(data[data["year"] == last_year]) != 12:
+        while len(data[data["year"] == last_year])%12 != 0:
             last_year -= 1
 
 
@@ -956,6 +958,9 @@ class Preprocessor (object):
             if self.com_id == "Craig":
                 data = data.loc[["Craig","Craig, Klawock"]]
                 self.combined_com = True
+            elif self.com_id == "Klukwan":
+                data = data.loc[["Klukwan","Chilkat Valley"]]
+                self.combined_com = True
             else:
                 data = data.loc[self.com_id]
         except KeyError:
@@ -984,6 +989,8 @@ class Preprocessor (object):
             try:
                 if self.com_id == "Craig":
                     data = data.loc[["Craig","Craig, Klawock"]]
+                elif self.com_id == "Klukwan":
+                    data = data.loc[["Klukwan","Chilkat Valley"]]
                 else:
                     data = data.loc[self.com_id]
             except KeyError:
@@ -991,7 +998,6 @@ class Preprocessor (object):
         except:
              self.diagnostics.add_note("PCE Electricity",
              "Reading purchased from no utilities listed for community")
-
         ## Determine if and what kind of power is purchased
         try:
             sources = sorted(set(data[data["purchased_from"].notnull()]\
@@ -1090,7 +1096,7 @@ class Preprocessor (object):
         sums = []
         for year in set(data["year"].values):
             #take full years only
-            if len(data[data["year"] == year]) != 12:
+            if len(data[data["year"] == year])%12 != 0:
                 continue
             ## sum of every value for the year
             temp = data[data["year"] == year].sum()
@@ -1211,7 +1217,9 @@ class Preprocessor (object):
 
         df.to_csv(out_file,mode="a")
 
+        #~ print self.electricity_data
         self.electricity_data = df
+        #~ print self.electricity_data
         self.purchase_type = p_key
 
     def interties (self):
