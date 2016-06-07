@@ -50,7 +50,23 @@ yaml_defaults = {'enabled': True,
         }
 
 ## order to save yaml
-yaml_order = ['enabled', 'lifetime', 'start year']
+yaml_order = ['enabled', 'lifetime', 'start year',
+        'average load limit',
+        'percent generation to offset',
+        'data',
+        'wind cost',
+        'secondary load',
+        'secondary load cost',
+        'road needed for transmission line',
+        'transmission line distance',
+        'transmission line cost',
+        'costs',
+        'percent excess energy',
+        'percent excess energy capturable',
+        'efficiency electric boiler',
+        'efficiency heating oil boiler',
+        'percent heat recovered',
+        'percent o&m']
 
 ## comments for the yaml key/value pairs
 yaml_comments = {'enabled': '',

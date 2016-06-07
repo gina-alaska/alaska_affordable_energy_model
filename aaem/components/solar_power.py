@@ -47,7 +47,18 @@ yaml_defaults = {'enabled': True,
         }
     
 ## order to save yaml
-yaml_order = ['enabled', 'lifetime', 'start year']
+yaml_order = ['enabled', 'lifetime', 'start year','average load limit',
+        'data',
+        'cost',
+        'cost per kW',
+        'road needed',
+        'road needed for transmission line',
+        'transmission line distance',
+        'percent o&m',
+        'percent generation to offset',
+        'switch gear needed for solar',
+        'percent solar degradation',
+        'o&m cost per kWh']
 
 ## comments for the yaml key/value pairs
 yaml_comments = {'enabled': '<boolean>',

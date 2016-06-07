@@ -6,8 +6,175 @@ this file contains default yaml file info as strings
 
 from importlib import import_module
 
+
+yml = {}
+yml['community'] = {
+                'name': 'ABSOLUTE DEFAULT NAME',
+                'region': 'IMPORT',
+                'current year': 'ABSOLUTE DEFAULT',
+                'model financial': True,
+                'model electricity': True,
+                'model heating fuel': True,
+                'natural gas used': False,
+                'interest rate': .05, 
+                'discount rate': .03,
+                'heating fuel premium': 'IMPORT',
+                'diesel generation efficiency': 'IMPORT',
+                'generation': 'IMPORT',
+                'consumption kWh': 'ABSOLUTE DEFAULT',
+                'consumption HF': 'IMPORT',
+                'line losses': 'IMPORT',
+                'max line losses': .4,
+                'default line losses': .1,
+                'default diesel generator efficiency': 12,
+                'res non-PCE elec cost': 'IMPORT',
+                'elec non-fuel cost': 'IMPORT',
+                'HDD': 'IMPORT',
+                'diesel prices': 'IMPORT',
+                'electric non-fuel prices': 'IMPORT',
+                'propane price': 'IMPORT',
+                'biomass price': 'IMPORT',
+                'natural gas price': 0,
+                'hydro generation limit': 'IMPORT' ,
+                'wind generation limit': 'IMPORT' ,
+                'wind generation precent': .2,
+                'generation numbers': 'IMPORT',
+                'switchgear suatable for RE': 'IMPORT',
+                'switchgear cost': 150000,
+                'heat recovery operational': 'IMPORT',
+                    }
+                    
+yml_comments = {}                   
+yml_comments['community'] = {
+                'name': 'Name of community <String>',
+                'region': 'Name of region <String>',
+                'current year': 
+                    'Year for which the NPV calculations are based <int>',
+                'model financial': 
+                    'Flag to run the models financal portions <bool>',
+                'model electricity': 
+                    'Flag to run the models electric portions <bool>',
+                'model heating fuel': 
+                    'Flag to run the models heating portions <bool>',
+                'natural gas used':  
+                    'Flag indcating the use of natrual gas <bool>',
+                'interest rate': 
+                    'Interest rate for projects (% as decimal) <float>', 
+                'discount rate': 
+                    'Discount rate for projects (% as decimal) <float>',
+                'heating fuel premium': 
+                    'Premium added to Heating Oil costs ($) <float>',
+                'diesel generation efficiency': 
+                    'efficiency of diesel generator (kWh/gal) <float>',
+                'default diesel generator efficiency':
+                    'default diesel generation efficiency (kWh/gal) <float>',
+                'generation': 'Generation (read from file)',
+                'consumption kWh': 'ABSOLUTE DEFAULT',
+                'consumption HF': 'Heating Fuel consumption (read from file)',
+                'line losses': 
+                    'Percent kWh lost in transmission (% as decimal) <float>',
+                'max line losses':  
+                    'maximum for line losses (% as decimal) <float>',
+                'default line losses': 
+                    'default for line losses (% as decimal) <float>',
+                'res non-PCE elec cost': 
+                    'price of non PCE elctricity ($) <float>',
+                'elec non-fuel cost': 
+                    'cost of electricity not associated with fuel ($) <float>',
+                'HDD': 'Heating Degree Days <float>',
+                'diesel prices': 'prices of diesel (read from file)',
+                'electric non-fuel prices': 
+                    'electric non-fuel prices (read from file)',
+                'propane price': 'propane price ($) <float>',
+                'biomass price': 'biomass price ($) <float>',
+                'natural gas price': 'natural gas price ($) <float>',
+                'hydro generation limit': 
+                    'Maximum Hydro generation for current system (kWh) <float>',
+                'wind generation limit': 
+                    'Maximum Wind generation for current system (kWh) <float>' ,
+                'wind generation precent':
+                    ('Percent of maximum wind generation '
+                     'useable (% as decimal) <float>'),
+                'generation numbers': '(read from file)',
+                'switchgear suatable for RE': 
+                    ('Flag indicating if power house controls are suatable '
+                     'for renewable sources <bool>'),
+                'switchgear cost': 
+                    'cost of switch gear ($) <float>',
+                'heat recovery operational': 
+                    'Flag indcation if the heatrecovery is operational <bool>',
+                    }
+                    
+yml_order = {}                   
+yml_order['community'] = [
+                'name',
+                'region',
+                'current year',
+                'model financial',
+                'model electricity',
+                'model heating fuel',
+                'natural gas used',
+                'interest rate', 
+                'discount rate',
+                'heating fuel premium',
+                'diesel generation efficiency',
+                'default diesel generator efficiency',
+                'generation',
+                'consumption kWh',
+                'consumption HF',
+                'line losses',
+                'max line losses',
+                'default line losses',
+                'res non-PCE elec cost',
+                'elec non-fuel cost',
+                'HDD',
+                'diesel prices',
+                'electric non-fuel prices',
+                'propane price',
+                'biomass price',
+                'natural gas price',
+                'hydro generation limit',
+                'wind generation limit',
+                'wind generation precent',
+                'generation numbers',
+                'switchgear suatable for RE',
+                'switchgear cost',
+                'heat recovery operational',
+                ]
+
+                    
+yml['forecast'] = {
+                'end year': 'ABSOLUTE DEFAULT',
+                'population': 'IMPORT',
+                'electricity': 'IMPORT' 
+                  }
+                  
+yml_order['forecast'] = ['end year','population','electricity']                 
+
+                  
+yml['construction multipliers'] = {
+                "Aleutians": 1.4 ,
+                "Bering Straits": 1.8,
+                "Bristol Bay": 1.25 ,
+                "Copper River/Chugach": 1.1 ,
+                "Kodiak": 1.18,
+                "Lower Yukon-Kuskokwim": 1.6 ,
+                "North Slope": 1.8 ,
+                "Northwest Arctic": 1.7 ,
+                "Southeast": 1.15 ,
+                "Yukon-Koyukuk/Upper Tanana": 1.4 
+                                    }
+                                    
+                                    
+
+
+
+
 def importer (comp_name):
     return import_module("aaem.components." + comp_name).yaml
+    
+def importer2 (comp_name):
+    return import_module("aaem.components." + comp_name)
 
 #~ a = importer('community_buildings')
 def build_defaults (comp_lib):
@@ -89,6 +256,58 @@ def build_setup_defaults (comp_lib):
     for comp in comp_lib:
         yml[comp] = import_module("aaem.components." + comp_lib[comp]).yaml_defaults
     return yml
+    
+def save_defaults (comp_lib, filename = "default_config.yaml"):
+    """ Function doc """
+    nl = "\n"
+    ind = "  "
+    text = "# default values for all config varaiables" +nl
+    for s in ['community','forecast','construction multipliers']:
+        text += s +  ":" + nl 
+        try:
+            for k in yml_order[s]:
+                try:
+                    text += ind + k + ": " + str(yml[s][k]) + '\t # ' + str(yml_comments[s][k]) + nl
+                except KeyError:
+                    text += ind + k + ": " + str(yml[s][k]) + nl
+        except KeyError:
+            for k in yml[s]:
+                try:
+                    text += ind + k + ": " + str(yml[s][k]) + '\t # ' + str(yml_comments[s][k]) + nl
+                except KeyError:
+                    text += ind + k + ": " + str(yml[s][k]) + nl
+        text += nl
+    
+    for comp in comp_lib:
+        component = importer2(comp_lib[comp])
+        text += comp + ":" + nl
+        try:
+            for k in component.yaml_order:
+                try:
+                    text += ind + k + ": " + str(component.yaml[k]) + '\t # ' + str(component.yaml_comments[k]) + nl
+                except KeyError:
+                    text += ind + k + ": " + str(component.yaml[k]) + nl
+        except KeyError:
+            for k in yml[s]:
+                try:
+                    text += ind + k + ": " + str(component.yaml[k]) + '\t # ' + str(component.yaml_comments[k]) + nl
+                except KeyError:
+                    text += ind + k + ": " + str(component.yaml[k]) + nl
+        
+        
+        
+        
+        text += nl
+        
+        
+    fd = open(filename, 'w')
+    fd.write(text)
+    fd.close()
+    
+        
+    #~ return text
+    
+
 
 ### This is the absolute default yaml string used by the model
 absolute = """community: 

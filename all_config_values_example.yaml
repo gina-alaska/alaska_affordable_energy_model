@@ -1,0 +1,120 @@
+# default values for all config varaiables
+community:
+  name: ABSOLUTE DEFAULT NAME	 # Name of community <String>
+  region: IMPORT	 # Name of region <String>
+  current year: ABSOLUTE DEFAULT	 # Year for which the NPV calculations are based <int>
+  model financial: True	 # Flag to run the models financal portions <bool>
+  model electricity: True	 # Flag to run the models electric portions <bool>
+  model heating fuel: True	 # Flag to run the models heating portions <bool>
+  natural gas used: False	 # Flag indcating the use of natrual gas <bool>
+  interest rate: 0.05	 # Interest rate for projects (% as decimal) <float>
+  discount rate: 0.03	 # Discount rate for projects (% as decimal) <float>
+  heating fuel premium: IMPORT	 # Premium added to Heating Oil costs ($) <float>
+  diesel generation efficiency: IMPORT	 # efficiency of diesel generator (kWh/gal) <float>
+  default diesel generator efficiency: 12	 # default diesel generation efficiency (kWh/gal) <float>
+  generation: IMPORT	 # Generation (read from file)
+  consumption kWh: ABSOLUTE DEFAULT	 # ABSOLUTE DEFAULT
+  consumption HF: IMPORT	 # Heating Fuel consumption (read from file)
+  line losses: IMPORT	 # Percent kWh lost in transmission (% as decimal) <float>
+  max line losses: 0.4	 # maximum for line losses (% as decimal) <float>
+  default line losses: 0.1	 # default for line losses (% as decimal) <float>
+  res non-PCE elec cost: IMPORT	 # price of non PCE elctricity ($) <float>
+  elec non-fuel cost: IMPORT	 # cost of electricity not associated with fuel ($) <float>
+  HDD: IMPORT	 # Heating Degree Days <float>
+  diesel prices: IMPORT	 # prices of diesel (read from file)
+  electric non-fuel prices: IMPORT	 # electric non-fuel prices (read from file)
+  propane price: IMPORT	 # propane price ($) <float>
+  biomass price: IMPORT	 # biomass price ($) <float>
+  natural gas price: 0	 # natural gas price ($) <float>
+  hydro generation limit: IMPORT	 # Maximum Hydro generation for current system (kWh) <float>
+  wind generation limit: IMPORT	 # Maximum Wind generation for current system (kWh) <float>
+  wind generation precent: 0.2	 # Percent of maximum wind generation useable (% as decimal) <float>
+  generation numbers: IMPORT	 # (read from file)
+  switchgear suatable for RE: IMPORT	 # Flag indicating if power house controls are suatable for renewable sources <bool>
+  switchgear cost: 150000	 # cost of switch gear ($) <float>
+  heat recovery operational: IMPORT	 # Flag indcation if the heatrecovery is operational <bool>
+
+forecast:
+  end year: ABSOLUTE DEFAULT
+  population: IMPORT
+  electricity: IMPORT
+
+construction multipliers:
+  Southeast: 1.15
+  Bristol Bay: 1.25
+  Copper River/Chugach: 1.1
+  Kodiak: 1.18
+  Lower Yukon-Kuskokwim: 1.6
+  Northwest Arctic: 1.7
+  Bering Straits: 1.8
+  Aleutians: 1.4
+  Yukon-Koyukuk/Upper Tanana: 1.4
+  North Slope: 1.8
+
+residential buildings:
+  enabled: False	 # 
+  min kWh per household: 6000	 # minimum average consumed kWh/year per house<int>
+  lifetime: ABSOLUTE DEFAULT	 # number years <int>
+  start year: ABSOLUTE DEFAULT	 # start year <int>
+  average refit cost: 11000	 # cost/refit <float>
+  data: IMPORT	 # IMPORT
+
+water wastewater:
+  enabled: False	 # 
+  lifetime: ABSOLUTE DEFAULT	 # number years <int>
+  start year: ABSOLUTE DEFAULT	 # start year <int>
+  audit cost: 10000	 # price <float> (ex. 10000)
+  average refit cost: 360.0	 # cost/per person <float>
+  data: IMPORT	 # 
+  electricity refit reduction: 0.25	 # decimal precent <float> percent saved by preforming electricity refit
+  heating fuel refit reduction: 0.35	 # decimal precent <float> percent saved by heating fuel refit
+  heat recovery multiplier: {False: 1.0, True: 0.5}	 # 
+
+non-residential buildings:
+  average refit cost: 7.0	 # cost/sqft. <float>
+  number buildings: IMPORT	 # 
+  enabled: False	 # 
+  cohort savings multiplier: 0.26	 # pecent as decimal <float>
+  start year: ABSOLUTE DEFAULT	 # start year <int>
+  com building data: IMPORT	 # 
+  com building estimates: IMPORT	 # 
+  lifetime: ABSOLUTE DEFAULT	 # number years <int>
+
+wind power:
+  enabled: False	 # 
+  lifetime: ABSOLUTE DEFAULT	 # number years <int>
+  start year: ABSOLUTE DEFAULT	 # start year <int>
+  average load limit: 100.0	 # lower limint in kW on averge load reqired to do project
+  percent generation to offset: 1.0	 # 
+  data: IMPORT
+  wind cost: UNKNOWN
+  secondary load: True	 # 
+  secondary load cost: 200000	 # 
+  road needed for transmission line: True	 # 
+  transmission line distance: 1	 # miles defaults to 1 mile
+  transmission line cost: {False: 250000, True: 500000}	 # cost/mile
+  costs: IMPORT
+  percent excess energy: 0.15
+  percent excess energy capturable: 0.7
+  efficiency electric boiler: 0.99
+  efficiency heating oil boiler: 0.8
+  percent heat recovered: 0.15
+  percent o&m: 0.01
+
+solar power:
+  enabled: False	 # <boolean>
+  lifetime: ABSOLUTE DEFAULT	 # number years <int>
+  start year: ABSOLUTE DEFAULT	 # start year <int>
+  average load limit: 50.0	 # lower limit on the average load <float>
+  data: IMPORT	 # data for component
+  cost: UNKNOWN	 # cost in $ for project if known otherwise UNKNOWN <float|string>
+  cost per kW: 8000	 # dollar cost per kW if cost of the project is UNKNOWN <float>
+  road needed: False
+  road needed for transmission line: True	 # <boolean>
+  transmission line distance: 0	 # distance in miles of proposed transmission line <float>
+  percent o&m: 0.01	 # yearly maintenance cost as percent as decimal of total cost <float>
+  percent generation to offset: 0.15	 # pecent of the generation in kW to offset with solar power <float>
+  switch gear needed for solar: False
+  percent solar degradation: 0.992	 # the precent of the of solar panel that carries over from the previous year
+  o&m cost per kWh: 0.02	 # cost of repairs for generator per kWh <float>
+
