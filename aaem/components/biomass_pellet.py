@@ -180,7 +180,7 @@ class BiomassPellet (bmb.BiomassBase):
         """ Function Doc"""
         self.capital_costs = self.max_boiler_output * \
                                 self.comp_specs["cost per btu/hr"]
-        print self.capital_costs
+        #~ print self.capital_costs
 
 component = BiomassPellet
 
