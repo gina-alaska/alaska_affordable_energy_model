@@ -142,10 +142,15 @@ class BiomassBase (AnnualSavings):
     def get_non_res_values (self, non_res):
         """ Function doc """
         self.non_res_sqft = non_res['Square Feet'].sum()
+    
         try:
             self.avg_gal_per_sqft = non_res['Fuel Oil'].sum()/ self.non_res_sqft
         except ZeroDivisionError:
             self.avg_gal_per_sqft = 0
+        
+        self.non_res_sqft = non_res['Square Feet'].sum()/3.0
+        #~ print self.non_res_sqft
+        #~ print non_res['Fuel Oil'].sum()
         #~ print self.avg_gal_per_sqft
         
     def calc_energy_output (self):
@@ -156,6 +161,8 @@ class BiomassBase (AnnualSavings):
                                     self.comp_specs['heating oil efficiency']
         self.peak_monthly_energy_output = self.average_net_energy_output * 12 *\
                                 self.comp_specs['data']['Peak Month % of total']
+        #~ print "self.average_net_energy_output ,self.peak_monthly_energy_output"
+        #~ print self.average_net_energy_output ,self.peak_monthly_energy_output
         
     def calc_max_boiler_output (self, efficiency):
         """
@@ -164,7 +171,8 @@ class BiomassBase (AnnualSavings):
                                         efficiency
         self.max_boiler_output = self.max_boiler_output_per_sf * \
                                     self.non_res_sqft
-                                    
+        #~ print 'self.max_boiler_output'
+        #~ print self.max_boiler_output
         
     def calc_biomass_fuel_consumed (self, capacity_factor):
         """
@@ -188,13 +196,15 @@ class BiomassBase (AnnualSavings):
     def calc_proposed_biomass_cost (self, price):
         """ """
         self.proposed_biomass_cost = price * self.biomass_fuel_consumed
+        #~ print 'self.proposed_biomass_cost'
+        #~ print self.proposed_biomass_cost
         
     def calc_displaced_heating_oil_price (self):
         """ """
         price = (self.diesel_prices + self.cd['heating fuel premium'])
         self.displaced_heating_oil_price = price * self.heat_diesel_displaced 
-        
-        
+        #~ print 'self.displaced_heating_oil_price'
+        #~ print self.displaced_heating_oil_price
     
     def run (self):
         """
