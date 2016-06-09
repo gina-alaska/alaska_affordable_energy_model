@@ -2,6 +2,15 @@
 
 ## [0.14.2]
 ### changed 
+- updated solar and wind component outputs
+- changed solar default values (.3 -> .15, no powerhouse cost)
+
+### fixed
+- generation calculation with missing lineloss fixed
+
+
+## [0.14.2]
+### changed 
 - solar and wind output headers
 - subtracts existing solar load from propoesed when calculating proposed
 

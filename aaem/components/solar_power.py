@@ -441,8 +441,10 @@ class SolarPower (AnnualSavings):
         # ??? +/- 
         # ???
         df = DataFrame({
-                'Capacity [kW]':self.proposed_load,
-                "Generation [kWh/yr]": self.generation_proposed,
+                'Solar Capacity [kW]': self.proposed_load,
+                "Solar Generation [kWh/yr]": 
+                                            self.generation_proposed,
+                'Utility Diesel Displaced [gal]':self.generation_fuel_used,
                 'Heating Fuel Displaced[Gal]':self.fuel_displaced,
                 "Heat Recovery Cost Savings": 
                                         self.get_heating_savings_costs(),
@@ -455,8 +457,9 @@ class SolarPower (AnnualSavings):
 
         df["community"] = self.cd['name']
         
-        ol = ["community",'Capacity [kW]',
-                "Generation [kWh/yr]",
+        ol = ["community",'Solar Capacity [kW]',
+                "Solar Generation [kWh/yr]",
+                'Utility Diesel Displaced [gal]',
                 'Heating Fuel Displaced[Gal]',
                 "Heat Recovery Cost Savings",
                 "Electricity Cost Savings",
@@ -470,7 +473,8 @@ class SolarPower (AnnualSavings):
         
         fin_str = "Enabled" if self.cd["model financial"] else "Disabled"
         fd = open(fname, 'w')
-        fd.write("# " + self.component_name + " model outputs\n") 
+        fd.write("# " + self.component_name + " model outputs\n")
+        
         fd.close()
         
         # save npv stuff
