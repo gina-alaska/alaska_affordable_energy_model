@@ -177,8 +177,8 @@ class BiomassBase (AnnualSavings):
         """
         """
         self.heat_diesel_displaced = self.biomass_fuel_consumed * \
-                                     self.comp_specs['energy density'] / \
-                                     (constants.mmbtu_to_gal_HF * 1e6)
+                                     self.comp_specs['energy density'] * \
+                                     (constants.mmbtu_to_gal_HF / 1e6)
         
     def calc_maintainance_cost(self):
         """
