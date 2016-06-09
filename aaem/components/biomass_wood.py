@@ -183,7 +183,7 @@ class BiomassCordwood (bmb.BiomassBase):
         self.number_boilers = \
             round(self.max_boiler_output / \
             self.comp_specs["boiler assumed output"] )
-        print self.number_boilers
+        #~ print self.number_boilers
             
     def calc_maintainance_cost(self):
         """
@@ -201,7 +201,7 @@ class BiomassCordwood (bmb.BiomassBase):
         self.capital_costs = self.number_boilers * \
                              self.comp_specs["boiler assumed output"] *\
                              self.comp_specs["cost per btu/hr"] 
-        print self.capital_costs
+        #~ print self.capital_costs
 
 component = BiomassCordwood
 
