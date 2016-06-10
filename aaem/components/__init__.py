@@ -6,6 +6,8 @@ comp_lib = {
     "water wastewater": "wastewater",
     "wind power": "wind_power",
     'solar power': "solar_power",
+    'biomass cordwood': "biomass_wood",
+    'biomass pellet': 'biomass_pellet',
         }
 
 

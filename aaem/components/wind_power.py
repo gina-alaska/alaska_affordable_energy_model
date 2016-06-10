@@ -299,7 +299,7 @@ def component_summary (coms, res_dir):
         'Existing Wind Capacity [kW]',
         'Assumed Capacity Factor [%]',
         'Net Generation [kWh]',
-        'Heating Oil Equivalent Captured by Seconday Load [gal]',
+        'Heating Oil Equivalent Captured by Secondary Load [gal]',
         'Loss of Recovered Heat[gal]',
         'Heat Recovery Opperational',
         'Net in Heating Oil Consumption [gal]',
@@ -635,7 +635,7 @@ class WindPower(AnnualSavings):
     def calc_annual_electric_savings (self):
         """
         """
-        price = (self.diesel_prices + self.cd['heating fuel premium'])
+        price = self.diesel_prices
         #TODO add rural v non rural
         self.base_generation_cost = self.electric_diesel_reduction * price
                         
@@ -687,10 +687,11 @@ class WindPower(AnnualSavings):
         df = DataFrame({
                 'Capacity [kW]':self.load_offset_proposed,
                 "Generation [kWh/yr]": self.net_generation_wind,
-                'kWh to secondary load':self.diesel_equiv_captured,
+                'Energy Captured by Secondary Load (gallons of heating oil equivalent)':
+                                                    self.diesel_equiv_captured,
                 'assumed capacity factor':
                     float(self.comp_specs['data']['assumed capacity factor']),
-                'Diesel saved [Gal/yr]' :self.reduction_diesel_used,
+                'Utility Diesel Displaced [gal]' :self.electric_diesel_reduction,
                 'Heat Recovery Lost [Gal/yr]':self.loss_heat_recovery, 
                 "Heat Recovery Cost Savings": 
                                         self.get_heating_savings_costs(),
@@ -703,8 +704,9 @@ class WindPower(AnnualSavings):
 
         df["community"] = self.cd['name']
         
-        ol = ["community",'Capacity [kW]','kWh to secondary load',
-              'assumed capacity factor','Diesel saved [Gal/yr]',
+        ol = ["community",'Capacity [kW]',
+        'Energy Captured by Secondary Load (gallons of heating oil equivalent)',
+              'assumed capacity factor','Utility Diesel Displaced [gal]',
               'Heat Recovery Lost [Gal/yr]',
               "Generation [kWh/yr]",
                 "Heat Recovery Cost Savings",
@@ -719,35 +721,7 @@ class WindPower(AnnualSavings):
         
         fin_str = "Enabled" if self.cd["model financial"] else "Disabled"
         fd = open(fname, 'w')
-        fd.write(("# " + self.component_name + " model outputs\n"
-                  #~ "# Finacial Component: " + fin_str + '\n'
-                  #~ "# --- Cost Benefit Information ---\n"
-                  #~ "# NPV Benefits: " + str(self.get_NPV_benefits()) + '\n'
-                  #~ "# NPV Cost: " + str(self.get_NPV_benefits()) + '\n'
-                  #~ "# NPV Net Benefit: " + str(self.get_NPV_benefits()) + '\n'
-                  #~ "# Benefit Cost Ratio: " + str(self.get_BC_ratio()) + '\n'
-                  #~ "# --------------------------------\n"
-          "# year: year for projection \n"
-          "# Heating Oil Consumption Baseline: Heating "
-                                        "Fuel used with no retrofits(mmbtu)\n"
-          "# Heating Oil Consumption Retrofit: Heating "
-                                        "Fuel used with retrofits(mmbtu) \n"
-          "# Heating Oil Consumption Savings:  Heating fuel savings (mmbtu)\n"
-          "# Heating Oil Cost Baseline: Cost Heating "
-                                        "Fuel used with no retrofits \n"
-          "# Heating Oil Cost Retrofit: Cost Heating "
-                                        "Fuel used with retrofits \n"
-          "# Heating Oil Cost Savings: Cost Heating Oil savings \n"
-          "# Electricity Consumption Baseline: kWh used with no retrofits \n"
-          "# Electricity Consumption Retrofit: kWh used with retrofits \n"
-          "# Electricity Consumption Savings: kWh savings \n"
-          "# Electricity Cost Baseline: Cost kWh used with no retrofits\n"
-          "# Electricity Cost Retrofit: Cost kWh used with retrofits \n"
-          "# Electricity Cost Savings: Cost kWh savings \n"
-          "# Project Capital Cost: Cost of retrofits \n"
-          "# Total Cost Savings: savings from retrofits\n"
-          "# Net Benefit: benefit from retrofits\n"
-                  )) 
+        fd.write(("# " + self.component_name + " model outputs\n")) 
         fd.close()
         
         # save npv stuff

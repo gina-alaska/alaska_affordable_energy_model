@@ -1,6 +1,22 @@
 #Change Log
 
-## [0.14.2]
+## [0.14.5]
+### added 
+- biomass base
+- biomass cordwood
+- biomass pellet
+
+
+## [0.14.4]
+### changed 
+- updated solar and wind component outputs
+- changed solar default values (.3 -> .15, no powerhouse cost)
+
+### fixed
+- generation calculation with missing lineloss fixed
+
+
+## [0.14.3]
 ### changed 
 - solar and wind output headers
 - subtracts existing solar load from propoesed when calculating proposed

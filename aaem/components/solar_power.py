@@ -34,7 +34,8 @@ yaml = {'enabled': False,
         'road needed for transmission line' : True,
         'transmission line distance': 0,
         'percent o&m': .01,
-        'percent generation to offset': .30,
+        'percent generation to offset': .15,
+        'switch gear needed for solar': False,
         'percent solar degradation': .992,
         'o&m cost per kWh': .02,
         }
@@ -383,7 +384,8 @@ class SolarPower (AnnualSavings):
             component_cost = self.proposed_load * self.comp_specs['cost per kW']
             
         powerhouse_cost = 0
-        if not self.cd['switchgear suatable for RE']:
+        if not self.cd['switchgear suatable for RE'] and \
+            self.comp_specs['switch gear needed for solar']:
             powerhouse_cost = self.cd['switchgear cost']
             
         self.capital_costs = powerhouse_cost + component_cost
@@ -439,8 +441,10 @@ class SolarPower (AnnualSavings):
         # ??? +/- 
         # ???
         df = DataFrame({
-                'Capacity [kW]':self.proposed_load,
-                "Generation [kWh/yr]": self.generation_proposed,
+                'Solar Capacity [kW]': self.proposed_load,
+                "Solar Generation [kWh/yr]": 
+                                            self.generation_proposed,
+                'Utility Diesel Displaced [gal]':self.generation_fuel_used,
                 'Heating Fuel Displaced[Gal]':self.fuel_displaced,
                 "Heat Recovery Cost Savings": 
                                         self.get_heating_savings_costs(),
@@ -453,8 +457,9 @@ class SolarPower (AnnualSavings):
 
         df["community"] = self.cd['name']
         
-        ol = ["community",'Capacity [kW]',
-                "Generation [kWh/yr]",
+        ol = ["community",'Solar Capacity [kW]',
+                "Solar Generation [kWh/yr]",
+                'Utility Diesel Displaced [gal]',
                 'Heating Fuel Displaced[Gal]',
                 "Heat Recovery Cost Savings",
                 "Electricity Cost Savings",
@@ -468,7 +473,8 @@ class SolarPower (AnnualSavings):
         
         fin_str = "Enabled" if self.cd["model financial"] else "Disabled"
         fd = open(fname, 'w')
-        fd.write("# " + self.component_name + " model outputs\n") 
+        fd.write("# " + self.component_name + " model outputs\n")
+        
         fd.close()
         
         # save npv stuff

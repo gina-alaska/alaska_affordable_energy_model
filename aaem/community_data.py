@@ -428,7 +428,7 @@ class CommunityData (object):
                 self.set_item('community',"line losses",line_losses)
             else:
                 ll = np.float(elec_summary["line loss"][-3:].mean())
-                if ll < 0.0:
+                if ll < 0.0 or np.isnan(ll):
                     try:
                         def_ll = self.get_item('community',"default line losses")
                     except KeyError:
