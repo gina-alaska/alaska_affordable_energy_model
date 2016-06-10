@@ -49,14 +49,14 @@ yaml_order = bmb.yaml_order + ["hours of storage for peak",
 
 ## comments for the yaml key/value pairs
 yaml_comments = bmb.yaml_comments
-yaml["hours of storage for peak"] = "<float>"
-yaml["percent at max output"] = "<float>"
-yaml["cordwood system efficiency"] = "<float>"
-yaml["hours operation per cord"] = "<float>"
-yaml["operation cost per hour"] = "<float>"
-yaml["energy density"] = "<float>"
-yaml["boiler assumed output"] = "<float>"
-yaml["cost per btu/hr"] = "<float>"
+yaml_comments["hours of storage for peak"] = "<float>"
+yaml_comments["percent at max output"] = "<float>"
+yaml_comments["cordwood system efficiency"] = "<float>"
+yaml_comments["hours operation per cord"] = "<float>"
+yaml_comments["operation cost per hour"] = "<float>"
+yaml_comments["energy density"] = "<float>"
+yaml_comments["boiler assumed output"] = "<float>"
+yaml_comments["cost per btu/hr"] = "<float>"
        
     
 ## library of keys and functions for CommunityData IMPORT Keys
