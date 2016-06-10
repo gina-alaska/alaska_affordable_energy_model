@@ -717,6 +717,10 @@ class Preprocessor (object):
                                          "community_kwh_sold",
                                          "government_kwh_sold",
                                          "unbilled_kwh"]].mean().sum())
+        if np.isnan(elec_fuel_cost):
+            elec_fuel_cost = 0.0
+            self.diagnostics.add_note("Electricity Prices PCE",
+                                "fuel price not available, seting to 0")
 
         res_nonPCE_price = data[data["year"] == \
                                 last_year]["residential_rate"].mean()
