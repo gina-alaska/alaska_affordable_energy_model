@@ -28,6 +28,7 @@ yaml = {'enabled': False,
         'heating oil efficiency': .75,
         'energy density': 'ABSOLUTE DEFAULT',
         'data': 'IMPORT',
+        'percent sqft assumed heat displacement': .3,
         }
 
 ## default values for yaml key/Value pairs
@@ -148,10 +149,15 @@ class BiomassBase (AnnualSavings):
         except ZeroDivisionError:
             self.avg_gal_per_sqft = 0
         
-        self.non_res_sqft = non_res['Square Feet'].sum()/3.0
+        
         #~ print self.non_res_sqft
         #~ print non_res['Fuel Oil'].sum()
         #~ print self.avg_gal_per_sqft
+        
+    def calc_heat_displaced_sqft (self):
+        """ Function doc """
+        self.heat_displaced_sqft = self.non_res_sqft * \
+            self.comp_specs['percent sqft assumed heat displacement']
         
     def calc_energy_output (self):
         """"""
@@ -170,7 +176,7 @@ class BiomassBase (AnnualSavings):
         self.max_boiler_output_per_sf = self.peak_monthly_energy_output / \
                                         efficiency
         self.max_boiler_output = self.max_boiler_output_per_sf * \
-                                    self.non_res_sqft
+                                    self.heat_displaced_sqft
         #~ print 'self.max_boiler_output'
         #~ print self.max_boiler_output
         
@@ -247,8 +253,11 @@ class BiomassBase (AnnualSavings):
         df = DataFrame({
                 "community":self.cd['name'],
                 "Maximum Boiler Output [Btu/hr]": self.max_boiler_output,
+                'Heat Displacement square footage [Sqft]':
+                                                self.heat_displaced_sqft,
                 eng_density_key: self.comp_specs['energy density'],
                 fuel_consumed_key: self.biomass_fuel_consumed,
+                'Price [$/' + self.units + ']':self.heat_displaced_sqft,
                 "Displaced Heating Oil [Gal]": self.heat_diesel_displaced,
                 
                 

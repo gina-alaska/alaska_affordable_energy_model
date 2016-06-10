@@ -29,6 +29,7 @@ yaml = bmb.yaml
 yaml["energy density"] = 17600000
 yaml["pellet efficiency"] = .8
 yaml["cost per btu/hr"] = .54
+yaml["default pellet price"] = 400
 
 
 ## default values for yaml key/Value pairs
@@ -39,6 +40,11 @@ yaml_order = bmb.yaml_order + ["energy density"]
 
 ## comments for the yaml key/value pairs
 yaml_comments = bmb.yaml_comments
+yaml_comments["energy density"] = "energy density of pellets (btu/ton) <float>"
+yaml_comments["pellet efficiency"] = \
+                        "effcicieny of pellets (% as decimal) <float>"
+yaml_comments["cost per btu/hr"] = "cost per btu/hr ($) <float>"
+yaml_comments["default pellet price"] = "pellet cost per ton ($) <float>" 
        
     
 ## library of keys and functions for CommunityData IMPORT Keys
@@ -58,10 +64,12 @@ def component_summary (coms, res_dir):
     """
     out = []
     for c in sorted(coms.keys()):
-        it = coms[c]['model'].cd.intertie
-        if it is None:
-            it = 'parent'
-        if it == 'child':
+        #~ it = coms[c]['model'].cd.intertie
+        #~ if it is None:
+            #~ it = 'parent'
+        #~ if it == 'child':
+            #~ continue
+        if c.find("_intertie") != -1:
             continue
         try:
             
@@ -70,8 +78,10 @@ def component_summary (coms, res_dir):
             
             l = [c, 
                  biomass.max_boiler_output,
-                 biomass.comp_specs['energy density'],
+                 biomass.heat_displaced_sqft,
                  biomass.biomass_fuel_consumed,
+                 biomass.fuel_price_per_unit,
+                 biomass.comp_specs['energy density'],
                  biomass.heat_diesel_displaced,
                  biomass.get_NPV_benefits(),
                  biomass.get_NPV_costs(),
@@ -88,7 +98,9 @@ def component_summary (coms, res_dir):
     data = DataFrame(out,columns = \
        ['Community',
         'Maximum Boiler Output [Btu/hr]',
+        'Heat Displacement square footage [Sqft]',
         'Proposed ' + biomass.biomass_type + " Consumed [" + biomass.units +"]",
+        'Price [$/' + biomass.units + ']',
         "Energy Density [Btu/" + biomass.units + "]",
         "Displaced Heating Oil [Gal]",
         'NPV benefits [$]',
@@ -121,8 +133,8 @@ class BiomassPellet (bmb.BiomassBase):
         """
         self.component_name = COMPONENT_NAME
         super(BiomassPellet, self).__init__(community_data, forecast, diag)
-        self.biomass_type = "cordwood"
-        self.units = "cords"
+        self.biomass_type = "pellets"
+        self.units = "tons"
         self.reason = "OK"
                         
         ### ADD other intiatzation stuff
@@ -139,6 +151,7 @@ class BiomassPellet (bmb.BiomassBase):
             the model is run and the output values are available
         """
         if self.cd["model heating fuel"]:
+            self.calc_heat_displaced_sqft()
             self.calc_energy_output()
             efficiency = self.comp_specs["pellet efficiency"]
             self.calc_max_boiler_output(efficiency)
@@ -156,7 +169,9 @@ class BiomassPellet (bmb.BiomassBase):
             self.calc_maintainance_cost()
             
             
-            self.calc_proposed_biomass_cost(400)
+            self.fuel_price_per_unit = self.comp_specs["default pellet price"]
+            
+            self.calc_proposed_biomass_cost(self.fuel_price_per_unit)
             self.calc_displaced_heating_oil_price()
             
             
