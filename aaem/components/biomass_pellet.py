@@ -36,7 +36,9 @@ yaml["default pellet price"] = 400
 yaml_defaults = bmb.yaml_defaults
     
 ## order to save yaml
-yaml_order = bmb.yaml_order + ["energy density"]
+yaml_order = bmb.yaml_order + ["pellet efficiency",
+                                "cost per btu/hr",
+                                "default pellet price"]
 
 ## comments for the yaml key/value pairs
 yaml_comments = bmb.yaml_comments
@@ -61,6 +63,7 @@ yaml_not_to_save = []
 ## component summary
 def component_summary (coms, res_dir):
     """
+    save thes the summary for biomass pellet
     """
     out = []
     for c in sorted(coms.keys()):
@@ -136,10 +139,7 @@ class BiomassPellet (bmb.BiomassBase):
         self.biomass_type = "pellets"
         self.units = "tons"
         self.reason = "OK"
-                        
-        ### ADD other intiatzation stuff
         
-    
     def run (self):
         """
         run the forecast model
@@ -161,10 +161,8 @@ class BiomassPellet (bmb.BiomassBase):
             
         
         if self.cd["model financial"]:
-            # AnnualSavings functions (don't need to write)
             self.get_diesel_prices()
             
-            # change these below
             self.calc_capital_costs()
             self.calc_maintainance_cost()
             
@@ -178,7 +176,6 @@ class BiomassPellet (bmb.BiomassBase):
             self.calc_annual_electric_savings()
             self.calc_annual_heating_savings()
             
-            # AnnualSavings functions (don't need to write)
             self.calc_annual_total_savings()
             self.calc_annual_costs(self.cd['interest rate'])
             self.calc_annual_net_benefit()
@@ -187,12 +184,15 @@ class BiomassPellet (bmb.BiomassBase):
             
     def calc_maintainance_cost(self):
         """
+        calculate maitiance costs
         """
         
         self.maintenance_cost = self.capital_costs * .01
 
     def calc_capital_costs (self):
-        """ Function Doc"""
+        """
+        calculate the captial costs
+        """
         self.capital_costs = self.max_boiler_output * \
                                 self.comp_specs["cost per btu/hr"]
         #~ print self.capital_costs

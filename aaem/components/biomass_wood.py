@@ -41,10 +41,22 @@ yaml_defaults = bmb.yaml_defaults
 ## order to save yaml
 yaml_order = bmb.yaml_order + ["hours of storage for peak",
                                "percent at max output", 
-                               "cordwood system efficiency"]
+                               "cordwood system efficiency",
+                               "hours operation per cord",
+                               "operation cost per hour",
+                               "boiler assumed output",
+                               "cost per btu/hr"]
 
 ## comments for the yaml key/value pairs
 yaml_comments = bmb.yaml_comments
+yaml["hours of storage for peak"] = "<float>"
+yaml["percent at max output"] = "<float>"
+yaml["cordwood system efficiency"] = "<float>"
+yaml["hours operation per cord"] = "<float>"
+yaml["operation cost per hour"] = "<float>"
+yaml["energy density"] = "<float>"
+yaml["boiler assumed output"] = "<float>"
+yaml["cost per btu/hr"] = "<float>"
        
     
 ## library of keys and functions for CommunityData IMPORT Keys
@@ -61,6 +73,7 @@ yaml_not_to_save = []
 ## component summary
 def component_summary (coms, res_dir):
     """
+    save thes the summary for biomass cordwood
     """
     out = []
     for c in sorted(coms.keys()):
@@ -116,10 +129,10 @@ def component_summary (coms, res_dir):
     fd.close()
     data.to_csv(f_name, mode='a')
 
-#   do a find and replace on ComponentName to name of component 
-# (i.e. 'ResidentialBuildings')
+
 class BiomassCordwood (bmb.BiomassBase):
     """
+    cordwood biomass componenet
     """
     def __init__ (self, community_data, forecast, diag = None):
         """
@@ -163,10 +176,8 @@ class BiomassCordwood (bmb.BiomassBase):
             
         
         if self.cd["model financial"]:
-            # AnnualSavings functions (don't need to write)
             self.get_diesel_prices()
             
-            # change these below
             self.calc_number_boilers()
             self.calc_capital_costs()
             self.calc_maintainance_cost()
@@ -179,21 +190,22 @@ class BiomassCordwood (bmb.BiomassBase):
             self.calc_annual_electric_savings()
             self.calc_annual_heating_savings()
             
-            # AnnualSavings functions (don't need to write)
             self.calc_annual_total_savings()
             self.calc_annual_costs(self.cd['interest rate'])
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
             
     def calc_number_boilers (self):
-        """ Function doc """
+        """
+        caclulate the number of boilers
+        """
         self.number_boilers = \
             round(self.max_boiler_output / \
             self.comp_specs["boiler assumed output"] )
-        #~ print self.number_boilers
             
     def calc_maintainance_cost(self):
         """
+        calculate the opperation and maintaince const 
         """
         operation = self.biomass_fuel_consumed * \
                     self.comp_specs["hours operation per cord"] *\
@@ -204,7 +216,9 @@ class BiomassCordwood (bmb.BiomassBase):
         self.maintenance_cost = operation + maintenance
 
     def calc_capital_costs (self):
-        """ Function Doc"""
+        """
+        calculate the captial costs
+        """
         self.capital_costs = self.number_boilers * \
                              self.comp_specs["boiler assumed output"] *\
                              self.comp_specs["cost per btu/hr"] 
@@ -212,12 +226,3 @@ class BiomassCordwood (bmb.BiomassBase):
 
 component = BiomassCordwood
 
-def test ():
-    """
-    tests the class using the manley data.
-    """
-    manley_data = CommunityData("../test_case/input_data/","../test_case/baseline_results/config_used.yaml")
-    fc = Forecast(manley_data)
-    comp = ComponentName(manley_data, fc)
-    comp.run()
-    return comp,fc # return the object for further testing
