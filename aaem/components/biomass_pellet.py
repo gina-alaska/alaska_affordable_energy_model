@@ -9,6 +9,7 @@ a template for adding components
 import numpy as np
 from math import isnan
 from pandas import DataFrame,concat
+from copy import deepcopy
 import os
 
 from annual_savings import AnnualSavings
@@ -25,7 +26,7 @@ import biomass_base as bmb
 COMPONENT_NAME = "biomass pellet"
 
 ## List of yaml key/value pairs
-yaml = bmb.yaml
+yaml = deepcopy(bmb.yaml)
 yaml["energy density"] = 17600000
 yaml["pellet efficiency"] = .8
 yaml["cost per btu/hr"] = .54
@@ -33,15 +34,15 @@ yaml["default pellet price"] = 400
 
 
 ## default values for yaml key/Value pairs
-yaml_defaults = bmb.yaml_defaults
+yaml_defaults = deepcopy(bmb.yaml_defaults)
     
 ## order to save yaml
-yaml_order = bmb.yaml_order + ["pellet efficiency",
+yaml_order = deepcopy(bmb.yaml_order) + ["pellet efficiency",
                                 "cost per btu/hr",
                                 "default pellet price"]
 
 ## comments for the yaml key/value pairs
-yaml_comments = bmb.yaml_comments
+yaml_comments = deepcopy(bmb.yaml_comments)
 yaml_comments["energy density"] = "energy density of pellets (btu/ton) <float>"
 yaml_comments["pellet efficiency"] = \
                         "effcicieny of pellets (% as decimal) <float>"
@@ -50,12 +51,12 @@ yaml_comments["default pellet price"] = "pellet cost per ton ($) <float>"
        
     
 ## library of keys and functions for CommunityData IMPORT Keys
-yaml_import_lib = bmb.yaml_import_lib
+yaml_import_lib = deepcopy(bmb.yaml_import_lib)
     
-raw_data_files = bmb.raw_data_files
+raw_data_files = deepcopy(bmb.raw_data_files)
 
 ## list of wind preprocessing functions
-preprocess_funcs = [bmb.preprocess]
+preprocess_funcs = [deepcopy(bmb.preprocess)]
 
 ## list of data keys not to save when writing the CommunityData output
 yaml_not_to_save = []
