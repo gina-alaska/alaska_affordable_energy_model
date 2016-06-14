@@ -27,7 +27,7 @@ import sys
 
 
 
-from aaem.components import comp_lib
+from aaem.components import comp_lib, comp_order
 
 
 
@@ -71,6 +71,7 @@ class Driver (object):
         #~ self.comp_lib = yaml.load(fd)
         #~ fd.close()
         self.comp_lib = comp_lib
+        self.comp_order = comp_order
         
     def run_components (self):
         """
@@ -81,9 +82,10 @@ class Driver (object):
             self.comps_used is a dictionary of the used components. 
         """
         self.comps_used = {}
-        for comp in self.comp_lib:
+        for comp in self.comp_order:
             if self.cd.get_item(comp,"enabled") == False:
                 continue
+            
             component = self.get_component(self.comp_lib[comp])(self.cd,
                                                                 self.fc,
                                                                 self.di)
