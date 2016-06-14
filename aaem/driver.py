@@ -57,6 +57,13 @@ class Driver (object):
             raise RuntimeError, \
                     ("A Fatal Error Has occurred, ("+ str(e) +")", self.di)
         self.load_comp_lib()
+        self.plot = False
+        
+    def toggle_ploting (self):
+        """
+        toggles plotting feature
+        """
+        self.plot = not  self.plot
         
     def load_comp_lib (self):
         """
@@ -129,7 +136,7 @@ class Driver (object):
         post: 
             the forecast is saved as a csv file
         """
-        self.fc.save_forecast(directory, img_dir)
+        self.fc.save_forecast(directory, img_dir, self.plot)
     
     def save_input_files (self, directory):
         """ 
@@ -188,7 +195,7 @@ def run_model_simple (model_root, run_name, community):
 def run_model (config_file = None, name = None, override_data = None, 
                             default_data = None, input_data = None,
                             results_dir = None, results_suffix = None, 
-                            img_dir = None):
+                            img_dir = None, plot = False):
     """ 
     run the model given an input file
     pre:
@@ -257,6 +264,8 @@ def run_model (config_file = None, name = None, override_data = None,
         pass
     try:
         model = Driver(data_dir, overrides, defaults)
+        if plot:
+            model.toggle_ploting()
         model.load_comp_lib()
         model.run_components()
         model.save_components_output(out_dir)
@@ -346,7 +355,7 @@ def config_split (root, out):
     
 
 
-def run_batch (config, suffix = "TS", img_dir = None):
+def run_batch (config, suffix = "TS", img_dir = None, plot = False):
     """
     run a set of communities
     
@@ -377,7 +386,7 @@ def run_batch (config, suffix = "TS", img_dir = None):
         #~ try:
         #~ start = datetime.now()
         r_val = run_model(config[key], results_suffix = suffix, 
-                          img_dir = img_dir)
+                          img_dir = img_dir, plot = plot)
         communities[key] = {"model": r_val[0], "directory": r_val[1]}
         #~ print datetime.now() - start
         #~ except StandardError as e :
@@ -608,7 +617,7 @@ def write_config (com_id, root):
     config_file.write(config_text)
     config_file.close()
     
-def run (batch_file, suffix = "TS", img_dir= None, dev = False):
+def run (batch_file, suffix = "TS", img_dir= None, dev = False, plot = False):
     """
     run function
     pre:
@@ -623,7 +632,7 @@ def run (batch_file, suffix = "TS", img_dir= None, dev = False):
     """
     if not dev:
         warnings.filterwarnings("ignore")
-    stuff = run_batch(batch_file, suffix,img_dir)
+    stuff = run_batch(batch_file, suffix,img_dir,plot)
     warnings.filterwarnings("default")
     return stuff
     

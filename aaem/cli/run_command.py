@@ -26,6 +26,7 @@ class RunCommand(pycommand.CommandBase):
             ('log', ('l', "<log_file>", "name/path of file to log outputs to")),
             ('time',('t', False,
                     "Displays the total running time at the end of execution")),
+            ('plot',('p', False, "run the ploting functionality")),
            )
     description =('Run model for given communities. (default = all communities)'
                     'options: \n'
@@ -56,6 +57,11 @@ class RunCommand(pycommand.CommandBase):
         
         if self.flags.dev:
             coms = __DEV_COMS__
+        
+        plot = False
+        if self.flags.plot:
+            plot = True    
+        
         batch = {}
         for com in coms:
             batch[com] = os.path.join(config, com.replace(" ","_"),
@@ -71,7 +77,7 @@ class RunCommand(pycommand.CommandBase):
         
         if self.flags.log:
             sys.stdout  = open(self.flags.log, 'w')
-        coms = driver.run(batch, "", img_dir)
+        coms = driver.run(batch, "", img_dir, plot = plot)
         
         cli_lib.generate_summaries (coms, base)
         
