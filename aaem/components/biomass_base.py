@@ -95,7 +95,7 @@ def preprocess (ppo):
     # create data and uncomment this
     data.to_csv(out_file, mode = 'a',header=False)
     
-    ppo.MODEL_FILES['COMP_DATA'] = "biomass_data.csv" # change this
+    ppo.MODEL_FILES['BIOMASS_DATA'] = "biomass_data.csv" # change this
 
 ## List of raw data files required for wind power preproecssing 
 raw_data_files = ['biomass_data.csv']

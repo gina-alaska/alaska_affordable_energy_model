@@ -8,7 +8,7 @@ a template for adding components
 """
 import numpy as np
 from math import isnan
-from pandas import DataFrame,concat
+from pandas import DataFrame, concat, read_csv
 from copy import deepcopy
 import os
 
@@ -31,6 +31,7 @@ yaml["energy density"] = 17600000
 yaml["pellet efficiency"] = .8
 yaml["cost per btu/hr"] = .54
 yaml["default pellet price"] = 400
+yaml["on road system"] = "IMPORT"
 
 
 ## default values for yaml key/Value pairs
@@ -49,14 +50,63 @@ yaml_comments["pellet efficiency"] = \
 yaml_comments["cost per btu/hr"] = "cost per btu/hr ($) <float>"
 yaml_comments["default pellet price"] = "pellet cost per ton ($) <float>" 
        
+
+def road_import (data_dir):
+    """
+    import the road system boolean
+    """
+    data_file = os.path.join(data_dir, "road_system.csv")
+    data = read_csv(data_file, comment = '#', index_col=0, header=0)
+    data = data['value'].to_dict()
+    on_road = data["On Road/SE"].lower() == "yes"
+    return on_road
+    
+
     
 ## library of keys and functions for CommunityData IMPORT Keys
 yaml_import_lib = deepcopy(bmb.yaml_import_lib)
+yaml_import_lib["on road system"] = road_import
     
-raw_data_files = deepcopy(bmb.raw_data_files)
+raw_data_files = deepcopy(bmb.raw_data_files) + ["road_system.csv"]
+
+def preprocess_road_system_header(ppo):
+    """
+    pre: 
+        ppo is a preprocessor object
+    post:
+        returns the road header
+    """
+    return  "# " + ppo.com_id + " biomass data\n"+ \
+            "# biomass data from biomass_data.csv preprocessed into a \n" +\
+            "# based on the row for the given community \n" +\
+            ppo.comments_dataframe_divide
+
+def preprocess_road_system (ppo):
+    """
+    preprocess road_system data
+    pre: 
+        ppo is a preprocessor object
+    post:
+        saves "biomass_data.csv", and updates MODEL_FILES
+    """
+    data = read_csv(os.path.join(ppo.data_dir,"road_system.csv"),
+                        comment = '#',index_col = 0).ix[ppo.com_id]
+                        
+    out_file = os.path.join(ppo.out_dir,"road_system.csv")
+
+    fd = open(out_file,'w')
+    fd.write(preprocess_road_system_header(ppo))
+    fd.write("key,value\n")
+    fd.close()
+
+    # create data and uncomment this
+    data.to_csv(out_file, mode = 'a',header=False)
+    
+    ppo.MODEL_FILES['road_system'] = "road_system.csv" # change this
+
 
 ## list of wind preprocessing functions
-preprocess_funcs = [deepcopy(bmb.preprocess)]
+preprocess_funcs = [deepcopy(bmb.preprocess),preprocess_road_system]
 
 ## list of data keys not to save when writing the CommunityData output
 yaml_not_to_save = []
@@ -151,6 +201,17 @@ class BiomassPellet (bmb.BiomassBase):
             TODO: define output values. 
             the model is run and the output values are available
         """
+        if not self.comp_specs["on road system"]:
+            self.diagnostics.add_warning(self.component_name, 
+                                    "not on road system")
+            self.max_boiler_output = 0
+            self.heat_displaced_sqft = 0
+            self.biomass_fuel_consumed = 0
+            self.fuel_price_per_unit = 0
+            self.heat_diesel_displaced = 0
+            self.reason = "Not on road system"
+            return
+        
         if self.cd["model heating fuel"]:
             self.calc_heat_displaced_sqft()
             self.calc_energy_output()
