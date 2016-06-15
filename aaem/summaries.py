@@ -545,14 +545,15 @@ def electric_price_summary (coms, res_dir):
                 it = 'parent'
             if it == 'child':
                 continue
-        
+            base_cost = float(coms[c]['model'].cd.get_item("community",
+                                            "elec non-fuel cost"))
             prices = deepcopy(coms[c]['model'].cd.get_item("community",
                                             "electric non-fuel prices"))
             #~ print prices
             prices[c] = prices['price']
             del prices['price']
             prices = prices.T
-            
+            prices["base cost"] = base_cost
             if out is None:
                 out = prices
             else:
@@ -560,6 +561,7 @@ def electric_price_summary (coms, res_dir):
             
             
         except (KeyError, TypeError) as e:
+            #~ print e
             continue
             
     f_name = os.path.join(res_dir,
@@ -567,7 +569,7 @@ def electric_price_summary (coms, res_dir):
     fd = open(f_name,'w')
     fd.write(("# list of the electricty prices forecasted\n"))
     fd.close()
-    out.to_csv(f_name, mode='a')
+    out[[out.columns[-1]] + out.columns[:-1].tolist()].to_csv(f_name, mode='a')
 
     
 def call_comp_summaries (coms, res_dir):
