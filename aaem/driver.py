@@ -23,6 +23,11 @@ from importlib import import_module
 from datetime import datetime
 import warnings
 import sys
+try:
+    import cPickle as pickle
+    #~ print "C Pickle"
+except ImportError:
+    import pickle
 
 
 
@@ -372,34 +377,63 @@ def run_batch (config, suffix = "TS", img_dir = None, plot = False):
     directory subdivided by community. 
     """
     #~ log = open("Fail.log", 'w')
-    
     try:
         fd = open(config, 'r')
         config = yaml.load(fd)
         fd.close()
     except:
         pass
-    communities = {}
+    #~ communities = {}
     
     if suffix == "TS":
         suffix = datetime.strftime(datetime.now(),"%Y%m%d%H%M%S")
+
+    root_path = config[config.keys()[0]].split('config')[0]
+    os.makedirs(os.path.join(root_path,'results'))
+    picklename = os.path.join(root_path,'results','binary_results.pkl')
+    fd = open(picklename, 'wb')
     for key in sorted(config.keys()):
         print key
         #~ try:
         #~ start = datetime.now()
         r_val = run_model(config[key], results_suffix = suffix, 
                           img_dir = img_dir, plot = plot)
-        communities[key] = {"model": r_val[0], "directory": r_val[1]}
+                
+        pickle.dump([key,{"model": r_val[0], "directory": r_val[1]}], 
+                                                    fd, pickle.HIGHEST_PROTOCOL)   
+        #~ communities[key] = {"model": r_val[0], "directory": r_val[1]}
+        
+        del r_val
         #~ print datetime.now() - start
         #~ except StandardError as e :
              #~ log.write("COMMUNITY: " + key + "\n\n")
              #~ log.write( str(sys.exc_info()[0]) + "\n\n")
              #~ log.write( str(e) + "\n\n")
              #~ log.write("--------------------------------------\n\n")
-             
-    #~ log.close()
-    return communities
     
+    fd.close()
+    #~ log.close()
+    
+    #~ print communities
+    return load_results(picklename)
+    
+
+def load_results (filename):
+    """
+    load the results from pickle file
+    """
+    results = {}
+    fd = open(filename, 'rb')
+    while True:
+        try:
+            temp = pickle.load(fd)
+            results[temp[0]] = temp[1]
+        except:
+            break
+    fd.close()
+    return results
+
+
 
 
 
