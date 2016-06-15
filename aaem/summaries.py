@@ -12,6 +12,7 @@ from importlib import import_module
 from constants import mmbtu_to_kWh, mmbtu_to_gal_HF
 from constants import mmbtu_to_gal_LP, mmbtu_to_Mcf, mmbtu_to_cords
 from aaem.components import comp_lib
+from copy import deepcopy
 
 def res_log (coms, res_dir):
     """
@@ -532,6 +533,42 @@ def forecast_comparison_log (coms, res_dir):
     fd.close()
     data.to_csv(f_name, mode='a')
     
+def electric_price_summary (coms, res_dir):    
+    """
+    """
+    out = None
+    for c in sorted(coms.keys()):
+        #~ print c
+        try:
+            it = coms[c]['model'].cd.intertie
+            if it is None:
+                it = 'parent'
+            if it == 'child':
+                continue
+        
+            prices = deepcopy(coms[c]['model'].cd.get_item("community",
+                                            "electric non-fuel prices"))
+            #~ print prices
+            prices[c] = prices['price']
+            del prices['price']
+            prices = prices.T
+            
+            if out is None:
+                out = prices
+            else:
+                out = concat([out,prices])
+            
+            
+        except (KeyError, TypeError) as e:
+            continue
+            
+    f_name = os.path.join(res_dir,
+                'electric_prices_summary.csv')
+    fd = open(f_name,'w')
+    fd.write(("# list of the electricty prices forecasted\n"))
+    fd.close()
+    out.to_csv(f_name, mode='a')
+
     
 def call_comp_summaries (coms, res_dir):
     """ 

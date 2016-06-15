@@ -67,6 +67,7 @@ def generate_summaries (coms, base):
     summaries.fuel_oil_log(coms,os.path.join(base,'results'))
     summaries.forecast_comparison_log(coms,os.path.join(base,'results'))
     summaries.call_comp_summaries(coms,os.path.join(base,'results'))
+    summaries.electric_price_summary(coms,os.path.join(base,'results'))
     
 def list_files (directory, root = None):
     """ Function doc """
