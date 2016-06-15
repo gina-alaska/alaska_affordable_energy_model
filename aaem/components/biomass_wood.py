@@ -10,6 +10,7 @@ import numpy as np
 from math import isnan
 from pandas import DataFrame,concat
 import os
+from copy import deepcopy
 
 from annual_savings import AnnualSavings
 from aaem.community_data import CommunityData
@@ -25,7 +26,7 @@ import biomass_base as bmb
 COMPONENT_NAME = "biomass cordwood"
 
 ## List of yaml key/value pairs
-yaml = bmb.yaml
+yaml = deepcopy(bmb.yaml)
 yaml["hours of storage for peak"] = 4
 yaml["percent at max output"] = .5
 yaml["cordwood system efficiency"] = .88
@@ -36,10 +37,10 @@ yaml["boiler assumed output"] = 325000
 yaml["cost per btu/hr"] = .6
 
 ## default values for yaml key/Value pairs
-yaml_defaults = bmb.yaml_defaults
+yaml_defaults = deepcopy(bmb.yaml_defaults)
     
 ## order to save yaml
-yaml_order = bmb.yaml_order + ["hours of storage for peak",
+yaml_order = deepcopy(bmb.yaml_order) + ["hours of storage for peak",
                                "percent at max output", 
                                "cordwood system efficiency",
                                "hours operation per cord",
@@ -48,7 +49,7 @@ yaml_order = bmb.yaml_order + ["hours of storage for peak",
                                "cost per btu/hr"]
 
 ## comments for the yaml key/value pairs
-yaml_comments = bmb.yaml_comments
+yaml_comments = deepcopy(bmb.yaml_comments)
 yaml_comments["hours of storage for peak"] = "<float>"
 yaml_comments["percent at max output"] = "<float>"
 yaml_comments["cordwood system efficiency"] = "<float>"
@@ -60,12 +61,12 @@ yaml_comments["cost per btu/hr"] = "<float>"
        
     
 ## library of keys and functions for CommunityData IMPORT Keys
-yaml_import_lib = bmb.yaml_import_lib
+yaml_import_lib = deepcopy(bmb.yaml_import_lib)
     
-raw_data_files = bmb.raw_data_files
+raw_data_files = deepcopy(bmb.raw_data_files)
 
 ## list of wind preprocessing functions
-preprocess_funcs = [bmb.preprocess]
+preprocess_funcs = [deepcopy(bmb.preprocess)]
 
 ## list of data keys not to save when writing the CommunityData output
 yaml_not_to_save = []
