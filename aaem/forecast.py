@@ -497,7 +497,7 @@ class Forecast (object):
             return self.households.ix[start].T.values[0]
         return self.households.ix[start:end-1].T.values[0]
         
-    def save_forecast (self, path, png_path = None):
+    def save_forecast (self, path, png_path = None, do_plots = False):
         """
         save the forecast to a csv
         pre:
@@ -510,7 +510,8 @@ class Forecast (object):
         tag = self.cd.get_item("community", "name").replace(" ", "_") + "_"
         pathrt = os.path.join(path, tag)
         if png_path is None:
-            os.makedirs(os.path.join(path,"images"))
+            if do_plots:
+                os.makedirs(os.path.join(path,"images"))
             png_path = os.path.join(path, 'images',tag)
             epng_path = png_path
             hdpng_path = png_path
@@ -519,40 +520,44 @@ class Forecast (object):
         else:
             epng_path = os.path.join(png_path,'electric_forecast',tag)
             try:
-                os.makedirs(os.path.join(png_path,'electric_forecast'))
+                if do_plots:
+                    os.makedirs(os.path.join(png_path,'electric_forecast'))
             except OSError:
                 pass
             gpng_path = os.path.join(png_path,'generation_forecast',tag)
             try:
-                os.makedirs(os.path.join(png_path,'generation_forecast'))
+                if do_plots:
+                    os.makedirs(os.path.join(png_path,'generation_forecast'))
             except OSError:
                 pass
             hdpng_path = os.path.join(png_path,'heat_demand_forecast',tag)
             try:
-                os.makedirs(os.path.join(png_path,'heat_demand_forecast'))
+                if do_plots:
+                    os.makedirs(os.path.join(png_path,'heat_demand_forecast'))
             except OSError:
                 pass
             hfpng_path = os.path.join(png_path,'heating_fuel_forecast',tag)
             try:
-                os.makedirs(os.path.join(png_path,'heating_fuel_forecast'))
+                if do_plots:
+                    os.makedirs(os.path.join(png_path,'heating_fuel_forecast'))
             except OSError:
                 pass
         if self.cd.intertie != 'child' and \
             self.cd.get_item("community","model electricity"):
 
             #~ start = datetime.now() 
-            self.save_electric(pathrt, epng_path)
-            self.save_generation_forecast(pathrt, gpng_path)
+            self.save_electric(pathrt, epng_path, do_plots)
+            self.save_generation_forecast(pathrt, gpng_path, do_plots)
             #~ print "saving electric:" + str(datetime.now() - start)
         if self.cd.intertie != 'parent' and \
             self.cd.get_item("community","model heating fuel"):
      
             #~ start = datetime.now() 
-            self.save_heat_demand(pathrt, hdpng_path)
+            self.save_heat_demand(pathrt, hdpng_path, do_plots)
             #~ print "saving heat demand:" + str(datetime.now() - start)
             
             #~ start = datetime.now() 
-            self.save_heating_fuel(pathrt, hfpng_path)
+            self.save_heating_fuel(pathrt, hfpng_path, do_plots)
             #~ print "saving heating fuel:" + str( datetime.now() - start)
     
     def add_heat_demand_column (self, key, year_col, data_col):
@@ -609,7 +614,7 @@ class Forecast (object):
 
     
     
-    def save_electric (self, csv_path, png_path):
+    def save_electric (self, csv_path, png_path, do_plots):
         """ 
         save the electric forecast
         
@@ -622,7 +627,8 @@ class Forecast (object):
         """
         self.generate_electric_output_dataframe()
         self.save_electric_csv(csv_path)
-        self.save_electric_png(png_path)
+        if do_plots:
+            self.save_electric_png(png_path)
         
 
 
@@ -742,7 +748,7 @@ class Forecast (object):
         except ValueError:
             self.generation_forecast_dataframe = None
         
-    def save_generation_forecast (self, csv_path, png_path):
+    def save_generation_forecast (self, csv_path, png_path, do_plots):
         
         self.generate_generation_forecast_dataframe()
         
@@ -753,7 +759,8 @@ class Forecast (object):
                          "forecast is suspect not saving summary(csv and png)"))
         else:
             self.save_generation_forecast_csv(csv_path)
-            self.save_generation_forecast_png(png_path)
+            if do_plots:
+                self.save_generation_forecast_png(png_path)
         
     def save_generation_forecast_csv (self, path):
         """
@@ -859,11 +866,12 @@ class Forecast (object):
         self.heat_demand_dataframe = data[[data.columns[-1]] + data.columns[:-1].tolist()]
         del data
         
-    def save_heat_demand (self,csv_path, png_path):
+    def save_heat_demand (self,csv_path, png_path, do_plots):
         """ Function doc """
         self.generate_heat_demand_dataframe()
         self.save_heat_demand_csv(csv_path)
-        self.save_heat_demand_png(png_path)
+        if do_plots:
+            self.save_heat_demand_png(png_path)
     
     def save_heat_demand_csv (self, path):
         """
@@ -963,7 +971,7 @@ class Forecast (object):
                         data[[data.columns[-1]] + data.columns[:-1].tolist()]
         del data
     
-    def save_heating_fuel(self, csv_path, png_path):
+    def save_heating_fuel(self, csv_path, png_path, do_plots):
         """ """
         #~ start = datetime.now() 
         self.generate_heating_fuel_dataframe()
@@ -972,7 +980,8 @@ class Forecast (object):
         self.save_heating_fuel_csv(csv_path)
         #~ print "saving heating fuel *2:" + str( datetime.now() - start)
         #~ start = datetime.now() 
-        self.save_heating_fuel_png(png_path)
+        if do_plots:
+            self.save_heating_fuel_png(png_path)
         #~ print "saving heating fuel *3:" + str( datetime.now() - start)
     
     def save_heating_fuel_csv (self, path):
