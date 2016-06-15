@@ -102,8 +102,20 @@ def preprocess (ppo):
         existing = read_csv(os.path.join(ppo.data_dir,"solar_data_existing.csv"),
                         comment = '#',index_col = 0).ix[ppo.com_id]
         existing = existing['Installed Capacity (kW)']
+        if np.isnan(existing):
+            existing = 0
     except KeyError:
         existing = 0 
+    
+    try:
+        wind_cap = read_csv(os.path.join(ppo.data_dir,
+                                "wind_data_existing.csv"),
+                            comment = '#',index_col = 0).ix[ppo.com_id]
+        wind_cap = wind_cap['Rated Power (kW)']
+        if np.isnan(wind_cap):
+            wind_cap = 0
+    except (IOError,KeyError):
+        wind_cap = 0 
     
     val =  data['Output per 10kW Solar PV']
     #~ return
@@ -113,6 +125,7 @@ def preprocess (ppo):
     fd.write(preprocess_header(ppo))
     fd.write("key,value\n")
     fd.write("Installed Capacity," + str(existing) + '\n')
+    fd.write("Wind Capacity," + str(wind_cap) + '\n')
     fd.write('Output per 10kW Solar PV,' + str(val) + '\n')
     #~ fd.write("HR Opperational,True\n")
     fd.close()
@@ -123,7 +136,8 @@ def preprocess (ppo):
     ppo.MODEL_FILES['SOLAR_DATA'] = "solar_power_data.csv"
 
 ## List of raw data files required for wind power preproecssing 
-raw_data_files = ['solar_data.csv', 'solar_data_existing.csv']
+raw_data_files = ['solar_data.csv', 'solar_data_existing.csv',
+                    "wind_data_existing.csv"]
 
 ## list of wind preprocessing functions
 preprocess_funcs = [preprocess]
@@ -155,7 +169,7 @@ def component_summary (coms, res_dir):
             
             existing_capacity = solar.comp_specs['data']['Installed Capacity']
         
-        
+            wind_capacity = solar.comp_specs['data']['Wind Capacity']
             try:
                 net_gen = solar.generation_proposed [0]
                 
@@ -185,6 +199,7 @@ def component_summary (coms, res_dir):
                  
                  proposed_capacity,
                  existing_capacity,
+                 wind_capacity,
                  net_gen,
                  
                  loss_heat,
@@ -212,6 +227,7 @@ def component_summary (coms, res_dir):
         
         'Solar Capacity Proposed [kW]',
         'Existing Solar Capacity [kW]',
+        'Existing Wind Capacity [kW]',
     
         'Net Generation [kWh]',
         'Loss of Recovered Heat[gal]',
@@ -339,10 +355,10 @@ class SolarPower (AnnualSavings):
         self.proposed_load = self.average_load * \
                         self.comp_specs['percent generation to offset']
                         
+        existing_RE = self.comp_specs['data']['Installed Capacity'] + \
+                      self.comp_specs['data']['Wind Capacity']
         
-        
-        self.proposed_load = max(self.proposed_load - \
-                            self.comp_specs['data']['Installed Capacity'], 0)
+        self.proposed_load = max(self.proposed_load - existing_RE, 0)
         
         #~ self.total_load = self.proposed_load + \
                         #~ self.comp_specs['data']['Installed Capacity']               
