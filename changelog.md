@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.14.8]
+### added 
+- electric price summary
+
 ## [0.14.7]
 ### changed
 - speed up cli run command
