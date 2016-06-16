@@ -154,7 +154,7 @@ def wind_preprocess (ppo):
         intertie = int(intertie['Highest Wind Class on Intertie'])
     except KeyError:
         intertie = 0
-    
+
     try:
         if intertie > int(potential['Assumed Wind Class']):
             potential.ix['Assumed Wind Class'] = intertie
@@ -167,6 +167,16 @@ def wind_preprocess (ppo):
     assumptions = read_csv(os.path.join(ppo.data_dir,
                                 "wind_class_assumptions.csv"),
                            comment = '#',index_col = 0)
+                           
+    try:
+        solar_cap = read_csv(os.path.join(ppo.data_dir,
+                                "solar_data_existing.csv"),
+                            comment = '#',index_col = 0).ix[ppo.com_id]
+        solar_cap = solar_cap['Installed Capacity (kW)']
+        if np.isnan(solar_cap):
+            solar_cap = 0
+    except (IOError,KeyError):
+        solar_cap = 0 
     
     try:
         capa = assumptions.ix[int(float(potential.ix['Assumed Wind Class']))]
@@ -182,6 +192,7 @@ def wind_preprocess (ppo):
     fd.write(wind_preprocess_header(ppo))
     fd.write("key,value\n")
     fd.write("existing wind," + str(existing) +'\n')
+    fd.write("existing solar," + str(solar_cap) + '\n')
     fd.write('assumed capacity factor,' +str(capa) +'\n')
     fd.close()
 
@@ -211,7 +222,8 @@ raw_data_files = ['wind_class_assumptions.csv',
                   "wind_data_existing.csv",
                   "wind_data_potential.csv",
                   "diesel_data.csv",
-                  'wind_data_interties.csv']
+                  'wind_data_interties.csv',
+                  "solar_data_existing.csv"]
 
 ## list of wind preprocessing functions
 preprocess_funcs = [wind_preprocess, copy_wind_cost_table]
@@ -235,6 +247,7 @@ def component_summary (coms, res_dir):
             
             average_load = wind.average_load
             existing_load = wind.comp_specs['data']['existing wind']
+            existing_solar = wind.comp_specs['data']['existing solar']
             wind_class = float(wind.comp_specs['data']['Assumed Wind Class']) 
             proposed_load =  wind.load_offset_proposed
             cap_fac = float(wind.comp_specs['data']['assumed capacity factor'])
@@ -272,6 +285,7 @@ def component_summary (coms, res_dir):
                 average_load, 
                 proposed_load,
                 existing_load,
+                existing_solar,
                 cap_fac,
                 net_gen_wind,
                 decbb, 
@@ -297,6 +311,7 @@ def component_summary (coms, res_dir):
         'Average Diesel Load [kw]',
         'Wind Capacity Proposed [kW]',
         'Existing Wind Capacity [kW]',
+        'Existing Solar Capacity [kW]',
         'Assumed Capacity Factor [%]',
         'Net Generation [kWh]',
         'Heating Oil Equivalent Captured by Secondary Load [gal]',
@@ -370,7 +385,7 @@ class WindPower(AnnualSavings):
             self.generation = self.forecast.get_generation(self.start_year)
             self.calc_average_load()
             self.calc_generation_wind_proposed()
-        except:
+        except AttributeError:
             self.diagnostics.add_warning(self.component_name, 
             "could not be run")
             self.run = False
@@ -381,10 +396,11 @@ class WindPower(AnnualSavings):
         
         #~ #~ print self.comp_specs['data']['Assumed Wind Class'] 
         # ??? some kind of failure message
-        if self.average_load > self.comp_specs['average load limit']: #and\
+        if self.average_load > self.comp_specs['average load limit'] and \
+            self.load_offset_proposed > 0:
             #~ float(self.comp_specs['data']['Assumed Wind Class']) > \
                 #~ self.comp_specs['minimum wind class'] and \
-                #~ self.load_offset_proposed > 0:
+               
         # if the average load is greater that the lower limit run this component
         # else skip    
             
@@ -433,7 +449,10 @@ class WindPower(AnnualSavings):
         else:
             #~ print "wind project not feasiable"
             self.run = False
-            self.reason = "average load too small"
+            if self.load_offset_proposed <= 0: 
+                self.reason = "no load offset proposed"
+            else:
+                self.reason = "average load too small"
             self.diagnostics.add_note(self.component_name, 
             "communites average load is not large enough to consider project")
         #~ print self.benefit_cost_ratio
@@ -474,11 +493,16 @@ class WindPower(AnnualSavings):
         if self.forecast.generation_by_type['generation hydro'].fillna(0).sum() > 0:
             offset *= 2
         #~ self.comp_specs['data']['existing wind'] = 0
-        if int(float(self.comp_specs['data']['existing wind'])) < \
-                (round(offset/25) * 25): # ???
+        
+        # existing very variable RE
+        existing_RE = int(float(self.comp_specs['data']['existing wind'])) + \
+                        int(float(self.comp_specs['data']['existing solar']))
+        
+        if existing_RE < (round(offset/25) * 25): # ???
             #~ print "True"
-            self.load_offset_proposed = round(offset/25) * 25 - \
-                    float(self.comp_specs['data']['existing wind'])
+            self.load_offset_proposed = round(offset/25) * 25 - existing_RE
+        
+                    
         
         # not needed for now
         #~ self.total_wind_generation = self.generation_load_proposed + \

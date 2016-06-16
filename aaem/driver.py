@@ -23,11 +23,16 @@ from importlib import import_module
 from datetime import datetime
 import warnings
 import sys
+try:
+    import cPickle as pickle
+    #~ print "C Pickle"
+except ImportError:
+    import pickle
 
 
 
 
-from aaem.components import comp_lib
+from aaem.components import comp_lib, comp_order
 
 
 
@@ -57,6 +62,13 @@ class Driver (object):
             raise RuntimeError, \
                     ("A Fatal Error Has occurred, ("+ str(e) +")", self.di)
         self.load_comp_lib()
+        self.plot = False
+        
+    def toggle_ploting (self):
+        """
+        toggles plotting feature
+        """
+        self.plot = not  self.plot
         
     def load_comp_lib (self):
         """
@@ -71,6 +83,7 @@ class Driver (object):
         #~ self.comp_lib = yaml.load(fd)
         #~ fd.close()
         self.comp_lib = comp_lib
+        self.comp_order = comp_order
         
     def run_components (self):
         """
@@ -81,9 +94,10 @@ class Driver (object):
             self.comps_used is a dictionary of the used components. 
         """
         self.comps_used = {}
-        for comp in self.comp_lib:
+        for comp in self.comp_order:
             if self.cd.get_item(comp,"enabled") == False:
                 continue
+            
             component = self.get_component(self.comp_lib[comp])(self.cd,
                                                                 self.fc,
                                                                 self.di)
@@ -129,7 +143,7 @@ class Driver (object):
         post: 
             the forecast is saved as a csv file
         """
-        self.fc.save_forecast(directory, img_dir)
+        self.fc.save_forecast(directory, img_dir, self.plot)
     
     def save_input_files (self, directory):
         """ 
@@ -188,7 +202,7 @@ def run_model_simple (model_root, run_name, community):
 def run_model (config_file = None, name = None, override_data = None, 
                             default_data = None, input_data = None,
                             results_dir = None, results_suffix = None, 
-                            img_dir = None):
+                            img_dir = None, plot = False):
     """ 
     run the model given an input file
     pre:
@@ -257,6 +271,8 @@ def run_model (config_file = None, name = None, override_data = None,
         pass
     try:
         model = Driver(data_dir, overrides, defaults)
+        if plot:
+            model.toggle_ploting()
         model.load_comp_lib()
         model.run_components()
         model.save_components_output(out_dir)
@@ -346,7 +362,7 @@ def config_split (root, out):
     
 
 
-def run_batch (config, suffix = "TS", img_dir = None):
+def run_batch (config, suffix = "TS", img_dir = None, plot = False):
     """
     run a set of communities
     
@@ -361,34 +377,63 @@ def run_batch (config, suffix = "TS", img_dir = None):
     directory subdivided by community. 
     """
     #~ log = open("Fail.log", 'w')
-    
     try:
         fd = open(config, 'r')
         config = yaml.load(fd)
         fd.close()
     except:
         pass
-    communities = {}
+    #~ communities = {}
     
     if suffix == "TS":
         suffix = datetime.strftime(datetime.now(),"%Y%m%d%H%M%S")
+
+    root_path = config[config.keys()[0]].split('config')[0]
+    os.makedirs(os.path.join(root_path,'results'))
+    picklename = os.path.join(root_path,'results','binary_results.pkl')
+    fd = open(picklename, 'wb')
     for key in sorted(config.keys()):
         print key
         #~ try:
         #~ start = datetime.now()
         r_val = run_model(config[key], results_suffix = suffix, 
-                          img_dir = img_dir)
-        communities[key] = {"model": r_val[0], "directory": r_val[1]}
+                          img_dir = img_dir, plot = plot)
+                
+        pickle.dump([key,{"model": r_val[0], "directory": r_val[1]}], 
+                                                    fd, pickle.HIGHEST_PROTOCOL)   
+        #~ communities[key] = {"model": r_val[0], "directory": r_val[1]}
+        
+        del r_val
         #~ print datetime.now() - start
         #~ except StandardError as e :
              #~ log.write("COMMUNITY: " + key + "\n\n")
              #~ log.write( str(sys.exc_info()[0]) + "\n\n")
              #~ log.write( str(e) + "\n\n")
              #~ log.write("--------------------------------------\n\n")
-             
-    #~ log.close()
-    return communities
     
+    fd.close()
+    #~ log.close()
+    
+    #~ print communities
+    return load_results(picklename)
+    
+
+def load_results (filename):
+    """
+    load the results from pickle file
+    """
+    results = {}
+    fd = open(filename, 'rb')
+    while True:
+        try:
+            temp = pickle.load(fd)
+            results[temp[0]] = temp[1]
+        except:
+            break
+    fd.close()
+    return results
+
+
 
 
 
@@ -608,7 +653,7 @@ def write_config (com_id, root):
     config_file.write(config_text)
     config_file.close()
     
-def run (batch_file, suffix = "TS", img_dir= None, dev = False):
+def run (batch_file, suffix = "TS", img_dir= None, dev = False, plot = False):
     """
     run function
     pre:
@@ -623,7 +668,7 @@ def run (batch_file, suffix = "TS", img_dir= None, dev = False):
     """
     if not dev:
         warnings.filterwarnings("ignore")
-    stuff = run_batch(batch_file, suffix,img_dir)
+    stuff = run_batch(batch_file, suffix,img_dir,plot)
     warnings.filterwarnings("default")
     return stuff
     
