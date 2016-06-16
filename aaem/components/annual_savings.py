@@ -122,6 +122,13 @@ class AnnualSavings (object):
         self.diesel_prices = prices.get_projected_prices(self.start_year,
                                                          self.end_year)
                                                          
+    def get_electricity_prices (self):
+        """
+        """
+        prices = self.cd["electric non-fuel prices"]
+        self.electricity_prices = prices.ix[self.start_year:
+                                                         self.end_year-1]
+                                                         
     def save_additional_output(self, directory):
         """
         """
