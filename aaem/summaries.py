@@ -389,7 +389,7 @@ def fuel_oil_log (coms, res_dir):
                 elec = 0
 
             res = res.baseline_fuel_Hoil_consumption[0]
-            com = com.baseline_HF_consumption * mmbtu_to_gal_HF
+            com = com.baseline_fuel_Hoil_consumption * mmbtu_to_gal_HF
             wat = wat.baseline_HF_consumption[0] * mmbtu_to_gal_HF
             
             total = res + com + wat + elec
