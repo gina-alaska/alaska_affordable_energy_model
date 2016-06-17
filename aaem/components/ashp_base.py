@@ -144,7 +144,7 @@ class ASHPBase (AnnualSavings):
         self.cd = community_data.get_section('community')
        
         try:
-            self.comp_specs = community_data.get_section(self.componenet_name)
+            self.comp_specs = community_data.get_section(self.component_name)
         except AttributeError:
             self.comp_specs = community_data.get_section(COMPONENT_NAME)
 
@@ -156,6 +156,8 @@ class ASHPBase (AnnualSavings):
                         
         ### ADD other intiatzation stuff
         self.load_prerequisite_variables(prerequisites)
+        self.regional_multiplier = community_data.get_section('construction multipliers')[self.cd["region"]]
+
         
     def load_prerequisite_variables (self, comps):
         """
@@ -239,6 +241,7 @@ class ASHPBase (AnnualSavings):
         self.monthly_value_table['mmbtu/mon'] = \
                 self.heat_energy_produced_per_year *\
                 self.monthly_value_table['% of total heating']
+        
         #~ print self.monthly_value_table
         
         
@@ -289,7 +292,7 @@ class ASHPBase (AnnualSavings):
         self.heating_oil_saved = \
             self.monthly_value_table['Heating Oil Saved (gal)'].sum()
         
-    def calc_averag_cop (self):
+    def calc_average_cop (self):
         self.average_cop = \
             self.monthly_value_table['mmbtu/mon'].sum()/\
             self.monthly_value_table['kWh consumed'].sum()
@@ -318,7 +321,7 @@ class ASHPBase (AnnualSavings):
         self.calc_heating_oil_saved_per_month()
         self.calc_electric_consumption()
         self.calc_heating_oil_saved()
-        self.calc_averag_cop()
+        self.calc_average_cop()
 
     def run (self):
         """

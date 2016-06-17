@@ -8,6 +8,7 @@ comp_lib = {
     'solar power': "solar_power",
     'biomass cordwood': "biomass_wood",
     'biomass pellet': 'biomass_pellet',
+    'ASHP residential': 'ashp_res',
         }
 
 comp_order = ["residential buildings",
@@ -16,7 +17,8 @@ comp_order = ["residential buildings",
               "wind power",
               'solar power',
               'biomass cordwood',
-              'biomass pellet',]
+              'biomass pellet',
+              'ASHP residential']
 
 def get_raw_data_files():
     raw_data_files = []
