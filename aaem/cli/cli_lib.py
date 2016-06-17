@@ -228,6 +228,8 @@ def compare_high_level (results1, results2):
     print ""
     
     for f in to_compare:
+        if ".pkl" in f:
+            continue
         f1 = read_csv(os.path.join(results1,f), index_col = 0, comment = '#').fillna("null")
         f2 = read_csv(os.path.join(results2,f), index_col = 0, comment = '#').fillna("null")
         print "summary: " + f
