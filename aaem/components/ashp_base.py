@@ -148,7 +148,7 @@ class ASHPBase (AnnualSavings):
                                       self.comp_specs["lifetime"],
                         self.forecast.end_year - self.comp_specs["start year"])
                         
-        self.ashp_sector_system
+        self.ashp_sector_system = "N/a"
                         
         ### ADD other intiatzation stuff
         
