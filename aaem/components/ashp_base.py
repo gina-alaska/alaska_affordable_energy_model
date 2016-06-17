@@ -118,12 +118,16 @@ def component_summary (coms, res_dir):
     """
     pass
 
+## list of prerequisites for module
+prereq_comps = []
+
 #   do a find and replace on ComponentName to name of component 
 # (i.e. 'ResidentialBuildings')
 class ASHPBase (AnnualSavings):
     """
     """
-    def __init__ (self, community_data, forecast, diag = None):
+    def __init__ (self, community_data, forecast, 
+                        diag = None, prerequisites = {}):
         """
         Class initialiser
 
@@ -151,6 +155,17 @@ class ASHPBase (AnnualSavings):
         self.ashp_sector_system = "N/a"
                         
         ### ADD other intiatzation stuff
+        self.load_prerequisite_variables(prerequisites)
+        
+    def load_prerequisite_variables (self, comps):
+        """
+        load variables from prerequisites
+        
+        pre:
+             prerequisites: dictonary of componentes
+        """
+        # written in child classes
+        pass
         
     def calc_cop_per_month (self):
         """

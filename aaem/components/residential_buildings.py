@@ -39,6 +39,9 @@ yaml_comments = {'enabled': '',
         'start year': 'start year <int>',
         'average refit cost': 'cost/refit <float>',
         'data': 'IMPORT'}
+
+## list of prerequisites for module
+prereq_comps = []
         
 def process_data_import(data_dir):
     """
@@ -62,7 +65,8 @@ class ResidentialBuildings(AnnualSavings):
     for forecasting residential building consumption/savings   
     """
     
-    def __init__ (self, community_data, forecast, diag=None):
+    def __init__ (self, community_data, forecast, 
+                        diag = None, prerequisites = {}):
         """
         Class initialiser
 

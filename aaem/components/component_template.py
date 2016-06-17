@@ -91,12 +91,16 @@ def component_summary (coms, res_dir):
     """
     pass
 
+## list of prerequisites for module
+prereq_comps = [] ## FILL in if needed
+
 #   do a find and replace on ComponentName to name of component 
 # (i.e. 'ResidentialBuildings')
 class ComponentName (AnnualSavings):
     """
     """
-    def __init__ (self, community_data, forecast, diag = None):
+    def __init__ (self, community_data, forecast, 
+                        diag = None, prerequisites = {}):
         """
         Class initialiser
 
@@ -118,10 +122,24 @@ class ComponentName (AnnualSavings):
         self.set_project_life_details(self.comp_specs["start year"],
                                       self.comp_specs["lifetime"],
                         self.forecast.end_year - self.comp_specs["start year"])
-                        
-        ### ADD other intiatzation stuff
         
-    
+        ### ADD other intiatzation stuff  
+        ### load prerequisites in the following function
+        ### if there are no prerequisites you can delete this and the 
+        ### load_prerequisite_variables function
+        self.load_prerequisite_variables(prerequisites)
+        
+    def load_prerequisite_variables (self, comps):
+        """
+        load variables from prerequisites
+        
+        pre:
+             prerequisites: dictonary of componentes
+        """
+        # LOAD anything needed from the components passed as input
+        # WRITE this
+        pass
+        
     def run (self):
         """
         run the forecast model

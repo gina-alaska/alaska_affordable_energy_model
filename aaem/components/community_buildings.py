@@ -118,13 +118,17 @@ def load_building_estimates (data_dir):
 yaml_import_lib = {'com building data': load_building_data,
                    'number buildings': load_num_buildings,
                    'com building estimates': load_building_estimates}
+                   
+## list of prerequisites for module
+prereq_comps = []
 
 class CommunityBuildings (AnnualSavings):
     """
     for forecasting community building consumption/savings  
     """
     
-    def __init__ (self, community_data, forecast, diag = None):
+    def __init__ (self, community_data, forecast, 
+                        diag = None, prerequisites = {}):
         """
         Class initialiser
 

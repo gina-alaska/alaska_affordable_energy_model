@@ -129,13 +129,16 @@ def component_summary (coms, res_dir):
     fd.write(("# " + COMPONENT_NAME + " summary\n"))
     fd.close()
     data.to_csv(f_name, mode='a')
-
+    
+## list of prerequisites for module
+prereq_comps = deepcopy(bmb.prereq_comps)
 
 class BiomassCordwood (bmb.BiomassBase):
     """
     cordwood biomass componenet
     """
-    def __init__ (self, community_data, forecast, diag = None):
+    def __init__ (self, community_data, forecast, 
+                        diag = None, prerequisites = {}):
         """
         Class initialiser
 
@@ -146,7 +149,8 @@ class BiomassCordwood (bmb.BiomassBase):
             the model can be run
         """
         self.component_name = COMPONENT_NAME
-        super(BiomassCordwood, self).__init__(community_data, forecast, diag)
+        super(BiomassCordwood, self).__init__(community_data, forecast, 
+                                                    diag, prerequisites)
         self.biomass_type = "cordwood"
         self.units = "cords"
         self.reason = "OK"

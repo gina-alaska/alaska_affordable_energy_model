@@ -106,7 +106,8 @@ preprocess_funcs = [preprocess]
 ## list of data keys not to save when writing the CommunityData output
 yaml_not_to_save = []
 
-
+## list of prerequisites for module
+prereq_comps = ["non-residential buildings",]
 
        
 #   do a find and replace on ComponentName to name of component 
@@ -115,7 +116,8 @@ class BiomassBase (AnnualSavings):
     """
     class containing data and functions common to biomass componentes 
     """
-    def __init__ (self, community_data, forecast, diag = None):
+    def __init__ (self, community_data, forecast, 
+                        diag = None, prerequisites = {}):
         """
         Class initialiser
 
@@ -144,9 +146,19 @@ class BiomassBase (AnnualSavings):
         self.avg_gal_per_sqft = 0
         self.biomass_type = "NA"
         self.units = "NA"
-        self.get_non_res_values(community_data.get_item(
-                                            'non-residential buildings',
-                                            'com building data'))
+        self.load_prerequisite_variables(prerequisites)
+        
+        
+        
+    def load_prerequisite_variables (self, comps):
+        """
+        load variables from prerequisites
+        
+        pre:
+             prerequisites: dictonary of componentes
+        """
+        non_res = comps['non-residential buildings']
+        self.get_non_res_values(non_res)
         
     def get_non_res_values (self, non_res):
         """
@@ -159,10 +171,11 @@ class BiomassBase (AnnualSavings):
             self.non_res_sqft, and self.avg_gal_per_sqft
         are numbers
         """
-        self.non_res_sqft = non_res['Square Feet'].sum()
+        self.non_res_sqft = non_res.refit_sqft_total
     
         try:
-            self.avg_gal_per_sqft = non_res['Fuel Oil'].sum()/ self.non_res_sqft
+            self.avg_gal_per_sqft = non_res.baseline_fuel_Hoil_consumption/ \
+                                                            self.non_res_sqft
         except ZeroDivisionError:
             self.avg_gal_per_sqft = 0
         

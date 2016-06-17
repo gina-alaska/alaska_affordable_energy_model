@@ -97,10 +97,17 @@ class Driver (object):
         for comp in self.comp_order:
             if self.cd.get_item(comp,"enabled") == False:
                 continue
-            
+                
+            prereq = {}
+            pr_list = \
+                import_module("aaem.components." +comp_lib[comp]).prereq_comps
+            for pr in pr_list:
+                prereq[pr] = self.comps_used[pr]
+                
             component = self.get_component(self.comp_lib[comp])(self.cd,
                                                                 self.fc,
-                                                                self.di)
+                                                                self.di,
+                                                                prereq)
             component.run()
             self.comps_used[comp] = component
 

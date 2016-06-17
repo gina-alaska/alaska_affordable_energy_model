@@ -336,11 +336,15 @@ def component_summary (coms, res_dir):
 ## component name
 COMPONENT_NAME = "wind power"
 
+## list of prerequisites for module
+prereq_comps = []
+
 ## component
 class WindPower(AnnualSavings):
     """
     """
-    def __init__ (self, community_data, forecast, diag = None):
+    def __init__ (self, community_data, forecast, 
+                        diag = None, prerequisites = {}):
         """
         Class initialiser
 

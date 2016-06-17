@@ -69,6 +69,9 @@ yaml_import_lib["on road system"] = road_import
     
 raw_data_files = deepcopy(bmb.raw_data_files) + ["road_system.csv"]
 
+## list of prerequisites for module
+prereq_comps = deepcopy(bmb.prereq_comps)
+
 def preprocess_road_system_header(ppo):
     """
     pre: 
@@ -175,7 +178,8 @@ def component_summary (coms, res_dir):
 class BiomassPellet (bmb.BiomassBase):
     """
     """
-    def __init__ (self, community_data, forecast, diag = None):
+    def __init__ (self, community_data, forecast, 
+                        diag = None, prerequisites = {}):
         """
         Class initialiser
 
@@ -186,7 +190,8 @@ class BiomassPellet (bmb.BiomassBase):
             the model can be run
         """
         self.component_name = COMPONENT_NAME
-        super(BiomassPellet, self).__init__(community_data, forecast, diag)
+        super(BiomassPellet, self).__init__(community_data, forecast, 
+                                                    diag, prerequisites)
         self.biomass_type = "pellets"
         self.units = "tons"
         self.reason = "OK"

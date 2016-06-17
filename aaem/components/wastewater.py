@@ -80,12 +80,16 @@ def process_data_import(data_dir):
 
 yaml_import_lib = {'data': process_data_import}
 
+## list of prerequisites for module
+prereq_comps = []
+
 class WaterWastewaterSystems (AnnualSavings):
     """
     AAEM Water & Wastewater Systems component
     """
     
-    def __init__ (self, community_data, forecast, diag=None):
+    def __init__ (self, community_data, forecast, 
+                        diag = None, prerequisites = {}):
         """ 
         Class initialiser 
         
