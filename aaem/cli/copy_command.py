@@ -6,7 +6,7 @@ run_command.py
 import pycommand
 import shutil
 import os.path
-from aaem import driver
+from aaem import driver, __version__, __download_url__ 
 from datetime import datetime
 
 class CopyCommand(pycommand.CommandBase):
@@ -51,6 +51,20 @@ class CopyCommand(pycommand.CommandBase):
                                                 os.path.join(new,"input_data"))
             shutil.copytree(os.path.join(base,"config"), 
                                                 os.path.join(new,"config"))
+            #~ shutil.copy(os.path.join(base, "version_metadata.txt"),new)
+            
+            fd = open(os.path.join(base, "version_metadata.txt"), 'r')
+            lines = fd.read().split("\n")
+            print lines
+            fd.close()
+            fd = open(os.path.join(new, "version_metadata.txt"), 'w')
+            fd.write(( "Code Version: "+ __version__ + "\n" 
+                       "Code URL: "+ __download_url__ + "\n" 
+                       "" + lines[2]  +'\n'
+                "Date Run: "+ datetime.strftime(datetime.now(),"%Y-%m-%d")+'\n'
+                     ))
+            fd.close()
+            
         except OSError:
             print "Copy Error: This copy already exists"
             return 0
