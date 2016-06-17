@@ -57,7 +57,6 @@ def component_summary (coms, res_dir):
     """
     save thes the summary for biomass cordwood
     """
-    return
     out = []
     for c in sorted(coms.keys()):
         #~ it = coms[c]['model'].cd.intertie
@@ -69,21 +68,29 @@ def component_summary (coms, res_dir):
             continue
         try:
             
+            ashp = coms[c]['model'].comps_used[COMPONENT_NAME]
+            try:
+                peak_monthly_btu_hr_hh = ashp.peak_monthly_btu_hr_hh
+                price =  float(ashp.electricity_prices.ix[ashp.start_year])
+                #~ print float(ashp.electricity_prices.ix[ashp.start_year])
+            except AttributeError:
+                peak_monthly_btu_hr_hh = 0
+                price = 0
            
-            biomass = coms[c]['model'].comps_used[COMPONENT_NAME]
+        
             
             l = [c, 
-                 biomass.max_boiler_output,
-                 biomass.heat_displaced_sqft,
-                 biomass.biomass_fuel_consumed,
-                 biomass.fuel_price_per_unit,
-                 biomass.comp_specs['energy density'],
-                 biomass.heat_diesel_displaced,
-                 biomass.get_NPV_benefits(),
-                 biomass.get_NPV_costs(),
-                 biomass.get_NPV_net_benefit(),
-                 biomass.get_BC_ratio(),
-                 biomass.reason
+                 ashp.average_cop,
+                 ashp.num_houses,
+                 peak_monthly_btu_hr_hh,
+                 price,
+                 ashp.electric_consumption,
+                 ashp.heating_oil_saved,
+                 ashp.get_NPV_benefits(),
+                 ashp.get_NPV_costs(),
+                 ashp.get_NPV_net_benefit(),
+                 ashp.get_BC_ratio(),
+                 ashp.reason
                 ]
             out.append(l)
             
@@ -93,11 +100,11 @@ def component_summary (coms, res_dir):
     
     data = DataFrame(out,columns = \
        ['Community',
-        'Maximum Boiler Output [Btu/hr]',
-        'Heat Displacement square footage [Sqft]',
-        'Proposed ' + biomass.biomass_type + " Consumed [" + biomass.units +"]",
-        'Price [$/' + biomass.units + ']',
-        "Energy Density [Btu/" + biomass.units + "]",
+        "Average Coefficient of Performance (COP)",
+        'Number Houses',
+        'Peak Household Monthly Btu/hr',
+        'Electricity Price [$/kWh]',
+        'kWh consumed per year',
         "Displaced Heating Oil [Gal]",
         'NPV benefits [$]',
         'NPV Costs [$]',
