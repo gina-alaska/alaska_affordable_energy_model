@@ -526,9 +526,12 @@ class CommunityData (object):
         if self.get_item('community',"propane price") in IMPORT_FLAGS:
             self.set_item("community", "propane price",
                             np.float(prices.ix["Propane"]))
-        if self.get_item('community',"biomass price") in IMPORT_FLAGS:
-            self.set_item("community", "biomass price",
-                            np.float(prices.ix["Biomass"]))
+        if self.get_item('community',"cordwood price") in IMPORT_FLAGS:
+            self.set_item("community", "cordwood price",
+                            np.float(prices.ix["Cordwood"]))
+        if self.get_item('community',"pellet price") in IMPORT_FLAGS:
+            self.set_item("community", "pellet price",
+                            np.float(prices.ix["Pellet"]))
         
         limits = self.load_pp_csv("generation_limits.csv")
         if self.get_item('community', 'hydro generation limit') in IMPORT_FLAGS:

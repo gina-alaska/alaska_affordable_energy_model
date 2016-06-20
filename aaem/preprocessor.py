@@ -1402,7 +1402,11 @@ class Preprocessor (object):
         fd.write(self.hdd_header())
         fd.write("fuel, price\n")
         fd.write("Propane," + str(self.prices_propane()) +"\n")
-        fd.write("Biomass," + str(self.prices_biomass()) +"\n")
+        
+        cord, pellet = self.prices_biomass()
+        
+        fd.write("Cordwood," + str(cord) +"\n")
+        fd.write("Pellet," + str(pellet) +"\n")
         fd.close()
         
         
@@ -1444,25 +1448,36 @@ class Preprocessor (object):
     def prices_biomass (self):
         """
         """
-        in_file = os.path.join(self.data_dir, "biomass_price_estimates.csv")
+        in_file = os.path.join(self.data_dir, "biomass_prices.csv")
         data = read_csv(in_file, index_col=0,comment = "#", header=0)
         
         if len(self.get_communities_data(data)['Source'])==0:
             self.diagnostics.add_warning("prices-biomass", "not found")
-            return 0
+            return 0,0
         self.diagnostics.add_warning("prices-biomass", "price source: " +\
                       str(self.get_communities_data(data)['Source']))
         try:
-            val = float(self.get_communities_data(data)['Biomass ($/Cord)'])         
+            cord = float(self.get_communities_data(data)['Biomass ($/Cord)'])         
         except ValueError:
             self.diagnostics.add_note("prices-biomass", 
                                         "is N/a treating as $0")
-            val = 0
-        if np.isnan(val):
+            cord = 0
+        if np.isnan(cord):
             self.diagnostics.add_note("prices-biomass", 
                                         "is N/a treating as $0")
-            val = 0 
-        return val
+            cord = 0 
+            
+        try:
+            pellet = float(self.get_communities_data(data)['Biomass ($/Cord)'])         
+        except ValueError:
+            self.diagnostics.add_note("prices-biomass", 
+                                        "is N/a treating as $0")
+            pellet = 0
+        if np.isnan(pellet):
+            self.diagnostics.add_note("prices-biomass", 
+                                        "is N/a treating as $0")
+            pellet = 0 
+        return cord, pellet
         
     def generation_limits (self):
         in_file = os.path.join(self.data_dir, "generation_limits.csv")

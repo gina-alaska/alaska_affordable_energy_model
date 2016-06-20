@@ -221,7 +221,7 @@ class WaterWastewaterSystems (AnnualSavings):
         """
         self.refit_HF_cost = np.zeros(self.project_life)
         fuel_cost = self.diesel_prices + self.cd['heating fuel premium']# $/gal
-        wood_price = self.cd['biomass price']
+        wood_price = self.cd['cordwood price']
         # are there ever o&m costs
         # $/gal * gal/yr = $/year 
         self.refit_HF_cost += \
@@ -241,7 +241,7 @@ class WaterWastewaterSystems (AnnualSavings):
         """
         self.baseline_HF_cost = np.zeros(self.project_life)
         fuel_cost = self.diesel_prices + self.cd['heating fuel premium'] #$/gal
-        wood_price = self.cd['biomass price'] 
+        wood_price = self.cd['cordwood price'] 
         # $/gal * gal/yr + $/cors * cord/yr= $/year 
         self.baseline_HF_cost += \
                 self.baseline_fuel_Hoil_consumption * fuel_cost +\

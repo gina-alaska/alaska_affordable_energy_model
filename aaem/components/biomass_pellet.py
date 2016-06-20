@@ -234,7 +234,7 @@ class BiomassPellet (bmb.BiomassBase):
             self.calc_maintainance_cost()
             
             
-            self.fuel_price_per_unit = self.comp_specs["default pellet price"]
+            self.fuel_price_per_unit = self.cd['pellet price']
             
             self.calc_proposed_biomass_cost(self.fuel_price_per_unit)
             self.calc_displaced_heating_oil_price()

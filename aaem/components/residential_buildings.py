@@ -364,7 +364,7 @@ class ResidentialBuildings(AnnualSavings):
         """
         HF_price = (self.diesel_prices + self.cd['heating fuel premium'])
         self.hoil_price = HF_price
-        wood_price = self.cd['biomass price'] 
+        wood_price = self.cd['cordwood price'] 
         elec_price = self.elec_prices[self.start_year-self.start_year:
                                          self.end_year-self.start_year]
         LP_price = self.cd['propane price'] 
@@ -420,7 +420,7 @@ class ResidentialBuildings(AnnualSavings):
         """
         """
         HF_price = (self.diesel_prices + self.cd['heating fuel premium'])
-        wood_price = self.cd['biomass price'] 
+        wood_price = self.cd['cordwood price'] 
         elec_price = self.elec_prices[self.start_year-self.start_year:
                                          self.end_year-self.start_year]
         LP_price = self.cd['propane price'] 
@@ -527,7 +527,7 @@ class ResidentialBuildings(AnnualSavings):
         """
         if self.cd["model financial"]:
             HF_price = (self.diesel_prices + self.cd['heating fuel premium'])
-            wood_price = self.cd['biomass price'] 
+            wood_price = self.cd['cordwood price'] 
             elec_price = self.elec_prices[self.start_year-self.start_year:
                                              self.end_year-self.start_year]
             LP_price = self.cd['propane price'] 
