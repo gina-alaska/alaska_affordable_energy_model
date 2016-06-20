@@ -55,7 +55,14 @@ def process_data_import(data_dir):
     data = data['value'].to_dict()
     data['Peak Month % of total'] = float(data['Peak Month % of total'])
     data['Capacity Factor'] = float(data['Capacity Factor'])
-    data['Distance'] = float(data['Distance'])
+    data['Distance'] = float(data['Distance to Heating Reference Community'])
+    
+    key = 'Sufficient Biomass for 30% of Non-residential buildings'
+    try:
+        sufficient = data[key].lower() == "yes"
+    except AttributeError:
+        sufficient = False
+    data[key] = sufficient
     return data
 
 ## library of keys and functions for CommunityData IMPORT Keys
@@ -82,8 +89,14 @@ def preprocess (ppo):
     post:
         saves "biomass_data.csv", and updates MODEL_FILES
     """
-    data = read_csv(os.path.join(ppo.data_dir,"biomass_data.csv"),
+    try:
+        data = read_csv(os.path.join(ppo.data_dir,"biomass_resource_data.csv"),
                         comment = '#',index_col = 0).ix[ppo.com_id]
+    except KeyError:
+        data = read_csv(os.path.join(ppo.data_dir,"biomass_resource_data.csv"),
+                        comment = '#',index_col = 0).ix[0]
+        data.ix[:] = np.nan
+        
                         
     out_file = os.path.join(ppo.out_dir,"biomass_data.csv")
 
@@ -98,7 +111,7 @@ def preprocess (ppo):
     ppo.MODEL_FILES['BIOMASS_DATA'] = "biomass_data.csv" # change this
 
 ## List of raw data files required for wind power preproecssing 
-raw_data_files = ['biomass_data.csv']
+raw_data_files = ['biomass_resource_data.csv']
 
 ## list of wind preprocessing functions
 preprocess_funcs = [preprocess]
