@@ -40,7 +40,7 @@ yaml = {'enabled': False,
 
 ## default values for yaml key/Value pairs
 yaml_defaults = {'enabled': True,
-        'lifetime': 20,
+        'lifetime': 15,
         'start year': 2017,
         }
     
@@ -294,7 +294,7 @@ class ASHPBase (AnnualSavings):
         
     def calc_average_cop (self):
         self.average_cop = \
-            self.monthly_value_table['mmbtu/mon'].sum()/\
+            self.monthly_value_table['mmbtu/mon'].sum()*constants.mmbtu_to_kWh/\
             self.monthly_value_table['kWh consumed'].sum()
         
     def calc_baseline_heating_oil_cost (self):
@@ -365,6 +365,7 @@ class ASHPBase (AnnualSavings):
         """
         self.annual_heating_savings = self.baseline_heating_oil_cost - \
                                       self.proposed_ashp_operation_cost
+                                      
     
     def save_component_csv (self, directory):
         """

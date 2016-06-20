@@ -86,6 +86,7 @@ def component_summary (coms, res_dir):
                  price,
                  ashp.electric_consumption,
                  ashp.heating_oil_saved,
+                 ashp.electric_heat_energy_reduction,
                  ashp.get_NPV_benefits(),
                  ashp.get_NPV_costs(),
                  ashp.get_NPV_net_benefit(),
@@ -106,6 +107,7 @@ def component_summary (coms, res_dir):
         'Electricity Price [$/kWh]',
         'kWh consumed per year',
         "Displaced Heating Oil [Gal]",
+        "Displaced Electricity [kWh]",
         'NPV benefits [$]',
         'NPV Costs [$]',
         'NPV Net benefit [$]',
@@ -154,7 +156,8 @@ class ASHPResidential (ashp_base.ASHPBase):
              prerequisites: dictonary of componentes
         """
         res = comps['residential buildings']
-        self.pre_ashp_heating_oil_used = res.init_HF
+        self.pre_ashp_heating_oil_used =  res.init_HF
+        self.pre_ashp_heating_electricty_used = res.init_kWh
         self.num_houses = res.init_HH
         #~ print self.pre_ashp_heating_oil_used
         #~ print self.num_houses
@@ -164,9 +167,22 @@ class ASHPResidential (ashp_base.ASHPBase):
         """
         """
         self.heat_energy_produced_per_year = self.pre_ashp_heating_oil_used * \
-                        self.comp_specs["heating oil efficiency"]
+                        self.comp_specs["heating oil efficiency"]*(1/constants.mmbtu_to_gal_HF)
+        #~ print self.heat_energy_produced_per_year
+       
+    def calc_electric_heat_energy_reduction (self):
+        """
+        """
+        self.electric_heat_energy_reduction = self.pre_ashp_heating_electricty_used/ self.average_cop
         
     
+    def calc_electric_heat_energy_savings (self):
+        """
+        """
+        self.electric_heat_energy_savings = self.electric_heat_energy_reduction *  self.electricity_prices
+        self.electric_heat_energy_savings = self.electric_heat_energy_savings.values.T[0]
+        
+        
     def run (self):
         """
         run the forecast model
@@ -180,8 +196,8 @@ class ASHPResidential (ashp_base.ASHPBase):
         if self.cd["model heating fuel"]:
             self.calc_heat_energy_produced_per_year()
             self.calc_ashp_system_pramaters()
+            self.calc_electric_heat_energy_reduction()
             
-        
         if self.cd["model financial"]:
             self.calc_baseline_heating_oil_cost()
             self.calc_proposed_ashp_operation_cost()
@@ -191,17 +207,32 @@ class ASHPResidential (ashp_base.ASHPBase):
             self.calc_annual_electric_savings()
             self.calc_annual_heating_savings()
             
+            self.calc_electric_heat_energy_savings()
+            #~ print self.electric_heat_energy_savings
+            self.annual_heating_savings += self.electric_heat_energy_savings
+            
             self.calc_annual_total_savings()
             self.calc_annual_costs(self.cd['interest rate'])
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
+        #~ print 'self.monthly_value_table'
+        #~ print self.monthly_value_table
+        #~ print 'self.electric_consumption',self.electric_consumption
+        #~ print 'self.heating_oil_saved',self.heating_oil_saved
+        #~ print 'self.average_cop',self.average_cop
+        #~ print 'self.baseline_heating_oil_cost',self.baseline_heating_oil_cost
+        #~ print 'self.proposed_ashp_operation_cost',self.proposed_ashp_operation_cost
+        #~ print self.capital_costs
+        #~ print self.benefit_cost_ratio
 
 
     def calc_capital_costs (self):
         """
         calculate the captial costs
         """
-        average_btu_per_hr = ((self.pre_ashp_heating_oil_used/self.num_houses)*self.comp_specs["heating oil efficiency"]) / constants.mmbtu_to_gal_HF *1e6/ constants.hours_per_year
+        heating_oil = ((self.pre_ashp_heating_oil_used/self.num_houses)*self.comp_specs["heating oil efficiency"]) / constants.mmbtu_to_gal_HF *1e6/ constants.hours_per_year
+        electric_heat = (self.pre_ashp_heating_electricty_used/self.num_houses) / constants.mmbtu_to_kWh *1e6/ constants.hours_per_year
+        average_btu_per_hr =  heating_oil + electric_heat
         peak_monthly_btu_hr_hh = float(self.comp_specs['data'].ix['Peak Month % of total']) * average_btu_per_hr * 12
         self.peak_monthly_btu_hr_hh=peak_monthly_btu_hr_hh
         
