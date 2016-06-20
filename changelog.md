@@ -1,5 +1,16 @@
 #Change Log
 
+## [0.14.9]
+### added 
+- ASHP (air source heat pump) base component
+- Non-residential ASHP component
+- Residential ASHP component
+
+### fixes
+- bug in cli copy where metadata.txt was not copied
+- bug in cli compare caused by .pkl file
+- bug in fuel oil summary, where non-res heating fuel total was shown as opposed to non-res heating oil.
+
 ## [0.14.8]
 ### added 
 - electric price summary
