@@ -168,6 +168,19 @@ class BiomassCordwood (bmb.BiomassBase):
             TODO: define output values. 
             the model is run and the output values are available
         """
+        s_key = 'Sufficient Biomass for 30% of Non-residential buildings'
+        
+        if not self.comp_specs['data'][s_key]:
+            self.diagnostics.add_warning(self.component_name, 
+                                    "not " + s_key)
+            self.max_boiler_output = 0
+            self.heat_displaced_sqft = 0
+            self.biomass_fuel_consumed = 0
+            self.fuel_price_per_unit = 0
+            self.heat_diesel_displaced = 0
+            self.reason = "not " + s_key
+            return
+        
         if self.cd["model heating fuel"]:
             self.calc_heat_displaced_sqft()
             self.calc_energy_output()

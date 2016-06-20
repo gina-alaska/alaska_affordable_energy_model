@@ -56,6 +56,13 @@ def process_data_import(data_dir):
     data['Peak Month % of total'] = float(data['Peak Month % of total'])
     data['Capacity Factor'] = float(data['Capacity Factor'])
     data['Distance'] = float(data['Distance to Heating Reference Community'])
+    
+    key = 'Sufficient Biomass for 30% of Non-residential buildings'
+    try:
+        sufficient = data[key].lower() == "yes"
+    except AttributeError:
+        sufficient = False
+    data[key] = sufficient
     return data
 
 ## library of keys and functions for CommunityData IMPORT Keys
