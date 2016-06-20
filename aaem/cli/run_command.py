@@ -90,7 +90,7 @@ class RunCommand(pycommand.CommandBase):
         fd = open(os.path.join(base, "version_metadata.txt"), 'w')
         fd.write(( "Code Version: "+ __version__ + "\n" 
                    "Code URL: "+ __download_url__ + "\n" 
-                   "" + lines[1] +'\n'
+                   "" + lines[2] +'\n'
                 "Date Run: "+ datetime.strftime(datetime.now(),"%Y-%m-%d")+'\n'
                  ))
         fd.close()
