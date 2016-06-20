@@ -1,5 +1,10 @@
 #Change Log
 
+## [0.15.0]
+### changed
+- biomass price keys have been renamed, and expanded for pellet prices
+- added test for running for biomass wood based on resource availability
+
 ## [0.14.9]
 ### added 
 - ASHP (air source heat pump) base component
