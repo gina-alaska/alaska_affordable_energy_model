@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.15.1]
+### changed
+- summary file headers for all componentes have been updated
+
 ## [0.15.0]
 ### changed
 - biomass price keys have been renamed, and expanded for pellet prices
