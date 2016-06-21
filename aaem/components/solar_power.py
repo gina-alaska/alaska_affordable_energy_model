@@ -241,7 +241,7 @@ def component_summary (coms, res_dir):
             'notes']
     
     
-    data = DataFrame(out,columns = cols).set_index('Community').round(2)
+    data = DataFrame(out,columns = cols).set_index('Community')#.round(2)
     f_name = os.path.join(res_dir,
                 'solar_power_summary.csv')
     #~ fd = open(f_name,'w')

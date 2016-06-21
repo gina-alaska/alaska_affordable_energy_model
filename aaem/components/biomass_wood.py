@@ -124,7 +124,7 @@ def component_summary (coms, res_dir):
             ]
     
     
-    data = DataFrame(out,columns = cols).set_index('Community').round(2)
+    data = DataFrame(out,columns = cols).set_index('Community')#.round(2)
     f_name = os.path.join(res_dir,
                 COMPONENT_NAME.replace(" ","_") + '_summary.csv')
     #~ fd = open(f_name,'w')
