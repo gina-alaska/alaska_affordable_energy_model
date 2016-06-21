@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.15.2]
+### fixed
+- bug in summaries related to rounding 
+
 ## [0.15.1]
 ### changed
 - summary file headers for all componentes have been updated
