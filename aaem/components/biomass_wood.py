@@ -109,25 +109,27 @@ def component_summary (coms, res_dir):
             #~ print e
             pass
     
-    data = DataFrame(out,columns = \
-       ['Community',
-        'Maximum Boiler Output [Btu/hr]',
-        'Heat Displacement square footage [Sqft]',
+    cols = ['Community',
+        'Maximum Biomass Boiler Output [Btu/hr]',
+        'Biomass Heat Displacement square footage [Sqft]',
         'Proposed ' + biomass.biomass_type + " Consumed [" + biomass.units +"]",
         'Price [$/' + biomass.units + ']',
         "Energy Density [Btu/" + biomass.units + "]",
-        "Displaced Heating Oil [Gal]",
-        'NPV benefits [$]',
-        'NPV Costs [$]',
-        'NPV Net benefit [$]',
-        'Benefit Cost Ratio',
-        'notes']
-                    ).set_index('Community')#.round(2)
+        'Displaced Heating Oil by Biomass [Gal]',
+        'Bioimass Cordwood NPV benefits [$]',
+        'Biomass Cordwood NPV Costs [$]',
+        'Biomass Cordwood NPV Net benefit [$]',
+        'Biomass Cordwood Benefit Cost Ratio',
+        'notes'
+            ]
+    
+    
+    data = DataFrame(out,columns = cols).set_index('Community').round(2)
     f_name = os.path.join(res_dir,
                 COMPONENT_NAME.replace(" ","_") + '_summary.csv')
-    fd = open(f_name,'w')
-    fd.write(("# " + COMPONENT_NAME + " summary\n"))
-    fd.close()
+    #~ fd = open(f_name,'w')
+    #~ fd.write(("# " + COMPONENT_NAME + " summary\n"))
+    #~ fd.close()
     data.to_csv(f_name, mode='a')
     
 ## list of prerequisites for module

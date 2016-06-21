@@ -52,20 +52,26 @@ def res_log (coms, res_dir):
                 ])
         except (KeyError,AttributeError) :
             pass
-    data = DataFrame(out,columns = ['community','NPV Benefit','NPV Cost', 
-                           'NPV Net Benefit', 'B/C Ratio',
-                           'Heating Oil Price - year 1',
-                           'Occupied Houses', 'Houses to Retrofit', 
-                           'Heating Oil Consumed(mmbtu) - year 1',
-                           'Heating Oil Saved(mmbtu/year)',
-                           'Heating Oil as percent of Total Heating Fuels',
-                           'Total Heating Fuels (mmbtu) - year 1',
-                           'Total Heating Fuels Saved (mmbtu/year)',]
-                    ).set_index('community').round(2)
+            
+    cols = ['community',
+           'Residential Efficiency NPV Benefit',
+           'Residential Efficiency NPV Cost', 
+           'Residential Efficiency NPV Net Benefit',
+           'Residential Efficiency B/C Ratio',
+           'Heating Oil Price - year 1',
+           'Occupied Houses', 
+           'Houses to Retrofit', 
+           'Residential Heating Oil Consumed(mmbtu) - year 1',
+           'Residential Efficiency Heating Oil Saved(mmbtu/year)',
+           'Residential Heating Oil as percent of Total Heating Fuels',
+           'Total Residentital Heating Fuels (mmbtu) - year 1',
+           'Residential Efficiency Total Heating Fuels Saved (mmbtu/year)',
+            ]
+    data = DataFrame(out,columns = cols).set_index('community').round(2)
     f_name = os.path.join(res_dir,'residential_summary.csv')
-    fd = open(f_name,'w')
-    fd.write("# residental building component summary by community\n")
-    fd.close()
+    #~ fd = open(f_name,'w')
+    #~ fd.write("# residental building component summary by community\n")
+    #~ fd.close()
     data.to_csv(f_name, mode='a')
     
 def com_log (coms, res_dir): 
@@ -106,20 +112,27 @@ def com_log (coms, res_dir):
         except (KeyError,AttributeError) as e:
             #~ print c +":"+ str(e)
             pass
-    data = DataFrame(out,columns = ['community','NPV Benefit','NPV Cost', 
-                           'NPV Net Benefit', 'B/C Ratio',
-                           'Heating Oil Price - year 1','$ per kWh - year 1',
-                           'Number Buildings', 'Total Square Footage', 
-                           'Heating Oil Consumed(gal) - year 1',
-                           'Electricity Consumed(kWh) - year 1',
-                           'Heating Oil Saved(gal/year)',
-                           'Electricity Saved(kWh/year)'
-                           ]
-                    ).set_index('community').round(2)
+            
+            
+    cols = ['community',
+            'Nonresidential Efficiency NPV Benefit',
+            'Nonresidential Efficiency NPV Cost',
+            'Nonresidential Efficiency NPV Net Benefit',
+            'Nonresidential Efficiency B/C Ratio',
+            'Heating Oil Price - year 1',
+            '$ per kWh - year 1',
+            'Number Nonresidential Buildings',
+            'Nonresidential Total Square Footage',
+            'Nonresidential Heating Oil Consumed(gal) - year 1',
+            'Nonresidential Electricity Consumed(kWh) - year 1',
+            'Nonresidential Efficiency Heating Oil Saved(gal/year)',
+            'Nonresidential Efficiency Electricity Saved(kWh/year)']
+            
+    data = DataFrame(out,columns = cols).set_index('community').round(2)
     f_name = os.path.join(res_dir,'non-residential_summary.csv')
-    fd = open(f_name,'w')
-    fd.write("# non residental building component summary by community\n")
-    fd.close()
+    #~ fd = open(f_name,'w')
+    #~ fd.write("# non residental building component summary by community\n")
+    #~ fd.close()
     data.to_csv(f_name, mode='a')
     
 def building_log(coms, res_dir):

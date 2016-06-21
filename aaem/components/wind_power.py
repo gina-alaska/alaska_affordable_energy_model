@@ -305,32 +305,34 @@ def component_summary (coms, res_dir):
             #~ print e
             pass
         
-    data = DataFrame(out,columns = \
-       ['Community',
-        'Assumed Wind Class',
-        'Average Diesel Load [kw]',
-        'Wind Capacity Proposed [kW]',
-        'Existing Wind Capacity [kW]',
-        'Existing Solar Capacity [kW]',
-        'Assumed Capacity Factor [%]',
-        'Net Generation [kWh]',
-        'Heating Oil Equivalent Captured by Secondary Load [gal]',
-        'Loss of Recovered Heat[gal]',
-        'Heat Recovery Opperational',
-        'Net in Heating Oil Consumption [gal]',
-        'Reduction in Utility Diesel Consumed per year',
-        'Diesel Denerator Efficiency',
-        'NPV benefits [$]',
-        'NPV Costs [$]',
-        'NPV Net benefit [$]',
-        'Benefit Cost Ratio',
-        'notes']
-                    ).set_index('Community')#.round(2)
+    
+    cols = ['Community',
+            'Assumed Wind Class',
+            'Average Diesel Load [kw]',
+            'Wind Capacity Proposed [kW]',
+            'Existing Wind Capacity [kW]',
+            'Existing Solar Capacity [kW]',
+            'Assumed Wind Class Capacity Factor [%]',
+            'Net Proposed Wind Generation [kWh]',
+            'Heating Oil Equivalent Captured by Secondary Load [gal]',
+            'Loss of Recovered Heat from Genset [gal]',
+            'Heat Recovery Operational',
+            'Net in Heating Oil Consumption [gal]',
+            'Wind Power Reduction in Utility Diesel Consumed per year',
+            'Diesel Denerator Efficiency','Wind NPV benefits [$]',
+            'Wind NPV Costs [$]',
+            'Wind NPV Net benefit [$]',
+            'Wind Benefit Cost Ratio',
+            'notes'
+            ]
+        
+    
+    data = DataFrame(out,columns = cols).set_index('Community').round(2)
     f_name = os.path.join(res_dir,
                 'wind_power_summary.csv')
-    fd = open(f_name,'w')
-    fd.write(("# wind summary\n"))
-    fd.close()
+    #~ fd = open(f_name,'w')
+    #~ fd.write(("# wind summary\n"))
+    #~ fd.close()
     data.to_csv(f_name, mode='a')
 
 ## component name

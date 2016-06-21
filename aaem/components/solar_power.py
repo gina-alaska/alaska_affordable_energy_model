@@ -220,36 +220,33 @@ def component_summary (coms, res_dir):
             #~ print e
             pass
     
-    data = DataFrame(out,columns = \
-       ['Community',
-        'Assumed  Output per 10kW Solar PV Array',
-        'Average Diesel Load [kw]',
-        
-        'Solar Capacity Proposed [kW]',
-        'Existing Solar Capacity [kW]',
-        'Existing Wind Capacity [kW]',
     
-        'Net Generation [kWh]',
-        'Loss of Recovered Heat[gal]',
-        
-        'Heat Recovery Opperational',
-        'Net in Heating Oil Consumption [gal]',
-        
-        'Reduction in Utility Diesel Consumed per year',
-        'Diesel Generator Efficiency',
-        
-        'NPV benefits [$]',
-        'NPV Costs [$]',
-        
-        'NPV Net benefit [$]',
-        'Benefit Cost Ratio',
-        'notes']
-                    ).set_index('Community')#.round(2)
+    
+    cols = ['Community',
+            'Assumed  Output per 10kW Solar PV Array',
+            'Average Diesel Load [kw]',
+            'Solar Capacity Proposed [kW]',
+            'Existing Solar Capacity [kW]',
+            'Existing Wind Capacity [kW]',
+            'Net Proposed Solar Generation [kWh]',
+            'Loss of Recovered Heat from Proposed Solar [gal]',
+            'Heat Recovery Operational',
+            'Net in Heating Oil Consumption from Proposed Solar [gal]',
+            'Proposed Solar Reduction in Utility Diesel Consumed per year',
+            'Diesel Generator Efficiency',
+            'Solar NPV benefits [$]',
+            'Solar NPV Costs [$]',
+            'Solar NPV Net benefit [$]',
+            'Solar Benefit Cost Ratio',
+            'notes']
+    
+    
+    data = DataFrame(out,columns = cols).set_index('Community').round(2)
     f_name = os.path.join(res_dir,
                 'solar_power_summary.csv')
-    fd = open(f_name,'w')
-    fd.write(("# solar summary\n"))
-    fd.close()
+    #~ fd = open(f_name,'w')
+    #~ fd.write(("# solar summary\n"))
+    #~ fd.close()
     data.to_csv(f_name, mode='a')
     
 ## list of prerequisites for module

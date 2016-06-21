@@ -99,26 +99,28 @@ def component_summary (coms, res_dir):
             #~ print e
             pass
     
-    data = DataFrame(out,columns = \
-       ['Community',
-        "Average Coefficient of Performance (COP)",
-        'Number Houses',
-        'Peak Household Monthly Btu/hr',
-        'Electricity Price [$/kWh]',
-        'kWh consumed per year',
-        "Displaced Heating Oil [Gal]",
-        "Displaced Electricity [kWh]",
-        'NPV benefits [$]',
-        'NPV Costs [$]',
-        'NPV Net benefit [$]',
-        'Benefit Cost Ratio',
-        'notes']
-                    ).set_index('Community')#.round(2)
+    cols =  ['Community',
+             "ASHP Residential Average Coefficient of Performance (COP)",
+             'Number Houses',
+             'ASHP Residential Peak Household Monthly Btu/hr',
+             'Electricity Price [$/kWh]',
+             'ASHP Residential kWh consumed per year',
+             "ASHP Residential Displaced Heating Oil [Gal]",
+             "ASHP Residential Displaced Electricity [kWh]",
+             'ASHP Residential NPV benefits [$]',
+             'ASHP Residential NPV Costs [$]',
+             'ASHP Residential NPV Net benefit [$]',
+             'ASHP Residential Benefit Cost Ratio',
+             'notes'
+             ]
+    
+    
+    data = DataFrame(out,columns = cols).set_index('Community').round(2)
     f_name = os.path.join(res_dir,
                 COMPONENT_NAME.replace(" ","_") + '_summary.csv')
-    fd = open(f_name,'w')
-    fd.write(("# " + COMPONENT_NAME + " summary\n"))
-    fd.close()
+    #~ fd = open(f_name,'w')
+    #~ fd.write(("# " + COMPONENT_NAME + " summary\n"))
+    #~ fd.close()
     data.to_csv(f_name, mode='a')
 
 ## list of prerequisites for module
