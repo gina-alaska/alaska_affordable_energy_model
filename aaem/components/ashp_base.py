@@ -293,10 +293,16 @@ class ASHPBase (AnnualSavings):
             self.monthly_value_table['Heating Oil Saved (gal)'].sum()
         
     def calc_average_cop (self):
-        self.average_cop = \
-            self.monthly_value_table['mmbtu/mon'].sum()*constants.mmbtu_to_kWh/\
-            self.monthly_value_table['kWh consumed'].sum()
+        self.monthly_value_table['mmbtu/mon'].sum()
+        consumed_Hoil =\
+            self.monthly_value_table['Heating Oil Consumed (gal)'].sum()
         
+        factor_1 = (self.monthly_value_table['COP'] *\
+                   self.monthly_value_table['% of total heating']).sum()
+        factor_2 = self.monthly_value_table['% of total heating'][self.monthly_value_table['COP'] > 0].sum()
+            
+        self.average_cop = factor_1 / factor_2
+      
     def calc_baseline_heating_oil_cost (self):
         
         self.get_diesel_prices()

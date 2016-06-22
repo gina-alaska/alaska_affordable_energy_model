@@ -286,6 +286,13 @@ class ASHPNonResidential (ashp_base.ASHPBase):
         # save to end of project(actual lifetime)
         df[order].ix[:self.actual_end_year].to_csv(fname, index_label="year", 
                                                                     mode = 'a')
+        
+        fname = os.path.join(directory,
+                                   self.cd['name']+'_'+self.component_name + "_montly_table.csv")
+        fname = fname.replace(" ","_")
+        
+        self.monthly_value_table.to_csv(fname)
+
 
 component = ASHPNonResidential
 
