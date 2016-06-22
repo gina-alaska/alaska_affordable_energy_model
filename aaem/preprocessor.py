@@ -1469,7 +1469,7 @@ class Preprocessor (object):
             
         try:
             pellet = \
-                float(self.get_communities_data(data)['Biomass ($/Pellet)'])         
+                float(self.get_communities_data(data)['Pellets ($/ton)'])         
         except ValueError:
             self.diagnostics.add_note("prices-biomass", 
                                         "is N/a treating as $0")
