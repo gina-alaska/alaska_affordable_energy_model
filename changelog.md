@@ -2,6 +2,15 @@
 
 ## [0.15.3]
 ### fixed
+- biomass pellet price key
+- ASHP formulas fixed
+
+### added
+- monthly ashp table files added to community component output folders
+
+
+## [0.15.3]
+### fixed
 - headers in summaries
 - conversion factors in summaries
 
