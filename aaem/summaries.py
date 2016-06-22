@@ -72,7 +72,7 @@ def res_log (coms, res_dir):
     #~ fd = open(f_name,'w')
     #~ fd.write("# residental building component summary by community\n")
     #~ fd.close()
-    data.to_csv(f_name, mode='a')
+    data.to_csv(f_name, mode='w')
     
 def com_log (coms, res_dir): 
     """
@@ -133,7 +133,7 @@ def com_log (coms, res_dir):
     #~ fd = open(f_name,'w')
     #~ fd.write("# non residental building component summary by community\n")
     #~ fd.close()
-    data.to_csv(f_name, mode='a')
+    data.to_csv(f_name, mode='w')
     
 def building_log(coms, res_dir):
     """
@@ -271,16 +271,16 @@ def building_log(coms, res_dir):
                                 '% buildings from inventory'] + l + l + l + l + l
                     ).set_index('community').round(2)
     f_name = os.path.join(res_dir,'non-residential_building_summary.csv')
-    fd = open(f_name,'w')
-    fd.write(("# non residental building component building "
-             "summary by community\n"))
-    fd.write(",%,%," + str(c)[1:-1].replace(" '",'').replace("'",'') + "," + \
-             str(m)[1:-1].replace("' ",'').replace("'",'') + "," + \
-             str(e)[1:-1].replace("' ",'').replace("'",'') + "," +\
-             str(ec)[1:-1].replace("' ",'').replace("'",'') + "," +\
-             str(hf)[1:-1].replace("' ",'').replace("'",'') +'\n')
-    fd.close()
-    data.to_csv(f_name, mode='a')
+    #~ fd = open(f_name,'w')
+    #~ fd.write(("# non residental building component building "
+             #~ "summary by community\n"))
+    #~ fd.write(",%,%," + str(c)[1:-1].replace(" '",'').replace("'",'') + "," + \
+             #~ str(m)[1:-1].replace("' ",'').replace("'",'') + "," + \
+             #~ str(e)[1:-1].replace("' ",'').replace("'",'') + "," +\
+             #~ str(ec)[1:-1].replace("' ",'').replace("'",'') + "," +\
+             #~ str(hf)[1:-1].replace("' ",'').replace("'",'') +'\n')
+    #~ fd.close()
+    data.to_csv(f_name, mode='w')
     
     
 def village_log (coms, res_dir): 
@@ -354,10 +354,10 @@ def village_log (coms, res_dir):
                     ]
                     ).set_index('community')
     f_name = os.path.join(res_dir,'village_sector_consumption_summary.csv')
-    fd = open(f_name,'w')
-    fd.write("# summary of consumption and cost\n")
-    fd.close()
-    data.to_csv(f_name, mode='a')
+    #~ fd = open(f_name,'w')
+    #~ fd.write("# summary of consumption and cost\n")
+    #~ fd.close()
+    data.to_csv(f_name, mode='w')
     
 def fuel_oil_log (coms, res_dir):
     """
@@ -419,10 +419,10 @@ def fuel_oil_log (coms, res_dir):
                                     'Total (gallons)']
                     ).set_index('community').round(2)
     f_name = os.path.join(res_dir,'fuel_oil_summary.csv')
-    fd = open(f_name,'w')
-    fd.write("# fuel_oil summary by community\n")
-    fd.close()
-    data.to_csv(f_name, mode='a')
+    #~ fd = open(f_name,'w')
+    #~ fd.write("# fuel_oil summary by community\n")
+    #~ fd.close()
+    data.to_csv(f_name, mode='w')
     
 def forecast_comparison_log (coms, res_dir):
     """
@@ -540,11 +540,11 @@ def forecast_comparison_log (coms, res_dir):
                     ).set_index('community').round(2)
     f_name = os.path.join(res_dir,
                 'forecast_component_consumption_comparison_summary.csv')
-    fd = open(f_name,'w')
-    fd.write(("# comparison of forecast kWh consumption vs."
-             " component kWh consumption summary by community\n"))
-    fd.close()
-    data.to_csv(f_name, mode='a')
+    #~ fd = open(f_name,'w')
+    #~ fd.write(("# comparison of forecast kWh consumption vs."
+             #~ " component kWh consumption summary by community\n"))
+    #~ fd.close()
+    data.to_csv(f_name, mode='w')
     
 def electric_price_summary (coms, res_dir):    
     """
@@ -579,10 +579,10 @@ def electric_price_summary (coms, res_dir):
             
     f_name = os.path.join(res_dir,
                 'electric_prices_summary.csv')
-    fd = open(f_name,'w')
-    fd.write(("# list of the electricty prices forecasted\n"))
-    fd.close()
-    out[[out.columns[-1]] + out.columns[:-1].tolist()].to_csv(f_name, mode='a')
+    #~ fd = open(f_name,'w')
+    #~ fd.write(("# list of the electricty prices forecasted\n"))
+    #~ fd.close()
+    out[[out.columns[-1]] + out.columns[:-1].tolist()].to_csv(f_name, mode='w')
 
     
 def call_comp_summaries (coms, res_dir):

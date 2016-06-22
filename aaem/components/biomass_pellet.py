@@ -171,7 +171,7 @@ def component_summary (coms, res_dir):
     #~ fd = open(f_name,'w')
     #~ fd.write(("# " + COMPONENT_NAME + " summary\n"))
     #~ fd.close()
-    data.to_csv(f_name, mode='a')
+    data.to_csv(f_name, mode='w')
 
 #   do a find and replace on ComponentName to name of component 
 # (i.e. 'ResidentialBuildings')

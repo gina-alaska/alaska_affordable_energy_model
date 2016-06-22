@@ -247,7 +247,7 @@ def component_summary (coms, res_dir):
     #~ fd = open(f_name,'w')
     #~ fd.write(("# solar summary\n"))
     #~ fd.close()
-    data.to_csv(f_name, mode='a')
+    data.to_csv(f_name, mode='w')
     
 ## list of prerequisites for module
 prereq_comps = []
