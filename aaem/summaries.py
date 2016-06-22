@@ -271,16 +271,16 @@ def building_log(coms, res_dir):
                                 '% buildings from inventory'] + l + l + l + l + l
                     ).set_index('community').round(2)
     f_name = os.path.join(res_dir,'non-residential_building_summary.csv')
-    #~ fd = open(f_name,'w')
+    fd = open(f_name,'w')
     #~ fd.write(("# non residental building component building "
              #~ "summary by community\n"))
-    #~ fd.write(",%,%," + str(c)[1:-1].replace(" '",'').replace("'",'') + "," + \
-             #~ str(m)[1:-1].replace("' ",'').replace("'",'') + "," + \
-             #~ str(e)[1:-1].replace("' ",'').replace("'",'') + "," +\
-             #~ str(ec)[1:-1].replace("' ",'').replace("'",'') + "," +\
-             #~ str(hf)[1:-1].replace("' ",'').replace("'",'') +'\n')
-    #~ fd.close()
-    data.to_csv(f_name, mode='w')
+    fd.write(",%,%," + str(c)[1:-1].replace(" '",'').replace("'",'') + "," + \
+             str(m)[1:-1].replace("' ",'').replace("'",'') + "," + \
+             str(e)[1:-1].replace("' ",'').replace("'",'') + "," +\
+             str(ec)[1:-1].replace("' ",'').replace("'",'') + "," +\
+             str(hf)[1:-1].replace("' ",'').replace("'",'') +'\n')
+    fd.close()
+    data.to_csv(f_name, mode='a')
     
     
 def village_log (coms, res_dir): 
