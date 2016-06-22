@@ -161,6 +161,8 @@ class ASHPResidential (ashp_base.ASHPBase):
         self.pre_ashp_heating_oil_used =  res.init_HF
         self.pre_ashp_heating_electricty_used = res.init_kWh
         self.num_houses = res.init_HH
+        self.precent_heated_oil = res.comp_specs['data'].T["Fuel Oil"]
+        self.precent_heated_elec = res.comp_specs['data'].T["Electricity"]
         #~ print self.pre_ashp_heating_oil_used
         #~ print self.num_houses
         
@@ -235,7 +237,7 @@ class ASHPResidential (ashp_base.ASHPBase):
         heating_oil = ((self.pre_ashp_heating_oil_used/self.num_houses)*self.comp_specs["heating oil efficiency"]) / constants.mmbtu_to_gal_HF *1e6/ constants.hours_per_year
         electric_heat = (self.pre_ashp_heating_electricty_used/self.num_houses) / constants.mmbtu_to_kWh *1e6/ constants.hours_per_year
         average_btu_per_hr =  heating_oil + electric_heat
-        peak_monthly_btu_hr_hh = float(self.comp_specs['data'].ix['Peak Month % of total']) * average_btu_per_hr * 12
+        peak_monthly_btu_hr_hh = float(self.comp_specs['data'].ix['Peak Month % of total']) * average_btu_per_hr * 12 / (self.precent_heated_oil+self.precent_heated_elec)
         self.peak_monthly_btu_hr_hh=peak_monthly_btu_hr_hh
         
         self.capital_costs = self.num_houses * round((peak_monthly_btu_hr_hh/self.comp_specs["btu/hrs"]) * self.comp_specs["cost per btu/hrs"])*self.regional_multiplier
@@ -294,7 +296,14 @@ class ASHPResidential (ashp_base.ASHPBase):
         
         # save to end of project(actual lifetime)
         df[order].ix[:self.actual_end_year].to_csv(fname, index_label="year", 
-                                                                    mode = 'a')
+                                                                mode = 'a')
+        fname = os.path.join(directory,
+                                   self.cd['name']+'_'+self.component_name + "_montly_table.csv")
+        fname = fname.replace(" ","_")
+        
+        self.monthly_value_table.to_csv(fname)
+
+
 
 component = ASHPResidential
 
