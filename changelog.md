@@ -1,5 +1,10 @@
 #Change Log
 
+## [0.15.3]
+### fixed
+- headers in summaries
+- conversion factors in summaries
+
 ## [0.15.2]
 ### fixed
 - bug in summaries related to rounding 
