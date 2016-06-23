@@ -237,7 +237,7 @@ class ASHPResidential (ashp_base.ASHPBase):
         heating_oil = ((self.pre_ashp_heating_oil_used/self.num_houses)*self.comp_specs["heating oil efficiency"]) / constants.mmbtu_to_gal_HF *1e6/ constants.hours_per_year
         electric_heat = (self.pre_ashp_heating_electricty_used/self.num_houses) / constants.mmbtu_to_kWh *1e6/ constants.hours_per_year
         average_btu_per_hr =  heating_oil + electric_heat
-        peak_monthly_btu_hr_hh = float(self.comp_specs['data'].ix['Peak Month % of total']) * average_btu_per_hr * 12 / (self.precent_heated_oil+self.precent_heated_elec)
+        peak_monthly_btu_hr_hh = float(float(self.comp_specs['data'].ix['Peak Month % of total']) * average_btu_per_hr * 12 / (self.precent_heated_oil+self.precent_heated_elec))
         self.peak_monthly_btu_hr_hh=peak_monthly_btu_hr_hh
         
         self.capital_costs = self.num_houses * round((peak_monthly_btu_hr_hh/self.comp_specs["btu/hrs"]) * self.comp_specs["cost per btu/hrs"])*self.regional_multiplier
