@@ -78,6 +78,11 @@ def component_summary (coms, res_dir):
                 price = 0
                 tcr = 0
 
+            try:
+                intertie = coms[c]['model'].cd.parent
+            except AttributeError:
+                intertie = c
+                
             
             l = [c, 
                  ashp.average_cop,
@@ -90,6 +95,7 @@ def component_summary (coms, res_dir):
                  ashp.get_NPV_costs(),
                  ashp.get_NPV_net_benefit(),
                  ashp.get_BC_ratio(),
+                 intertie,
                  ashp.reason
                 ]
             out.append(l)
@@ -109,6 +115,7 @@ def component_summary (coms, res_dir):
             'ASHP Non-Residential NPV Costs [$]',
             'ASHP Non-Residential NPV Net benefit [$]',
             'ASHP Non-Residential Benefit Cost Ratio',
+            'Intertie',
             'notes'
             ]
     

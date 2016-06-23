@@ -77,8 +77,11 @@ def component_summary (coms, res_dir):
                 peak_monthly_btu_hr_hh = 0
                 price = 0
            
-        
-            
+            try:
+                intertie = coms[c]['model'].cd.parent
+            except AttributeError:
+                intertie = c
+                
             l = [c, 
                  ashp.average_cop,
                  ashp.num_houses,
@@ -91,11 +94,13 @@ def component_summary (coms, res_dir):
                  ashp.get_NPV_costs(),
                  ashp.get_NPV_net_benefit(),
                  ashp.get_BC_ratio(),
+                 intertie,
                  ashp.reason
                 ]
             out.append(l)
             
         except (KeyError,AttributeError) as e:
+            #~ print c
             #~ print e
             pass
     
@@ -111,6 +116,7 @@ def component_summary (coms, res_dir):
              'ASHP Residential NPV Costs [$]',
              'ASHP Residential NPV Net benefit [$]',
              'ASHP Residential Benefit Cost Ratio',
+             'Intertie',
              'notes'
              ]
     

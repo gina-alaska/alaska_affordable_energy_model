@@ -1245,6 +1245,7 @@ class Preprocessor (object):
             if data['Plant Intertied'] == 'Yes' and \
                data['Other Community on Intertie'] != "''":
                 self.intertied = True
+            data['parent'] = self.com_id
             out_file = os.path.join(self.out_dir, "interties.csv")
             fd = open(out_file,'w')
             fd.write(self.interties_header())

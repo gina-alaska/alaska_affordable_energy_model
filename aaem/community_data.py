@@ -492,11 +492,18 @@ class CommunityData (object):
             try:
                 intertie = read_csv(os.path.join(self.data_dir,"interties.csv"),
                             comment = '#', index_col=0,names =['key','value'])
+                self.parent = intertie.ix['parent'].values[0]
+                #~ print self.parent
+                intertie = intertie.T
+                del intertie['parent']
+                intertie = intertie.T
                 com_list = intertie.T.values[0].tolist()[1:]
                 tied = intertie.ix['Plant Intertied'].values[0]
             except IndexError:
                 intertie = read_csv(os.path.join(self.data_dir,"interties.csv"),
                             comment = '#', index_col=0).ix[0]
+                self.parent = self.get_item('community','name')
+                #~ print intertie.index
                 tied = intertie.ix['Plant Intertied']
                 com_list = intertie.T.values.tolist()[1:]
             #~ print intertie.ix['Plant Intertied'].values[0]
