@@ -1,6 +1,13 @@
 #Change Log
 
-## [0.15.3]
+## [0.15.5]
+## fixed
+- data in peak monthly btu/hr column of ashp residential summary
+
+## added
+- intertie column to ashp summaries
+
+## [0.15.4]
 ### fixed
 - biomass pellet price key
 - ASHP formulas fixed
