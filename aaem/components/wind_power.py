@@ -28,7 +28,7 @@ yaml = {'enabled': False,
         'proposed generation': IMPORT,
         'distance to resource': IMPORT,
         'generation capital cost':IMPORT,
-        'transmission captial cost': IMPORT,
+        'transmission capital cost': IMPORT,
         'operational costs': IMPORT,
         'expected years to operation':IMPORT,
         
@@ -69,9 +69,9 @@ yaml_comments = {'enabled': '',
         'lifetime': 'number years <int>',
         'start year': 'start year <int>',
         'average load limit': 
-                'lower limint in kW on averge load reqired to do project',
+                'lower limit in kW on average load required to do project',
         'percent generation to offset': '',
-        'minimum wind class': 'minimum wind class for feasability',
+        'minimum wind class': 'minimum wind class for feasibility',
         'secondary load': '',
         'secondary load cost': '',
         'road needed for transmission line':'',
@@ -117,7 +117,7 @@ def generation_capital_costs (data_dir):
 yaml_import_lib = {'resource data':process_data_import,
                    'costs':load_wind_costs_table,
                    'generation capital cost':generation_capital_costs,
-                   'transmission captial cost': generation_capital_costs,
+                   'transmission capital cost': generation_capital_costs,
                    'distance to resource': generation_capital_costs,
                    }
 
@@ -655,8 +655,8 @@ class WindPower(AnnualSavings):
         road_needed = self.comp_specs['road needed for transmission line']
         
 
-        if str(self.comp_specs['transmission captial cost']) != 'UNKNOWN':
-            transmission_line_cost = int(self.comp_specs['transmission captial cost'])
+        if str(self.comp_specs['transmission capital cost']) != 'UNKNOWN':
+            transmission_line_cost = int(self.comp_specs['transmission capital cost'])
         else:
             if str(self.comp_specs['distance to resource']) != 'UNKNOWN':
                 distance = float(self.comp_specs['distance to resource']) * constants.feet_to_mi
