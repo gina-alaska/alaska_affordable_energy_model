@@ -1245,6 +1245,7 @@ class Preprocessor (object):
             if data['Plant Intertied'] == 'Yes' and \
                data['Other Community on Intertie'] != "''":
                 self.intertied = True
+            data['parent'] = self.com_id
             out_file = os.path.join(self.out_dir, "interties.csv")
             fd = open(out_file,'w')
             fd.write(self.interties_header())
@@ -1468,7 +1469,8 @@ class Preprocessor (object):
             cord = 0 
             
         try:
-            pellet = float(self.get_communities_data(data)['Biomass ($/Cord)'])         
+            pellet = \
+                float(self.get_communities_data(data)['Pellets ($/ton)'])         
         except ValueError:
             self.diagnostics.add_note("prices-biomass", 
                                         "is N/a treating as $0")

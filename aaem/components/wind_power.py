@@ -348,13 +348,13 @@ def component_summary (coms, res_dir):
             ]
         
     
-    data = DataFrame(out,columns = cols).set_index('Community').round(2)
+    data = DataFrame(out,columns = cols).set_index('Community')#.round(2)
     f_name = os.path.join(res_dir,
                 'wind_power_summary.csv')
     #~ fd = open(f_name,'w')
     #~ fd.write(("# wind summary\n"))
     #~ fd.close()
-    data.to_csv(f_name, mode='a')
+    data.to_csv(f_name, mode='w')
 
 ## component name
 COMPONENT_NAME = "wind power"

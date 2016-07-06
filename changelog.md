@@ -1,5 +1,30 @@
 #Change Log
 
+## [0.15.5]
+## fixed
+- data in peak monthly btu/hr column of ashp residential summary
+
+## added
+- intertie column to ashp summaries
+
+## [0.15.4]
+### fixed
+- biomass pellet price key
+- ASHP formulas fixed
+
+### added
+- monthly ashp table files added to community component output folders
+
+
+## [0.15.3]
+### fixed
+- headers in summaries
+- conversion factors in summaries
+
+## [0.15.2]
+### fixed
+- bug in summaries related to rounding 
+
 ## [0.15.1]
 ### changed
 - summary file headers for all componentes have been updated

@@ -124,13 +124,13 @@ def component_summary (coms, res_dir):
             ]
     
     
-    data = DataFrame(out,columns = cols).set_index('Community').round(2)
+    data = DataFrame(out,columns = cols).set_index('Community')#.round(2)
     f_name = os.path.join(res_dir,
                 COMPONENT_NAME.replace(" ","_") + '_summary.csv')
     #~ fd = open(f_name,'w')
     #~ fd.write(("# " + COMPONENT_NAME + " summary\n"))
     #~ fd.close()
-    data.to_csv(f_name, mode='a')
+    data.to_csv(f_name, mode='w')
     
 ## list of prerequisites for module
 prereq_comps = deepcopy(bmb.prereq_comps)

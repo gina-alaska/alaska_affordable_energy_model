@@ -78,6 +78,11 @@ def component_summary (coms, res_dir):
                 price = 0
                 tcr = 0
 
+            try:
+                intertie = coms[c]['model'].cd.parent
+            except AttributeError:
+                intertie = c
+                
             
             l = [c, 
                  ashp.average_cop,
@@ -90,6 +95,7 @@ def component_summary (coms, res_dir):
                  ashp.get_NPV_costs(),
                  ashp.get_NPV_net_benefit(),
                  ashp.get_BC_ratio(),
+                 intertie,
                  ashp.reason
                 ]
             out.append(l)
@@ -109,16 +115,17 @@ def component_summary (coms, res_dir):
             'ASHP Non-Residential NPV Costs [$]',
             'ASHP Non-Residential NPV Net benefit [$]',
             'ASHP Non-Residential Benefit Cost Ratio',
+            'Intertie',
             'notes'
             ]
     
-    data = DataFrame(out,columns = cols).set_index('Community').round(2)
+    data = DataFrame(out,columns = cols).set_index('Community')#.round(2)
     f_name = os.path.join(res_dir,
                 COMPONENT_NAME.replace(" ","_") + '_summary.csv')
     #~ fd = open(f_name,'w')
     #~ fd.write(("# " + COMPONENT_NAME + " summary\n"))
     #~ fd.close()
-    data.to_csv(f_name, mode='a')
+    data.to_csv(f_name, mode='w')
 
 ## list of prerequisites for module
 prereq_comps = ['non-residential buildings']
@@ -286,6 +293,13 @@ class ASHPNonResidential (ashp_base.ASHPBase):
         # save to end of project(actual lifetime)
         df[order].ix[:self.actual_end_year].to_csv(fname, index_label="year", 
                                                                     mode = 'a')
+        
+        fname = os.path.join(directory,
+                                   self.cd['name']+'_'+self.component_name + "_montly_table.csv")
+        fname = fname.replace(" ","_")
+        
+        self.monthly_value_table.to_csv(fname)
+
 
 component = ASHPNonResidential
 
