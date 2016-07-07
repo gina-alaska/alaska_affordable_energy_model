@@ -135,6 +135,25 @@ class Preprocessor (object):
                 continue
             for fn in l:
                 fn(self)
+        self.projects = []
+        for comp in comp_lib:
+            try:
+                fn = import_module("aaem.components." +comp_lib[comp]).\
+                                                    preprocess_existing_projects
+            except AttributeError:
+                continue
+            l = fn(self)
+            #~ print l
+            for i in range(l):
+                if self.out_dir[-1] == "/" or self.out_dir[-1] == "\\":
+                    root =  self.out_dir[:-1]
+                #~ print root+"+wind_project_" + str(i)
+                try:
+                    shutil.rmtree(root+"+wind_project_" + str(i))
+                except OSError:
+                    pass
+                self.projects.append("+wind_project_" + str(i))
+                shutil.copytree(self.out_dir,root+"+wind_project_" + str(i))
 
 
 
@@ -1581,7 +1600,7 @@ def preprocess (data_dir, out_dir, com_id, dev = False):
                                                                     diag, dev)
     try:
         if pp.it_ids["Plant Intertied"].lower() == "yes":
-
+            #~ print "JADA"
             ids = pp.it_ids[['Other Community on Intertie',
                              'Other Community on Intertie.1',
                              'Other Community on Intertie.2',
@@ -1600,6 +1619,7 @@ def preprocess (data_dir, out_dir, com_id, dev = False):
                              'Other Community on Intertie.15',
                              #'Other Community on Intertie.16',
                            ]].values
+            #~ print ids
             ids = ids[ids != "''"].tolist()
 
 
@@ -1611,15 +1631,23 @@ def preprocess (data_dir, out_dir, com_id, dev = False):
                                  "Includes dianostis for " + str(ids))
                 pp = preprocess_intertie(data_dir, out_dir, ids, diag)
 
-            pp = ids
+                pp = ids + pp[1]
+            else:
+                
+                pp = ids 
+                print pp 
         else:
-            pp = [com_id]
+            pp = [com_id] + [com_id + pro for pro in pp.projects]
     except AttributeError:
-        pp = [com_id]
-
+        try:
+            pp = [com_id] + [com_id + pro for pro in pp.projects]
+        except AttributeError:
+            pp = [com_id]
     diag.save_messages(os.path.join(out_dir,
                        str(com_id.replace(" ","_")) +\
                             "_preprocessor_diagnostics.csv"))
+                            
+    #~ print pp
     return pp
 
 
@@ -1638,14 +1666,17 @@ def preprocess_no_intertie (data_dir, out_dir, com_id, diagnostics, dev = False)
                     'prices': False,
                     'HDD': False
                 }
-    
-    f_path = os.path.join(out_dir,'copies.csv')
-    if not os.path.exists(f_path):
-    
-        fd = open(f_path,'w')
-        fd.write("# a list of copied data for the child community")
-        fd.close()
-        DataFrame(copied_data,["copied"]).T.to_csv(f_path,mode='a')
+    #~ print [''] + pp.projects
+    for project in [''] + pp.projects:
+        if out_dir[-1] in ['/','\\']:
+            out_dir = out_dir[:-1]
+        f_path = os.path.join(out_dir+project,'copies.csv')
+        if not os.path.exists(f_path):
+        
+            fd = open(f_path,'w')
+            fd.write("# a list of copied data for the child community")
+            fd.close()
+            DataFrame(copied_data,["copied"]).T.to_csv(f_path,mode='a')
     
     
    
@@ -1653,10 +1684,12 @@ def preprocess_no_intertie (data_dir, out_dir, com_id, diagnostics, dev = False)
 
 def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
     """ Function doc """
+    print com_ids
     parent = com_ids[0]
     pp_data = []
     parent_dir = os.path.join(out_dir, parent.replace(" ","_"))
     #~ print com_ids
+    projects = []
     for com in com_ids:
 
         #~ print com
@@ -1756,7 +1789,12 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
         fd.close()
         
         DataFrame(copied_data,["copied"]).T.to_csv(f_path,mode='a')
-    
+        for project in pp.projects:
+            if out_dir[-1] in ['/','\\']:
+                out_dir = out_dir[:-1]
+            shutil.rmtree(os.path.join(out_dir,com.replace(" ","_")+project))
+            projects.append(com+project)
+            shutil.copytree(os.path.join(out_dir,com.replace(" ","_")),os.path.join(out_dir,com.replace(" ","_")+project))
     
     # for intertie
     #   generation = generation(parent) +
@@ -1845,10 +1883,11 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
     
 
     out_dir = os.path.join(out_dir,com_ids[0].replace(" ","_") +'_intertie')
+    #~ print out_dir
     try:
-            os.makedirs(out_dir)
+        os.makedirs(out_dir)
     except OSError:
-            pass
+        pass
 
 
     diagnostics.add_note("Intertie (population)",
@@ -1903,6 +1942,12 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
             continue
         shutil.copy(os.path.join(parent_dir,
             Preprocessor.MODEL_FILES[f]),out_dir) 
-              
-
-    return pp_data
+         
+    for project in  pp_data[0].projects:
+            if out_dir[-1] in ['/','\\']:
+                out_dir = out_dir[:-1]
+            #~ shutil.rmtree(out_dir+project)
+            projects.append(parent+'_intertie'+project)
+            shutil.copytree(out_dir,out_dir+project)
+    #~ print pp_data
+    return pp_data, projects

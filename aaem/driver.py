@@ -483,38 +483,40 @@ def setup (coms, data_repo, model_root,
         it_batch = {}
         ids = preprocess(data_repo,os.path.join(model_root,
                                                 'setup',"input_data"),com_id)
-        if len(ids) == 1:
-            write_config(ids[0], os.path.join(model_root,run_name))
-            model_batch[ids[0]] = it_batch[ids[0]] = write_driver(ids[0],
-                                            os.path.join(model_root,run_name))
-            
-            #~ shutil.copytree(os.path.join(model_root, 'setup',"input_data",
-                                         #~ ids[0].replace(" ", "_")),
-                                         #~ os.path.join(model_root, 
-                                            #~ run_name,"input_data",
-                                            #~ ids[0].replace(" ", "_")))
-            try:
-                os.makedirs(os.path.join(model_root,run_name,
-                                        "input_data",ids[0].replace(" ", "_")))
-            except OSError:
-                    pass
-
-            for fname in Preprocessor.MODEL_FILES.values():
+                                                
+        if len([id_ for id_ in ids if id_.find('+') == -1]) == 1:
+            for idx in range(len(ids)):
+                write_config(ids[idx], os.path.join(model_root,run_name))
+                model_batch[ids[idx]] = it_batch[ids[idx]] = write_driver(ids[idx],
+                                                os.path.join(model_root,run_name))
+                
+                #~ shutil.copytree(os.path.join(model_root, 'setup',"input_data",
+                                             #~ ids[idx].replace(" ", "_")),
+                                             #~ os.path.join(model_root, 
+                                                #~ run_name,"input_data",
+                                                #~ ids[idx].replace(" ", "_")))
                 try:
-                        
-                    shutil.copy(os.path.join(model_root, 'setup',
-                                "input_data",ids[0].replace(" ", "_"),fname),
-                                os.path.join(model_root,run_name,"input_data",
-                                             ids[0].replace(" ", "_"),fname))
-                except (OSError, IOError):
+                    os.makedirs(os.path.join(model_root,run_name,
+                                            "input_data",ids[idx].replace(" ", "_")))
+                except OSError:
+                        pass
+    
+                for fname in Preprocessor.MODEL_FILES.values():
+                    try:
+                            
+                        shutil.copy(os.path.join(model_root, 'setup',
+                                    "input_data",ids[idx].replace(" ", "_"),fname),
+                                    os.path.join(model_root,run_name,"input_data",
+                                                 ids[idx].replace(" ", "_"),fname))
+                    except (OSError, IOError):
+                        pass
+                try:
+                    shutil.copy(os.path.join(model_root, 'setup',"input_data",
+                        ids[idx].replace(" ", "_") + "_preprocessor_diagnostis.csv"),
+                                             os.path.join(model_root,
+                                                run_name, "input_data"))
+                except IOError:
                     pass
-            try:
-                shutil.copy(os.path.join(model_root, 'setup',"input_data",
-                    ids[0].replace(" ", "_") + "_preprocessor_diagnostis.csv"),
-                                         os.path.join(model_root,
-                                            run_name, "input_data"))
-            except IOError:
-                pass
         else:
             ids = [ids[0] + "_intertie"] + ids
             for id in ids: 
