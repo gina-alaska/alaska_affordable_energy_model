@@ -144,16 +144,17 @@ class Preprocessor (object):
                 continue
             l = fn(self)
             #~ print l
-            for i in range(l):
+            #~ print l
+            for i in l:
                 if self.out_dir[-1] == "/" or self.out_dir[-1] == "\\":
                     root =  self.out_dir[:-1]
                 #~ print root+"+wind_project_" + str(i)
                 try:
-                    shutil.rmtree(root+"+wind_project_" + str(i))
+                    shutil.rmtree(root+'+'+i)
                 except OSError:
                     pass
-                self.projects.append("+wind_project_" + str(i))
-                shutil.copytree(self.out_dir,root+"+wind_project_" + str(i))
+                self.projects.append('+'+i)
+                shutil.copytree(self.out_dir,root+'+'+i)
 
 
 
@@ -1635,7 +1636,7 @@ def preprocess (data_dir, out_dir, com_id, dev = False):
             else:
                 
                 pp = ids 
-                print pp 
+                #~ print pp 
         else:
             pp = [com_id] + [com_id + pro for pro in pp.projects]
     except AttributeError:
@@ -1684,7 +1685,7 @@ def preprocess_no_intertie (data_dir, out_dir, com_id, diagnostics, dev = False)
 
 def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
     """ Function doc """
-    print com_ids
+    #~ print com_ids
     parent = com_ids[0]
     pp_data = []
     parent_dir = os.path.join(out_dir, parent.replace(" ","_"))

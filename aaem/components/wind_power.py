@@ -8,6 +8,7 @@ from math import isnan
 from pandas import DataFrame,concat,read_csv
 import os
 import shutil
+from yaml import dump, load
 
 from annual_savings import AnnualSavings
 from aaem.community_data import CommunityData
@@ -19,18 +20,22 @@ import aaem.constants as constants
 # ambler
 
 IMPORT = "IMPORT"
+UNKNOWN = "UNKNOWN"
 
 ## List of yaml key/value pairs
 yaml = {'enabled': False,
 
-        'phase':IMPORT,
-        'proposed capacity': IMPORT,
-        'proposed generation': IMPORT,
-        'distance to resource': IMPORT,
-        'generation capital cost':IMPORT,
-        'transmission capital cost': IMPORT,
-        'operational costs': IMPORT,
-        'expected years to operation':IMPORT,
+        "project details": IMPORT,#{
+        
+            #~ 'phase':IMPORT,
+            #~ 'proposed capacity': IMPORT,
+            #~ 'proposed generation': IMPORT,
+            #~ 'distance to resource': IMPORT,
+            #~ 'generation capital cost':IMPORT,
+            #~ 'transmission capital cost': IMPORT,
+            #~ 'operational costs': IMPORT,
+            #~ 'expected years to operation':IMPORT,
+                #~ },
         
         'default distance to resource': 1,
 
@@ -108,17 +113,31 @@ def load_wind_costs_table (data_dir):
     data.index =data.index.astype(str)
     return data
     
-def generation_capital_costs (data_dir):
+def load_project_details (data_dir):
     """
     """
-    return 'UNKNOWN'
+    try:
+        tag = os.path.split(data_dir)[1].split('+')[1]
+    except IndexError:
+        tag = None
+    if tag is None:
+        return {'phase': 'Reconnaissance',
+                'proposed capacity': UNKNOWN,
+                'proposed generation': UNKNOWN,
+                'distance to resource': UNKNOWN,
+                'generation capital cost': UNKNOWN,
+                'transmission capital cost': UNKNOWN,
+                'operational costs': UNKNOWN,
+                'expected years to operation': UNKNOWN,
+                }
+    with open(os.path.join(data_dir, "wind_projects.yaml"), 'r') as fd:
+        dets = load(fd)[tag]
+    return dets
     
 ## library of keys and functions for CommunityData IMPORT Keys
 yaml_import_lib = {'resource data':process_data_import,
                    'costs':load_wind_costs_table,
-                   'generation capital cost':generation_capital_costs,
-                   'transmission capital cost': generation_capital_costs,
-                   'distance to resource': generation_capital_costs,
+                   'project details': load_project_details,
                    }
 
 ## wind preprocessing functons 
@@ -237,6 +256,53 @@ def copy_wind_cost_table(ppo):
     ppo.MODEL_FILES['WIND_COSTS'] = "wind_costs.csv"
 ## end wind preprocessing functions
 
+def preprocess_existing_projects (ppo):
+    """
+    preprocess data related to existing projects
+    """
+    projects = []
+    p_data = {}
+    if ppo.com_id in ["Adak","Bethel","Oscarville"]:
+        com = [1,2]
+    
+        #~ projects = []
+        #~ p_data = {}
+        for p_idx in range(len(com)):
+            p_name = "wind_project_" + str(p_idx)
+            projects.append(p_name)
+            phase = "Feasibility"
+            proposed_capacity = 100
+            proposed_generation = 916584
+            distance_to_resource = 0
+            generation_capital_cost = 3197985
+            transmission_capital_cost = 0
+            operational_costs = 0
+            expected_years_to_operation = 0 
+            p_data[p_name] = {'phase': phase,
+                            'proposed capacity': proposed_capacity,
+                            'proposed generation': proposed_generation,
+                            'distance to resource': distance_to_resource,
+                            'generation capital cost': generation_capital_cost,
+                            'transmission capital cost': transmission_capital_cost,
+                            'operational costs': operational_costs,
+                            'expected years to operation': expected_years_to_operation
+                            }
+                            
+        
+        fd = open(os.path.join(ppo.out_dir,"wind_projects.yaml"),'w')
+        #~ print dump(p_data,default_flow_style=False)
+        fd.write(dump(p_data,default_flow_style=False))
+        fd.close()
+        
+    else:
+        fd = open(os.path.join(ppo.out_dir,"wind_projects.yaml"),'w')
+        #~ print dump(p_data,default_flow_style=False)
+        fd.write("")
+        fd.close()
+    ppo.MODEL_FILES['WIND_PROJECTS'] = "wind_projects.yaml"
+    return projects
+        
+
 ## List of raw data files required for wind power preproecssing 
 raw_data_files = ['wind_class_assumptions.csv',
                   'wind_costs.csv',
@@ -244,7 +310,9 @@ raw_data_files = ['wind_class_assumptions.csv',
                   "wind_data_potential.csv",
                   "diesel_data.csv",
                   'wind_data_interties.csv',
-                  "solar_data_existing.csv"]
+                  "solar_data_existing.csv",
+                  'wind_projects.csv',
+                  'project_development_timeframes.csv']
 
 ## list of wind preprocessing functions
 preprocess_funcs = [wind_preprocess, copy_wind_cost_table]
@@ -255,6 +323,7 @@ yaml_not_to_save = ['costs']
 ## component summary
 def component_summary (coms, res_dir):
     """ """
+    #~ return
     out = []
     for c in sorted(coms.keys()):
         it = coms[c]['model'].cd.intertie
@@ -406,15 +475,17 @@ class WindPower(AnnualSavings):
             the model is run and the output values are available
         """
         #~ #~ print self.comp_specs['resource data']
+        #~ return
+        
         self.run = True
         self.reason = "OK"
         try:
-            self.generation = self.forecast.get_generation(self.start_year)
+            #~ self.generation = self.forecast.get_generation(self.start_year)
             self.calc_average_load()
             self.calc_generation_wind_proposed()
         except AttributeError:
             self.diagnostics.add_warning(self.component_name, 
-            "could not be run")
+                            "could not be run")
             self.run = False
             self.reason = "could not find average load or proposed generation"
             return
@@ -423,8 +494,9 @@ class WindPower(AnnualSavings):
         
         #~ #~ print self.comp_specs['resource data']['Assumed Wind Class'] 
         # ??? some kind of failure message
-        if self.average_load > self.comp_specs['average load limit'] and \
-            self.load_offset_proposed > 0:
+        if self.average_load is None or \
+            (self.average_load > self.comp_specs['average load limit'] and \
+            self.load_offset_proposed > 0):
             #~ float(self.comp_specs['resource data']['Assumed Wind Class']) > \
                 #~ self.comp_specs['minimum wind class'] and \
                
@@ -494,6 +566,8 @@ class WindPower(AnnualSavings):
         post:
             self.average_load is a number (kW/yr)
         """
+        if self.comp_specs["project details"]['proposed capacity'] != UNKNOWN:
+            self.average_load = None
         self.generation = self.forecast.generation_by_type['generation diesel']\
                                                             [self.start_year]
         self.average_load = self.generation / constants.hours_per_year
@@ -512,18 +586,28 @@ class WindPower(AnnualSavings):
             self.load_offest_proposed is a number (kW)
             self.generation_wind_proposed is a number (kWh/yr)
         """
+        if self.comp_specs["project details"]['proposed capacity'] != UNKNOWN:
+            self.load_offset_proposed = \
+                    self.comp_specs["project details"]['proposed capacity']
+            self.generation_wind_proposed = \
+                    self.comp_specs["project details"]['proposed generation']
+            return
+        
         self.load_offset_proposed = 0
         
         offset = self.average_load*\
                 self.comp_specs['percent generation to offset']
         #~ print self.forecast.generation_by_type['generation hydro'].sum()
-        if self.forecast.generation_by_type['generation hydro'].fillna(0).sum() > 0:
+        hydro = \
+            self.forecast.generation_by_type['generation hydro'].fillna(0).sum()
+        if hydro > 0:
             offset *= 2
         #~ self.comp_specs['resource data']['existing wind'] = 0
         
         # existing very variable RE
-        existing_RE = int(float(self.comp_specs['resource data']['existing wind'])) + \
-                        int(float(self.comp_specs['resource data']['existing solar']))
+        existing_RE = \
+            int(float(self.comp_specs['resource data']['existing wind'])) + \
+            int(float(self.comp_specs['resource data']['existing solar']))
         
         if existing_RE < (round(offset/25) * 25): # ???
             #~ print "True"
@@ -533,10 +617,10 @@ class WindPower(AnnualSavings):
         
         # not needed for now
         #~ self.total_wind_generation = self.generation_load_proposed + \
-                            #~ int(self.comp_specs['resource data']['existing wind'])
+                    #~ int(self.comp_specs['resource data']['existing wind'])
         
         self.generation_wind_proposed =  self.load_offset_proposed * \
-                    float(self.comp_specs['resource data']['assumed capacity factor'])*\
+            float(self.comp_specs['resource data']['assumed capacity factor'])*\
                                     constants.hours_per_year
         #~ print 'self.load_offset_proposed',self.load_offset_proposed
         #~ print 'self.generation_wind_proposed',self.generation_wind_proposed 
@@ -637,7 +721,14 @@ class WindPower(AnnualSavings):
         """ 
             calculate the maintainance cost
         """
-        self.maintainance_cost = self.comp_specs['percent o&m'] * self.capital_costs
+        
+        if str(self.comp_specs['project details']['operational costs']) \
+                                                                != 'UNKNOWN':
+            self.maintainance_cost = \
+                self.comp_specs['project details']['operational costs']
+        else:
+            self.maintainance_cost = \
+                self.comp_specs['percent o&m'] * self.capital_costs
         #~ print 'self.maintainance_cost',self.maintainance_cost
         
 
@@ -655,11 +746,17 @@ class WindPower(AnnualSavings):
         road_needed = self.comp_specs['road needed for transmission line']
         
 
-        if str(self.comp_specs['transmission capital cost']) != 'UNKNOWN':
-            transmission_line_cost = int(self.comp_specs['transmission capital cost'])
+        if str(self.comp_specs['project details']['transmission capital cost'])\
+           != 'UNKNOWN':
+            transmission_line_cost = \
+            int(self.comp_specs['project details']['transmission capital cost'])
         else:
-            if str(self.comp_specs['distance to resource']) != 'UNKNOWN':
-                distance = float(self.comp_specs['distance to resource']) * constants.feet_to_mi
+            if str(self.comp_specs['project details']['distance to resource']) \
+                != 'UNKNOWN':
+                distance = \
+                    float(self.comp_specs['project details']\
+                        ['distance to resource'])
+                distance = distance * constants.feet_to_mi
             else:
                 distance = self.comp_specs['default distance to resource']
             transmission_line_cost = distance*\
@@ -669,8 +766,10 @@ class WindPower(AnnualSavings):
         if self.comp_specs['secondary load']:
             secondary_load_cost = self.comp_specs['secondary load cost']
         
-        if str(self.comp_specs['generation capital cost']) != 'UNKNOWN':
-            wind_cost = int(self.comp_specs['generation capital cost'])
+        if str(self.comp_specs['project details']['generation capital cost']) \
+            != 'UNKNOWN':
+            wind_cost = \
+              int(self.comp_specs['project details']['generation capital cost'])
         else:
             for i in range(len(self.comp_specs['costs'])):
                 if int(self.comp_specs['costs'].iloc[i].name) < \
@@ -734,6 +833,7 @@ class WindPower(AnnualSavings):
         """
         save the output from the component.
         """
+        #~ return
         if not self.run:
             fname = os.path.join(directory,
                                    self.component_name + "_output.csv")
