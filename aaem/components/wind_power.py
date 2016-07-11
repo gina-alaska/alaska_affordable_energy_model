@@ -156,7 +156,7 @@ def load_project_details (data_dir):
       
     # correct number years if nessary
     if dets['expected years to operation'] == UNKNOWN:
-        if dets['phase'] == 'Operatonal':
+        if dets['phase'] == 'Operational':
             yto = 0
         else:
             try:

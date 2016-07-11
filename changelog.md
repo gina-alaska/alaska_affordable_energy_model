@@ -1,5 +1,13 @@
 #Change Log
 
+## [0.16.0]
+### added
+- intergration of existing projects for wind
+- support to driver for exiting projects
+
+### changed
+- current year to 2015
+
 ## [0.15.5]
 ## fixed
 - data in peak monthly btu/hr column of ashp residential summary
