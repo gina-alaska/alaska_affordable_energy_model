@@ -115,12 +115,31 @@ def load_wind_costs_table (data_dir):
     
 def load_project_details (data_dir):
     """
+    load details related to exitign projects
+    
+    pre:
+        data_dir is a directory with  'project_development_timeframes.csv',
+        and "wind_projects.yaml" in it 
+    
+    post:
+        retunrns a dictonary wht the keys 'phase'(str), 
+        'proposed capacity'(float), 'proposed generation'(float),
+        'distance to resource'(float), 'generation capital cost'(float),
+        'transmission capital cost'(float), 'operational costs'(float),
+        'expected years to operation'(int),
     """
     try:
         tag = os.path.split(data_dir)[1].split('+')[1]
     except IndexError:
         tag = None
+    
+    # get the estimated years to operation
+    data_file = os.path.join(data_dir, 'project_development_timeframes.csv')
+    data = read_csv(data_file, comment = '#', index_col=0, header=0)['Wind']
+
     if tag is None:
+        # if no data make some
+        yto = int(round(float(data['Reconnaissance'])))
         return {'phase': 'Reconnaissance',
                 'proposed capacity': UNKNOWN,
                 'proposed generation': UNKNOWN,
@@ -128,10 +147,26 @@ def load_project_details (data_dir):
                 'generation capital cost': UNKNOWN,
                 'transmission capital cost': UNKNOWN,
                 'operational costs': UNKNOWN,
-                'expected years to operation': UNKNOWN,
+                'expected years to operation': yto,
                 }
+                
+    #read data
     with open(os.path.join(data_dir, "wind_projects.yaml"), 'r') as fd:
         dets = load(fd)[tag]
+      
+    # correct number years if nessary
+    if dets['expected years to operation'] == UNKNOWN:
+        if dets['phase'] == 'Operatonal':
+            yto = 0
+        else:
+            try:
+                yto = int(round(float(data[dets['phase']])))
+            except TypeError:
+                yto =0
+        #~ print yto
+        dets['expected years to operation'] = yto
+    dets['expected years to operation'] = \
+        int(dets['expected years to operation'])    
     return dets
     
 ## library of keys and functions for CommunityData IMPORT Keys
@@ -259,47 +294,107 @@ def copy_wind_cost_table(ppo):
 def preprocess_existing_projects (ppo):
     """
     preprocess data related to existing projects
+    
+    pre:
+        ppo is a is a Preprocessor object. "wind_projects.csv" and 
+        'project_development_timeframes.csv' exist in the ppo.data_dir 
+    post:
+        data for existing projets is usable by model
     """
     projects = []
     p_data = {}
-    if ppo.com_id in ["Adak","Bethel","Oscarville"]:
-        com = [1,2]
     
-        #~ projects = []
-        #~ p_data = {}
-        for p_idx in range(len(com)):
-            p_name = "wind_project_" + str(p_idx)
-            projects.append(p_name)
-            phase = "Feasibility"
-            proposed_capacity = 100
-            proposed_generation = 916584
-            distance_to_resource = 0
-            generation_capital_cost = 3197985
-            transmission_capital_cost = 0
-            operational_costs = 0
-            expected_years_to_operation = 0 
-            p_data[p_name] = {'phase': phase,
-                            'proposed capacity': proposed_capacity,
-                            'proposed generation': proposed_generation,
-                            'distance to resource': distance_to_resource,
-                            'generation capital cost': generation_capital_cost,
-                            'transmission capital cost': transmission_capital_cost,
-                            'operational costs': operational_costs,
-                            'expected years to operation': expected_years_to_operation
-                            }
-                            
+    project_data = read_csv(os.path.join(ppo.data_dir,"wind_projects.csv"),
+                           comment = '#',index_col = 0)
+    
+    project_data = DataFrame(project_data.ix[ppo.com_id])
+    if len(project_data.T) == 1 :
+        project_data = project_data.T
+
+
+    for p_idx in range(len(project_data)):
+        cp = project_data.ix[p_idx]
+        p_name = cp['Project Name']
         
+        
+        phase = cp['Phase']
+        proposed_capacity = cp['Proposed Capacity (kW)']
+        proposed_generation = cp['Proposed Generation (kWh)']
+        distance_to_resource = cp['Distance to Resource (ft)']
+        generation_capital_cost = cp['Generation Capital Cost']
+        transmission_capital_cost = cp['Transmission CAPEX']
+        operational_costs = cp['Operational Costs / year']
+        expected_years_to_operation = cp['Expected years to operation']
+        if phase == "0":
+            continue
+        if phase == "Reconnaissance" and np.isnan(proposed_capacity) and\
+           np.isnan(proposed_generation) and np.isnan(distance_to_resource) and\
+           np.isnan(generation_capital_cost)  and \
+           np.isnan(transmission_capital_cost) and \
+           np.isnan(operational_costs) and \
+           np.isnan(expected_years_to_operation):
+            continue
+        try:
+            if p_name == "" or np.isnan(p_name):
+                p_name = "wind_project_" + str(p_idx)
+        except TypeError:
+            p_name = "wind_project_" + str(p_idx)
+        projects.append(p_name)
+        
+        proposed_capacity = float(proposed_capacity)
+        if np.isnan(proposed_capacity):
+            proposed_capacity = UNKNOWN
+    
+        proposed_generation = float(proposed_generation)
+        if np.isnan(proposed_generation):
+            proposed_generation = UNKNOWN
+        
+        distance_to_resource = float(distance_to_resource)
+        if np.isnan(distance_to_resource):
+            distance_to_resource = UNKNOWN
+           
+        generation_capital_cost = float(generation_capital_cost)
+        if np.isnan(generation_capital_cost):
+            generation_capital_cost = UNKNOWN
+        
+        transmission_capital_cost = float(transmission_capital_cost)
+        if np.isnan(transmission_capital_cost):
+            transmission_capital_cost = UNKNOWN
+        
+        operational_costs = float(operational_costs)
+        if np.isnan(operational_costs):
+            operational_costs = UNKNOWN
+            
+        expected_years_to_operation = float(expected_years_to_operation)
+        if np.isnan(expected_years_to_operation):
+            expected_years_to_operation = UNKNOWN
+            
+        p_data[p_name] = {'phase': phase,
+                    'proposed capacity': proposed_capacity,
+                    'proposed generation': proposed_generation,
+                    'distance to resource': distance_to_resource,
+                    'generation capital cost': generation_capital_cost,
+                    'transmission capital cost': transmission_capital_cost,
+                    'operational costs': operational_costs,
+                    'expected years to operation': expected_years_to_operation
+                        }
+                            
+    if len(p_data) != 0:
         fd = open(os.path.join(ppo.out_dir,"wind_projects.yaml"),'w')
-        #~ print dump(p_data,default_flow_style=False)
         fd.write(dump(p_data,default_flow_style=False))
         fd.close()
-        
     else:
         fd = open(os.path.join(ppo.out_dir,"wind_projects.yaml"),'w')
-        #~ print dump(p_data,default_flow_style=False)
         fd.write("")
         fd.close()
+        #~ return projects 
+
+
     ppo.MODEL_FILES['WIND_PROJECTS'] = "wind_projects.yaml"
+    shutil.copy(os.path.join(ppo.data_dir,'project_development_timeframes.csv'), 
+                ppo.out_dir)
+    ppo.MODEL_FILES['TIMEFRAMES'] = 'project_development_timeframes.csv'
+    #~ print ppo.MODEL_FILES
     return projects
         
 
@@ -311,7 +406,7 @@ raw_data_files = ['wind_class_assumptions.csv',
                   "diesel_data.csv",
                   'wind_data_interties.csv',
                   "solar_data_existing.csv",
-                  'wind_projects.csv',
+                  "wind_projects.csv",
                   'project_development_timeframes.csv']
 
 ## list of wind preprocessing functions
@@ -322,7 +417,14 @@ yaml_not_to_save = ['costs']
 
 ## component summary
 def component_summary (coms, res_dir):
-    """ """
+    """ 
+    save the component summary for wind
+    
+    pre:
+        res_dir is a directory
+    post:
+        file is written in res_dir
+    """
     #~ return
     out = []
     for c in sorted(coms.keys()):
@@ -335,12 +437,17 @@ def component_summary (coms, res_dir):
             # ??? NPV or year one
             wind = coms[c]['model'].comps_used['wind power']
             
+            start_yr = wind.comp_specs['start year']
+            phase = wind.comp_specs["project details"]['phase']
             average_load = wind.average_load
-            existing_load = wind.comp_specs['resource data']['existing wind']
+            existing_load = wind.comp_specs['resource data']\
+                                            ['existing wind']
             existing_solar = wind.comp_specs['resource data']['existing solar']
-            wind_class = float(wind.comp_specs['resource data']['Assumed Wind Class']) 
+            wind_class = float(wind.comp_specs['resource data']\
+                                                ['Assumed Wind Class']) 
             proposed_load =  wind.load_offset_proposed
-            cap_fac = float(wind.comp_specs['resource data']['assumed capacity factor'])
+            cap_fac = float(wind.comp_specs['resource data']\
+                                            ['assumed capacity factor'])
             heat_rec_opp = wind.cd['heat recovery operational']
             try:
                 #~ offset = wind.load_offset_proposed
@@ -371,6 +478,8 @@ def component_summary (coms, res_dir):
                 #~ red_per_year = 0
             
             l = [c, 
+                start_yr,
+                phase,
                 wind_class, 
                 average_load, 
                 proposed_load,
@@ -397,6 +506,8 @@ def component_summary (coms, res_dir):
         
     
     cols = ['Community',
+            'start year',
+            'project phase',
             'Assumed Wind Class',
             'Average Diesel Load [kw]',
             'Wind Capacity Proposed [kW]',
@@ -455,7 +566,9 @@ class WindPower(AnnualSavings):
        
         self.comp_specs = community_data.get_section(COMPONENT_NAME)
         self.component_name = COMPONENT_NAME
-
+        #~ print self.cd['current year']
+        self.comp_specs["start year"] = self.cd['current year'] + \
+            self.comp_specs["project details"]['expected years to operation']
         self.set_project_life_details(self.comp_specs["start year"],
                                       self.comp_specs["lifetime"],
                         self.forecast.end_year - self.comp_specs["start year"])

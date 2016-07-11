@@ -78,7 +78,7 @@ def build_setup_defaults (comp_lib):
     """
     """
     yml = {}
-    yml['community'] = {'current year': 2014,
+    yml['community'] = {'current year': 2015,
                         'model financial': True,
                         'model electricity': True,
                         'model heating fuel': True,
