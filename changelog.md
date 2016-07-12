@@ -2,6 +2,16 @@
 
 ## [0.16.0]
 ### added
+- file for each community summarizing the npv values per component
+
+### upadate
+- updated headings for component outputs
+- added intertie column for ASHP summaries
+- added diesel prices to Solar and Wind Summaries
+- updated the component template
+
+## [0.16.0]
+### added
 - intergration of existing projects for wind
 - support to driver for exiting projects
 
