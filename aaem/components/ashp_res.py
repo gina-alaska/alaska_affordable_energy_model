@@ -176,21 +176,27 @@ class ASHPResidential (ashp_base.ASHPBase):
     def calc_heat_energy_produced_per_year (self):
         """
         """
-        self.heat_energy_produced_per_year = self.pre_ashp_heating_oil_used * \
-                        self.comp_specs["heating oil efficiency"]*(1/constants.mmbtu_to_gal_HF)
+        self.heat_energy_produced_per_year = \
+                        self.pre_ashp_heating_oil_used * \
+                        self.comp_specs["heating oil efficiency"]*\
+                        (1/constants.mmbtu_to_gal_HF)
         #~ print self.heat_energy_produced_per_year
        
     def calc_electric_heat_energy_reduction (self):
         """
         """
-        self.electric_heat_energy_reduction = self.pre_ashp_heating_electricty_used/ self.average_cop
+        self.electric_heat_energy_reduction = \
+                        self.pre_ashp_heating_electricty_used/ self.average_cop
         
     
     def calc_electric_heat_energy_savings (self):
         """
         """
-        self.electric_heat_energy_savings = self.electric_heat_energy_reduction *  self.electricity_prices
-        self.electric_heat_energy_savings = self.electric_heat_energy_savings.values.T[0]
+        self.electric_heat_energy_savings = \
+                        self.electric_heat_energy_reduction * \
+                        self.electricity_prices
+        self.electric_heat_energy_savings = \
+                        self.electric_heat_energy_savings.values.T[0]
         
         
     def run (self):
@@ -240,13 +246,24 @@ class ASHPResidential (ashp_base.ASHPBase):
         """
         calculate the captial costs
         """
-        heating_oil = ((self.pre_ashp_heating_oil_used/self.num_houses)*self.comp_specs["heating oil efficiency"]) / constants.mmbtu_to_gal_HF *1e6/ constants.hours_per_year
-        electric_heat = (self.pre_ashp_heating_electricty_used/self.num_houses) / constants.mmbtu_to_kWh *1e6/ constants.hours_per_year
+        heating_oil = ((self.pre_ashp_heating_oil_used/self.num_houses)*\
+                        self.comp_specs["heating oil efficiency"]) / \
+                        constants.mmbtu_to_gal_HF *1e6/ \
+                        constants.hours_per_year
+        electric_heat = (self.pre_ashp_heating_electricty_used/self.num_houses)\
+                        / constants.mmbtu_to_kWh *1e6/ constants.hours_per_year
         average_btu_per_hr =  heating_oil + electric_heat
-        peak_monthly_btu_hr_hh = float(float(self.comp_specs['data'].ix['Peak Month % of total']) * average_btu_per_hr * 12 / (self.precent_heated_oil+self.precent_heated_elec))
-        self.peak_monthly_btu_hr_hh=peak_monthly_btu_hr_hh
+        peak_monthly_btu_hr_hh = \
+            float(float(self.comp_specs['data'].ix['Peak Month % of total']) *\
+            average_btu_per_hr * 12 / \
+            (self.precent_heated_oil+self.precent_heated_elec))
+        self.peak_monthly_btu_hr_hh = peak_monthly_btu_hr_hh
         
-        self.capital_costs = self.num_houses * round((peak_monthly_btu_hr_hh/self.comp_specs["btu/hrs"]) * self.comp_specs["cost per btu/hrs"])*self.regional_multiplier
+        self.capital_costs = self.num_houses * \
+                             round((peak_monthly_btu_hr_hh / \
+                             self.comp_specs["btu/hrs"]) * \
+                             self.comp_specs["cost per btu/hrs"])* \
+                             self.regional_multiplier
 
     def save_component_csv (self, directory):
         """
@@ -263,48 +280,39 @@ class ASHPResidential (ashp_base.ASHPBase):
             
         #~ print prices
         df = DataFrame({
-                "community":self.cd['name'],
-                "Average Coefficient of Performance (COP)": self.average_cop,
-                'Number Houses':self.num_houses,
-                'Peak Household Monthly Btu/hr': val,
-                'Electricity Price [$/kWh]':prices,
-                'kWh consumed per year':self.electric_consumption,
-                "Displaced Heating Oil [Gal]": self.heating_oil_saved,
-                
-                
-                "Project Capital Cost": self.get_capital_costs(),
-                "Total Cost Savings": self.get_total_savings_costs(),
-                "Net Benefit": self.get_net_beneft(),
+                "Community": self.cd['name'],
+                "Residential ASHP: Average Coefficient of Performance (COP)": self.average_cop,
+                'Residential ASHP: Number Houses': self.num_houses,
+                'Residential ASHP: Peak Household Monthly (Btu/hour)': val,
+                'Residential ASHP: Electricity Price ($/kWh)':prices,
+                'Residential ASHP: kWh consumed per year (kWh/year)':self.electric_consumption,
+                "Residential ASHP: Displaced Heating Oil (gallons/year)": self.heating_oil_saved,
+                "Residential ASHP: Project Capital Cost ($/year)": self.get_capital_costs(),
+                "Residential ASHP: Total Cost Savings ($/year)": self.get_total_savings_costs(),
+                "Residential ASHP: Net Benefit ($/year)": self.get_net_beneft(),
                        }, years)
 
-        order = ["community", "Average Coefficient of Performance (COP)",
-                 'Number Houses', 'Peak Household Monthly Btu/hr',
-                 'Electricity Price [$/kWh]', 'kWh consumed per year',
-                 "Displaced Heating Oil [Gal]", "Project Capital Cost",
-                 "Total Cost Savings", "Net Benefit"]
+        order = ["Community", 
+                 "Residential ASHP: Average Coefficient of Performance (COP)",
+                 'Residential ASHP: Number Houses', 
+                 'Residential ASHP: Peak Household Monthly (Btu/hour)',
+                 'Residential ASHP: Electricity Price ($/kWh)', 
+                 'Residential ASHP: kWh consumed per year (kWh/year)',
+                 "Residential ASHP: Displaced Heating Oil (gallons/year)", 
+                 "Residential ASHP: Project Capital Cost ($/year)",
+                 "Residential ASHP: Total Cost Savings ($/year)", 
+                 "Residential ASHP: Net Benefit ($/year)"]
                 
         fname = os.path.join(directory,
+                                   self.cd['name'] + '_' +\
                                    self.component_name + "_output.csv")
         fname = fname.replace(" ","_")
         
-        
-        fin_str = "Enabled" if self.cd["model financial"] else "Disabled"
-        fd = open(fname, 'w')
-        fd.write("# " + self.component_name + " model outputs\n") 
-        fd.close()
-        
-        # save npv stuff
-        df2 = DataFrame([self.get_NPV_benefits(),self.get_NPV_costs(),
-                            self.get_NPV_net_benefit(),self.get_BC_ratio()],
-                       ['NPV Benefits','NPV Cost',
-                            'NPV Net Benefit','Benefit Cost Ratio'])
-        df2.to_csv(fname, header = False, mode = 'a')
-        
         # save to end of project(actual lifetime)
-        df[order].ix[:self.actual_end_year].to_csv(fname, index_label="year", 
-                                                                mode = 'a')
+        df[order].ix[:self.actual_end_year].to_csv(fname, index_label="Year")
         fname = os.path.join(directory,
-                                   self.cd['name']+'_'+self.component_name + "_montly_table.csv")
+                                   self.cd['name']+'_'+\
+                                   self.component_name + "_montly_table.csv")
         fname = fname.replace(" ","_")
         
         self.monthly_value_table.to_csv(fname)

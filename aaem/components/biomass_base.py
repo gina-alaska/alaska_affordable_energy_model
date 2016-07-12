@@ -307,52 +307,56 @@ class BiomassBase (AnnualSavings):
         """
         save the component output csv in directory
         """
-        fuel_consumed_key = 'Proposed ' +self.biomass_type \
-                                        + " Consumed [" + self.units +"]"
-        eng_density_key = "Energy Density [Btu/"+self.units+"]"
+        fuel_consumed_key = self.component_name + \
+                            ': Proposed ' + self.biomass_type \
+                            + " Consumed (" + self.units + ")"
+        eng_density_key = self.component_name + \
+                            ": Energy Density (Btu/" + self.units + ")"
         years = np.array(range(self.project_life)) + self.start_year
     
         df = DataFrame({
-                "community":self.cd['name'],
-                "Maximum Boiler Output [Btu/hr]": self.max_boiler_output,
-                'Heat Displacement square footage [Sqft]':
-                                                self.heat_displaced_sqft,
-                eng_density_key: self.comp_specs['energy density'],
-                fuel_consumed_key: self.biomass_fuel_consumed,
-                'Price [$/' + self.units + ']':self.heat_displaced_sqft,
-                "Displaced Heating Oil [Gal]": self.heat_diesel_displaced,
-                
-                
-                "Project Capital Cost": self.get_capital_costs(),
-                "Total Cost Savings": self.get_total_savings_costs(),
-                "Net Benefit": self.get_net_beneft(),
+                "Community": self.cd['name'],
+                self.component_name + \
+                    ": Maximum Boiler Output (Btu/hour)": 
+                                            self.max_boiler_output,
+                self.component_name + \
+                    ': Heat Displacement square footage (Sqft)':
+                                            self.heat_displaced_sqft,
+                eng_density_key:            self.comp_specs['energy density'],
+                fuel_consumed_key:          self.biomass_fuel_consumed,
+                self.component_name + \
+                    ': Price ($/' + self.units + ')': 
+                                            self.heat_displaced_sqft,
+                self.component_name + \
+                    ": Displaced Heating Oil (gallons)": 
+                                            self.heat_diesel_displaced,
+                self.component_name + \
+                    ": Project Capital Cost ($/year)": 
+                                            self.get_capital_costs(),
+                self.component_name + \
+                    ": Total Cost Savings ($/year)": 
+                                            self.get_total_savings_costs(),
+                self.component_name + \
+                    ": Net Benefit ($/year)": 
+                                            self.get_net_beneft(),
                        }, years)
 
-        order = ["community", "Maximum Boiler Output [Btu/hr]",
-                 eng_density_key, fuel_consumed_key,
-                "Displaced Heating Oil [Gal]", "Project Capital Cost",
-                "Total Cost Savings", "Net Benefit"]
+        order = ["Community", 
+                self.component_name +": Maximum Boiler Output (Btu/hour)",
+                eng_density_key, 
+                fuel_consumed_key,
+                self.component_name +": Displaced Heating Oil (gallons)", 
+                self.component_name +": Project Capital Cost ($/year)",
+                self.component_name +": Total Cost Savings ($/year)", 
+                self.component_name +": Net Benefit ($/year)"]
                 
         fname = os.path.join(directory,
-                                   self.component_name + "_output.csv")
+                                self.cd['name'] + '_' +\
+                                self.component_name + "_output.csv")
         fname = fname.replace(" ","_")
-        
-        
-        fin_str = "Enabled" if self.cd["model financial"] else "Disabled"
-        fd = open(fname, 'w')
-        fd.write("# " + self.component_name + " model outputs\n") 
-        fd.close()
-        
-        # save npv stuff
-        df2 = DataFrame([self.get_NPV_benefits(),self.get_NPV_costs(),
-                            self.get_NPV_net_benefit(),self.get_BC_ratio()],
-                       ['NPV Benefits','NPV Cost',
-                            'NPV Net Benefit','Benefit Cost Ratio'])
-        df2.to_csv(fname, header = False, mode = 'a')
-        
+    
         # save to end of project(actual lifetime)
-        df[order].ix[:self.actual_end_year].to_csv(fname, index_label="year", 
-                                                                    mode = 'a')
+        df[order].ix[:self.actual_end_year].to_csv(fname, index_label="year")
     
     
 

@@ -345,86 +345,85 @@ class AnnualSavings (object):
         """
         years = np.array(range(self.project_life)) + self.start_year
         df = DataFrame({
-                "Heating Fuel Consumption Baseline": self.get_base_HF_use(),
-                "Heating Fuel Consumption Retrofit": self.get_refit_HF_use(),
-                "Heating Fuel Consumption Savings": self.get_base_HF_use() -\
+                self.component_name + \
+                    ": Heating Fuel Consumption Baseline (gallons/year)": 
+                                            self.get_base_HF_use(),
+                self.component_name + \
+                    ": Heating Fuel Consumption Retrofit (gallons/year)": 
+                                            self.get_refit_HF_use(),
+                self.component_name + \
+                    ": Heating Fuel Consumption Savings (gallons/year)": 
+                                            self.get_base_HF_use() -\
                                             self.get_refit_HF_use(), 
-                "Heating Fuel Cost Baseline": self.get_base_HF_cost(),
-                "Heating Fuel Cost Retrofit": self.get_refit_HF_cost(),
-                "Heating Fuel Cost Savings": 
-                                        self.get_heating_savings_costs(),
-                "Electricity Consumption Baseline": self.get_base_kWh_use(),
-                "Electricity Consumption Retrofit": self.get_refit_kWh_use(),
-                "Electricity Consumption Savings": self.get_base_kWh_use() -\
-                                           self.get_refit_kWh_use(), 
-                "Electricity Cost Basline": self.get_base_kWh_cost(),
-                "Electricity Cost Retrofit": self.get_refit_kWh_cost(),
-                "Electricity Cost Savings": 
-                                    self.get_electric_savings_costs(),
-                "Project Capital Cost": self.get_capital_costs(),
-                "Total Cost Savings": self.get_total_savings_costs(),
-                "Net Benefit": self.get_net_beneft(),
+                self.component_name + \
+                    ": Heating Fuel Cost Baseline ($/year)": 
+                                            self.get_base_HF_cost(),
+                self.component_name + \
+                    ": Heating Fuel Cost Retrofit ($/year)": 
+                                            self.get_refit_HF_cost(),
+                self.component_name + \
+                    ": Heating Fuel Cost Savings ($/year)": 
+                                            self.get_heating_savings_costs(),
+                self.component_name + \
+                    ": Electricity Consumption Baseline (kWh/year)": 
+                                            self.get_base_kWh_use(),
+                self.component_name + \
+                    ": Electricity Consumption Retrofit (kWh/year)": 
+                                            self.get_refit_kWh_use(),
+                self.component_name + \
+                    ": Electricity Consumption Savings (kWh/year)": 
+                                            self.get_base_kWh_use() -\
+                                            self.get_refit_kWh_use(), 
+                self.component_name + \
+                    ": Electricity Cost Basline ($/year)": 
+                                            self.get_base_kWh_cost(),
+                self.component_name + \
+                    ": Electricity Cost Retrofit ($/year)": 
+                                            self.get_refit_kWh_cost(),
+                self.component_name + \
+                    ": Electricity Cost Savings ($/year)": 
+                                            self.get_electric_savings_costs(),
+                self.component_name + \
+                    ": Project Capital Cost ($/year)": 
+                                            self.get_capital_costs(),
+                self.component_name + \
+                    ": Total Cost Savings ($/year)": 
+                                            self.get_total_savings_costs(),
+                self.component_name + \
+                    ": Net Benefit ($/year)": 
+                                            self.get_net_beneft(),
                        }, years)
 
-        df["community"] = self.cd['name']
+        df["Community"] = self.cd['name']
         
-        ol = ["community",
-              "Heating Fuel Consumption Baseline", 
-              "Heating Fuel Consumption Retrofit", 
-              "Heating Fuel Consumption Savings", "Heating Fuel Cost Baseline",
-              "Heating Fuel Cost Retrofit", "Heating Fuel Cost Savings",
-              "Electricity Consumption Baseline",
-              "Electricity Consumption Retrofit", 
-              "Electricity Consumption Savings", "Electricity Cost Basline",
-              "Electricity Cost Retrofit", "Electricity Cost Savings",
-              "Project Capital Cost", "Total Cost Savings", "Net Benefit"]
+        ol = ["Community",
+              self.component_name + \
+                        ": Heating Fuel Consumption Baseline (gallons/year)", 
+              self.component_name + \
+                        ": Heating Fuel Consumption Retrofit (gallons/year)", 
+              self.component_name + \
+                        ": Heating Fuel Consumption Savings (gallons/year)", 
+              self.component_name + ": Heating Fuel Cost Baseline ($/year)",
+              self.component_name + ": Heating Fuel Cost Retrofit ($/year)", 
+              self.component_name + ": Heating Fuel Cost Savings ($/year)",
+              self.component_name + \
+                        ": Electricity Consumption Baseline (kWh/year)",
+              self.component_name + \
+                        ": Electricity Consumption Retrofit (kWh/year)", 
+              self.component_name + \
+                        ": Electricity Consumption Savings (kWh/year)", 
+              self.component_name + ": Electricity Cost Basline ($/year)",
+              self.component_name + ": Electricity Cost Retrofit ($/year)", 
+              self.component_name + ": Electricity Cost Savings ($/year)",
+              self.component_name + ": Project Capital Cost ($/year)", 
+              self.component_name + ": Total Cost Savings ($/year)", 
+              self.component_name + ": Net Benefit ($/year)"]
         fname = os.path.join(directory,
+                                   self.cd['name'] + '_' +\
                                    self.component_name + "_output.csv")
         fname = fname.replace(" ","_")
         
-        
-        fin_str = "Enabled" if self.cd["model financial"] else "Disabled"
-        fd = open(fname, 'w')
-        fd.write(("# " + self.component_name + " model outputs\n"
-                  #~ "# Finacial Component: " + fin_str + '\n'
-                  #~ "# --- Cost Benefit Information ---\n"
-                  #~ "# NPV Benefits: " + str(self.get_NPV_benefits()) + '\n'
-                  #~ "# NPV Cost: " + str(self.get_NPV_benefits()) + '\n'
-                  #~ "# NPV Net Benefit: " + str(self.get_NPV_benefits()) + '\n'
-                  #~ "# Benefit Cost Ratio: " + str(self.get_BC_ratio()) + '\n'
-                  #~ "# --------------------------------\n"
-          "# year: year for projection \n"
-          "# Heating Oil Consumption Baseline: Heating "
-                                        "Fuel used with no retrofits(mmbtu)\n"
-          "# Heating Oil Consumption Retrofit: Heating "
-                                        "Fuel used with retrofits(mmbtu) \n"
-          "# Heating Oil Consumption Savings:  Heating fuel savings (mmbtu)\n"
-          "# Heating Oil Cost Baseline: Cost Heating "
-                                        "Fuel used with no retrofits \n"
-          "# Heating Oil Cost Retrofit: Cost Heating "
-                                        "Fuel used with retrofits \n"
-          "# Heating Oil Cost Savings: Cost Heating Oil savings \n"
-          "# Electricity Consumption Baseline: kWh used with no retrofits \n"
-          "# Electricity Consumption Retrofit: kWh used with retrofits \n"
-          "# Electricity Consumption Savings: kWh savings \n"
-          "# Electricity Cost Baseline: Cost kWh used with no retrofits\n"
-          "# Electricity Cost Retrofit: Cost kWh used with retrofits \n"
-          "# Electricity Cost Savings: Cost kWh savings \n"
-          "# Project Capital Cost: Cost of retrofits \n"
-          "# Total Cost Savings: savings from retrofits\n"
-          "# Net Benefit: benefit from retrofits\n"
-                  )) 
-        fd.close()
-        
-        # save npv stuff
-        df2 = DataFrame([self.get_NPV_benefits(),self.get_NPV_costs(),
-                            self.get_NPV_net_benefit(),self.get_BC_ratio()],
-                       ['NPV Benefits','NPV Cost',
-                            'NPV Net Benefit','Benefit Cost Ratio'])
-        df2.to_csv(fname, header = False, mode = 'a')
-        
         # save to end of project(actual lifetime)
-        df[ol].ix[:self.actual_end_year].to_csv(fname, index_label="year", 
-                                                                    mode = 'a')
+        df[ol].ix[:self.actual_end_year].to_csv(fname, index_label="Year")
                                                                     
 

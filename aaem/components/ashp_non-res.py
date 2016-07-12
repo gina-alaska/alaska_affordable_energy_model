@@ -252,50 +252,51 @@ class ASHPNonResidential (ashp_base.ASHPBase):
             
         #~ print prices
         df = DataFrame({
-                "community":self.cd['name'],
-                "Average Coefficient of Performance (COP)": self.average_cop,
-                'Heat Displacement square footage [Sqft]':self.heat_displaced_sqft,
-                'Total Nameplate Capacity Needed': tcr,
-                'Electricity Price [$/kWh]':prices,
-                'kWh consumed per year':self.electric_consumption,
-                "Displaced Heating Oil [Gal]": self.heating_oil_saved,
-                
-                
-                "Project Capital Cost": self.get_capital_costs(),
-                "Total Cost Savings": self.get_total_savings_costs(),
-                "Net Benefit": self.get_net_beneft(),
+            "Community":self.cd['name'],
+            "Non-residential ASHP: Average Coefficient of Performance (COP)": 
+                                                    self.average_cop,
+            'Non-residential ASHP: Heat Displacement square footage (sqft)':
+                                                    self.heat_displaced_sqft,
+            'Non-residential ASHP:'
+                    ' Total Nameplate Capacity Needed (MMBtu/hour)': 
+                                                    tcr,
+            'Non-residential ASHP: Electricity Price ($/kWh)': 
+                                                    prices,
+            'Non-residential ASHP: kWh consumed per year (kWh/year)':
+                                                    self.electric_consumption,
+            "Non-residential ASHP: Displaced Heating Oil (gallons/year)": 
+                                                    self.heating_oil_saved,
+            "Non-residential ASHP: Project Capital Cost ($/year)": 
+                                                    self.get_capital_costs(),
+            "Non-residential ASHP: Total Cost Savings ($/year)": 
+                                                self.get_total_savings_costs(),
+            "Non-residential ASHP: Net Benefit ($/year)": 
+                                                self.get_net_beneft(),
                        }, years)
 
-        order = ["community", "Average Coefficient of Performance (COP)",
-                 'Heat Displacement square footage [Sqft]',
-                 'Total Nameplate Capacity Needed',
-                 'Electricity Price [$/kWh]', 'kWh consumed per year',
-                 "Displaced Heating Oil [Gal]", "Project Capital Cost",
-                 "Total Cost Savings", "Net Benefit"]
+        order = ["Community", 
+            "Non-residential ASHP: Average Coefficient of Performance (COP)",
+            'Non-residential ASHP: Heat Displacement square footage (sqft)',
+            'Non-residential ASHP: '
+                            'Total Nameplate Capacity Needed (MMBtu/hour)',
+            'Non-residential ASHP: Electricity Price ($/kWh)', 
+            'Non-residential ASHP: kWh consumed per year (kWh/year)',
+            "Non-residential ASHP: Displaced Heating Oil (gallons/year)", 
+            "Non-residential ASHP: Project Capital Cost ($/year)",
+            "Non-residential ASHP: Total Cost Savings ($/year)", 
+            "Non-residential ASHP: Net Benefit ($/year)"]
                 
         fname = os.path.join(directory,
+                                   self.cd['name'] + '_' +\
                                    self.component_name + "_output.csv")
         fname = fname.replace(" ","_")
         
-        
-        fin_str = "Enabled" if self.cd["model financial"] else "Disabled"
-        fd = open(fname, 'w')
-        fd.write("# " + self.component_name + " model outputs\n") 
-        fd.close()
-        
-        # save npv stuff
-        df2 = DataFrame([self.get_NPV_benefits(),self.get_NPV_costs(),
-                            self.get_NPV_net_benefit(),self.get_BC_ratio()],
-                       ['NPV Benefits','NPV Cost',
-                            'NPV Net Benefit','Benefit Cost Ratio'])
-        df2.to_csv(fname, header = False, mode = 'a')
-        
         # save to end of project(actual lifetime)
-        df[order].ix[:self.actual_end_year].to_csv(fname, index_label="year", 
-                                                                    mode = 'a')
+        df[order].ix[:self.actual_end_year].to_csv(fname, index_label="Year")
         
         fname = os.path.join(directory,
-                                   self.cd['name']+'_'+self.component_name + "_montly_table.csv")
+                                    self.cd['name'] + '_' +\
+                                    self.component_name + "_montly_table.csv")
         fname = fname.replace(" ","_")
         
         self.monthly_value_table.to_csv(fname)

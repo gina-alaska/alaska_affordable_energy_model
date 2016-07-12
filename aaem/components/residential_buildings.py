@@ -578,52 +578,89 @@ class ResidentialBuildings(AnnualSavings):
         
         years = np.array(range(self.project_life)) + self.start_year
         df = DataFrame({
-            "Heating Fuel (All) Consumption Baseline": self.get_base_HF_use(),
-            "Heating Fuel (All) Consumption Retrofit": self.get_refit_HF_use(),
-            "Heating Fuel (All) Consumption Savings": self.get_base_HF_use() -\
-                                        self.get_refit_HF_use(), 
-            "Heating Fuel (All) Cost Baseline": self.get_base_HF_cost(),
-            "Heating Fuel (All) Cost Retrofit": self.get_refit_HF_cost(),
-            "Heating Fuel (All) Cost Savings": 
+        "Residential: Heating Fuel All (MMBtu/year) Consumption Baseline": 
+                                    self.get_base_HF_use(),
+        "Residential: Heating Fuel All (MMBtu/year) Consumption Post Retrofit": 
+                                    self.get_refit_HF_use(),
+        "Residential: Heating Fuel All (MMBtu/year) Consumption Savings": 
+                                    self.get_base_HF_use() -\
+                                    self.get_refit_HF_use(), 
+        "Residential: Heating Fuel All (MMBtu/year) Cost Baseline": 
+                                    self.get_base_HF_cost(),
+        "Residential: Heating Fuel All (MMBtu/year) Cost Post Retrofit": 
+                                    self.get_refit_HF_cost(),
+        "Residential: Heating Fuel All (MMBtu/year) Cost Savings": 
                                     self.get_heating_savings_costs(),
-    
-            "Heating Fuel (Oil) Consumption Baseline": b_oil,
-            "Heating Fuel (Oil) Consumption Retrofit": r_oil,
-            "Heating Fuel (Oil) Consumption Savings": s_oil, 
-            "Heating Fuel (Oil) Cost Baseline": b_oil_cost,
-            "Heating Fuel (Oil) Cost Retrofit": r_oil_cost ,
-            "Heating Fuel (Oil) Cost Savings": s_oil_cost,
-            
-            "Heating Fuel (Biomass) Consumption Baseline": b_bio,
-            "Heating Fuel (Biomass) Consumption Retrofit": r_bio,
-            "Heating Fuel (Biomass) Consumption Savings": s_bio, 
-            "Heating Fuel (Biomass) Cost Baseline": b_bio_cost,
-            "Heating Fuel (Biomass) Cost Retrofit": r_bio_cost,
-            "Heating Fuel (Biomass) Cost Savings": s_bio_cost,
-            
-            "Heating Fuel (Electric) Consumption Baseline": b_elec,
-            "Heating Fuel (Electric) Consumption Retrofit": r_elec,
-            "Heating Fuel (Electric) Consumption Savings": s_elec, 
-            "Heating Fuel (Electric) Cost Baseline": b_elec_cost,
-            "Heating Fuel (Electric) Cost Retrofit": r_elec_cost,
-            "Heating Fuel (Electric) Cost Savings": s_elec_cost,
-            
-            "Heating Fuel (Propane) Consumption Baseline": b_LP,
-            "Heating Fuel (Propane) Consumption Retrofit": r_LP,
-            "Heating Fuel (Propane) Consumption Savings": s_LP, 
-            "Heating Fuel (Propane) Cost Baseline": b_LP_cost,
-            "Heating Fuel (Propane) Cost Retrofit": r_LP_cost,
-            "Heating Fuel (Propane) Cost Savings": s_LP_cost,
-            
-            "Heating Fuel (Natural Gas) Consumption Baseline": b_NG,
-            "Heating Fuel (Natural Gas) Consumption Retrofit": r_NG,
-            "Heating Fuel (Natural Gas) Consumption Savings": s_NG, 
-            "Heating Fuel (Natural Gas) Cost Baseline": b_NG_cost,
-            "Heating Fuel (Natural Gas) Cost Retrofit": r_NG_cost,
-            "Heating Fuel (Natural Gas) Cost Savings": s_NG_cost,
-    
-            "Total Cost Savings": self.get_total_savings_costs(),
-            "Net Benefit": self.get_net_beneft(),
+
+        "Residential: Heating Oil (gallons/year) Consumption Baseline": 
+                                    b_oil,
+        "Residential: Heating Oil (gallons/year) Consumption Post Retrofit": 
+                                    r_oil,
+        "Residential: Heating Oil (gallons/year) Consumption Savings": 
+                                    s_oil, 
+        "Residential: Heating Oil (gallons/year) Cost Baseline": 
+                                    b_oil_cost,
+        "Residential: Heating Oil (gallons/year) Cost Post Retrofit": 
+                                    r_oil_cost ,
+        "Residential: Heating Oil (gallons/year) Cost Savings": 
+                                    s_oil_cost,
+        
+        "Residential: Heating Biomass (cords/year) Consumption Baseline": 
+                                    b_bio,
+        "Residential: Heating Biomass (cords/year) Consumption Post Retrofit": 
+                                    r_bio,
+        "Residential: Heating Biomass (cords/year) Consumption Savings": 
+                                    s_bio, 
+        "Residential: Heating Biomass (cords/year) Cost Baseline": 
+                                    b_bio_cost,
+        "Residential: Heating Biomass (cords/year) Cost Post Retrofit": 
+                                    r_bio_cost,
+        "Residential: Heating Biomass (cords/year) Cost Savings": 
+                                    s_bio_cost,
+        
+        "Residential: Electric Heat (kWh/year) Consumption Baseline": 
+                                    b_elec,
+        "Residential: Electric Heat (kWh/year) Consumption Post Retrofit":
+                                    r_elec,
+        "Residential: Electric Heat (kWh/year) Consumption Savings": 
+                                    s_elec, 
+        "Residential: Electric Heat (kWh/year) Cost Baseline": 
+                                    b_elec_cost,
+        "Residential: Electric Heat (kWh/year) Cost Post Retrofit":
+                                    r_elec_cost,
+        "Residential: Electric Heat (kWh/year) Cost Savings": 
+                                    s_elec_cost,
+        
+        "Residential: Heating Propane (gallons/year) Consumption Baseline": 
+                                    b_LP,
+        "Residential: Heating Propane (gallons/year) Consumption Post Retrofit":
+                                    r_LP,
+        "Residential: Heating Propane (gallons/year) Consumption Savings": 
+                                    s_LP, 
+        "Residential: Heating Propane (gallons/year) Cost Baseline": 
+                                    b_LP_cost,
+        "Residential: Heating Propane (gallons/year) Cost Post Retrofit": 
+                                    r_LP_cost,
+        "Residential: Heating Propane (gallons/year) Cost Savings":
+                                    s_LP_cost,
+        
+        "Residential: Heating Natural Gas (Mcf/year) Consumption Baseline": 
+                                    b_NG,
+        "Residential: Heating Natural Gas (Mcf/year) Consumption Post Retrofit": 
+                                    r_NG,
+        "Residential: Heating Natural Gas (Mcf/year) Consumption Savings":
+                                    s_NG, 
+        "Residential: Heating Natural Gas (Mcf/year) Cost Baseline": 
+                                    b_NG_cost,
+        "Residential: Heating Natural Gas (Mcf/year) Cost Post Retrofit": 
+                                    r_NG_cost,
+        "Residential: Heating Natural Gas (Mcf/year) Cost Savings": 
+                                    s_NG_cost,
+
+        "Residential: Total Cost Savings ($/year)": 
+                                    self.get_total_savings_costs(),
+        "Residential: Net Benefit ($/year)":
+                                    self.get_net_beneft(),
             }, years)
 
         try:
@@ -631,81 +668,59 @@ class ResidentialBuildings(AnnualSavings):
         except ValueError:
             pass
         df = df[[
-                "Heating Fuel (Oil) Consumption Baseline",
-                "Heating Fuel (Oil) Consumption Retrofit",
-                "Heating Fuel (Oil) Consumption Savings",
-                "Heating Fuel (Biomass) Consumption Baseline",
-                "Heating Fuel (Biomass) Consumption Retrofit",
-                "Heating Fuel (Biomass) Consumption Savings",
-                "Heating Fuel (Electric) Consumption Baseline",
-                "Heating Fuel (Electric) Consumption Retrofit",
-                "Heating Fuel (Electric) Consumption Savings",
-                "Heating Fuel (Propane) Consumption Baseline",
-                "Heating Fuel (Propane) Consumption Retrofit",
-                "Heating Fuel (Propane) Consumption Savings",
-                "Heating Fuel (Natural Gas) Consumption Baseline",
-                "Heating Fuel (Natural Gas) Consumption Retrofit",
-                "Heating Fuel (Natural Gas) Consumption Savings",
-                "Heating Fuel (All) Consumption Baseline",
-                "Heating Fuel (All) Consumption Retrofit",
-                "Heating Fuel (All) Consumption Savings",
-                "Heating Fuel (Oil) Cost Baseline",
-                "Heating Fuel (Oil) Cost Retrofit",
-                "Heating Fuel (Oil) Cost Savings",
-                "Heating Fuel (Biomass) Cost Baseline",
-                "Heating Fuel (Biomass) Cost Retrofit",
-                "Heating Fuel (Biomass) Cost Savings",
-                "Heating Fuel (Electric) Cost Baseline",
-                "Heating Fuel (Electric) Cost Retrofit",
-                "Heating Fuel (Electric) Cost Savings",
-                "Heating Fuel (Propane) Cost Baseline",
-                "Heating Fuel (Propane) Cost Retrofit",
-                "Heating Fuel (Propane) Cost Savings",
-                "Heating Fuel (Natural Gas) Cost Baseline",
-                "Heating Fuel (Natural Gas) Cost Retrofit",
-                "Heating Fuel (Natural Gas) Cost Savings",
-                "Heating Fuel (All) Cost Baseline",
-                "Heating Fuel (All) Cost Retrofit",
-                "Heating Fuel (All) Cost Savings",
-                "Total Cost Savings",
-                "Net Benefit"
+        "Residential: Heating Oil (gallons/year) Consumption Baseline",
+        "Residential: Heating Oil (gallons/year) Consumption Post Retrofit",
+        "Residential: Heating Oil (gallons/year) Consumption Savings",
+        "Residential: Heating Biomass (cords/year) Consumption Baseline",
+        "Residential: Heating Biomass (cords/year) Consumption Post Retrofit",
+        "Residential: Heating Biomass (cords/year) Consumption Savings",
+        "Residential: Electric Heat (kWh/year) Consumption Baseline",
+        "Residential: Electric Heat (kWh/year) Consumption Post Retrofit",
+        "Residential: Electric Heat (kWh/year) Consumption Savings",
+        "Residential: Heating Propane (gallons/year) Consumption Baseline",
+        "Residential: Heating Propane (gallons/year) Consumption Post Retrofit",
+        "Residential: Heating Propane (gallons/year) Consumption Savings",
+        "Residential: Heating Natural Gas (Mcf/year) Consumption Baseline",
+        "Residential: Heating Natural Gas (Mcf/year) Consumption Post Retrofit",
+        "Residential: Heating Natural Gas (Mcf/year) Consumption Savings",
+        "Residential: Heating Fuel All (MMBtu/year) Consumption Baseline",
+        "Residential: Heating Fuel All (MMBtu/year) Consumption Post Retrofit",
+        "Residential: Heating Fuel All (MMBtu/year) Consumption Savings",
+        "Residential: Heating Oil (gallons/year) Cost Baseline",
+        "Residential: Heating Oil (gallons/year) Cost Post Retrofit",
+        "Residential: Heating Oil (gallons/year) Cost Savings",
+        "Residential: Heating Biomass (cords/year) Cost Baseline",
+        "Residential: Heating Biomass (cords/year) Cost Post Retrofit",
+        "Residential: Heating Biomass (cords/year) Cost Savings",
+        "Residential: Electric Heat (kWh/year) Cost Baseline",
+        "Residential: Electric Heat (kWh/year) Cost Post Retrofit",
+        "Residential: Electric Heat (kWh/year) Cost Savings",
+        "Residential: Heating Propane (gallons/year) Cost Baseline",
+        "Residential: Heating Propane (gallons/year) Cost Post Retrofit",
+        "Residential: Heating Propane (gallons/year) Cost Savings",
+        "Residential: Heating Natural Gas (Mcf/year) Cost Baseline",
+        "Residential: Heating Natural Gas (Mcf/year) Cost Post Retrofit",
+        "Residential: Heating Natural Gas (Mcf/year) Cost Savings",
+        "Residential: Heating Fuel All (MMBtu/year) Cost Baseline",
+        "Residential: Heating Fuel All (MMBtu/year) Cost Post Retrofit",
+        "Residential: Heating Fuel All (MMBtu/year) Cost Savings",
+        "Residential: Total Cost Savings ($/year)",
+        "Residential: Net Benefit ($/year)"
                 ]]
             
         
         df["community"] = self.cd['name']
         df["population"] = self.forecast.get_population(self.start_year,
-                                                        self.end_year).astype(int)
-
+                                                    self.end_year).astype(int)
+        
         df = df[df.columns[-2:].tolist() + df.columns[:-2].tolist()]
 
         fname = os.path.join(directory,
+                                   self.cd['name'] + '_' +\
                                    self.component_name + "_output.csv")
         fname = fname.replace(" ","_")
-        
-        
-        fin_str = "Enabled" if self.cd["model financial"] else "Disabled"
-        fd = open(fname, 'w')
-        fd.write(("# " + self.component_name + " model outputs\n"
-          "# year: year for projection \n"
-          "# consumption columns are the are"
-                    " the ammout of fuel used by type(mmbtu)\n"
-          "# cost columns are in dollars"
-          "# Project Capital Cost: Cost of retrofits \n"
-          "# Total Cost Savings: savings from retrofits\n"
-          "# Net Benefit: benefit from retrofits\n"
-                  )) 
-        fd.close()
-        
-        # save npv stuff
-        df2 = DataFrame([self.get_NPV_benefits(),self.get_NPV_costs(),
-                            self.get_NPV_net_benefit(),self.get_BC_ratio()],
-                       ['NPV Benefits','NPV Cost',
-                            'NPV Net Benefit','Benefit Cost Ratio'])
-        df2.to_csv(fname, header = False, mode = 'a')
-        
         # save to end of project(actual lifetime)
-        df.ix[:self.actual_end_year].to_csv(fname, index_label="year", 
-                                                                    mode = 'a')
+        df.ix[:self.actual_end_year].to_csv(fname, index_label="year")
         
 
 component = ResidentialBuildings

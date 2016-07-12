@@ -506,7 +506,7 @@ def component_summary (coms, res_dir):
         
     
     cols = ['Community',
-            'start year',
+            'Start Year',
             'project phase',
             'Assumed Wind Class',
             'Average Diesel Load [kw]',
@@ -963,55 +963,50 @@ class WindPower(AnnualSavings):
         # ??? +/- 
         # ???
         df = DataFrame({
-                'Capacity [kW]':self.load_offset_proposed,
-                "Generation [kWh/yr]": self.net_generation_wind,
-                'Energy Captured by Secondary Load (gallons of heating oil equivalent)':
+                'Wind: Capacity (kW)':self.load_offset_proposed,
+                "Wind: Generation (kWh/year)": self.net_generation_wind,
+                'Wind: Energy Captured by Secondary Load'
+                    ' (gallons of heating oil equivalent)':
                                                     self.diesel_equiv_captured,
-                'assumed capacity factor':
-                    float(self.comp_specs['resource data']['assumed capacity factor']),
-                'Utility Diesel Displaced [gal]' :self.electric_diesel_reduction,
-                'Heat Recovery Lost [Gal/yr]':self.loss_heat_recovery, 
-                "Heat Recovery Cost Savings": 
-                                        self.get_heating_savings_costs(),
-                "Electricity Cost Savings": 
-                                    self.get_electric_savings_costs(),
-                "Project Capital Cost": self.get_capital_costs(),
-                "Total Cost Savings": self.get_total_savings_costs(),
-                "Net Benefit": self.get_net_beneft(),
+                'Wind: Assumed capacity factor':
+                    float(self.comp_specs['resource data']\
+                                                ['assumed capacity factor']),
+                'Wind: Utility Diesel Displaced (gallons/year)':
+                                            self.electric_diesel_reduction,
+                'Wind: Heat Recovery Lost (gallons/year)':
+                                            self.loss_heat_recovery, 
+                "Wind: Heat Recovery Cost Savings ($/year)": 
+                                            self.get_heating_savings_costs(),
+                "Wind: Electricity Cost Savings ($/year)": 
+                                            self.get_electric_savings_costs(),
+                "Wind: Project Capital Cost ($/year)": 
+                                            self.get_capital_costs(),
+                "Wind: Total Cost Savings ($/year)":
+                                            self.get_total_savings_costs(),
+                "Wind: Net Benefit ($/year)": self.get_net_beneft(),
                        }, years)
 
-        df["community"] = self.cd['name']
+        df["Community"] = self.cd['name']
         
-        ol = ["community",'Capacity [kW]',
-        'Energy Captured by Secondary Load (gallons of heating oil equivalent)',
-              'assumed capacity factor','Utility Diesel Displaced [gal]',
-              'Heat Recovery Lost [Gal/yr]',
-              "Generation [kWh/yr]",
-                "Heat Recovery Cost Savings",
-                "Electricity Cost Savings",
-                "Project Capital Cost",
-                "Total Cost Savings",
-                "Net Benefit"]
+        ol = ["Community",
+              'Wind: Capacity (kW)',
+              'Wind: Energy Captured by Secondary Load'
+                        ' (gallons of heating oil equivalent)',
+              'Wind: Assumed capacity factor',
+              'Wind: Utility Diesel Displaced (gallons/year)',
+              'Wind: Heat Recovery Lost (gallons/year)',
+              "Wind: Generation (kWh/year)",
+              "Wind: Heat Recovery Cost Savings ($/year)",
+              "Wind: Electricity Cost Savings ($/year)",
+              "Wind: Project Capital Cost ($/year)",
+              "Wind: Total Cost Savings ($/year)",
+              "Wind: Net Benefit ($/year)"]
         fname = os.path.join(directory,
-                                   self.component_name + "_output.csv")
+                             self.cd['name'] + '_' + \
+                             self.component_name + "_output.csv")
         fname = fname.replace(" ","_")
         
-        
-        fin_str = "Enabled" if self.cd["model financial"] else "Disabled"
-        fd = open(fname, 'w')
-        fd.write(("# " + self.component_name + " model outputs\n")) 
-        fd.close()
-        
-        # save npv stuff
-        df2 = DataFrame([self.get_NPV_benefits(),self.get_NPV_costs(),
-                            self.get_NPV_net_benefit(),self.get_BC_ratio()],
-                       ['NPV Benefits','NPV Cost',
-                            'NPV Net Benefit','Benefit Cost Ratio'])
-        df2.to_csv(fname, header = False, mode = 'a')
-        
-        # save to end of project(actual lifetime)
-        df[ol].ix[:self.actual_end_year].to_csv(fname, index_label="year", 
-                                                                    mode = 'a')
+        df[ol].ix[:self.actual_end_year].to_csv(fname, index_label="Year")
         
     
 component = WindPower
