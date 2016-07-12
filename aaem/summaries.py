@@ -584,7 +584,43 @@ def electric_price_summary (coms, res_dir):
     #~ fd.close()
     out[[out.columns[-1]] + out.columns[:-1].tolist()].to_csv(f_name, mode='w')
 
+def genterate_npv_summary (coms, res_dir):
+    """
+    generate a log of the npv results
     
+    pre:
+        coms: the run model outputs: a dictionary 
+                    {<"community_name">:
+                        {'model':<a run driver object>,
+                        'output dir':<a path to the given communites outputs>
+                        },
+                     ... repeated for each community
+                    }
+        res_dir: directory to save the log in
+        
+    post:
+        summary may be saved
+    """
+    for community in coms:
+        components = coms[community]['model'].comps_used
+        npvs = []
+        for comp in components:
+            npvs.append([comp, 
+                         components[comp].get_NPV_benefits(),
+                         components[comp].get_NPV_costs(),
+                         components[comp].get_NPV_net_benefit(),
+                         components[comp].get_BC_ratio()
+                        ])
+        f_name = os.path.join(res_dir,community,community + '_npv_summary.csv')
+        cols = ['Component', 
+                community +': NPV Benefits',
+                community +': NPV Cost', 
+                community +': NPV Net Benefit',
+                community +': Benefit Cost Ratio']
+        npvs = DataFrame(npvs,
+                         columns = cols).set_index('Component')
+        npvs.to_csv(f_name)
+
 def call_comp_summaries (coms, res_dir):
     """ 
         calls summary fils that may exist in each component 
@@ -602,6 +638,7 @@ def call_comp_summaries (coms, res_dir):
     post:
         summaries may be saved
     """
+    genterate_npv_summary(coms, res_dir)
     for comp in comp_lib:
         try:
             log = import_module("aaem.components." +comp_lib[comp]).\
