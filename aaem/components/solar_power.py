@@ -431,55 +431,43 @@ class SolarPower (AnnualSavings):
         
         years = np.array(range(self.project_life)) + self.start_year
     
-        # ??? +/- 
-        # ???
         df = DataFrame({
-                'Solar Capacity [kW]': self.proposed_load,
-                "Solar Generation [kWh/yr]": 
+                'Solar: Capacity (kW)': self.proposed_load,
+                "Solar: Generation (kWh/year)": 
                                             self.generation_proposed,
-                'Utility Diesel Displaced [gal]':self.generation_fuel_used,
-                'Heating Fuel Displaced[Gal]':self.fuel_displaced,
-                "Heat Recovery Cost Savings": 
+                'Solar: Utility Diesel Displaced (gallons/year)':
+                                            self.generation_fuel_used,
+                'Solar: Heating Fuel Displaced (gallons/year)':self.fuel_displaced,
+                "Solar: Heat Recovery Cost Savings ($/year)": 
                                         self.get_heating_savings_costs(),
-                "Electricity Cost Savings": 
-                                    self.get_electric_savings_costs(),
-                "Project Capital Cost": self.get_capital_costs(),
-                "Total Cost Savings": self.get_total_savings_costs(),
-                "Net Benefit": self.get_net_beneft(),
+                "Solar: Electricity Cost Savings ($/year)": 
+                                        self.get_electric_savings_costs(),
+                "Solar: Project Capital Cost ($/year)":
+                                        self.get_capital_costs(),
+                "Solar: Total Cost Savings ($/year)": 
+                                        self.get_total_savings_costs(),
+                "Solar: Net Benefit ($/year)": self.get_net_beneft(),
                        }, years)
 
-        df["community"] = self.cd['name']
+        df["Community"] = self.cd['name']
         
-        ol = ["community",'Solar Capacity [kW]',
-                "Solar Generation [kWh/yr]",
-                'Utility Diesel Displaced [gal]',
-                'Heating Fuel Displaced[Gal]',
-                "Heat Recovery Cost Savings",
-                "Electricity Cost Savings",
-                "Project Capital Cost",
-                "Total Cost Savings",
-                "Net Benefit"]
+        ol = ["Community",'Solar: Capacity (kW)',
+              "Solar: Generation (kWh/year)",
+              'Solar: Utility Diesel Displaced (gallons/year)',
+              'Solar: Heating Fuel Displaced (gallons/year)',
+              "Solar: Heat Recovery Cost Savings ($/year)",
+              "Solar: Electricity Cost Savings ($/year)",
+              "Solar: Project Capital Cost ($/year)",
+              "Solar: Total Cost Savings ($/year)",
+              "Solar: Net Benefit ($/year)"]
         fname = os.path.join(directory,
+                                   self.cd['name'] + '_' +\
                                    self.component_name + "_output.csv")
         fname = fname.replace(" ","_")
         
         
-        fin_str = "Enabled" if self.cd["model financial"] else "Disabled"
-        fd = open(fname, 'w')
-        fd.write("# " + self.component_name + " model outputs\n")
-        
-        fd.close()
-        
-        # save npv stuff
-        df2 = DataFrame([self.get_NPV_benefits(),self.get_NPV_costs(),
-                            self.get_NPV_net_benefit(),self.get_BC_ratio()],
-                       ['NPV Benefits','NPV Cost',
-                            'NPV Net Benefit','Benefit Cost Ratio'])
-        df2.to_csv(fname, header = False, mode = 'a')
-        
         # save to end of project(actual lifetime)
-        df[ol].ix[:self.actual_end_year].to_csv(fname, index_label="year", 
-                                                                    mode = 'a')
+        df[ol].ix[:self.actual_end_year].to_csv(fname, index_label="Year")
 
         
     
