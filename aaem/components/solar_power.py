@@ -157,63 +157,41 @@ def component_summary (coms, res_dir):
         if it == 'child':
             continue
         try:
-            
-           
             solar = coms[c]['model'].comps_used['solar power']
 
+            start_yr = solar.comp_specs['start year']
+            solar.get_diesel_prices()
+            diesel_price = float(solar.diesel_prices[0].round(2))
             assumed_out = solar.comp_specs['data']['Output per 10kW Solar PV']
-            
             average_load = solar.average_load
-            
             proposed_capacity = solar.proposed_load + 0
-            
             existing_capacity = solar.comp_specs['data']['Installed Capacity']
-        
             wind_capacity = solar.comp_specs['data']['Wind Capacity']
+           
             try:
                 net_gen = solar.generation_proposed [0]
-                
-                
                 loss_heat = solar.fuel_displaced[0]
-                
                 hr_op = solar.cd['heat recovery operational']
-                
                 net_heating =   -1* loss_heat
-                
                 eff = solar.cd["diesel generation efficiency"]
                 red_per_year = solar.generation_fuel_used[0]
             except AttributeError:
                 net_gen = 0
-            
                 loss_heat = 0
                 hr_op = solar.cd['heat recovery operational']
-                
                 net_heating = 0
-                
                 eff = solar.cd["diesel generation efficiency"]
                 red_per_year = 0
             
-            l = [c, 
-                 assumed_out,
-                 average_load,
-                 
-                 proposed_capacity,
-                 existing_capacity,
-                 wind_capacity,
-                 net_gen,
-                 
-                 loss_heat,
-                 
-                 hr_op,
-                 net_heating,
-                 red_per_year,
-                 eff,
+            l = [c, assumed_out, average_load, proposed_capacity, 
+                 existing_capacity, wind_capacity, net_gen, loss_heat, hr_op,
+                 net_heating, red_per_year, eff, diesel_price,
                  solar.get_NPV_benefits(),
                  solar.get_NPV_costs(),
                  solar.get_NPV_net_benefit(),
                  solar.get_BC_ratio(),
                  solar.reason
-            ]
+                ]
             out.append(l)
             
         except (KeyError,AttributeError) as e:
@@ -234,6 +212,7 @@ def component_summary (coms, res_dir):
             'Net in Heating Oil Consumption from Proposed Solar [gal]',
             'Proposed Solar Reduction in Utility Diesel Consumed per year',
             'Diesel Generator Efficiency',
+            'Diesel Price - year 1 [$]',
             'Solar NPV benefits [$]',
             'Solar NPV Costs [$]',
             'Solar NPV Net benefit [$]',

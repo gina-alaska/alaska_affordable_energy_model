@@ -438,6 +438,8 @@ def component_summary (coms, res_dir):
             wind = coms[c]['model'].comps_used['wind power']
             
             start_yr = wind.comp_specs['start year']
+            wind.get_diesel_prices()
+            diesel_price = float(wind.diesel_prices[0].round(2))
             phase = wind.comp_specs["project details"]['phase']
             average_load = wind.average_load
             existing_load = wind.comp_specs['resource data']\
@@ -493,6 +495,7 @@ def component_summary (coms, res_dir):
                 diesel_red, 
                 electric_diesel_reduction,
                 eff,
+                diesel_price,
                 wind.get_NPV_benefits(),
                 wind.get_NPV_costs(),
                 wind.get_NPV_net_benefit(),
@@ -520,7 +523,8 @@ def component_summary (coms, res_dir):
             'Heat Recovery Operational',
             'Net in Heating Oil Consumption [gal]',
             'Wind Power Reduction in Utility Diesel Consumed per year',
-            'Diesel Denerator Efficiency','Wind NPV benefits [$]',
+            'Diesel Denerator Efficiency','Diesel Price - year 1 [$]',
+            'Wind NPV benefits [$]',
             'Wind NPV Costs [$]',
             'Wind NPV Net benefit [$]',
             'Wind Benefit Cost Ratio',
