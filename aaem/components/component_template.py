@@ -8,7 +8,10 @@ a template for adding components
 """
 import numpy as np
 from math import isnan
-from pandas import DataFrame,concat
+from pandas import DataFrame,concat,read_csv
+import os
+import shutil
+from yaml import dump, load
 
 from annual_savings import AnnualSavings
 from aaem.community_data import CommunityData
@@ -25,9 +28,12 @@ import aaem.constants as constants
 
 # change to component name (i.e. 'residential buildings')
 COMPONENT_NAME = "<name>"
+IMPORT = "IMPORT"
+UNKNOWN = "UNKNOWN"
 
 ## List of yaml key/value pairs
 yaml = {'enabled': False,
+        "project details": IMPORT,
         'lifetime': 'ABSOLUTE DEFAULT',
         'start year': 'ABSOLUTE DEFAULT',
         }
@@ -35,7 +41,7 @@ yaml = {'enabled': False,
 ## default values for yaml key/Value pairs
 yaml_defaults = {'enabled': True,
         'lifetime': 20,
-        'start year': 2017,
+        #~ 'start year': 2017,
         }
     
 ## order to save yaml
@@ -52,8 +58,63 @@ def process_data_import(data_dir):
     """
     pass
     
+def load_project_details (data_dir):
+    """
+    load details related to exitign projects
+    
+    pre:
+        data_dir is a directory with  'project_development_timeframes.csv',
+        and "project_name_projects.yaml" in it 
+    
+    post:
+        retunrns a dictonary wht the keys 'phase'(str), 
+        'proposed capacity'(float), 'proposed generation'(float),
+        'distance to resource'(float), 'generation capital cost'(float),
+        'transmission capital cost'(float), 'operational costs'(float),
+        'expected years to operation'(int),
+    """
+    try:
+        tag = os.path.split(data_dir)[1].split('+')[1]
+    except IndexError:
+        tag = None
+        
+    # get the estimated years to operation
+    # CHANGE THIS Replace the PROJECT_TYPE with the type of the project
+    data_file = os.path.join(data_dir, 'project_development_timeframes.csv')
+    data = read_csv(data_file, comment = '#',
+                    index_col=0, header=0)[PROJECT_TYPE]
+
+    if tag is None:
+        # if no data make some
+        yto = int(round(float(data['Reconnaissance'])))
+        return {'phase': 'Reconnaissance',
+                'proposed capacity': UNKNOWN,
+                'proposed generation': UNKNOWN,
+                'distance to resource': UNKNOWN,
+                'generation capital cost': UNKNOWN,
+                'transmission capital cost': UNKNOWN,
+                'operational costs': UNKNOWN,
+                'expected years to operation': yto,
+                }
+    
+    # CHANGE THIS
+    with open(os.path.join(data_dir, "COPMPONENT_PROJECTS.yaml"), 'r') as fd:
+        dets = load(fd)[tag]
+    
+    # correct number years if nessary
+    yto = dets['expected years to operation']
+    if yto == UNKNOWN:
+        try:
+            yto = int(round(float(data[dets['phase']])))
+        except TypeError:
+            yto = 0
+        dets['expected years to operation'] = yto
+    dets['expected years to operation'] = int(yto)
+    
+    return dets
+    
 ## library of keys and functions for CommunityData IMPORT Keys
-yaml_import_lib = {}# fill in
+yaml_import_lib = {'project details': load_project_details}# fill in
     
 ## preprocessing functons 
 def preprocess_header (ppo):
@@ -63,9 +124,11 @@ def preprocess_header (ppo):
             ppo.comments_dataframe_divide
     
 def preprocess (ppo):
-    """"""
+    """
     
-    out_file = os.path.join(ppo.out_dir,"wind_power_data.csv")
+    """
+    #CHANGE THIS
+    out_file = os.path.join(ppo.out_dir,"comp_data.csv")
 
     fd = open(out_file,'w')
     fd.write(preprocess_header(ppo))
@@ -74,10 +137,51 @@ def preprocess (ppo):
     # create data and uncomment this
     #~ data.to_csv(out_file, mode = 'a',header=False)
     
-    ppo.MODEL_FILES['COMP_DATA'] = "comp_data.csv" # change this
+    ppo.MODEL_FILES['COMP_DATA'] = "comp_data.csv" # CHANGE THIS
+
+## preprocess the existing projects
+def preprocess_existing_projects (ppo):
+    """
+    preprocess data related to existing projects
+    
+    pre:
+        ppo is a is a Preprocessor object. "wind_projects.csv" and 
+        'project_development_timeframes.csv' exist in the ppo.data_dir 
+    post:
+        data for existing projets is usable by model
+    """
+    projects = []
+    p_data = {}
+    
+    ## CHANGE THIS
+    project_data = read_csv(os.path.join(ppo.data_dir,"COMPONENT_PROJECTS.csv"),
+                           comment = '#',index_col = 0)
+    
+    project_data = DataFrame(project_data.ix[ppo.com_id])
+    if len(project_data.T) == 1 :
+        project_data = project_data.T
+
+    ## FILL IN LOOP see function in wind _power.py for an example
+    for p_idx in range(len(project_data)):
+       pass
+    
+    with open(os.path.join(ppo.out_dir,"wind_projects.yaml"),'w') as fd:
+        if len(p_data) != 0:
+            fd.write(dump(p_data,default_flow_style=False))
+        else:
+            fd.write("")
+        
+    ## CHANGE THIS
+    ppo.MODEL_FILES['COMPONENT_PROJECTS'] = "COMPONENT_PROJECTS.yaml"
+    shutil.copy(os.path.join(ppo.data_dir,'project_development_timeframes.csv'), 
+                ppo.out_dir)
+    ppo.MODEL_FILES['TIMEFRAMES'] = 'project_development_timeframes.csv'
+    #~ print ppo.MODEL_FILES
+    return projects
 
 ## List of raw data files required for wind power preproecssing 
-raw_data_files = []# fillin
+raw_data_files = ["COMPONENT_PROJECTS.csv",
+                  'project_development_timeframes.csv']# fillin
 
 ## list of wind preprocessing functions
 preprocess_funcs = [preprocess]
