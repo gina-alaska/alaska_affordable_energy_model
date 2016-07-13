@@ -27,7 +27,7 @@ import aaem.constants as constants
 ### 3) add the component to __init__ in this directory
 
 # change to component name (i.e. 'residential buildings')
-COMPONENT_NAME = "<name>"
+COMPONENT_NAME = "Hydropower"
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
 
@@ -82,11 +82,11 @@ def load_project_details (data_dir):
     # CHANGE THIS Replace the PROJECT_TYPE with the type of the project
     data_file = os.path.join(data_dir, 'project_development_timeframes.csv')
     data = read_csv(data_file, comment = '#',
-                    index_col=0, header=0)[PROJECT_TYPE]
+                    index_col=0, header=0)['Hydroelectric']
 
-    if tag is None:
+    if True:#tag is None:
         # if no data make some
-        yto = int(round(float(data['Reconnaissance'])))
+        yto = 5#int(round(float(data['Reconnaissance'])))
         return {'phase': 'Reconnaissance',
                 'proposed capacity': UNKNOWN,
                 'proposed generation': UNKNOWN,
@@ -98,7 +98,7 @@ def load_project_details (data_dir):
                 }
     
     # CHANGE THIS
-    with open(os.path.join(data_dir, "COPMPONENT_PROJECTS.yaml"), 'r') as fd:
+    with open(os.path.join(data_dir, "hydro_projects.yaml"), 'r') as fd:
         dets = load(fd)[tag]
     
     # correct number years if nessary
@@ -120,7 +120,7 @@ yaml_import_lib = {'project details': load_project_details}# fill in
 def preprocess_header (ppo):
     """
     """
-    return  "# " + ppo.com_id + " compdata data\n"+ \
+    return  "# " + ppo.com_id + " hydropower data\n"+ \
             ppo.comments_dataframe_divide
     
 def preprocess (ppo):
@@ -128,7 +128,7 @@ def preprocess (ppo):
     
     """
     #CHANGE THIS
-    out_file = os.path.join(ppo.out_dir,"comp_data.csv")
+    out_file = os.path.join(ppo.out_dir,"hydro_data.csv")
 
     fd = open(out_file,'w')
     fd.write(preprocess_header(ppo))
@@ -137,7 +137,7 @@ def preprocess (ppo):
     # create data and uncomment this
     #~ data.to_csv(out_file, mode = 'a',header=False)
     
-    ppo.MODEL_FILES['COMP_DATA'] = "comp_data.csv" # CHANGE THIS
+    ppo.MODEL_FILES['COMP_DATA'] = "hydro_data.csv" # CHANGE THIS
 
 ## preprocess the existing projects
 def preprocess_existing_projects (ppo):
@@ -154,25 +154,25 @@ def preprocess_existing_projects (ppo):
     p_data = {}
     
     ## CHANGE THIS
-    project_data = read_csv(os.path.join(ppo.data_dir,"COMPONENT_PROJECTS.csv"),
-                           comment = '#',index_col = 0)
+    #~ project_data = read_csv(os.path.join(ppo.data_dir,"hydro_data.csv"),
+                           #~ comment = '#',index_col = 0)
     
-    project_data = DataFrame(project_data.ix[ppo.com_id])
-    if len(project_data.T) == 1 :
-        project_data = project_data.T
+    #~ project_data = DataFrame(project_data.ix[ppo.com_id])
+    #~ if len(project_data.T) == 1 :
+        #~ project_data = project_data.T
 
     ## FILL IN LOOP see function in wind _power.py for an example
-    for p_idx in range(len(project_data)):
-       pass
+    #~ for p_idx in range(len(project_data)):
+       #~ pass
     
-    with open(os.path.join(ppo.out_dir,"wind_projects.yaml"),'w') as fd:
+    with open(os.path.join(ppo.out_dir,"hydro_projects.yaml"),'w') as fd:
         if len(p_data) != 0:
             fd.write(dump(p_data,default_flow_style=False))
         else:
             fd.write("")
         
     ## CHANGE THIS
-    ppo.MODEL_FILES['COMPONENT_PROJECTS'] = "COMPONENT_PROJECTS.yaml"
+    ppo.MODEL_FILES['COMPONENT_PROJECTS'] = "hydro_projects.yaml"
     shutil.copy(os.path.join(ppo.data_dir,'project_development_timeframes.csv'), 
                 ppo.out_dir)
     ppo.MODEL_FILES['TIMEFRAMES'] = 'project_development_timeframes.csv'
@@ -180,7 +180,7 @@ def preprocess_existing_projects (ppo):
     return projects
 
 ## List of raw data files required for wind power preproecssing 
-raw_data_files = ["COMPONENT_PROJECTS.csv",
+raw_data_files = [#"COMPONENT_PROJECTS.csv",
                   'project_development_timeframes.csv']# fillin
 
 ## list of wind preprocessing functions
@@ -200,7 +200,7 @@ prereq_comps = [] ## FILL in if needed
 
 #   do a find and replace on ComponentName to name of component 
 # (i.e. 'ResidentialBuildings')
-class ComponentName (AnnualSavings):
+class Hydropower (AnnualSavings):
     """
     """
     def __init__ (self, community_data, forecast, 
@@ -219,13 +219,10 @@ class ComponentName (AnnualSavings):
             self.diagnostics = diagnostics()
         self.forecast = forecast
         self.cd = community_data.get_section('community')
-        
-        self.comp_specs["start year"] = self.cd['current year'] + \
-            self.comp_specs["project details"]['expected years to operation']
-       
         self.comp_specs = community_data.get_section(COMPONENT_NAME)
         self.component_name = COMPONENT_NAME
-
+        self.comp_specs["start year"] = self.cd['current year'] + \
+            self.comp_specs["project details"]['expected years to operation']
         self.set_project_life_details(self.comp_specs["start year"],
                                       self.comp_specs["lifetime"],
                         self.forecast.end_year - self.comp_specs["start year"])
@@ -365,7 +362,7 @@ class ComponentName (AnnualSavings):
         price = 0 
         self.annual_heating_savings = self.savings_fuel_consumption * price
 
-component = ComponentName
+component = Hydropower
 
 def test ():
     """
