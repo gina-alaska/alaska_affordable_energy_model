@@ -1,6 +1,14 @@
 #Change Log
 
-## [0.16.0]
+## [0.16.2]
+### added
+- hydropower component
+
+### updated
+- all other components are updated to ignore projects not from their components
+- summaries and outputs updated to disregard non related projects
+
+## [0.16.1]
 ### added
 - file for each community summarizing the npv values per component
 
