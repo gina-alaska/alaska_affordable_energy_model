@@ -26,6 +26,7 @@ def build_defaults (comp_lib):
                         'discount rate': .03,
                         'heating fuel premium': 'IMPORT',
                         'diesel generation efficiency': 'IMPORT',
+                        'diesel generator o&m cost' : 0.02,
                         'generation': 'IMPORT',
                         'consumption kWh': 'ABSOLUTE DEFAULT',
                         'consumption HF': 'IMPORT',

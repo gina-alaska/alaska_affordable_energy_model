@@ -138,8 +138,13 @@ def preprocess (ppo):
     #~ data.to_csv(out_file, mode = 'a',header=False)
     
     ppo.MODEL_FILES['COMP_DATA'] = "comp_data.csv" # CHANGE THIS
+    
+## list of wind preprocessing functions
+preprocess_funcs = [preprocess]
 
 ## preprocess the existing projects
+### This function is called differently from the other preprocessor functions,
+### so it does not need to be added to preprocess_funcs
 def preprocess_existing_projects (ppo):
     """
     preprocess data related to existing projects
@@ -182,9 +187,6 @@ def preprocess_existing_projects (ppo):
 ## List of raw data files required for wind power preproecssing 
 raw_data_files = ["COMPONENT_PROJECTS.csv",
                   'project_development_timeframes.csv']# fillin
-
-## list of wind preprocessing functions
-preprocess_funcs = [preprocess]
 
 ## list of data keys not to save when writing the CommunityData output
 yaml_not_to_save = []
