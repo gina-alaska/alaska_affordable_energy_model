@@ -34,7 +34,7 @@ def res_log (coms, res_dir):
     """
     out = []
     for c in sorted(coms.keys()):
-        if c.find("_intertie") != -1:
+        if c.find('+') != -1 or c.find("_intertie") != -1:
             continue
         try:
             res = coms[c]['model'].comps_used['residential buildings']
@@ -94,7 +94,7 @@ def com_log (coms, res_dir):
     """
     out = []
     for c in sorted(coms.keys()):
-        if c.find("_intertie") != -1:
+        if c.find('+') != -1 or c.find("_intertie") != -1:
             continue
         try:
             com = coms[c]['model'].comps_used['non-residential buildings']
@@ -155,7 +155,7 @@ def building_log(coms, res_dir):
     """
     out = []
     for c in sorted(coms.keys()):
-        if c.find("_intertie") != -1:
+        if c.find('+') != -1 or c.find("_intertie") != -1:
             continue
         try:
             com = coms[c]['model'].comps_used['non-residential buildings']
@@ -305,7 +305,7 @@ def village_log (coms, res_dir):
     """
     out = []
     for c in sorted(coms.keys()):
-        if c.find("_intertie") != -1:
+        if c.find('+') != -1 or c.find("_intertie") != -1:
             continue
         try:
             try:

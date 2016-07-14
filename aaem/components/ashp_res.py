@@ -163,6 +163,9 @@ class ASHPResidential (ashp_base.ASHPBase):
         pre:
              prerequisites: dictonary of componentes
         """
+        tag = self.cd['name'].split('+')
+        if len(tag) > 1 and tag[1].split('_')[0] != 'ASHP_res':
+            return 
         res = comps['residential buildings']
         self.pre_ashp_heating_oil_used =  res.init_HF
         self.pre_ashp_heating_electricty_used = res.init_kWh
@@ -209,6 +212,15 @@ class ASHPResidential (ashp_base.ASHPBase):
             TODO: define output values. 
             the model is run and the output values are available
         """
+        self.run = True
+        self.reason = "OK"
+        
+        tag = self.cd['name'].split('+')
+        if len(tag) > 1 and tag[1] != 'ASHP_res':
+            self.run = False
+            self.reason = "Not a ASHP_res project"
+            return 
+        
         if self.cd["model heating fuel"]:
             self.calc_heat_energy_produced_per_year()
             self.calc_ashp_system_pramaters()
@@ -269,6 +281,8 @@ class ASHPResidential (ashp_base.ASHPBase):
         """
         save the component output csv in directory
         """
+        if not self.run:
+            return
         years = np.array(range(self.project_life)) + self.start_year
     
         try:

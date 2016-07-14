@@ -273,6 +273,14 @@ class SolarPower (AnnualSavings):
         """
         self.run = True
         self.reason = "OK"
+        
+        
+        tag = self.cd['name'].split('+')
+        if len(tag) > 1 and tag[1] != 'solar':
+            self.run = False
+            self.reason = "Not a solar project"
+            return 
+        
         try:
             self.calc_average_load()
             self.calc_proposed_generation()
@@ -419,13 +427,13 @@ class SolarPower (AnnualSavings):
         save the output from the component.
         """
         if not self.run:
-            fname = os.path.join(directory,
-                                   self.component_name + "_output.csv")
-            fname = fname.replace(" ","_")
+            #~ fname = os.path.join(directory,
+                                   #~ self.component_name + "_output.csv")
+            #~ fname = fname.replace(" ","_")
         
-            fd = open(fname, 'w')
-            fd.write("Wind Power minimum requirments not met\n")
-            fd.close()
+            #~ fd = open(fname, 'w')
+            #~ fd.write("Wind Power minimum requirments not met\n")
+            #~ fd.close()
             return
         
         

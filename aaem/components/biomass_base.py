@@ -170,6 +170,10 @@ class BiomassBase (AnnualSavings):
         pre:
              prerequisites: dictonary of componentes
         """
+        tag = self.cd['name'].split('+')
+        
+        if len(tag) > 1 and tag[1].split('_')[0] != 'biomass':
+            return 
         non_res = comps['non-residential buildings']
         self.get_non_res_values(non_res)
         
@@ -307,6 +311,9 @@ class BiomassBase (AnnualSavings):
         """
         save the component output csv in directory
         """
+        if not self.run:
+            return
+        
         fuel_consumed_key = self.component_name + \
                             ': Proposed ' + self.biomass_type \
                             + " Consumed (" + self.units + ")"

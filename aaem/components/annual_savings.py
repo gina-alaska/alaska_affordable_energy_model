@@ -343,6 +343,8 @@ class AnnualSavings (object):
         """
         save the output from the component.
         """
+        if not self.run:
+            return
         years = np.array(range(self.project_life)) + self.start_year
         df = DataFrame({
                 self.component_name + \

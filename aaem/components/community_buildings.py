@@ -172,6 +172,9 @@ class CommunityBuildings (AnnualSavings):
     def save_building_summay(self, file_name):
         """
         """
+        if not self.run:
+            return
+            
         with_estimates = deepcopy(self.comp_specs["com building data"])
         try:
             if 'Average' in set(with_estimates.ix['Average'].index) :
@@ -215,6 +218,8 @@ class CommunityBuildings (AnnualSavings):
     def save_additional_output(self, path):
         """
         """
+        if not self.run:
+            return
         self.save_building_summay(os.path.join(path,"non_residential_buildings_summary.csv"))
         
     
@@ -228,6 +233,15 @@ class CommunityBuildings (AnnualSavings):
             TODO: define output values. 
             the model is run and the output values are available
         """
+        self.run = True
+        self.reason = "OK"
+        
+        tag = self.cd['name'].split('+')
+        if len(tag) > 1 and tag[1] != 'non-residential':
+            self.run = False
+            self.reason = "Not a non-residential project"
+            return 
+        
         self.compare_num_buildings()
         self.calc_refit_values()
         self.pre_retrofit_HF_use = np.zeros(self.project_life) + \

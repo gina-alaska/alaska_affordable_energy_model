@@ -121,6 +121,15 @@ class ResidentialBuildings(AnnualSavings):
             the model is run and the output values are available
         
         """
+        self.run = True
+        self.reason = "OK"
+        
+        tag = self.cd['name'].split('+')
+        if len(tag) > 1 and tag[1] != 'residential':
+            self.run = False
+            self.reason = "Not a residential project"
+            return 
+            
         # needed for electric or HF component and has a default value
         self.calc_avg_consumption()
         if self.cd["model electricity"]:
@@ -525,6 +534,9 @@ class ResidentialBuildings(AnnualSavings):
             save the output from the component. Override the default version 
         because of the extra-fuel sources.
         """
+        if not self.run:
+            return
+            
         if self.cd["model financial"]:
             HF_price = (self.diesel_prices + self.cd['heating fuel premium'])
             wood_price = self.cd['cordwood price'] 

@@ -172,6 +172,12 @@ class BiomassCordwood (bmb.BiomassBase):
         """
         s_key = 'Sufficient Biomass for 30% of Non-residential buildings'
         
+        tag = self.cd['name'].split('+')
+        if len(tag) > 1 and tag[1] != 'biomass_wood':
+            self.run = False
+            self.reason = "Not a biomass wood project"
+            return 
+        
         if not self.comp_specs['data'][s_key]:
             self.diagnostics.add_warning(self.component_name, 
                                     "not " + s_key)

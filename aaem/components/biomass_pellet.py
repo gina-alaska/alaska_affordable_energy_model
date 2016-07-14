@@ -206,6 +206,15 @@ class BiomassPellet (bmb.BiomassBase):
             TODO: define output values. 
             the model is run and the output values are available
         """
+        self.run = True
+        self.reason = "OK"
+        
+        tag = self.cd['name'].split('+')
+        if len(tag) > 1 and tag[1] != 'biomass_pellet':
+            self.run = False
+            self.reason = ("Not a biomass pellet project")
+            return 
+        
         if not self.comp_specs["on road system"]:
             self.diagnostics.add_warning(self.component_name, 
                                     "not on road system")

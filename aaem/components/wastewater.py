@@ -255,6 +255,16 @@ class WaterWastewaterSystems (AnnualSavings):
         post-conditions:
             The model component is run
         """
+        tag = self.cd['name'].split('+')
+        
+        self.run = True
+        self.reason = "OK"
+        
+        if len(tag) > 1 and tag[1] != 'water-wastewater':
+            self.run = False
+            self.reason = "Not a Water/Wastewater project"
+            return 
+            
         if self.cd["model electricity"]:
             self.calc_baseline_kWh_consumption()
             self.calc_refit_kWh_consumption()

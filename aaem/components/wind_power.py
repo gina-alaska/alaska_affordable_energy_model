@@ -129,7 +129,11 @@ def load_project_details (data_dir):
         'expected years to operation'(int),
     """
     try:
-        tag = os.path.split(data_dir)[1].split('+')[1]
+        tag = os.path.split(data_dir)[1].split('+')
+        project_type = tag[1]
+        tag = tag[1] + '+' +tag[2]
+        if project_type != 'wind':
+            tag = None
     except IndexError:
         tag = None
     
@@ -314,8 +318,14 @@ def preprocess_existing_projects (ppo):
 
     for p_idx in range(len(project_data)):
         cp = project_data.ix[p_idx]
-        p_name = cp['Project Name']
         
+        p_name = cp['Project Name']
+        try:
+            if p_name == "" or np.isnan(p_name):
+                p_name = "project_" + str(p_idx)
+        except TypeError:
+            p_name = "project_" + str(p_idx)
+        p_name = 'wind+' + p_name
         
         phase = cp['Phase']
         proposed_capacity = cp['Proposed Capacity (kW)']
@@ -334,11 +344,7 @@ def preprocess_existing_projects (ppo):
            np.isnan(operational_costs) and \
            np.isnan(expected_years_to_operation):
             continue
-        try:
-            if p_name == "" or np.isnan(p_name):
-                p_name = "wind_project_" + str(p_idx)
-        except TypeError:
-            p_name = "wind_project_" + str(p_idx)
+        
         projects.append(p_name)
         
         proposed_capacity = float(proposed_capacity)
@@ -596,6 +602,12 @@ class WindPower(AnnualSavings):
         
         self.run = True
         self.reason = "OK"
+        tag = self.cd['name'].split('+')
+        if len(tag) > 1 and tag[1] != 'wind':
+            self.run = False
+            self.reason = "Not a Wind project"
+            return 
+            
         try:
             #~ self.generation = self.forecast.get_generation(self.start_year)
             self.calc_average_load()
@@ -607,6 +619,7 @@ class WindPower(AnnualSavings):
             self.reason = "could not find average load or proposed generation"
             return
             
+        
  
         
         #~ #~ print self.comp_specs['resource data']['Assumed Wind Class'] 
@@ -952,13 +965,13 @@ class WindPower(AnnualSavings):
         """
         #~ return
         if not self.run:
-            fname = os.path.join(directory,
-                                   self.component_name + "_output.csv")
-            fname = fname.replace(" ","_")
+            #~ fname = os.path.join(directory,
+                                   #~ self.component_name + "_output.csv")
+            #~ fname = fname.replace(" ","_")
         
-            fd = open(fname, 'w')
-            fd.write("Wind Power minimum requirments not met\n")
-            fd.close()
+            #~ fd = open(fname, 'w')
+            #~ fd.write("Wind Power minimum requirments not met\n")
+            #~ fd.close()
             return
         
         

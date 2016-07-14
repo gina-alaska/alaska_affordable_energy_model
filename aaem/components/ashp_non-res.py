@@ -161,6 +161,9 @@ class ASHPNonResidential (ashp_base.ASHPBase):
         pre:
              prerequisites: dictonary of componentes
         """
+        tag = self.cd['name'].split('+')
+        if len(tag) > 1 and tag[1].split('_')[0] != 'ASHP_res':
+            return 
         non_res = comps['non-residential buildings']
         self.non_res_sqft = non_res.refit_sqft_total
     
@@ -190,6 +193,15 @@ class ASHPNonResidential (ashp_base.ASHPBase):
             TODO: define output values. 
             the model is run and the output values are available
         """
+        self.run = True
+        self.reason = "OK"
+        
+        tag = self.cd['name'].split('+')
+        if len(tag) > 1 and tag[1] != 'ASHP_non-res':
+            self.run = False
+            self.reason = "Not a ASHP_non-res project"
+            return 
+        
         if self.cd["model heating fuel"]:
             self.calc_heat_energy_produced_per_year()
             self.calc_ashp_system_pramaters()
@@ -241,6 +253,8 @@ class ASHPNonResidential (ashp_base.ASHPBase):
         """
         save the component output csv in directory
         """
+        if not self.run:
+            return
         years = np.array(range(self.project_life)) + self.start_year
     
         try:
