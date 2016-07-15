@@ -1,5 +1,13 @@
 #Change Log
 
+## [0.16.3]
+### fixed
+- Hydro summary headers
+
+### changed
+- population added to village sector summary
+- hydro Net generation maxed at actual consumption of start year
+
 ## [0.16.2]
 ### added
 - hydropower component
