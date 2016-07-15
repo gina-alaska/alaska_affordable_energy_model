@@ -485,12 +485,9 @@ class Hydropower (AnnualSavings):
             self.net_generation_proposed = self.gross_generation_proposed -\
                                            tansmission_losses -\
                                            exess_energy
-                
-            start_year = self.comp_specs["start year"]
-            con = float(self.forecast.consumption.ix[start_year])
-            
-            if self.net_generation_proposed > con:
-                self.net_generation_proposed = con
+        
+            if self.net_generation_proposed > self.generation:
+                self.net_generation_proposed = self.generation
                                            
         #~ print 'self.load_offset_proposed', self.load_offset_proposed
         #~ print 'self.gross_generation_proposed', self.gross_generation_proposed
@@ -518,6 +515,10 @@ class Hydropower (AnnualSavings):
         gen_eff = self.cd["diesel generation efficiency"]
         self.generation_diesel_reduction = self.net_generation_proposed /\
                                             gen_eff
+                                            
+        #~ electric_diesel = self.generation /gen_eff
+        #~ if self.generation_diesel_reduction > electric_diesel:
+            #~ self.generation_diesel_reduction = electric_diesel
         
         # gal/year
         self.lost_heat_recovery = self.generation_diesel_reduction * \
