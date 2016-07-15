@@ -308,6 +308,9 @@ def village_log (coms, res_dir):
         if c.find('+') != -1 or c.find("_intertie") != -1:
             continue
         try:
+            start_year = coms[c]['model'].cd.get_item('community', 
+                                                        'current year')
+            population = int(coms[c]['model'].fc.consumption.ix[start_year])
             try:
                 res = coms[c]['model'].comps_used['residential buildings']
                 res_con = [res.baseline_HF_consumption[0], 
@@ -332,13 +335,14 @@ def village_log (coms, res_dir):
             except KeyError:
                 ww_con = [np.nan, np.nan]
                 ww_cost = [np.nan, np.nan]
-            t = [c, coms[c]['model'].cd.get_item('community','region')] +\
-                res_con + com_con + ww_con + res_cost + com_cost + ww_cost 
+            t = [c, population, 
+                 coms[c]['model'].cd.get_item('community','region')] +\
+                 res_con + com_con + ww_con + res_cost + com_cost + ww_cost 
             out.append(t)
         except AttributeError:
             pass
     start_year = 2017
-    data = DataFrame(out,columns = ['community','Region',
+    data = DataFrame(out,columns = ['community', 'Population', 'Region',
                     'Residential Heat (MMBTU)', 
                     'Residential Electricity (MMBTU)',
                     'Non-Residential Heat (MMBTU)', 
