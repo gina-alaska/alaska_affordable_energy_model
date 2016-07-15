@@ -302,13 +302,13 @@ def component_summary (coms, res_dir):
             
             'Average Diesel Load [kw]',
             'Wind Capacity Proposed [kW]',
-            'Net Proposed Wind Generation [kWh]',
+            'Net Proposed Hydro Generation [kWh]',
             
             'Heating Oil Equivalent Captured by Secondary Load [gal]',
             'Loss of Recovered Heat from Genset [gal]',
             'Heat Recovery Operational',
             'Net Reduction in Heating Oil Consumption [gal]',
-            'Wind Power Reduction in Utility Diesel Consumed per year',
+            'Hydro Power Reduction in Utility Diesel Consumed per year',
             'Diesel Generator Efficiency',
             'Diesel Price - year 1 [$]',
             'Wind NPV benefits [$]',
@@ -358,7 +358,7 @@ class Hydropower (AnnualSavings):
         self.set_project_life_details(self.comp_specs["start year"],
                                       self.comp_specs["lifetime"],
                         self.forecast.end_year - self.comp_specs["start year"])
-    
+        
         self.load_prerequisite_variables(prerequisites)
         
     def load_prerequisite_variables (self, comps):
@@ -485,6 +485,12 @@ class Hydropower (AnnualSavings):
             self.net_generation_proposed = self.gross_generation_proposed -\
                                            tansmission_losses -\
                                            exess_energy
+                
+            start_year = self.comp_specs["start year"]
+            con = float(self.forecast.consumption.ix[start_year])
+            
+            if self.net_generation_proposed > con:
+                self.net_generation_proposed = con
                                            
         #~ print 'self.load_offset_proposed', self.load_offset_proposed
         #~ print 'self.gross_generation_proposed', self.gross_generation_proposed
@@ -571,13 +577,6 @@ class Hydropower (AnnualSavings):
         """
         #~ return
         if not self.run:
-            fname = os.path.join(directory,
-                                   self.component_name + "_output.csv")
-            fname = fname.replace(" ","_")
-        
-            fd = open(fname, 'w')
-            fd.write("Wind Power minimum requirments not met\n")
-            fd.close()
             return
         
         
