@@ -18,7 +18,7 @@ class DieselProjections (object):
         """
         create the projected values
         Pre:
-            comminity is a valid community string
+            comminity is a valid community string (ie. Adak, Manley_Hot_Springs)
             diesel_fuel_prices.csv exists in the data_dir
         Post:
             self.projected_prices will contain the projected prices, and

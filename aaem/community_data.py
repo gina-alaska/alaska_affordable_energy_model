@@ -57,9 +57,13 @@ class CommunityData (object):
         self.load_input(override, default)
         self.data_dir = os.path.abspath(data_dir)
         self.get_csv_data()
+        
+        
+        name = self.get_item("community","name")
+        name = name.split('+')[0]
+        
         self.set_item("community","diesel prices",
-                      DieselProjections(self.get_item("community","name"),
-                      data_dir))
+                                        DieselProjections(name,data_dir))
         if self.get_item("community", "model electricity"):
             self.calc_non_fuel_electricty_price ()
         self.check_auto_disable_conditions ()
