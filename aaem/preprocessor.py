@@ -1708,7 +1708,7 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
 
         f_path = os.path.join(out_dir,com.replace(" ","_"),
                                             "yearly_electricity_summary.csv")
-        if com != parent and not os.path.exists(f_path):
+        if com != parent:# and not os.path.exists(f_path):
             #print com + " adding data - electricity"
             shutil.copy(os.path.join(parent_dir,
                                     "yearly_electricity_summary.csv")
@@ -1720,8 +1720,9 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
                                      ") yearly_electricity_summary"))
 
         f_path = os.path.join(out_dir, com, "prices.csv")
-        if com != parent and not os.path.exists(f_path):
+        if com != parent: #and not os.path.exists(f_path):
             #print com + " adding data- prices"
+            #print "copying"
             shutil.copy(os.path.join(parent_dir,
                                     "prices.csv")
                                     ,os.path.join(out_dir,com.replace(" ","_")))
@@ -1729,10 +1730,11 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
             diagnostics.add_warning("Intertie update (prices)",
                                     ("" + com + " is using it's "
                                      "parent's (" + parent + ""
-                                     ") prices"))
+                                     ") prices. "
+                                     "Interties Alaways Use parents Prices"))
                                      
         if com != parent and os.path.exists(f_path):
-            #~ print com
+            ##print com
             p_file = os.path.join(parent_dir, "prices.csv")
             parent_prices = read_csv(p_file, comment = '#', index_col = 0)
             prices = read_csv(f_path, comment = '#', index_col = 0)

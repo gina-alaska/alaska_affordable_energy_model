@@ -580,7 +580,9 @@ def electric_price_summary (coms, res_dir):
         except (KeyError, TypeError) as e:
             #~ print e
             continue
-            
+    if out is None:
+        return
+        
     f_name = os.path.join(res_dir,
                 'electric_prices_summary.csv')
     #~ fd = open(f_name,'w')

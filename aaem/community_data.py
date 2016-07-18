@@ -57,9 +57,17 @@ class CommunityData (object):
         self.load_input(override, default)
         self.data_dir = os.path.abspath(data_dir)
         self.get_csv_data()
-        self.set_item("community","diesel prices",
-                      DieselProjections(self.get_item("community","name"),
-                      data_dir))
+        
+        com = self.get_item("community","name")
+        #~ print "COM:", com
+        try:
+            com = self.parent
+        except AttributeError:
+            pass
+        #~ print "ITCOM:", com
+        self.set_item("community","diesel prices", DieselProjections(com, 
+                                                                    data_dir))
+       
         if self.get_item("community", "model electricity"):
             self.calc_non_fuel_electricty_price ()
         self.check_auto_disable_conditions ()
@@ -100,7 +108,6 @@ class CommunityData (object):
                          ['generation diesel'].fillna(0)/\
                          self.get_item('community',"generation")
         percent_diesel = float(percent_diesel.values[-1])
-        
         adder = percent_diesel * \
             self.get_item("community","diesel prices").projected_prices/\
             generation_eff
