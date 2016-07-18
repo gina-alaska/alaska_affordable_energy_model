@@ -58,16 +58,20 @@ class CommunityData (object):
         self.data_dir = os.path.abspath(data_dir)
         self.get_csv_data()
         
-        com = self.get_item("community","name")
-        #~ print "COM:", com
+
+        name = self.get_item("community","name")
+        name = name.split('+')[0]
         try:
-            com = self.parent
+            name = self.parent
+            self.diagnostics.add_note('Community Data', 
+                            "using intertie parent diesel prices")
         except AttributeError:
             pass
-        #~ print "ITCOM:", com
-        self.set_item("community","diesel prices", DieselProjections(com, 
-                                                                    data_dir))
+
+        self.set_item("community","diesel prices", 
+                                DieselProjections(name, data_dir))
        
+
         if self.get_item("community", "model electricity"):
             self.calc_non_fuel_electricty_price ()
         self.check_auto_disable_conditions ()
