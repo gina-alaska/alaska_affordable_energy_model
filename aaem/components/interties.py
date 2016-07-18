@@ -43,6 +43,11 @@ yaml = {'enabled': False,
         'on road system': IMPORT,
         'est. intertie cost per mile': {'road needed': 500000, 
                                         'road not needed': 250000},
+        'percent o&m':.05,
+        'hr o&m': {'150': 84181.00,
+                   '360': 113410.00, 
+                   '600': 134434.00, 
+                   'else': 103851.00 }
         }
 
 ## default values for yaml key/Value pairs
@@ -419,6 +424,7 @@ class Transmission (AnnualSavings):
             self.reason = ("no community to intertie with transmission line")
             return 
         
+        self.calc_average_load()
         self.calc_proposed_generation()
         self.calc_baseline_generation()
             
@@ -444,6 +450,12 @@ class Transmission (AnnualSavings):
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
             #~ print self.benefit_cost_ratio
+            
+    def calc_average_load (self):
+        """"""
+        self.generation = self.forecast.generation_by_type['generation diesel']\
+                                                            [self.start_year]
+        self.average_load = self.generation / constants.hours_per_year
  
     def calc_proposed_generation (self):
         """
@@ -479,7 +491,6 @@ class Transmission (AnnualSavings):
         road_needed = 'road needed'
         if self.comp_specs['on road system']:
             road_needed = 'road not needed'
-        print road_needed
         
         dist = self.comp_specs['nearest community']['Distance to Community']
         self.capital_costs = self.comp_specs['est. intertie cost per mile']\
@@ -491,13 +502,20 @@ class Transmission (AnnualSavings):
     def calc_annual_electric_savings (self):
         """
         """
-        #TODO READ in maintenance
-        maintenance = 84181 
+        costs = self.comp_specs['hr o&m']
+            
+        for kW in costs.keys():
+            try:
+                if self.average_load < int(kW):
+                    maintenance = self.comp_specs['hr o&m'][kW]
+                    break
+            except ValueError:
+                maintenance = self.comp_specs['hr o&m'][kW]
+                
         base = maintenance + \
             (self.baseline_generation_fuel_used * self.diesel_prices)
         
-        ## TODO move the .05
-        maintenance = self.capital_costs * .05
+        maintenance = self.capital_costs * self.comp_specs['percent o&m']
         proposed = maintenance + \
             (self.proposed_generation * \
                 self.comp_specs['nearest community']['Maximum savings ($/kWh)'])
