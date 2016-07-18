@@ -67,10 +67,8 @@ class CommunityData (object):
                             "using intertie parent diesel prices")
         except AttributeError:
             pass
-
         self.set_item("community","diesel prices", 
                                 DieselProjections(name, data_dir))
-       
 
         if self.get_item("community", "model electricity"):
             self.calc_non_fuel_electricty_price ()

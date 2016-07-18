@@ -1951,6 +1951,10 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
                 out_dir = out_dir[:-1]
             #~ shutil.rmtree(out_dir+project)
             projects.append(parent+'_intertie'+project)
+            try:
+                shutil.rmtree(out_dir+project)
+            except OSError:
+                pass
             shutil.copytree(out_dir,out_dir+project)
     #~ print pp_data
     return pp_data, projects

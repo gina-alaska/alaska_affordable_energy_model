@@ -228,6 +228,7 @@ def component_summary (coms, res_dir):
             start_yr = hydro.comp_specs['start year']
             hydro.get_diesel_prices()
             diesel_price = float(hydro.diesel_prices[0].round(2))
+            #~ print hydro.diesel_prices[0]
             if not hydro.comp_specs["project details"] is None:
                 phase = hydro.comp_specs["project details"]['phase']
             else:
@@ -311,10 +312,10 @@ def component_summary (coms, res_dir):
             'Hydro Power Reduction in Utility Diesel Consumed per year',
             'Diesel Generator Efficiency',
             'Diesel Price - year 1 [$]',
-            'Wind NPV benefits [$]',
-            'Wind NPV Costs [$]',
-            'Wind NPV Net benefit [$]',
-            'Wind Benefit Cost Ratio',
+            'Hydro NPV benefits [$]',
+            'Hydro NPV Costs [$]',
+            'Hydro NPV Net benefit [$]',
+            'Hydro Benefit Cost Ratio',
             'notes'
             ]
         
@@ -498,6 +499,7 @@ class Hydropower (AnnualSavings):
         """
         """
         # %
+       
         captured_percent = self.percent_excess_energy * \
                     self.comp_specs['percent excess energy capturable']
         
@@ -521,7 +523,11 @@ class Hydropower (AnnualSavings):
             #~ self.generation_diesel_reduction = electric_diesel
         
         # gal/year
-        self.lost_heat_recovery = self.generation_diesel_reduction * \
+        if not self.cd['heat recovery operational']:
+
+            self.lost_heat_recovery  = 0
+        else:
+            self.lost_heat_recovery = self.generation_diesel_reduction * \
                                 self.comp_specs['percent heat recovered']
         
         #~ print 'self.captured_energy', self.captured_energy
