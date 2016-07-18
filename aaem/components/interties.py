@@ -18,6 +18,7 @@ from aaem.community_data import CommunityData
 from aaem.forecast import Forecast
 from aaem.diagnostics import diagnostics
 import aaem.constants as constants
+from biomass_pellet import preprocess_road_system, road_import 
 
 
 ## steps for using
@@ -38,6 +39,10 @@ yaml = {'enabled': False,
         'start year': 'ABSOLUTE DEFAULT',
         'transmission loss per mile': .1,
         'nearest community': IMPORT,
+        'heat recovery o&m' : 1500,
+        'on road system': IMPORT,
+        'est. intertie cost per mile': {'road needed': 500000, 
+                                        'road not needed': 250000},
         }
 
 ## default values for yaml key/Value pairs
@@ -128,7 +133,8 @@ def load_project_details (data_dir):
     
 ## library of keys and functions for CommunityData IMPORT Keys
 yaml_import_lib = {'project details': load_project_details,
-                    'nearest community':process_data_import}# fill in
+                    'nearest community':process_data_import,
+                    'on road system': road_import }# fill in
     
 ## preprocessing functons 
 def preprocess_header (ppo):
@@ -183,7 +189,7 @@ def preprocess (ppo):
     ppo.MODEL_FILES['TRANSMISSION_DATA'] = "transmission_data.csv" # CHANGE THIS
     
 ## list of wind preprocessing functions
-preprocess_funcs = [preprocess]
+preprocess_funcs = [preprocess, preprocess_road_system]
 
 ## preprocess the existing projects
 ### This function is called differently from the other preprocessor functions,
@@ -231,7 +237,8 @@ def preprocess_existing_projects (ppo):
 ## List of raw data files required for wind power preproecssing 
 raw_data_files = [#"transmission_projects.csv",
                   'project_development_timeframes.csv',
-                  'transmission_distances.csv']# fillin
+                  'transmission_distances.csv',
+                  'road_system.csv']# fillin
 
 ## list of data keys not to save when writing the CommunityData output
 yaml_not_to_save = []
@@ -240,7 +247,93 @@ yaml_not_to_save = []
 def component_summary (coms, res_dir):
     """
     """
-    pass
+    out = []
+    for c in sorted(coms.keys()):
+        it = coms[c]['model'].cd.intertie
+        if it is None:
+            it = 'parent'
+        if it == 'child':
+            continue
+        try:
+            # ??? NPV or year one
+            it = coms[c]['model'].comps_used['transmission']
+            
+            start_yr = it.comp_specs['start year']
+            it.get_diesel_prices()
+            diesel_price = float(it.diesel_prices[0].round(2))
+            if not it.comp_specs["project details"] is None:
+                phase = it.comp_specs["project details"]['phase']
+            else:
+                phase = "Reconnaissance"
+                
+                
+            heat_rec_opp = it.cd['heat recovery operational']
+            
+           
+            generation_displaced = it.baseline_generation[0]
+            generation_conserved = it.proposed_generation[0]
+            
+                    
+            
+            lost_heat = it.lost_heat_recovery[0]
+            
+            #~ diesel_red = - it.lost_heat_recovery
+            
+            eff = it.cd["diesel generation efficiency"]
+                
+            
+            l = [c, 
+                start_yr,
+                phase,
+
+                generation_displaced,
+                generation_conserved,
+                
+                lost_heat,
+                heat_rec_opp,
+                
+                eff,
+                diesel_price,
+                
+                it.get_NPV_benefits(),
+                it.get_NPV_costs(),
+                it.get_NPV_net_benefit(),
+                it.get_BC_ratio(),
+                it.reason
+            ]
+            out.append(l)
+        except (KeyError,AttributeError) as e:
+            #~ print e
+            pass
+        
+    
+    cols = ['Community',
+            'Start Year',
+            'project phase',
+            
+            'Generation Displaced [kWh]',
+            'Electricity Generated, Conserved, or transmitted [kWh]',
+            
+            'Loss of Recovered Heat from Genset [gal]',
+            'Heat Recovery Operational',
+           
+           
+            'Diesel Generator Efficiency',
+            'Diesel Price - year 1 [$]',
+            
+            'Transmission NPV benefits [$]',
+            'Transmission NPV Costs [$]',
+            'Transmission NPV Net benefit [$]',
+            'Transmission Benefit Cost Ratio',
+            'notes'
+            ]
+        
+    
+    data = DataFrame(out,columns = cols).set_index('Community')#.round(2)
+    f_name = os.path.join(res_dir,
+                'transmissions_summary.csv')
+
+    data.to_csv(f_name, mode='w')
 
 ## list of prerequisites for module
 prereq_comps = [] ## FILL in if needed
@@ -350,7 +443,7 @@ class Transmission (AnnualSavings):
             self.calc_annual_costs(self.cd['interest rate'])
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
-            print self.benefit_cost_ratio
+            #~ print self.benefit_cost_ratio
  
     def calc_proposed_generation (self):
         """
@@ -383,16 +476,31 @@ class Transmission (AnnualSavings):
     # Make this do stuff
     def calc_capital_costs (self):
         """ Function Doc"""
-        self.capital_costs = np.nan
+        road_needed = 'road needed'
+        if self.comp_specs['on road system']:
+            road_needed = 'road not needed'
+        print road_needed
+        
+        dist = self.comp_specs['nearest community']['Distance to Community']
+        self.capital_costs = self.comp_specs['est. intertie cost per mile']\
+                                             [road_needed] * dist
+        #~ print self.capital_costs
         
     
     # Make this do stuff
     def calc_annual_electric_savings (self):
         """
         """
-        base =  self.baseline_generation_fuel_used * self.diesel_prices
-        proposed = self.proposed_generation * \
-            self.comp_specs['nearest community']['Maximum savings ($/kWh)']
+        #TODO READ in maintenance
+        maintenance = 84181 
+        base = maintenance + \
+            (self.baseline_generation_fuel_used * self.diesel_prices)
+        
+        ## TODO move the .05
+        maintenance = self.capital_costs * .05
+        proposed = maintenance + \
+            (self.proposed_generation * \
+                self.comp_specs['nearest community']['Maximum savings ($/kWh)'])
         self.annual_electric_savings = base - proposed 
         #~ print 'self.annual_electric_savings',self.annual_electric_savings
         
@@ -402,6 +510,8 @@ class Transmission (AnnualSavings):
         """
         """
         price = self.diesel_prices + self.cd['heating fuel premium']
-        self.annual_heating_savings = self.lost_heat_recovery * price
+        maintenance = self.comp_specs['heat recovery o&m']
+        self.annual_heating_savings = maintenance + \
+                                    (self.lost_heat_recovery * price)
 
 component = Transmission
