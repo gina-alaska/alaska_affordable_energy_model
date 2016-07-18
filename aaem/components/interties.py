@@ -1,381 +1,407 @@
 """
-interites.py
-Ross Spicer
-created: 2015/09/15
+component_template.py
 
-    python version of interties tab. currently only the inputs section has
-been implemented
+a template for adding components
+
+
+
 """
 import numpy as np
 from math import isnan
-
-
-# TODO(4) THIS has been refactored in the spread sheet and that needs to
-# be done here
+from pandas import DataFrame,concat,read_csv
+import os
+import shutil
+from yaml import dump, load
 
 from annual_savings import AnnualSavings
 from aaem.community_data import CommunityData
 from aaem.forecast import Forecast
+from aaem.diagnostics import diagnostics
+import aaem.constants as constants
 
 
-                        
+## steps for using
+### 1) copy this file as component_name.py and go throug this file folloing the 
+###    commented instructions
+### 2) add new components things to default yaml file
+### 3) add the component to __init__ in this directory
 
-class Interties (AnnualSavings):
+# change to component name (i.e. 'residential buildings')
+COMPONENT_NAME = "transmission"
+IMPORT = "IMPORT"
+UNKNOWN = "UNKNOWN"
+
+## List of yaml key/value pairs
+yaml = {'enabled': False,
+        "project details": IMPORT,
+        'lifetime': 'ABSOLUTE DEFAULT',
+        'start year': 'ABSOLUTE DEFAULT',
+        'transmission loss per mile': .1,
+        'nearest community': IMPORT,
+        }
+
+## default values for yaml key/Value pairs
+yaml_defaults = {'enabled': True,
+        'lifetime': 20,
+        #~ 'start year': 2017,
+        }
+    
+## order to save yaml
+yaml_order = ['enabled', 'lifetime', 'start year']
+
+## comments for the yaml key/value pairs
+yaml_comments = {'enabled': '',
+        'lifetime': 'number years <int>',
+        'start year': 'start year <int>'}
+       
+## Functions for CommunityData IMPORT keys
+def process_data_import(data_dir):
     """
-    class for preforming the interties work
     """
+    data = read_csv(os.path.join(data_dir,'transmission_data.csv'),
+                    comment = '#',index_col = 0)
+    data = data['value'].to_dict()
+    data['Maximum savings ($/kWh)'] = float(data['Maximum savings ($/kWh)'])
+    data['Distance to Community'] = float(data['Distance to Community'])
+    #~ print data
+    return data
+                    
+    
+def load_project_details (data_dir):
+    """
+    load details related to exitign projects
+    
+    pre:
+        data_dir is a directory with  'project_development_timeframes.csv',
+        and "project_name_projects.yaml" in it 
+    
+    post:
+        retunrns a dictonary wht the keys 'phase'(str), 
+        'proposed capacity'(float), 'proposed generation'(float),
+        'distance to resource'(float), 'generation capital cost'(float),
+        'transmission capital cost'(float), 'operational costs'(float),
+        'expected years to operation'(int),
+    """
+    try:
+        tag = os.path.split(data_dir)[1].split('+')
+        project_type = tag[1]
+        tag = tag[1] + '+' +tag[2]
+        if project_type != 'transmission':
+            tag = None
+    except IndexError:
+        tag = None
+        
+    # get the estimated years to operation
+    # CHANGE THIS Replace the PROJECT_TYPE with the type of the project
+    data_file = os.path.join(data_dir, 'project_development_timeframes.csv')
+    data = read_csv(data_file, comment = '#',
+                    index_col=0, header=0)['Transmission']
 
-    def __init__ (self, community_data, forecast):
+    if tag is None:
+        # if no data make some
+        yto = 5 # int(round(float(data['Reconnaissance'])))
+        return {'phase': 'Reconnaissance',
+                'proposed capacity': UNKNOWN,
+                'proposed generation': UNKNOWN,
+                'distance to resource': UNKNOWN,
+                'generation capital cost': UNKNOWN,
+                'transmission capital cost': UNKNOWN,
+                'operational costs': UNKNOWN,
+                'expected years to operation': yto,
+                }
+    
+    # CHANGE THIS
+    with open(os.path.join(data_dir, "transmission_projects.yaml"), 'r') as fd:
+        dets = load(fd)[tag]
+    
+    # correct number years if nessary
+    yto = dets['expected years to operation']
+    if yto == UNKNOWN:
+        try:
+            yto = int(round(float(data[dets['phase']])))
+        except TypeError:
+            yto = 0
+        dets['expected years to operation'] = yto
+    dets['expected years to operation'] = int(yto)
+    
+    return dets
+    
+## library of keys and functions for CommunityData IMPORT Keys
+yaml_import_lib = {'project details': load_project_details,
+                    'nearest community':process_data_import}# fill in
+    
+## preprocessing functons 
+def preprocess_header (ppo):
+    """
+    """
+    return  "# " + ppo.com_id + " Transmission data\n"+ \
+            ppo.comments_dataframe_divide
+    
+def preprocess (ppo):
+    """
+    
+    """
+    #CHANGE THIS
+    out_file = os.path.join(ppo.out_dir,"transmission_data.csv")
+
+    data = read_csv(os.path.join(ppo.data_dir,'transmission_distances.csv'),
+                    comment = '#',index_col = 0)
+    
+    #~ try:
+    data = ppo.get_communities_data(data)
+    #~ except KeyError:
+        #~ data
+    
+    #~ print data
+    try:
+        max_savings = float(data['Maximum savings ($/kWh)'])
+        nearest_comm = data['Nearest Community with Lower Price Power']
+        try:
+            isnan(nearest_comm)
+            nearest_comm =  np.nan
+        except ValueError:
+            nearest_comm = nearest_comm.values[0]
+            
+        distance = float(data['Distance to Community'])
+    except TypeError:
+        max_savings = np.nan
+        nearest_comm = np.nan
+        distance = np.nan
+    
+    fd = open(out_file,'w')
+    fd.write(preprocess_header(ppo))
+    fd.write('key,value\n')
+    fd.write('Maximum savings ($/kWh),' + str(max_savings) +'\n')
+    fd.write('Nearest Community with Lower Price Power,' \
+                                        + str(nearest_comm) +'\n')
+    fd.write('Distance to Community,' + str(distance ) +'\n')
+    fd.close()
+    
+    # create data and uncomment this
+    #~ data.to_csv(out_file, mode = 'a',header=False)
+    
+    ppo.MODEL_FILES['TRANSMISSION_DATA'] = "transmission_data.csv" # CHANGE THIS
+    
+## list of wind preprocessing functions
+preprocess_funcs = [preprocess]
+
+## preprocess the existing projects
+### This function is called differently from the other preprocessor functions,
+### so it does not need to be added to preprocess_funcs
+def preprocess_existing_projects (ppo):
+    """
+    preprocess data related to existing projects
+    
+    pre:
+        ppo is a is a Preprocessor object. "wind_projects.csv" and 
+        'project_development_timeframes.csv' exist in the ppo.data_dir 
+    post:
+        data for existing projets is usable by model
+    """
+    projects = []
+    p_data = {}
+    
+    #~ ## CHANGE THIS
+    #~ project_data = read_csv(os.path.join(ppo.data_dir,
+                            #~ "transmission_projects.csv"),
+                            #~ comment = '#',index_col = 0)
+    
+    #~ project_data = DataFrame(project_data.ix[ppo.com_id])
+    #~ if len(project_data.T) == 1 :
+        #~ project_data = project_data.T
+
+    #~ ## FILL IN LOOP see function in wind _power.py for an example
+    #~ for p_idx in range(len(project_data)):
+       #~ pass
+    
+    #~ with open(os.path.join(ppo.out_dir,"transmission_projects.yaml"),'w') as fd:
+        #~ if len(p_data) != 0:
+            #~ fd.write(dump(p_data,default_flow_style=False))
+        #~ else:
+            #~ fd.write("")
+        
+    #~ ## CHANGE THIS
+    #~ ppo.MODEL_FILES['TRANSMISSION_PROJECTS'] = "transmission_projects.yaml"
+    #~ shutil.copy(os.path.join(ppo.data_dir,'project_development_timeframes.csv'), 
+                #~ ppo.out_dir)
+    ppo.MODEL_FILES['TIMEFRAMES'] = 'project_development_timeframes.csv'
+    #~ print ppo.MODEL_FILES
+    return projects
+
+## List of raw data files required for wind power preproecssing 
+raw_data_files = [#"transmission_projects.csv",
+                  'project_development_timeframes.csv',
+                  'transmission_distances.csv']# fillin
+
+## list of data keys not to save when writing the CommunityData output
+yaml_not_to_save = []
+    
+## component summary
+def component_summary (coms, res_dir):
+    """
+    """
+    pass
+
+## list of prerequisites for module
+prereq_comps = [] ## FILL in if needed
+
+#   do a find and replace on ComponentName to name of component 
+# (i.e. 'ResidentialBuildings')
+class Transmission (AnnualSavings):
+    """
+    """
+    def __init__ (self, community_data, forecast, 
+                        diag = None, prerequisites = {}):
         """
         Class initialiser
 
         pre:
-            community_data is a class( or whatever) of community data
+            community_data is a CommunityData object. diag (if provided) should 
+        be a Diagnostics object
         post:
             the model can be run
         """
-        self.cd = community_data.get_section('community')
-        self.comp_specs = community_data.get_section('interties')
-        self.component_name = 'interties'
+        self.diagnostics = diag
+        if self.diagnostics == None:
+            self.diagnostics = diagnostics()
         self.forecast = forecast
+        self.cd = community_data.get_section('community')
         
-        # used in the NPV calculation so this is a relevant output
-        self.current_consumption = self.cd["consumption kWh"]
-        self.line_losses = self.cd["line losses"]
         
-    def calc_annual_electric_savings (self):
-        """
-        calculate the annual electric savings
-        pre:
-             TODO: write this 
-        post:
-            self.annual_electric_savings is an np.array of $/year values
-        """
-        #~ self.annual_electric_savings = np.zeros(self.project_life)
-        self.calc_proposed_electric_savings()
-        self.calc_base_electric_savings()
-        self.annual_electric_savings = self.base_electric_savings - \
-                                       self.proposed_electric_savings
-
-    #TODO: fix calculation as spread sheet is updated
-    def calc_proposed_electric_savings (self):
-        """
-        calcualte the savings for the proposed electric savings
-        pre:
-            TODO: write this 
-        post:
-           self.proposed_electric_savings is an np.array of $/year values 
-        """
-        self.proposed_electric_savings = np.zeros(self.project_life) 
-        elec_gen = self.ff_gen_displaced/(1.0 - self.transmission_loss) # kWh/yr
-        #~ price = self.cd["cost_power_nearest_comm"] # $/kWh
-        price = 1.19  # TODO:(4) this comp has been revised any way
-        # += to assure the array is the right length
-        # $/year
-        #~ print self.proposed_electric_savings
-        #~ print elec_gen
-        #~ print price
-        self.proposed_electric_savings += (elec_gen * price) + self.O_and_M
+       
+        self.comp_specs = community_data.get_section(COMPONENT_NAME)
+        self.component_name = COMPONENT_NAME
         
+        self.comp_specs["start year"] = self.cd['current year'] + \
+            self.comp_specs["project details"]['expected years to operation']
 
-    #TODO: fix calculation as spread sheet is updated    
-    def calc_base_electric_savings (self, generator_repairs = 1500):
-        """
-        calcualte the savings for the base electric savings
-        pre:
-            TODO: write this 
-        post:
-           self.base_electric_savings is an np.array of $/year values 
-        """
-        self.base_electric_savings = np.zeros(self.project_life)
-        fuel_use = self.ff_gen_displaced / \
-                            self.cd['diesel generation efficiency']# gal/yr
-        fuel_cost = fuel_use * self.diesel_prices # $/yr
+        self.set_project_life_details(self.comp_specs["start year"],
+                                      self.comp_specs["lifetime"],
+                        self.forecast.end_year - self.comp_specs["start year"])
         
-        # += to assure the array is the right length
-        # $/yr + $/yr + gal/yr - gal/yr -> ($ + gal - gal)/yr -> $/yr -- WHAT?
-        # i'm doing this instead $/yr + $/yr -> $/yr
-        self.base_electric_savings += fuel_cost+ self.cd['diesel generator o&m']
+        ### ADD other intiatzation stuff  
+        ### load prerequisites in the following function
+        ### if there are no prerequisites you can delete this and the 
+        ### load_prerequisite_variables function
+        self.load_prerequisite_variables(prerequisites)
         
-            
-    def calc_annual_heating_savings (self):
+    def load_prerequisite_variables (self, comps):
         """
-        calculate the annual heating savings
+        load variables from prerequisites
+        
         pre:
-             TODO: write this 
-        post:
-            self.annual_electric_savings is an np.array of $/year values
+             prerequisites: dictonary of componentes
         """
-        #~ self.calc_proposed_heating_savings() # NONE HERE
-        self.calc_base_heating_savings()
-        self.annual_heating_savings = self.base_heating_savings 
-
-    #TODO: fix calculation as spread sheet is updated  
-    def calc_base_heating_savings (self):
-        """
-        calculate the savings for the base heating savings
-        pre:
-            TODO: write this 
-        post:
-           self.base_heating_savings is an np.array of $/year values 
-        """
-        self.base_heating_savings = np.zeros(self.project_life)
-        fuel_cost = self.diesel_prices + self.cd['heating fuel premium'] # $/gal
-        fuel_cost = fuel_cost * (-self.loss_of_heat_recovered) # $/yr
-        # += to assure the array is the right length
-        self.base_heating_savings += fuel_cost +  self.cd['fuel o&m'] + \
-                                      self.cd['fuel o&m'] # $/yr
-
-
+        # LOAD anything needed from the components passed as input
+        # WRITE this
+        pass
+        
     def run (self):
         """
-        do the calculations
-
-        pre:
-            None
-        post:
-            All values will be calculated and usable
-        """
-        self.set_project_life_details(self.comp_specs["start year"],
-                                      self.comp_specs["lifetime"])
-        
-        self.calc_transmission_loss()
-        self.calc_kWh_transmitted()
-        
-        it_road_needed = self.comp_specs["road needed"]
-        tlc = self.comp_specs['transmission line cost'][it_road_needed]
-        self.calc_transmission_line_cost(tlc)
-        
-        self.calc_loss_of_heat_recovered()
-        self.calc_O_and_M()
-        self.calc_communtiy_price_difference()
-        
-        self.calc_capital_costs()
-        
-        self.get_diesel_prices()
-        self.ff_gen_displaced = self.forecast.get_consumption(self.start_year,
-                                                                self.end_year)
-        
-        self.calc_annual_electric_savings()
-        self.calc_annual_heating_savings()
-        self.calc_annual_total_savings()
-        
-        self.calc_annual_costs(self.cd['interest rate'])
-        self.calc_annual_net_benefit()
-        
-        self.calc_npv(self.cd['discount rate'], 2014)
-        
-
-    def calc_transmission_loss (self):
-        """
-        calculate annual transmission loss percentage
-
-        pre:
-            "dist_to_nearest_comm" value needs to be accessible and a number or
-        nan for "N/a" values
-            loss_per_mile is a number < 1
-        post:
-            self.transmission_loss is a number (a percentege)
-        """
-        # %/year
-        self.transmission_loss = 0 # Annual Transmission Loss Percentage
-        try:
-            if self.comp_specs["distance data"]['Distance to Community']!='N/A':
-                self.transmission_loss = 1.0 - \
-                ((1 - self.comp_specs['loss per mile']) **\
-                self.comp_specs["distance data"]['Distance to Community'])
-        except StandardError:
-            pass
-        #~ self.transmission_loss = round(self.transmission_loss, 7)
-
-    def calc_kWh_transmitted (self):
-        """
-        calculate kWh transmitted over intertie
-
-        pre:
-            "it_resource_potential" value needs to be accessible and a string
-            "dist_to_nearest_comm" value needs to be accessible and a number or
-        nan for "N/a" values
-            self.current_consumption is a number
-            self.transmission_loss and self.line_losses are < 1
-        post:
-            self.kWH_transmitted is a number (kWh transmitted)
-        """
-        # kWh
-        self.kWh_transmitted = 0
-        #~ print self.comp_specs["resource potential"]
-        try:
-            if self.comp_specs["resource potential"].lower() != "low" and \
-               self.comp_specs["distance data"]['Distance to Community'] != 'N/A':
-                self.kWh_transmitted = self.current_consumption * \
-                                       (1+self.transmission_loss) * \
-                                       (1+self.line_losses)
-        except StandardError:
-            pass
-
-    def calc_transmission_line_cost (self, cost_per_mile):
-        """
-        calculate cost for transmission line
-
-        pre:
-            "it_cost_known" and "it_road_needed" are booleans
-            "it_cost" value needs to be accessible and a number or
-        nan if not available
-            "dist_to_nearest_comm" value needs to be accessible and a number or
-        nan for "N/a" values
-            cost_per_mile, cost of transmission mile in dollars
-        post:
-            self.transmission_line_cost is a number($ value)
-        """
-        self.transmission_line_cost = self.comp_specs["cost"]
-        if self.comp_specs["cost known"] == False:
-            self.transmission_line_cost = cost_per_mile * 35#\
-                    #~ self.comp_specs["distance data"]['Distance to Community']
-
-    def calc_capital_costs (self):
-        """
-        set the capital costs
+        run the forecast model
         
         pre:
-            self.calc_transmission_line_cost needs to have been called
+            self.cd should be the community library from a community data object
         post:
-            self.capital_costs is the cost of the transmission line
+            TODO: define output values. 
+            the model is run and the output values are available
         """
-        self.capital_costs = self.transmission_line_cost
-
-    def calc_loss_of_heat_recovered (self, hr_percent = .15):
-        """
-        calculate loss of heat recovered
-
-        pre:
-            "it_hr_installed" and "it_hr_operational" are booleans
-            "dist_to_nearest_comm" value needs to be accessible and a number or
-        nan for "N/a" values
-            "consumption_HF" is a positive number of gallons
-            hr_precent is a decimal percent 
-
-        post:
-            self.loss_of_heat_recovered is a number(gallons)
-        """
-        self.loss_of_heat_recovered = 0 # gal
+        self.run = True
+        self.reason = "OK"
+        tag = self.cd['name'].split('+')
+        if len(tag) > 1 and tag[1] != 'transmission':
+            self.run = False
+            self.reason = "Not a transmission project"
+            return 
+            
+        if not self.cd["model electricity"]:
+            self.run = False
+            self.reason = ("'model electricity' in the communtiy data"
+                           " must be True to run this component")
+            return 
         
-        try:
-            if self.comp_specs["distance data"]['Distance to Community'] == 'N/A':
-                self.loss_of_heat_recovered = float('nan')
-            elif self.comp_specs["hr installed"] == True and \
-                 self.comp_specs["hr operational"] == True:
-                # where does .15 come from
-                # it's an argument now 
-                self.loss_of_heat_recovered = \
-                                self.cd["consumption HF"] * hr_percent
-        except StandardError:
-            if self.comp_specs["hr installed"] == True and \
-                 self.comp_specs["hr operational"] == True:
-                # where does .15 come from
-                # it's an argument now 
-                self.loss_of_heat_recovered = \
-                                self.cd["consumption HF"] * hr_percent
-
-    def calc_O_and_M (self):
+        if np.isnan(self.comp_specs['nearest community']\
+                                    ['Distance to Community']):
+            self.run = False
+            self.reason = ("no community to intertie with transmission line")
+            return 
+        
+        self.calc_proposed_generation()
+        self.calc_baseline_generation()
+            
+        
+        if self.cd["model heating fuel"]:
+            # change these below
+            self.calc_lost_heat_recovery()
+            # see NOTE*
+        
+        #~ return
+        if self.cd["model financial"]:
+            # AnnualSavings functions (don't need to write)
+            self.get_diesel_prices()
+            
+            # change these below
+            self.calc_capital_costs()
+            self.calc_annual_electric_savings()
+            self.calc_annual_heating_savings()
+            
+            # AnnualSavings functions (don't need to write)
+            self.calc_annual_total_savings()
+            self.calc_annual_costs(self.cd['interest rate'])
+            self.calc_annual_net_benefit()
+            self.calc_npv(self.cd['discount rate'], self.cd["current year"])
+            print self.benefit_cost_ratio
+ 
+    def calc_proposed_generation (self):
         """
-        calculate O&M
-
-        pre:
-            "dist_to_nearest_comm" value needs to be accessible and a number or
-        nan for "N/a" values
-            O_and_M_cost is a positive dollar amount
-
-        post:
-            self.O_and_M is a number(gallons/year)
         """
-        self.O_and_M = float('nan')
-        try:
-            if self.comp_specs["distance data"]['Distance to Community'] != 'N/A':
-                self.O_and_M = self.comp_specs['o&m cost'] * \
-                        self.comp_specs["distance data"]['Distance to Community']
-        except StandardError:
-            self.O_and_M = self.comp_specs['o&m cost'] * 35
-
-    def calc_communtiy_price_difference (self):
+        con = self.forecast.get_consumption(self.start_year,self.end_year)
+        dist = self.comp_specs['nearest community']['Distance to Community']
+        annual_tranmission_loss = \
+            1 - ((1-self.comp_specs['transmission loss per mile']) ** dist)
+        self.proposed_generation = con/ (1 - annual_tranmission_loss)
+        #~ print 'self.proposed_generation',self.proposed_generation
+        #~ print con
+        
+    def calc_baseline_generation (self):
         """
-        calculate Difference in Price between communities
-
-
-        pre:
-            "dist_to_nearest_comm" value needs to be accessible and a number or
-        nan for "N/a" values
-            "res_non-PCE_elec_cost" and "cost_power_nearest_comm" should
-        be positive dollar ammounts
-
-        post:
-            self.communtiy_price_difference is a number ($) or Nan if
-            not available
         """
-        self.communtiy_price_difference = float('nan')
-        try:
-            if self.comp_specs["distance data"]['Distance to Community'] == 'N/A':
-                self.communtiy_price_difference = \
-                            self.cd["res non-PCE elec cost"] -\
-                            .45 # TODO:(4) this comp has been revised any way
-        except StandardError:
-            pass
-
-    def print_proposed_sytstem_analysis (self):
+        
+        self.baseline_generation = \
+            self.forecast.get_generation(self.start_year,self.end_year)
+        
+        gen_eff = self.cd["diesel generation efficiency"]
+        self.baseline_generation_fuel_used = self.baseline_generation / gen_eff
+        
+        #~ print 'self.baseline_generatio',self.baseline_generation
+        
+    def calc_lost_heat_recovery (self):
         """
-        print system analysis
-
-        pre:
-            all of the functions in the class need to have been called( calling
-        run() does this)
-        post:
-            none
         """
-        text =  "kWh currently consumed                  : " + \
-                str(self.current_consumption) + " kWh \n"
-        text += "Annual Transmission Loss %              : " + \
-                str(round(self.transmission_loss,3)*100) + "%\n"
-        text += "Distribution line Losses                : " + \
-                str(int((round(self.line_losses,2)*100))) + "%\n"
-        text += "kWh tranmitted over intertie            : " + \
-                str((round(self.kWh_transmitted,1))) + " kWh\n"
-        text += "Cost for Transmission Line              : " + \
-                "$ " + str(int(round(self.transmission_line_cost))) + "\n"
-        text += "Loss of Heat Recovered from Gen-set     : " + \
-                str(round(self.loss_of_heat_recovered)) + " gal\n"
-        text += "O&M                                     : " + \
-                "$ " + str(int(round(self.O_and_M))) + "/year\n"
-        text += "System Lifetime                         : " + \
-                str(self.project_life) + " years\n"
-        text += "Difference in Price between communities : " + \
-                "$ " + str(round(self.communtiy_price_difference,2)) + "\n"
-        print text
-
-
-def test ():
-    """
-    test the class
-    pre:
-        manley_data will eventually have to be an object of the proper
-    type(for now it's hardcoded here).
-    post:
-        returns an Interties object for further testing
-    """
-    manley_data = CommunityData("../data/community_data_template.csv",
-                                "Manley Hot Springs")
-                                
-                                
-    manley_data.load_input("test_case/manley_data.yaml",
-                          "test_case/data_defaults.yaml")
-    manley_data.get_csv_data()
-    fc = Forecast(manley_data)
+        self.lost_heat_recovery = self.baseline_generation_fuel_used
     
-    it = Interties(manley_data,fc)
-    it.run()
-    it.print_proposed_sytstem_analysis()
-    print ""
-    print round(it.benefit_npv,0)
-    print round(it.cost_npv,0)
-    print round(it.benefit_cost_ratio ,2)
-    print round(it.net_npv,0)
-    return it
+    # Make this do stuff
+    def calc_capital_costs (self):
+        """ Function Doc"""
+        self.capital_costs = np.nan
+        
+    
+    # Make this do stuff
+    def calc_annual_electric_savings (self):
+        """
+        """
+        base =  self.baseline_generation_fuel_used * self.diesel_prices
+        proposed = self.proposed_generation * \
+            self.comp_specs['nearest community']['Maximum savings ($/kWh)']
+        self.annual_electric_savings = base - proposed 
+        print 'self.annual_electric_savings',self.annual_electric_savings
+        
+        
+    # Make this do sruff. Remember the different fuel type prices if using
+    def calc_annual_heating_savings (self):
+        """
+        """
+        price = self.diesel_prices + self.cd['heating fuel premium']
+        self.annual_heating_savings = self.lost_heat_recovery * price
 
+component = Transmission

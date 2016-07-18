@@ -74,7 +74,11 @@ def load_project_details (data_dir):
         'expected years to operation'(int),
     """
     try:
-        tag = os.path.split(data_dir)[1].split('+')[1]
+        tag = os.path.split(data_dir)[1].split('+')
+        project_type = tag[1]
+        tag = tag[1] + '+' +tag[2]
+        if project_type != PROJECT_TYPE:
+            tag = None
     except IndexError:
         tag = None
         
@@ -259,6 +263,14 @@ class ComponentName (AnnualSavings):
             TODO: define output values. 
             the model is run and the output values are available
         """
+        self.run = True
+        self.reason = "OK"
+        tag = self.cd['name'].split('+')
+        if len(tag) > 1 and tag[1] != PROJECT_TYPE:
+            self.run = False
+            self.reason = "Not a PROJECT_TYPE project"
+            return 
+        
         if self.cd["model electricity"]:
             # change these below
             self.calc_baseline_kWh_consumption()
