@@ -3,8 +3,8 @@
 ## [0.16.4]
 ### changed
 - intertied community prices (diesel & electric) are the same 
-- hydro proposed genration is based on diesel generation
-- fixed diesel prices when communty is tagged with a project
+- hydro proposed generation is capped for actual diesel generation
+- fixed diesel prices when community is tagged with a project
 
 ## [0.16.3]
 ### fixed
