@@ -1,5 +1,11 @@
 #Change Log
 
+## [0.16.5]
+### fixes
+- preprocessor coping for intertie projects
+- added hr used flag check for calculating heating fuel lost
+
+
 ## [0.16.4]
 ### changed
 - intertied community prices (diesel & electric) are the same 
