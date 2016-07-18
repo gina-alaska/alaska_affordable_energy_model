@@ -394,7 +394,7 @@ class Transmission (AnnualSavings):
         proposed = self.proposed_generation * \
             self.comp_specs['nearest community']['Maximum savings ($/kWh)']
         self.annual_electric_savings = base - proposed 
-        print 'self.annual_electric_savings',self.annual_electric_savings
+        #~ print 'self.annual_electric_savings',self.annual_electric_savings
         
         
     # Make this do sruff. Remember the different fuel type prices if using

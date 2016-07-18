@@ -226,11 +226,11 @@ class ComponentName (AnnualSavings):
         self.forecast = forecast
         self.cd = community_data.get_section('community')
         
-        self.comp_specs["start year"] = self.cd['current year'] + \
-            self.comp_specs["project details"]['expected years to operation']
-       
         self.comp_specs = community_data.get_section(COMPONENT_NAME)
         self.component_name = COMPONENT_NAME
+        
+        self.comp_specs["start year"] = self.cd['current year'] + \
+            self.comp_specs["project details"]['expected years to operation']
 
         self.set_project_life_details(self.comp_specs["start year"],
                                       self.comp_specs["lifetime"],
