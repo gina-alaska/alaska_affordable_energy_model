@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.16.7]
+### added
+- Transmission component
+
 ## [0.16.6]
 ### changes
 - hydro project tags are based on index, project names are saved as information in input data
