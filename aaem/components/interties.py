@@ -44,7 +44,7 @@ yaml = {'enabled': False,
         'est. intertie cost per mile': {'road needed': 500000, 
                                         'road not needed': 250000},
         'percent o&m':.05,
-        'hr o&m': {'150': 84181.00,
+        'diesel generator o&m': {'150': 84181.00,
                    '360': 113410.00, 
                    '600': 134434.00, 
                    'else': 103851.00 }
@@ -483,7 +483,11 @@ class Transmission (AnnualSavings):
     def calc_lost_heat_recovery (self):
         """
         """
-        self.lost_heat_recovery = self.baseline_generation_fuel_used
+        if not self.cd['heat recovery operational']:
+
+            self.lost_heat_recovery  = [0]
+        else:
+            self.lost_heat_recovery = self.baseline_generation_fuel_used
     
     # Make this do stuff
     def calc_capital_costs (self):
@@ -502,15 +506,15 @@ class Transmission (AnnualSavings):
     def calc_annual_electric_savings (self):
         """
         """
-        costs = self.comp_specs['hr o&m']
+        costs = self.comp_specs['diesel generator o&m']
             
         for kW in costs.keys():
             try:
                 if self.average_load < int(kW):
-                    maintenance = self.comp_specs['hr o&m'][kW]
+                    maintenance = self.comp_specs['diesel generator o&m'][kW]
                     break
             except ValueError:
-                maintenance = self.comp_specs['hr o&m'][kW]
+                maintenance = self.comp_specs['diesel generator o&m'][kW]
                 
         base = maintenance + \
             (self.baseline_generation_fuel_used * self.diesel_prices)
