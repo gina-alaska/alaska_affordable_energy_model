@@ -250,7 +250,10 @@ def building_log(coms, res_dir):
             #~ print c +":"+ str(e)
             pass
     #~ print out
-    l = [n for n in types if n not in  ['Water & Sewer',]]
+    try:
+        l = [n for n in types if n not in  ['Water & Sewer',]]
+    except UnboundLocalError:
+        return
     c = []
     e = []
     m = []
@@ -580,7 +583,9 @@ def electric_price_summary (coms, res_dir):
         except (KeyError, TypeError) as e:
             #~ print e
             continue
-            
+    if out is None:
+        return
+        
     f_name = os.path.join(res_dir,
                 'electric_prices_summary.csv')
     #~ fd = open(f_name,'w')

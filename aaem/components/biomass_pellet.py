@@ -151,19 +151,23 @@ def component_summary (coms, res_dir):
         except (KeyError,AttributeError) as e:
             #~ print e
             pass
-    cols = ['Community',
-        'Biomass Pellet Maximum Boiler Output [Btu/hr]',
-        'Biomass Pellet Heat Displacement square footage [Sqft]',
-        'Proposed ' + biomass.biomass_type + " Consumed [" + biomass.units +"]",
-        'Price [$/' + biomass.units + ']',
-        "Energy Density [Btu/" + biomass.units + "]",
-        'Biomass Pellet Displaced Heating Oil [Gal]',
-        'biomass Pellet NPV benefits [$]',
-        'Biomass Pellet NPV Costs [$]',
-        'Biomass Pellet NPV Net benefit [$]',
-        'Biomass Pellet Benefit Cost Ratio',
-        'notes'
-        ]
+    try:
+        cols = ['Community',
+            'Biomass Pellet Maximum Boiler Output [Btu/hr]',
+            'Biomass Pellet Heat Displacement square footage [Sqft]',
+            'Proposed ' + biomass.biomass_type + " Consumed [" + \
+                                                    biomass.units +"]",
+            'Price [$/' + biomass.units + ']',
+            "Energy Density [Btu/" + biomass.units + "]",
+            'Biomass Pellet Displaced Heating Oil [Gal]',
+            'biomass Pellet NPV benefits [$]',
+            'Biomass Pellet NPV Costs [$]',
+            'Biomass Pellet NPV Net benefit [$]',
+            'Biomass Pellet Benefit Cost Ratio',
+            'notes'
+            ]
+    except UnboundLocalError:
+        return
             
     data = DataFrame(out,columns = cols).set_index('Community')#.round(2)
     f_name = os.path.join(res_dir,

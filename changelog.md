@@ -1,5 +1,24 @@
 #Change Log
 
+## [0.16.6]
+### changes
+- hydro project tags are based on index, project names are saved as information in input data
+
+### fixes
+- generating summaries for running model with only interties no longer crashs
+
+## [0.16.5]
+### fixes
+- preprocessor coping for intertie projects
+- added hr used flag check for calculating heating fuel lost
+
+
+## [0.16.4]
+### changed
+- intertied community prices (diesel & electric) are the same 
+- hydro proposed generation is capped for actual diesel generation
+- fixed diesel prices when community is tagged with a project
+
 ## [0.16.3]
 ### fixed
 - Hydro summary headers
