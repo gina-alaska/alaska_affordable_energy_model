@@ -250,7 +250,10 @@ def building_log(coms, res_dir):
             #~ print c +":"+ str(e)
             pass
     #~ print out
-    l = [n for n in types if n not in  ['Water & Sewer',]]
+    try:
+        l = [n for n in types if n not in  ['Water & Sewer',]]
+    except UnboundLocalError:
+        return
     c = []
     e = []
     m = []
