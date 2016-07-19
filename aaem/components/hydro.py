@@ -156,13 +156,13 @@ def preprocess_existing_projects (ppo):
     names = []
     for p_idx in range(len(project_data)):
         cp = project_data.ix[p_idx]
-        p_name = 'hydro+' +str(cp['Project']).replace(' ','_').replace('/','-')
-        i = 1
-        i = 1
-        while (p_name in names):
-            p_name = 'hydro+' + str(cp['Project']).replace(' ','_').replace('/','-') + '_' + str(i)
-            i += 1
-        names.append(p_name)
+        p_name = 'hydro+project_' + str(p_idx) #+ str(cp['Project']).replace(' ','_').replace('/','-').replace(';','').replace('.','').replace("'",'').replace('_-_','_').replace(',','').replace('(','').replace(')','')
+        #~ i = 1
+        #~ i = 1
+        #~ while (p_name in names):
+            #~ p_name = 'hydro+' + str(cp['Project']).replace(' ','_').replace('/','-').replace(';','').replace('.','').replace("'",'').replace('_-_','_').replace(',','').replace('(','').replace(')','') + '_' + str(i)
+            #~ i += 1
+        #~ names.append(p_name)
 
         
         phase = cp['Phase Completed']
@@ -180,7 +180,8 @@ def preprocess_existing_projects (ppo):
         projects.append(p_name)
         
             
-        p_data[p_name] = {'phase': phase,
+        p_data[p_name] = {'name': str(cp['Project']),
+                    'phase': phase,
                     'proposed capacity': proposed_capacity,
                     'proposed generation': proposed_generation,
                     #~ 'distance to resource': distance_to_resource,
@@ -233,7 +234,9 @@ def component_summary (coms, res_dir):
                 phase = hydro.comp_specs["project details"]['phase']
             else:
                 phase = "Reconnaissance"
-                
+
+            name = hydro.comp_specs["project details"]['name']
+            
             average_load = hydro.average_load
             proposed_load =  hydro.load_offset_proposed
             
@@ -269,6 +272,7 @@ def component_summary (coms, res_dir):
                 #~ red_per_year = 0
             
             l = [c, 
+                name,
                 start_yr,
                 phase,
 
@@ -292,12 +296,13 @@ def component_summary (coms, res_dir):
                 hydro.reason
             ]
             out.append(l)
-        except (KeyError,AttributeError) as e:
+        except (KeyError,AttributeError,TypeError) as e:
             #~ print e
             pass
         
     
     cols = ['Community',
+            'Project Name',
             'Start Year',
             'project phase',
             
@@ -627,6 +632,7 @@ class Hydropower (AnnualSavings):
               "Hydro: Project Capital Cost ($/year)",
               "Hydro: Total Cost Savings ($/year)",
               "Hydro: Net Benefit ($/year)"]
+
         fname = os.path.join(directory,
                              self.cd['name'] + '_' + \
                              self.component_name + "_output.csv")
