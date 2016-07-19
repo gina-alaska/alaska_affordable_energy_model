@@ -1,5 +1,12 @@
 #Change Log
 
+## [0.16.6]
+### changes
+- hydro project tags are based on index, project names are saved as information in input data
+
+### fixes
+- generating summaries for running model with only interties no longer crashs
+
 ## [0.16.5]
 ### fixes
 - preprocessor coping for intertie projects
