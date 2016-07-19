@@ -1,5 +1,12 @@
 #Change Log
 
+## [0.16.8]
+### added
+- consumption col to village log
+
+### fixes
+- population col in village log
+
 ## [0.16.7]
 ### added
 - Transmission component
