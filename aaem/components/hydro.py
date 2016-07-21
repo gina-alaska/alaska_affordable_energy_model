@@ -568,7 +568,7 @@ class Hydropower (AnnualSavings):
         baseline_generation_cost = fuel_cost + maintianice_cost
         
         self.annual_electric_savings = baseline_generation_cost - \
-                                        maintianice_cost
+                                        proposed_generation_cost 
         #~ print 'self.annual_electric_savings', self.annual_electric_savings
         
         
@@ -582,6 +582,14 @@ class Hydropower (AnnualSavings):
                 (self.captured_energy - self.lost_heat_recovery) *\
                 price
         #~ print 'self.annual_heating_savings', self.annual_heating_savings
+        
+    def calc_break_even_fuel_price (self):
+        """
+        """
+        #savings = (price + ofset)(energy_diff)  + price * red+ const
+        #captial_costs = price*ed + ofset*ed + price * red + const
+        #captial_costs - const - ofset*ed = price (ed+red)
+        # price = (capex - const)/ (heating_reduction + elecreduction) 
         
     def save_component_csv (self, directory):
         """
