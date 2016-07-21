@@ -712,6 +712,8 @@ class Preprocessor (object):
         try:
             if self.com_id == "Craig":
                 data = data.loc[["Craig","Craig, Klawock"]]
+            elif self.com_id == "Upper Kalskag":
+                data = data.ix['Kalskag']
             elif self.com_id == "Klukwan":
                 data = data.loc[["Klukwan","Chilkat Valley"]]
             else:
@@ -982,6 +984,8 @@ class Preprocessor (object):
             if self.com_id == "Craig":
                 data = data.loc[["Craig","Craig, Klawock"]]
                 self.combined_com = True
+            elif self.com_id == "Upper Kalskag":
+                data = data.ix['Kalskag']
             elif self.com_id == "Klukwan":
                 data = data.loc[["Klukwan","Chilkat Valley"]]
                 self.combined_com = True
@@ -1013,6 +1017,8 @@ class Preprocessor (object):
             try:
                 if self.com_id == "Craig":
                     data = data.loc[["Craig","Craig, Klawock"]]
+                elif self.com_id == "Upper Kalskag":
+                    data = data.ix['Kalskag']
                 elif self.com_id == "Klukwan":
                     data = data.loc[["Klukwan","Chilkat Valley"]]
                 else:
@@ -1587,9 +1593,17 @@ class Preprocessor (object):
         ids = data.ix[data.index[data.T[data.T==self.com_id].any()]]
         region = ids['Energy Region'].values[0]
         ids = ids[ids.keys()[ids.keys()!='Energy Region']].set_index("Model ID")
-        self.energy_region = region
+        self.energy_region = region.replace(' Region','')
+        #~ print ids
         self.id_df = ids
-        self.id_list = ids.values[0].tolist()
+        il = ids.values[0].tolist()
+
+        self.id_list = []
+        for i in il:
+            if type(i) != str and np.isnan(i):
+               continue
+            self.id_list.append(i)
+            
 
 def preprocess (data_dir, out_dir, com_id, dev = False):
     """ Function doc """
