@@ -19,6 +19,7 @@ from aaem.forecast import Forecast
 from aaem.diagnostics import diagnostics
 import aaem.constants as constants
 from biomass_pellet import preprocess_road_system, road_import 
+from aaem.diesel_prices import DieselProjections
 
 
 ## steps for using
@@ -262,34 +263,72 @@ def component_summary (coms, res_dir):
         try:
             # ??? NPV or year one
             it = coms[c]['model'].comps_used['transmission']
-            
+            connect_to = it.comp_specs['nearest community']\
+                        ['Nearest Community with Lower Price Power']
+                
+            if it.reason == 'Not a transmission project':
+                continue
+            try:
+                if it.connect_to_intertie:
+                    connect_to += 'intertie'
+            except AttributeError:
+                pass
+                
             start_yr = it.comp_specs['start year']
+            
+            dist = it.comp_specs['nearest community']['Distance to Community']
+            
             it.get_diesel_prices()
             diesel_price = float(it.diesel_prices[0].round(2))
+            
+            try:
+                diesel_price_it = float(it.intertie_diesel_prices[0].round(2))
+            except AttributeError:
+                diesel_price_it = np.nan
+            
+            
             if not it.comp_specs["project details"] is None:
                 phase = it.comp_specs["project details"]['phase']
             else:
                 phase = "Reconnaissance"
                 
                 
+                
             heat_rec_opp = it.cd['heat recovery operational']
             
-           
-            generation_displaced = it.baseline_generation[0]
-            generation_conserved = it.proposed_generation[0]
+            try:
+                generation_displaced = it.pre_intertie_generation[0]
+            except AttributeError:
+                generation_displaced = np.nan
             
+            try:
+                generation_conserved = it.intertie_offset_generation[0]
+            except AttributeError:
+                generation_conserved = np.nan
                     
-            
-            lost_heat = it.lost_heat_recovery[0]
-            
-            #~ diesel_red = - it.lost_heat_recovery
+            try:
+                lost_heat = it.lost_heat_recovery[0]
+            except AttributeError:
+                lost_heat = np.nan
+
             
             eff = it.cd["diesel generation efficiency"]
-                
             
+            try:
+                eff_it = it.intertie_generation_efficiency
+            except AttributeError:
+                eff_it = np.nan
+            #~ print (diesel_price_it/eff_it - diesel_price/eff)
+            try:
+                losses = it.annual_tranmission_loss
+            except AttributeError:
+                losses = np.nan
+                
             l = [c, 
+                connect_to,
                 start_yr,
                 phase,
+                dist,
 
                 generation_displaced,
                 generation_conserved,
@@ -298,7 +337,10 @@ def component_summary (coms, res_dir):
                 heat_rec_opp,
                 
                 eff,
+                eff_it,
                 diesel_price,
+                diesel_price_it,
+                losses,
                 
                 it.get_NPV_benefits(),
                 it.get_NPV_costs(),
@@ -308,23 +350,29 @@ def component_summary (coms, res_dir):
             ]
             out.append(l)
         except (KeyError,AttributeError) as e:
-            #~ print e
+            print e
             pass
         
     
-    cols = ['Community',
+    cols = ['Community to connect',
+            'Community/Intertie to connect to',
             'Start Year',
-            'project phase',
+            'Project Phase',
+            'Miles of Transmission Line',
             
-            'Generation Displaced [kWh]',
+            'Generation Displaced in community to connect [kWh]',
             'Electricity Generated, Conserved, or transmitted [kWh]',
             
-            'Loss of Recovered Heat from Genset [gal]',
-            'Heat Recovery Operational',
+            'Loss of Recovered Heat from Genset in community to connect  [gal]',
+            'Heat Recovery Operational in community to connect',
            
            
-            'Diesel Generator Efficiency',
-            'Diesel Price - year 1 [$]',
+            'Diesel Generator Efficiency in community to connect',
+            'Diesel Generator Efficiency in community to connect to',
+            'Diesel Price - year 1 [$] in community to connect',
+            'Diesel Price - year 1 [$] in community to connect to',
+            
+            'Annual Transmission loss percentage',
             
             'Transmission NPV benefits [$]',
             'Transmission NPV Costs [$]',
@@ -334,7 +382,7 @@ def component_summary (coms, res_dir):
             ]
         
     
-    data = DataFrame(out,columns = cols).set_index('Community')#.round(2)
+    data = DataFrame(out,columns = cols).set_index('Community to connect')
     f_name = os.path.join(res_dir,
                 'transmissions_summary.csv')
 
@@ -364,7 +412,7 @@ class Transmission (AnnualSavings):
             self.diagnostics = diagnostics()
         self.forecast = forecast
         self.cd = community_data.get_section('community')
-        
+        self.data_dir = community_data.data_dir
         
        
         self.comp_specs = community_data.get_section(COMPONENT_NAME)
@@ -425,8 +473,14 @@ class Transmission (AnnualSavings):
             return 
         
         self.calc_average_load()
-        self.calc_proposed_generation()
-        self.calc_baseline_generation()
+        try:
+            self.get_intertie_values()
+        except IOError:
+            self.run = False
+            self.reason = ("Community to Intertie to is missing input data")
+            return 
+        self.calc_pre_intertie_generation()
+        self.calc_intertie_offset_generation()
             
         
         if self.cd["model heating fuel"]:
@@ -456,27 +510,57 @@ class Transmission (AnnualSavings):
         self.generation = self.forecast.generation_by_type['generation diesel']\
                                                             [self.start_year]
         self.average_load = self.generation / constants.hours_per_year
+        
+    def get_intertie_values (self):
+        """
+        """
+        com = self.comp_specs['nearest community']\
+                ['Nearest Community with Lower Price Power'].replace(' ','_')
+        path = os.path.join(os.path.split(self.data_dir)[0],com)
+        self.connect_to_intertie = False
+        if os.path.exists(path+'_intertie'):
+            self.connect_to_intertie = True
+            path += '_intertie'
+            
+        #~ print read_csv(os.path.join(path,'interties.csv'),comment='#')
+        
+        self.intertie_generation_efficiency = \
+                read_csv(os.path.join(path,'yearly_electricity_summary.csv'),
+                         comment='#',index_col=0)['efficiency'][-3:].mean()
+                         
+        it_diesel_prices = DieselProjections(com, path)
+        self.intertie_diesel_prices = \
+                it_diesel_prices.get_projected_prices (self.start_year,
+                                                        self.end_year)
+        
  
-    def calc_proposed_generation (self):
+ 
+    def calc_intertie_offset_generation (self):
         """
         """
         con = self.forecast.get_consumption(self.start_year,self.end_year)
         dist = self.comp_specs['nearest community']['Distance to Community']
-        annual_tranmission_loss = \
+        self.annual_tranmission_loss = \
             1 - ((1-self.comp_specs['transmission loss per mile']) ** dist)
-        self.proposed_generation = con/ (1 - annual_tranmission_loss)
+        self.intertie_offset_generation = \
+                        con * (1 + self.annual_tranmission_loss)
+        
+        gen_eff = self.intertie_generation_efficiency
+        self.intertie_offset_generation_fuel_used = \
+                        self.intertie_offset_generation / gen_eff
         #~ print 'self.proposed_generation',self.proposed_generation
         #~ print con
         
-    def calc_baseline_generation (self):
+    def calc_pre_intertie_generation (self):
         """
         """
         
-        self.baseline_generation = \
+        self.pre_intertie_generation = \
             self.forecast.get_generation(self.start_year,self.end_year)
         
         gen_eff = self.cd["diesel generation efficiency"]
-        self.baseline_generation_fuel_used = self.baseline_generation / gen_eff
+        self.pre_intertie_generation_fuel_used = \
+                        self.pre_intertie_generation / gen_eff
         
         #~ print 'self.baseline_generatio',self.baseline_generation
         
@@ -487,7 +571,7 @@ class Transmission (AnnualSavings):
 
             self.lost_heat_recovery  = [0]
         else:
-            self.lost_heat_recovery = self.baseline_generation_fuel_used
+            self.lost_heat_recovery = self.pre_intertie_generation_fuel_used 
     
     # Make this do stuff
     def calc_capital_costs (self):
@@ -517,12 +601,12 @@ class Transmission (AnnualSavings):
                 maintenance = self.comp_specs['diesel generator o&m'][kW]
                 
         base = maintenance + \
-            (self.baseline_generation_fuel_used * self.diesel_prices)
+            (self.pre_intertie_generation_fuel_used * self.diesel_prices)
         
         maintenance = self.capital_costs * self.comp_specs['percent o&m']
         proposed = maintenance + \
-            (self.proposed_generation * \
-                self.comp_specs['nearest community']['Maximum savings ($/kWh)'])
+                self.intertie_offset_generation_fuel_used * \
+                self.intertie_diesel_prices
         self.annual_electric_savings = base - proposed 
         #~ print 'self.annual_electric_savings',self.annual_electric_savings
         
