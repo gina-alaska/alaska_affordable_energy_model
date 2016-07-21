@@ -311,7 +311,9 @@ def preprocess_existing_projects (ppo):
     project_data = read_csv(os.path.join(ppo.data_dir,"wind_projects.csv"),
                            comment = '#',index_col = 0)
     
-    project_data = DataFrame(project_data.ix[ppo.com_id])
+    project_data = DataFrame(ppo.get_communities_data(project_data))
+    #~ print ppo.id_list
+    #~ print project_data
     if len(project_data.T) == 1 :
         project_data = project_data.T
 
