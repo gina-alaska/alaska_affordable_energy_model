@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.16.9]
+### updated
+- interties cost savings 
+
 ## [0.16.8]
 ### added
 - consumption col to village log
