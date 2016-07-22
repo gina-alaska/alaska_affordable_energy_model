@@ -255,6 +255,8 @@ def component_summary (coms, res_dir):
             diesel_red = hydro.captured_energy - hydro.lost_heat_recovery
             
             eff = hydro.cd["diesel generation efficiency"]
+            
+            levelized_cost = hydro.levelized_cost_of_energy
                 
             #~ except AttributeError:
                 #~ offset = 0
@@ -288,7 +290,7 @@ def component_summary (coms, res_dir):
                 
                 eff,
                 diesel_price,
-                
+                levelized_cost,
                 hydro.get_NPV_benefits(),
                 hydro.get_NPV_costs(),
                 hydro.get_NPV_net_benefit(),
@@ -317,6 +319,7 @@ def component_summary (coms, res_dir):
             'Hydro Power Reduction in Utility Diesel Consumed per year',
             'Diesel Generator Efficiency',
             'Diesel Price - year 1 [$]',
+            'Levelized Cost Of Energy $/gal',
             'Hydro NPV benefits [$]',
             'Hydro NPV Costs [$]',
             'Hydro NPV Net benefit [$]',
@@ -440,6 +443,9 @@ class Hydropower (AnnualSavings):
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
             
+            fuel_saved = self.get_fuel_total_saved()
+            self.calc_levelized_cost_of_energy(fuel_saved)
+            
     def calc_average_load (self):
         """
             calculate the average load of the system
@@ -502,6 +508,15 @@ class Hydropower (AnnualSavings):
 
     def calc_heat_recovery (self):
         """
+        caclulate heat recovery values used by component
+        pre:
+            self.percent_excess_energy is the precentage of excess energy
+        created in generation
+            self.gross_generation_proposed is a floating point value
+        post:
+            self.generation_diesel_reduction, self.lost_heat_recovery, 
+        and self.generation_diesel_reduction
+            
         """
         # %
        
@@ -540,7 +555,15 @@ class Hydropower (AnnualSavings):
 
     # Make this do stuff
     def calc_capital_costs (self):
-        """ Function Doc"""
+        """
+        calculate the captial costs
+        
+        pre:
+            the project details section of the hydro section is initlized
+        according to structure shown in load project detials
+        post:
+            self.capital_costs is the total cost of the project in dollars
+        """
         transmission_cost = \
             self.comp_specs['project details']['transmission capital cost']
         generator_cost = \
@@ -552,8 +575,16 @@ class Hydropower (AnnualSavings):
     # Make this do stuff
     def calc_annual_electric_savings (self):
         """
+        calculates the annual electric savings
+        pre:
+            self.captial_costs should be caclulated
+            self.comp_specs and self.cd should have all values nessary for 
+        this component.
+            self.diesel_prices should be intilized
+        post:
+            self.annual_electric_savings is the annual elctric savings in 
+        dollars
         """
-        
         proposed_generation_cost = self.capital_costs * \
                                 self.comp_specs['percent o&m']
                         
@@ -575,6 +606,15 @@ class Hydropower (AnnualSavings):
     # Make this do sruff. Remember the different fuel type prices if using
     def calc_annual_heating_savings (self):
         """
+        calcualte the annual heating savings
+        pre:
+            self.diesel_prices should be initilzed as a np.array of 
+        floats ($/gal)
+            self.cd should have all values initilzed as designed
+            self.captured_energy and self.lost_heat_recovery are [gallons]
+        post:
+            self.annual_heating_savings is an array or scaler in dollars
+        
         """
         price = (self.diesel_prices + self.cd['heating fuel premium'])
         
@@ -583,9 +623,19 @@ class Hydropower (AnnualSavings):
                 price
         #~ print 'self.annual_heating_savings', self.annual_heating_savings
         
+    def get_fuel_total_saved (self):
+        """
+        returns the total fuel saved in gallons
+        """
+    
+        return sum(np.zeros(self.project_life) + \
+                (self.captured_energy - self.lost_heat_recovery) + \
+                (self.generation_diesel_reduction))
+        
     def calc_break_even_fuel_price (self):
         """
         """
+        pass
         #savings = (price + ofset)(energy_diff)  + price * red+ const
         #captial_costs = price*ed + ofset*ed + price * red + const
         #captial_costs - const - ofset*ed = price (ed+red)
