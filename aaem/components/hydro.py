@@ -319,7 +319,7 @@ def component_summary (coms, res_dir):
             'Hydro Power Reduction in Utility Diesel Consumed per year',
             'Diesel Generator Efficiency',
             'Diesel Price - year 1 [$]',
-            'Levelized Cost Of Energy $/gal',
+            'Levelized Cost Of Energy [$/gal]',
             'Hydro NPV benefits [$]',
             'Hydro NPV Costs [$]',
             'Hydro NPV Net benefit [$]',

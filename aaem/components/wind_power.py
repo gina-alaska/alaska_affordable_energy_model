@@ -469,6 +469,7 @@ def component_summary (coms, res_dir):
                 electric_diesel_reduction=wind.electric_diesel_reduction
                 
                 diesel_red = wind.reduction_diesel_used
+                levelized_cost = wind.levelized_cost_of_energy
                 
                 eff = wind.cd["diesel generation efficiency"]
                 
@@ -480,6 +481,7 @@ def component_summary (coms, res_dir):
                 loss_heat = 0
                 
                 diesel_red = 0
+                levelized_cost = 0
                 eff = wind.cd["diesel generation efficiency"]    
                 
             #~ try:
@@ -504,6 +506,7 @@ def component_summary (coms, res_dir):
                 electric_diesel_reduction,
                 eff,
                 diesel_price,
+                levelized_cost,
                 wind.get_NPV_benefits(),
                 wind.get_NPV_costs(),
                 wind.get_NPV_net_benefit(),
@@ -532,6 +535,7 @@ def component_summary (coms, res_dir):
             'Net in Heating Oil Consumption [gal]',
             'Wind Power Reduction in Utility Diesel Consumed per year',
             'Diesel Denerator Efficiency','Diesel Price - year 1 [$]',
+            'Levelized Cost Of Energy [$/gal]',
             'Wind NPV benefits [$]',
             'Wind NPV Costs [$]',
             'Wind NPV Net benefit [$]',
@@ -677,6 +681,8 @@ class WindPower(AnnualSavings):
                 self.calc_annual_net_benefit()
                 self.calc_npv(self.cd['discount rate'], self.cd["current year"])
                 #~ print self.benefit_cost_ratio
+                fuel_saved = self.get_fuel_total_saved()
+                self.calc_levelized_cost_of_energy(fuel_saved)
         else:
             #~ print "wind project not feasiable"
             self.run = False
@@ -848,6 +854,14 @@ class WindPower(AnnualSavings):
         self.reduction_diesel_used = self.diesel_equiv_captured - \
                                      self.loss_heat_recovery
         #~ print 'self.reduction_diesel_used',self.reduction_diesel_used
+        
+    def get_fuel_total_saved (self):
+        """
+        returns the total fuel saved in gallons
+        """
+        return sum(np.zeros(self.project_life) + \
+                self.electric_diesel_reduction + self.reduction_diesel_used)    
+    
                                      
     def calc_maintainance_cost (self):
         """ 
