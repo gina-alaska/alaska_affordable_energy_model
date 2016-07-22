@@ -277,6 +277,9 @@ class CommunityBuildings (AnnualSavings):
             self.calc_annual_net_benefit()
             
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
+            
+            fuel_saved = self.get_fuel_total_saved()
+            self.calc_levelized_cost_of_energy(fuel_saved)
 
     def compare_num_buildings (self):
         """
@@ -599,6 +602,14 @@ class CommunityBuildings (AnnualSavings):
                 self.refit_HF_consumption*constants.mmbtu_to_gal_HF
         self.refit_kWh_consumption = self.baseline_kWh_consumption - \
                                                 self.refit_savings_kWh_total
+                                                
+    def get_fuel_total_saved (self):
+        """
+        returns the total fuel saved in gallons
+        """
+        gen_eff = self.cd["diesel generation efficiency"]
+        return sum(np.zeros(self.project_life) + self.refit_savings_HF_total +\
+                                self.refit_savings_kWh_total/gen_eff)
     def calc_capital_costs (self):
         """
         pre:
