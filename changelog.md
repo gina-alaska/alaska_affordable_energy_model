@@ -1,5 +1,12 @@
 #Change Log
 
+## [0.16.10]
+### updated
+- transmission component transmission loss per mile
+
+### added
+- documentation for interties.py (transmission comp)
+
 ## [0.16.9]
 ### updated
 - interties cost savings 
