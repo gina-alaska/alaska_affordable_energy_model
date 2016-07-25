@@ -371,7 +371,12 @@ class ASHPBase (AnnualSavings):
         """
         self.annual_heating_savings = self.baseline_heating_oil_cost - \
                                       self.proposed_ashp_operation_cost
-                                      
+                            
+    def get_fuel_total_saved (self):
+        """
+        returns the total fuel saved in gallons
+        """
+        return sum(np.zeros(self.project_life) + self.heating_oil_saved)
     
     def save_component_csv (self, directory):
         """
