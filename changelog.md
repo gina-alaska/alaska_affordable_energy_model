@@ -2,6 +2,11 @@
 
 ## [0.16.10]
 ### updated
+- transmission calculations for proposed intertie system, and heat recovery lost
+- transmission summary
+
+## [0.16.10]
+### updated
 - transmission component transmission loss per mile
 
 ### added

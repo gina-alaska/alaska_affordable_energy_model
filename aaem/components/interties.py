@@ -319,16 +319,32 @@ def component_summary (coms, res_dir):
 
             
             eff = it.cd["diesel generation efficiency"]
-            
+            try:
+                pre_price = it.pre_intertie_generation_fuel_used[0] * \
+                            diesel_price
+            except AttributeError:
+                pre_price = np.nan
+                
+            try:
+                post_price = it.intertie_offset_generation_fuel_used[0] * \
+                            diesel_price_it
+            except AttributeError:
+                post_price = np.nan
+                
             try:
                 eff_it = it.intertie_generation_efficiency
             except AttributeError:
                 eff_it = np.nan
-            #~ print (diesel_price_it/eff_it - diesel_price/eff)
+                
+            
+                
+            
             try:
                 losses = it.annual_tranmission_loss
             except AttributeError:
                 losses = np.nan
+                
+            
                 
             l = [c, 
                 connect_to,
@@ -347,6 +363,10 @@ def component_summary (coms, res_dir):
                 diesel_price,
                 diesel_price_it,
                 losses,
+                
+                pre_price,
+                post_price,
+                pre_price - post_price,
                 
                 it.get_NPV_benefits(),
                 it.get_NPV_costs(),
@@ -379,6 +399,10 @@ def component_summary (coms, res_dir):
             'Diesel Price - year 1 [$] in community to connect to',
             
             'Annual Transmission loss percentage',
+            
+            'Status Quo generation Cost (Year 1)',
+            'Proposed generation cost (Year 1)',
+            'Benefit from reduced generation cost (year 1)',
             
             'Transmission NPV benefits [$]',
             'Transmission NPV Costs [$]',
@@ -568,12 +592,13 @@ class Transmission (AnnualSavings):
             self.intertie_offset_generation_fuel_used is the fuel used 
         in generation gallons
         """
-        con = self.forecast.get_consumption(self.start_year,self.end_year)
+        self.generation = \
+                self.forecast.get_generation(self.start_year,self.end_year)
         dist = self.comp_specs['nearest community']['Distance to Community']
         self.annual_tranmission_loss = \
             1 - ((1-self.comp_specs['transmission loss per mile']) ** dist)
         self.intertie_offset_generation = \
-                        con * (1 + self.annual_tranmission_loss)
+                        self.generation * (1 + self.annual_tranmission_loss)
         
         gen_eff = self.intertie_generation_efficiency
         self.intertie_offset_generation_fuel_used = \
@@ -615,7 +640,9 @@ class Transmission (AnnualSavings):
 
             self.lost_heat_recovery  = [0]
         else:
-            self.lost_heat_recovery = self.pre_intertie_generation_fuel_used 
+            gen_eff = self.intertie_generation_efficiency
+            self.lost_heat_recovery = \
+                self.generation / gen_eff * .15 
     
     def calc_capital_costs (self):
         """ 
