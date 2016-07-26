@@ -11,7 +11,8 @@ comp_lib = {
     'ASHP residential': 'ashp_res',
     'ASHP non-residential': 'ashp_non-res',
     'Hydropower': 'hydro',
-    'transmission': 'interties'
+    'transmission': 'interties',
+    'heat recovery': 'heat_recovery',
         }
 
 comp_order = ["residential buildings",
@@ -24,7 +25,8 @@ comp_order = ["residential buildings",
               'ASHP residential',
               'ASHP non-residential',
               'Hydropower',
-              'transmission',]
+              'transmission',
+              'heat recovery',]
 
 def get_raw_data_files():
     raw_data_files = []
