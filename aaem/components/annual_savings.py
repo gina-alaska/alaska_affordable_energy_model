@@ -87,7 +87,7 @@ class AnnualSavings (object):
         self.net_npv = np.npv(rate, 
                        np.append(yts, self.annual_net_benefit[:end]))
         
-    def calc_levelized_cost_of_energy (self, fuel_saved):
+    def calc_levelized_cost_of_energy (self, fuel_saved, maintainence=0):
         """
         calculates the levelized cost of energy
         pre:
@@ -96,7 +96,7 @@ class AnnualSavings (object):
         post:
             self.levelized_cost_of_energy has units [$/gal]
         """
-        self.levelized_cost_of_energy = self.cost_npv / fuel_saved
+        self.levelized_cost_of_energy = (self.cost_npv + maintainence)/ fuel_saved
         
     
     def set_project_life_details (self, start_year,project_life,fc_period = 25):

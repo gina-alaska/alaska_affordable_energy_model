@@ -444,7 +444,12 @@ class Hydropower (AnnualSavings):
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
             
             fuel_saved = self.get_fuel_total_saved()
-            self.calc_levelized_cost_of_energy(fuel_saved)
+            
+            o_m = 0 #sum(np.zeros(self.project_life) + \
+                       # self.net_generation_proposed * \
+                        #self.cd['diesel generator o&m cost'])
+        
+            self.calc_levelized_cost_of_energy(fuel_saved, o_m)
             
     def calc_average_load (self):
         """
