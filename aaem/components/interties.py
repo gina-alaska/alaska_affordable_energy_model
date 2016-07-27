@@ -546,7 +546,8 @@ class Transmission (AnnualSavings):
             #~ print self.benefit_cost_ratio
             
             fuel_saved = self.get_fuel_total_saved()
-            self.calc_levelized_cost_of_energy(fuel_saved)
+            self.calc_levelized_cost_of_energy(fuel_saved, 
+                                self.comp_specs['heat recovery o&m'])
             
     def calc_average_load (self):
         """
@@ -655,7 +656,7 @@ class Transmission (AnnualSavings):
         else:
             gen_eff = self.cd["diesel generation efficiency"]
             self.lost_heat_recovery = \
-                self.generation / gen_eff * .15 
+                (self.generation / gen_eff )* .10
     
     def calc_capital_costs (self):
         """ 
@@ -734,8 +735,7 @@ class Transmission (AnnualSavings):
         fuel_used = self.intertie_offset_generation / gen_eff
         
         generation_diesel_reduction = \
-                    np.array(self.pre_intertie_generation_fuel_used) - \
-                    np.array(self.intertie_offset_generation_fuel_used)
+                    np.array(self.pre_intertie_generation_fuel_used) 
         return sum(- np.array(self.lost_heat_recovery) + \
                     generation_diesel_reduction)
 
