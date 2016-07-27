@@ -463,27 +463,51 @@ class HeatRecovery (AnnualSavings):
         b2 = self.comp_specs['estimate data']\
                     ['Add waste heat Avail']
                     
-        ### ASK NEIL ABOUT THIS            
+              
         
-        if b1 == 'Yes' and b2 == 'Yes':
-            hr_availble = 0
-
-        elif b1 == 'Yes' and b2 == 'No':
-            hr_availble = 0
-        else:
-            generation = self.forecast.generation_by_type['generation diesel']\
+        current_hr = self.comp_specs['estimate data']\
+                    ['Est. current annual heating fuel gallons displaced']  
+        potential_hr = self.comp_specs['estimate data']\
+                    ['Est. potential annual heating fuel gallons displaced']
+        generation = self.forecast.generation_by_type['generation diesel']\
                                                             [self.start_year]
-    
-                                                            
-            gen_eff = self.cd["diesel generation efficiency"]
+        gen_eff = self.cd["diesel generation efficiency"]
         
-            # gallons 
-            diesel_consumed = generation / gen_eff
-        
-            hr_availble = self.comp_specs['percent heat recovery'] * \
+        # gallons 
+        diesel_consumed = generation / gen_eff
+        hr_availble = self.comp_specs['percent heat recovery'] * \
                           diesel_consumed
+        #notes
+        #if b1 == 'Yes' and b2 == 'Yes':
+        #   if hr_used is known and hr_extra is not
+        #      hr_used, hr_extra = .30 * hr_available
+        #   if hr_used is unknown and hr_extra is unknown
+        #      hr_used= .70 * hr_available, hr_extra = .30 * hr_available
+        #if b1 == 'Yes' and b2 == 'no':
+        #   if hr_used is known:
+        #       hr_used
+        #   else:
+        #       hr_used = hr_avaiavble
+        #if b1 == 'No' and b2 == 'No':
+        #   system needs to be installes
         
-        # gallons: What is the .75
+        try:
+            np.isnan(current_hr)
+        except TypeError:
+            current_hr = np.nan
+            
+        try:
+            np.isnan(potential_hr)
+        except TypeError:
+            potential_hr = np.nan
+        
+        if b1 == 'Yes' and b2 == 'Yes' and \
+                       not np.isnan(current_hr) and np.isnan(potential_hr):
+            
+            hr_availble = current_hr + ((hr_availble) * .30)
+            
+        
+
         
         self.proposed_heat_recovery = hr_availble / \
                                 self.comp_specs['heating conversion efficiency']
@@ -519,7 +543,7 @@ class HeatRecovery (AnnualSavings):
     def calc_annual_heating_savings (self):
         """
         """
-        price = price = (self.diesel_prices + self.cd['heating fuel premium'])
+        price = (self.diesel_prices + self.cd['heating fuel premium'])
         
         self.annual_heating_savings = self.proposed_heat_recovery * price + \
                                       self.comp_specs['o&m per year']
