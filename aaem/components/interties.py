@@ -38,7 +38,7 @@ yaml = {'enabled': False,
         "project details": IMPORT,
         'lifetime': 'ABSOLUTE DEFAULT',
         'start year': 'ABSOLUTE DEFAULT',
-        'transmission loss per mile': .1,
+        'transmission loss per mile': .001,
         'nearest community': IMPORT,
         'heat recovery o&m' : 1500,
         'on road system': IMPORT,
@@ -252,6 +252,12 @@ yaml_not_to_save = []
 ## component summary
 def component_summary (coms, res_dir):
     """
+    save the component summary
+    
+    pre:
+        res_dir: is a directory 
+        coms: set of results retuned from running the model.
+            component should exist for some communites in coms
     """
     out = []
     for c in sorted(coms.keys()):
@@ -317,16 +323,32 @@ def component_summary (coms, res_dir):
                 levelized_cost = 0
             
             eff = it.cd["diesel generation efficiency"]
-            
+            try:
+                pre_price = it.pre_intertie_generation_fuel_used[0] * \
+                            diesel_price
+            except AttributeError:
+                pre_price = np.nan
+                
+            try:
+                post_price = it.intertie_offset_generation_fuel_used[0] * \
+                            diesel_price_it
+            except AttributeError:
+                post_price = np.nan
+                
             try:
                 eff_it = it.intertie_generation_efficiency
             except AttributeError:
                 eff_it = np.nan
-            #~ print (diesel_price_it/eff_it - diesel_price/eff)
+                
+            
+                
+            
             try:
                 losses = it.annual_tranmission_loss
             except AttributeError:
                 losses = np.nan
+                
+            
                 
             l = [c, 
                 connect_to,
@@ -347,6 +369,12 @@ def component_summary (coms, res_dir):
                 losses,
                 
                 levelized_cost,
+
+                pre_price,
+                post_price,
+                pre_price - post_price,
+                
+
                 it.get_NPV_benefits(),
                 it.get_NPV_costs(),
                 it.get_NPV_net_benefit(),
@@ -379,7 +407,13 @@ def component_summary (coms, res_dir):
             
             'Annual Transmission loss percentage',
             
+
             'Levelized Cost Of Energy [$/gal]',
+
+            'Status Quo generation Cost (Year 1)',
+            'Proposed generation cost (Year 1)',
+            'Benefit from reduced generation cost (year 1)',
+            
             'Transmission NPV benefits [$]',
             'Transmission NPV Costs [$]',
             'Transmission NPV Net benefit [$]',
@@ -515,13 +549,28 @@ class Transmission (AnnualSavings):
             self.calc_levelized_cost_of_energy(fuel_saved)
             
     def calc_average_load (self):
-        """"""
+        """
+        calculate the average diesel load
+        pre:
+            self.forecast must have the genneration_by_type table
+        post:
+            self.generation is the total generation of the first year 
+        a kWh value
+            self.average_load is the average load for the firest year in kW
+        """
         self.generation = self.forecast.generation_by_type['generation diesel']\
                                                             [self.start_year]
         self.average_load = self.generation / constants.hours_per_year
         
     def get_intertie_values (self):
         """
+        get values from the community being connected to (second community)
+        pre:
+            the input_data for the second communty shoud exist 
+        post:
+            self.intertie_generation_efficiency is the efficiency kWh/gal
+            self.intertie_diesel_prices is an array of prices over the project
+        life time
         """
         com = self.comp_specs['nearest community']\
                 ['Nearest Community with Lower Price Power'].replace(' ','_')
@@ -541,18 +590,28 @@ class Transmission (AnnualSavings):
         self.intertie_diesel_prices = \
                 it_diesel_prices.get_projected_prices (self.start_year,
                                                         self.end_year)
-        
- 
- 
+
     def calc_intertie_offset_generation (self):
         """
+            calculate the generation offset by connecting a transmission line 
+        to the community to connect to.
+        pre:
+            self.forecast needs to have the consumpton forecasted
+            self.intertie_generation_efficiency must exist
+        post:
+            self.annual_tranmission_loss is the percent electrcity lost by
+        transmission
+            self.intertie_offset_generation is the genneration off set in kWh
+            self.intertie_offset_generation_fuel_used is the fuel used 
+        in generation gallons
         """
-        con = self.forecast.get_consumption(self.start_year,self.end_year)
+        self.generation = \
+                self.forecast.get_generation(self.start_year,self.end_year)
         dist = self.comp_specs['nearest community']['Distance to Community']
         self.annual_tranmission_loss = \
             1 - ((1-self.comp_specs['transmission loss per mile']) ** dist)
         self.intertie_offset_generation = \
-                        con * (1 + self.annual_tranmission_loss)
+                        self.generation * (1 + self.annual_tranmission_loss)
         
         gen_eff = self.intertie_generation_efficiency
         self.intertie_offset_generation_fuel_used = \
@@ -562,6 +621,14 @@ class Transmission (AnnualSavings):
         
     def calc_pre_intertie_generation (self):
         """
+        calculate the status quo generation in the community 
+        
+        pre:
+            self.forecast needs to have the generation forecasted 
+        post:
+            self.pre_intertie_generation is the generaty per year in kWh
+            self.pre_intertie_generation_fuel_used is the fuel used 
+        in generation gallons
         """
         
         self.pre_intertie_generation = \
@@ -575,16 +642,30 @@ class Transmission (AnnualSavings):
         
     def calc_lost_heat_recovery (self):
         """
+        calculate the heat recovery
+        pre:
+            self.cd is ready
+        post:
+            self.lost_heat_recovery is an array of the heat recovry lost per 
+        year in gallons heating fuel
         """
         if not self.cd['heat recovery operational']:
 
             self.lost_heat_recovery  = [0]
         else:
-            self.lost_heat_recovery = self.pre_intertie_generation_fuel_used 
+            gen_eff = self.intertie_generation_efficiency
+            self.lost_heat_recovery = \
+                self.generation / gen_eff * .15 
     
-    # Make this do stuff
     def calc_capital_costs (self):
-        """ Function Doc"""
+        """ 
+        calculate the captial costs
+        
+        pre:
+            self.comp_specs set up
+        post:
+            self.captial costs is the total cost of the project $
+        """
         road_needed = 'road needed'
         if self.comp_specs['on road system']:
             road_needed = 'road not needed'
@@ -598,6 +679,14 @@ class Transmission (AnnualSavings):
     # Make this do stuff
     def calc_annual_electric_savings (self):
         """
+        calcualte the annual elctric savings in dollars
+        pre:
+            self.intertie_offset_generation_fuel_used, 
+            self.intertie_diesel_prices, 
+            self.pre_intertie_generation_fuel_used, 
+            self.diesel_prices should exist
+        post:
+            self.annual_electric_savings is the savings in dollars per year
         """
         costs = self.comp_specs['diesel generator o&m']
             
@@ -623,6 +712,11 @@ class Transmission (AnnualSavings):
     # Make this do sruff. Remember the different fuel type prices if using
     def calc_annual_heating_savings (self):
         """
+        calculate the annual heating savings
+        pre:
+            self.diesel_prices, self.lost_heat_recovery should exist
+        post:
+            self.annual_heating_savings is the savings in dollars per year
         """
         price = self.diesel_prices + self.cd['heating fuel premium']
         maintenance = self.comp_specs['heat recovery o&m']
