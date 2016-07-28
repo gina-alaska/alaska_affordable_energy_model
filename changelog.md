@@ -1,6 +1,13 @@
 #Change Log
 
-## [0.16.10]
+## [0.16.12]
+### added
+- levelized cost of energy, and break even costs added to components 
+
+### updated
+- biomass includes maintanance cost in savings
+
+## [0.16.11]
 ### updated
 - transmission calculations for proposed intertie system, and heat recovery lost
 - transmission summary
