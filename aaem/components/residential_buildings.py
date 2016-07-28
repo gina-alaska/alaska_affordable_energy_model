@@ -163,6 +163,29 @@ class ResidentialBuildings(AnnualSavings):
             self.calc_annual_net_benefit()
             
             self.calc_npv(self.cd['discount rate'], self.cd['current year'])
+            self.calc_levelized_costs(0)
+            
+    def get_fuel_total_saved (self):
+        """
+        returns the total fuel saved in gallons
+        """
+        base_heat = \
+            sum(self.baseline_fuel_Hoil_consumption[:self.actual_project_life])
+        post_heat = \
+            sum(self.refit_fuel_Hoil_consumption[:self.actual_project_life])
+       
+        ## same, so can ignore
+        #~ base_elec =self.baseline_kWh_consumption 
+        #~ post_elec =self.baseline_kWh_consumption 
+        
+        return base_heat - post_heat
+                                
+    def get_total_enery_produced (self):
+        """
+        returns the total energy produced
+        """
+        # no electric
+        return sum(self.refit_HF_consumption[:self.actual_project_life])
     
     def calc_avg_consumption (self):
         """ 
