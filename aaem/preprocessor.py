@@ -45,7 +45,7 @@ def growth(xs, ys , x):
 
 
 class Preprocessor (object):
-    MODEL_FILES = {"DIESEL_PRICES": "diesel_fuel_prices.csv",
+    MODEL_FILES = {"DIESEL_PRICES": "diesel_prices_community.csv",
                "HDD": "hdd.csv",
                "CPI": "cpi.csv",
                "COM_BUILDING_EST": "com_building_estimates.csv",
@@ -102,7 +102,7 @@ class Preprocessor (object):
         self.prices()
 
         ### copy files that still need their own preprocessor function yet
-        shutil.copy(os.path.join(data_dir,"diesel_fuel_prices.csv"), out_dir)
+        #~ shutil.copy(os.path.join(data_dir,"diesel_fuel_prices.csv"), out_dir)
         shutil.copy(os.path.join(data_dir,"cpi.csv"), out_dir)
 
         ###
@@ -1438,7 +1438,15 @@ class Preprocessor (object):
         
         
         ## update the way diesel works at some point
-        #~ self.prices_diesel()
+        out_file = os.path.join(self.out_dir, "diesel_prices_community.csv")
+    
+        fd = open(out_file,'w')
+        fd.write("# diesel prices for " + self.com_id + '\n')
+        fd.close()
+        
+        diesel_prices = self.prices_diesel()
+        diesel_prices.T.to_csv(out_file, mode = 'a')
+        
         
 
     def prices_propane (self):
@@ -1466,7 +1474,17 @@ class Preprocessor (object):
             data = np.array(data.values[0][3:], dtype = np.float64)
        
         except IndexError:
+            self.diagnostics.add_note('Diesel Prices', 
+                        'Not found. Using regional average')
+            
+            keys = read_csv(os.path.join(self.data_dir, "community_list.csv"),
+            index_col=1, comment="#", header=0)
+            energy_region = str(keys['Energy Region'][self.com_id])
+            keys = keys[keys['Energy Region'] == energy_region].index.tolist()
+            
+            
             data = read_csv(in_file, index_col=3, comment="#", header=0)
+            data = data.ix[keys]
             keys = data.keys()[3:]
             data = np.array(data.mean().values[2:], dtype = np.float64)
             
