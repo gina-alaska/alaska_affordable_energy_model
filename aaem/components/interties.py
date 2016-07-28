@@ -738,16 +738,20 @@ class Transmission (AnnualSavings):
         #~ print self.pre_intertie_generation_fuel_used
         #~ gen_eff = self.cd["diesel generation efficiency"]
         #~ fuel_used = self.intertie_offset_generation / gen_eff
+        
         generation_diesel_reduction = \
-                    np.array(self.pre_intertie_generation_fuel_used) 
-        return sum(- np.array(self.lost_heat_recovery) + \
-                    generation_diesel_reduction)
+                    np.array(self.pre_intertie_generation_fuel_used\
+                                                [:self.actual_project_life]) 
+        return sum(- np.array(self.lost_heat_recovery\
+                    [:self.actual_project_life]) + \
+                        generation_diesel_reduction)
     
     def get_total_enery_produced (self):
         """
         returns the total energy produced
         """
-        return sum(np.zeros(self.project_life) + self.pre_intertie_generation) 
+        return sum(np.zeros(self.actual_project_life) + \
+                                self.pre_intertie_generation) 
 
     
 component = Transmission

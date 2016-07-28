@@ -102,7 +102,8 @@ class AnnualSavings (object):
         yts = np.zeros((self.start_year - self.cd["current year"])+1)
         
         if not type(maintenance) in [list,np.ndarray]:
-            maintenance = yts + maintenance
+            maintenance = list(yts) + \
+                    list((np.zeros(self.actual_project_life) + maintenance))
         maintenance = np.array(maintenance)
         
         maintenance_npv = np.npv(self.cd['discount rate'], 

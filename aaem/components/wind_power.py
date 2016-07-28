@@ -861,14 +861,15 @@ class WindPower(AnnualSavings):
         """
         returns the total fuel saved in gallons
         """
-        return sum(np.zeros(self.project_life) + \
+        return sum(np.zeros(self.actual_project_life) + \
                 self.electric_diesel_reduction + self.reduction_diesel_used)    
     
     def get_total_enery_produced (self):
         """
         returns the total energy produced
         """
-        return sum(np.zeros(self.project_life) + self.net_generation_wind) 
+        return sum(np.zeros(self.actual_project_life) + \
+                        self.net_generation_wind) 
                                      
     def calc_maintainance_cost (self):
         """ 

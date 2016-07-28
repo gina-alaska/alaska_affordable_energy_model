@@ -634,7 +634,7 @@ class Hydropower (AnnualSavings):
         returns the total fuel saved in gallons
         """
     
-        return sum(np.zeros(self.project_life) + \
+        return sum(np.zeros(self.actual_project_life) + \
                 (self.captured_energy - self.lost_heat_recovery) + \
                 (self.generation_diesel_reduction))
     
@@ -642,7 +642,8 @@ class Hydropower (AnnualSavings):
         """
         returns the total energy produced
         """
-        return sum(np.zeros(self.project_life) + self.net_generation_proposed) 
+        return sum(np.zeros(self.actual_project_life) + \
+                    self.net_generation_proposed) 
         
     def save_component_csv (self, directory):
         """

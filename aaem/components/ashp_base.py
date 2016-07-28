@@ -379,7 +379,7 @@ class ASHPBase (AnnualSavings):
         """
         eff = self.cd["diesel generation efficiency"]
         proposed = self.electric_consumption/eff
-        return sum(np.zeros(self.project_life) + \
+        return sum(np.zeros(self.actual_project_life) + \
                                 (self.heating_oil_saved ))#- proposed ))
                                 
     def get_total_enery_produced (self):
