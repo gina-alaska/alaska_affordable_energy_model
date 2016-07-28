@@ -260,7 +260,8 @@ class BiomassBase (AnnualSavings):
         """ 
             calcualte cost of biomass fuel
         """
-        self.proposed_biomass_cost = price * self.biomass_fuel_consumed
+        self.proposed_biomass_cost = price * self.biomass_fuel_consumed + \
+                        self.maintenance_cost
         
     def calc_displaced_heating_oil_price (self):
         """
