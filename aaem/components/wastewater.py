@@ -299,8 +299,8 @@ class WaterWastewaterSystems (AnnualSavings):
             self.calc_annual_costs(self.cd['interest rate'])
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
+            self.calc_levelized_costs(0)
 
-        
     
     def calc_baseline_kWh_consumption (self):
         """
@@ -460,8 +460,6 @@ class WaterWastewaterSystems (AnnualSavings):
         self.savings_HF_consumption = \
                 self.baseline_HF_consumption - \
                 self.refit_HF_consumption
-
-        
             
     def calc_capital_costs (self, cost_per_person = 450):
         """
@@ -481,6 +479,39 @@ class WaterWastewaterSystems (AnnualSavings):
         if np.isnan(self.capital_costs) or self.capital_costs ==0:
             self.capital_costs = float(self.comp_specs["audit cost"]) + \
                                         self.pop *  self.cost_per_person
+                                        
+    def get_fuel_total_saved (self):
+        """
+        returns the total fuel saved in gallons
+        """
+        base_heat = \
+            sum(self.baseline_fuel_Hoil_consumption[:self.actual_project_life])
+        
+        proposed_heat = \
+            sum(self.refit_fuel_Hoil_consumption[:self.actual_project_life])
+            
+        
+        base_elec = sum(self.baseline_kWh_consumption\
+                            [:self.actual_project_life]) / \
+                                self.cd["diesel generation efficiency"]
+        
+        proposed_elec = sum(self.baseline_kWh_consumption\
+                            [:self.actual_project_life]) / \
+                                self.cd["diesel generation efficiency"]
+        
+        return (base_heat - proposed_heat) + (base_elec - proposed_elec)
+                                
+    def get_total_enery_produced (self):
+        """
+        returns the total energy produced
+        """
+        return {'kWh': 
+                    sum(self.refit_kWh_consumption[:self.actual_project_life]), 
+                'MMBtu':
+                    sum(self.refit_fuel_Hoil_consumption\
+                        [:self.actual_project_life])*\
+                        (1/constants.mmbtu_to_gal_HF)
+               }
     
 # set WaterWastewaterSystems as component 
 component = WaterWastewaterSystems
