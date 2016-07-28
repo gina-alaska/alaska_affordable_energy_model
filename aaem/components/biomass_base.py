@@ -307,7 +307,23 @@ class BiomassBase (AnnualSavings):
         """
         self.annual_heating_savings = self.displaced_heating_oil_price -\
                                       self.proposed_biomass_cost 
+
+    def get_fuel_total_saved (self):
+        """
+        returns the total fuel saved in gallons
+        """
+        return sum(np.zeros(self.actual_project_life) + \
+                    self.heat_diesel_displaced)
                                 
+    def get_total_enery_produced (self):
+        """
+        returns the total energy produced
+        """
+        return sum(np.zeros(self.actual_project_life) + \
+                    self.biomass_fuel_consumed / \
+                        constants.hours_per_year * \
+                        self.comp_specs['energy density'])
+
     def save_component_csv (self, directory):
         """
         save the component output csv in directory

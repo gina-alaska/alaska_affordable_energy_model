@@ -386,7 +386,7 @@ class ASHPBase (AnnualSavings):
         """
         returns the total energy produced
         """
-        return sum(np.zeros(self.project_life) + \
+        return sum(np.zeros(self.actual_project_life) + \
                     self.heat_energy_produced_per_year) 
                                      
     
