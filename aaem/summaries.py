@@ -105,7 +105,9 @@ def com_log (coms, res_dir):
                 com.get_NPV_net_benefit(),com.get_BC_ratio(),
                 com.hoil_price[0], com.elec_price[0], 
                 com.num_buildings , com.refit_sqft_total,
-                com.levelized_cost_of_energy,
+                com.break_even_cost,
+                com.levelized_cost_of_energy['MMBtu'],
+                com.levelized_cost_of_energy['kWh'],
                 com.baseline_fuel_Hoil_consumption,
                 com.baseline_kWh_consumption,
                 savings,
@@ -124,11 +126,13 @@ def com_log (coms, res_dir):
             '$ per kWh - year 1',
             'Number Nonresidential Buildings',
             'Nonresidential Total Square Footage',
-            'levelized_cost_of_energy ($/gal)',
+            'Break Even Diesel Price [$/gal]',
+            'Levelized_cost_of_energy [$/MMBtu]',
+            'Levelized_cost_of_energy [$/kWh]',
             'Nonresidential Heating Oil Consumed(gal) - year 1',
             'Nonresidential Electricity Consumed(kWh) - year 1',
-            'Nonresidential Efficiency Heating Oil Saved(gal/year)',
-            'Nonresidential Efficiency Electricity Saved(kWh/year)']
+            'Nonresidential Efficiency Heating Oil Saved[gal/year]',
+            'Nonresidential Efficiency Electricity Saved[kWh/year]']
             
     data = DataFrame(out,columns = cols).set_index('community').round(2)
     f_name = os.path.join(res_dir,'non-residential_summary.csv')

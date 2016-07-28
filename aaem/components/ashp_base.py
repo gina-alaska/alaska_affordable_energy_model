@@ -215,7 +215,7 @@ class ASHPBase (AnnualSavings):
     def calc_heat_energy_produced_per_year (self):
         """
         """
-        self.heat_energy_produced_per_year = 75*12
+        #~ self.heat_energy_produced_per_year = None
         pass # depends on child to implement
         
     def calc_heat_energy_produced_per_month (self):
@@ -299,7 +299,8 @@ class ASHPBase (AnnualSavings):
         
         factor_1 = (self.monthly_value_table['COP'] *\
                    self.monthly_value_table['% of total heating']).sum()
-        factor_2 = self.monthly_value_table['% of total heating'][self.monthly_value_table['COP'] > 0].sum()
+        factor_2 = self.monthly_value_table['% of total heating']\
+                                    [self.monthly_value_table['COP'] > 0].sum()
             
         self.average_cop = factor_1 / factor_2
       
@@ -379,7 +380,15 @@ class ASHPBase (AnnualSavings):
         eff = self.cd["diesel generation efficiency"]
         proposed = self.electric_consumption/eff
         return sum(np.zeros(self.project_life) + \
-                                (self.heating_oil_saved - proposed ))
+                                (self.heating_oil_saved ))#- proposed ))
+                                
+    def get_total_enery_produced (self):
+        """
+        returns the total energy produced
+        """
+        return sum(np.zeros(self.project_life) + \
+                    self.heat_energy_produced_per_year) 
+                                     
     
     def save_component_csv (self, directory):
         """

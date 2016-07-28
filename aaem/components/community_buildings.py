@@ -278,8 +278,8 @@ class CommunityBuildings (AnnualSavings):
             
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
             
-            fuel_saved = self.get_fuel_total_saved()
-            self.calc_levelized_cost_of_energy(fuel_saved)
+            ## no maintaince cost
+            self.calc_levelized_costs(0)
 
     def compare_num_buildings (self):
         """
@@ -610,6 +610,19 @@ class CommunityBuildings (AnnualSavings):
         gen_eff = self.cd["diesel generation efficiency"]
         return sum(np.zeros(self.project_life) + self.refit_savings_HF_total +\
                                 self.refit_savings_kWh_total/gen_eff)
+                                
+    def get_total_enery_produced (self):
+        """
+        returns the total energy produced
+        """
+        return {'kWh': 
+                  sum(np.zeros(self.project_life) + self.refit_kWh_consumption), 
+                'MMBtu':
+                  sum(np.zeros(self.project_life) + \
+                    self.refit_fuel_Hoil_consumption)*\
+                    (1/constants.mmbtu_to_gal_HF)
+               }
+        
     def calc_capital_costs (self):
         """
         pre:

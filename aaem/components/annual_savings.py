@@ -87,16 +87,62 @@ class AnnualSavings (object):
         self.net_npv = np.npv(rate, 
                        np.append(yts, self.annual_net_benefit[:end]))
         
-    def calc_levelized_cost_of_energy (self, fuel_saved, maintainence=0):
+    def calc_cost_of_energy (self, fuel_amount, maintenance = 0):
         """
-        calculates the levelized cost of energy
+        calculates the cost of energy
         pre:
-            fuel_saved is the gallons of diesel saved over the life of 
-        the project
+            fuel_amount is a the amount of fuel generated, used or saved
+        units may vary (i.e. kWh, gal..)
+            maintenance is the operation and maintenance cost per year as a 
+        scaler, list, or np.array 
+            
         post:
-            self.levelized_cost_of_energy has units [$/gal]
+            returns a price in $/[units of fuel_amount]
         """
-        self.levelized_cost_of_energy = (self.cost_npv + maintainence)/ fuel_saved
+        yts = np.zeros((self.start_year - self.cd["current year"])+1)
+        
+        if not type(maintenance) in [list,np.ndarray]:
+            maintenance = yts + maintenance
+        maintenance = np.array(maintenance)
+        
+        maintenance_npv = np.npv(self.cd['discount rate'], 
+                                    np.append(yts, maintenance))
+        
+        return (self.cost_npv + maintenance_npv)/ fuel_amount
+        
+    def calc_levelized_costs (self, maintenance_costs):
+        """
+        calculate the levelized costs
+        pre:
+            maintenance_costs is the operation and maintenance cost per year
+            self.get_fuel_total_saved(), and self.get_total_enery_produced (), 
+        must exitst and return numbers representing fuel saved, anenergy 
+        produced or a dict with 'MMBtu' and 'kWh' as keys whose values are 
+        numbers
+        post:
+            self.break_even_cost is the break even cost in $/gal
+            self.levelized_cost_of_energy is the LCOE in $/kWh for 
+        electricity projects, and $/MMBtu for heating projects
+            for projectes with electricity efficciency and heating efficiency 
+        self.levelized_cost_of_energy is a dictonary wiht 'MMBtu' and 'kWh' 
+        as keys
+        """
+        fuel_saved = self.get_fuel_total_saved()
+        self.break_even_cost = \
+            self.calc_cost_of_energy(fuel_saved, maintenance_costs)
+                                        
+        energy_produced = self.get_total_enery_produced ()
+        if type(energy_produced) is dict:
+            self.levelized_cost_of_energy = {}
+            self.levelized_cost_of_energy['MMBtu'] = \
+                self.calc_cost_of_energy(energy_produced['MMBtu'],
+                                         maintenance_costs)
+            self.levelized_cost_of_energy['kWh'] = \
+                self.calc_cost_of_energy(energy_produced['kWh'],
+                                         maintenance_costs)
+        else:
+            self.levelized_cost_of_energy = \
+                self.calc_cost_of_energy(energy_produced, maintenance_costs)
         
     
     def set_project_life_details (self, start_year,project_life,fc_period = 25):

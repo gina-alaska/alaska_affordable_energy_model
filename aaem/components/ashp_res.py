@@ -86,6 +86,11 @@ def component_summary (coms, res_dir):
             except AttributeError:
                 levelized_cost = 0
                 
+            try:
+                break_even = ashp.break_even_cost
+            except AttributeError:
+                break_even = 0
+                
             l = [c, 
                  ashp.average_cop,
                  ashp.num_houses,
@@ -94,6 +99,7 @@ def component_summary (coms, res_dir):
                  ashp.electric_consumption,
                  ashp.heating_oil_saved,
                  ashp.electric_heat_energy_reduction,
+                 break_even,
                  levelized_cost,
                  ashp.get_NPV_benefits(),
                  ashp.get_NPV_costs(),
@@ -117,7 +123,8 @@ def component_summary (coms, res_dir):
              'ASHP Residential kWh consumed per year',
              "ASHP Residential Displaced Heating Oil [Gal]",
              "ASHP Residential Displaced Electricity [kWh]",
-             'Levelized Cost Of Energy [$/gal]',
+             'Break Even Diesel Price [$/gal]',
+             'Levelized Cost Of Energy [$/MMBtu]',
              'ASHP Residential NPV benefits [$]',
              'ASHP Residential NPV Costs [$]',
              'ASHP Residential NPV Net benefit [$]',
@@ -258,8 +265,7 @@ class ASHPResidential (ashp_base.ASHPBase):
         #~ print 'self.proposed_ashp_operation_cost',self.proposed_ashp_operation_cost
         #~ print self.capital_costs
         #~ print self.benefit_cost_ratio
-            fuel_saved = self.get_fuel_total_saved()
-            self.calc_levelized_cost_of_energy(fuel_saved)
+            self.calc_levelized_costs(self.comp_specs["o&m per year"])
 
 
     def calc_capital_costs (self):

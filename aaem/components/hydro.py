@@ -257,7 +257,7 @@ def component_summary (coms, res_dir):
             eff = hydro.cd["diesel generation efficiency"]
             
             levelized_cost = hydro.levelized_cost_of_energy
-                
+            break_even = hydro.break_even_cost
             #~ except AttributeError:
                 #~ offset = 0
                 #~ net_gen_hydro = 0
@@ -290,6 +290,7 @@ def component_summary (coms, res_dir):
                 
                 eff,
                 diesel_price,
+                break_even,
                 levelized_cost,
                 hydro.get_NPV_benefits(),
                 hydro.get_NPV_costs(),
@@ -318,8 +319,10 @@ def component_summary (coms, res_dir):
             'Net Reduction in Heating Oil Consumption [gal]',
             'Hydro Power Reduction in Utility Diesel Consumed per year',
             'Diesel Generator Efficiency',
-            'Diesel Price - year 1 [$]',
-            'Levelized Cost Of Energy [$/gal]',
+            'Diesel Price - year 1 [$/gal]',
+            'Break Even Diesel Price [$/gal]',
+            
+            'Levelized Cost Of Energy [$/kWh]',
             'Hydro NPV benefits [$]',
             'Hydro NPV Costs [$]',
             'Hydro NPV Net benefit [$]',
@@ -443,13 +446,11 @@ class Hydropower (AnnualSavings):
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
             
-            fuel_saved = self.get_fuel_total_saved()
             
-            o_m = 0 #sum(np.zeros(self.project_life) + \
-                       # self.net_generation_proposed * \
-                        #self.cd['diesel generator o&m cost'])
+            o_m = self.net_generation_proposed * \
+                    self.cd['diesel generator o&m cost']
         
-            self.calc_levelized_cost_of_energy(fuel_saved, o_m)
+            self.calc_levelized_costs(o_m)
             
     def calc_average_load (self):
         """
@@ -636,15 +637,12 @@ class Hydropower (AnnualSavings):
         return sum(np.zeros(self.project_life) + \
                 (self.captured_energy - self.lost_heat_recovery) + \
                 (self.generation_diesel_reduction))
-        
-    def calc_break_even_fuel_price (self):
+    
+    def get_total_enery_produced (self):
         """
+        returns the total energy produced
         """
-        pass
-        #savings = (price + ofset)(energy_diff)  + price * red+ const
-        #captial_costs = price*ed + ofset*ed + price * red + const
-        #captial_costs - const - ofset*ed = price (ed+red)
-        # price = (capex - const)/ (heating_reduction + elecreduction) 
+        return sum(np.zeros(self.project_life) + self.net_generation_proposed) 
         
     def save_component_csv (self, directory):
         """

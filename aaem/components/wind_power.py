@@ -470,7 +470,7 @@ def component_summary (coms, res_dir):
                 
                 diesel_red = wind.reduction_diesel_used
                 levelized_cost = wind.levelized_cost_of_energy
-                
+                break_even = wind.break_even_cost
                 eff = wind.cd["diesel generation efficiency"]
                 
             except AttributeError:
@@ -482,6 +482,7 @@ def component_summary (coms, res_dir):
                 
                 diesel_red = 0
                 levelized_cost = 0
+                break_even = 0
                 eff = wind.cd["diesel generation efficiency"]    
                 
             #~ try:
@@ -506,6 +507,7 @@ def component_summary (coms, res_dir):
                 electric_diesel_reduction,
                 eff,
                 diesel_price,
+                break_even,
                 levelized_cost,
                 wind.get_NPV_benefits(),
                 wind.get_NPV_costs(),
@@ -534,8 +536,9 @@ def component_summary (coms, res_dir):
             'Heat Recovery Operational',
             'Net in Heating Oil Consumption [gal]',
             'Wind Power Reduction in Utility Diesel Consumed per year',
-            'Diesel Denerator Efficiency','Diesel Price - year 1 [$]',
-            'Levelized Cost Of Energy [$/gal]',
+            'Diesel Denerator Efficiency','Diesel Price - year 1 [$\gal]',
+            'Break Even Diesel Price [$/gal]',
+            'Levelized Cost Of Energy [$/kWh]',
             'Wind NPV benefits [$]',
             'Wind NPV Costs [$]',
             'Wind NPV Net benefit [$]',
@@ -681,8 +684,7 @@ class WindPower(AnnualSavings):
                 self.calc_annual_net_benefit()
                 self.calc_npv(self.cd['discount rate'], self.cd["current year"])
                 #~ print self.benefit_cost_ratio
-                fuel_saved = self.get_fuel_total_saved()
-                self.calc_levelized_cost_of_energy(fuel_saved)
+                self.calc_levelized_costs(self.maintainance_cost)
         else:
             #~ print "wind project not feasiable"
             self.run = False
@@ -862,6 +864,11 @@ class WindPower(AnnualSavings):
         return sum(np.zeros(self.project_life) + \
                 self.electric_diesel_reduction + self.reduction_diesel_used)    
     
+    def get_total_enery_produced (self):
+        """
+        returns the total energy produced
+        """
+        return sum(np.zeros(self.project_life) + self.net_generation_wind) 
                                      
     def calc_maintainance_cost (self):
         """ 
