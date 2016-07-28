@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.16.13]
+### added
+- added water/wastewater summary
+
 ## [0.16.12]
 ### added
 - levelized cost of energy, and break even costs added to components 
