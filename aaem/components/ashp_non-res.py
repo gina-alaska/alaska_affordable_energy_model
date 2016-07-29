@@ -259,7 +259,7 @@ class ASHPNonResidential (ashp_base.ASHPBase):
             
         peak_btu_per_hr_per_sf = self.avg_gal_per_sqft * (1/constants.mmbtu_to_gal_HF) * 1e6 * float(self.comp_specs['data'].ix['Peak Month % of total']) /24/31
         peak_btu_per_hr =  peak_btu_per_hr_per_sf*self.heat_displaced_sqft
-        self.total_cap_required = peak_btu_per_hr/percent_of_total_cap
+        self.total_cap_required = 2 * peak_btu_per_hr / percent_of_total_cap
         
         
         self.capital_costs = self.total_cap_required/self.comp_specs["btu/hrs"]* self.comp_specs["cost per btu/hrs"]*self.regional_multiplier

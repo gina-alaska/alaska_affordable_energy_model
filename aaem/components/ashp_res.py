@@ -286,7 +286,7 @@ class ASHPResidential (ashp_base.ASHPBase):
         self.peak_monthly_btu_hr_hh = peak_monthly_btu_hr_hh
         
         self.capital_costs = self.num_houses * \
-                             round((peak_monthly_btu_hr_hh / \
+                             round((2 * peak_monthly_btu_hr_hh / \
                              self.comp_specs["btu/hrs"]) * \
                              self.comp_specs["cost per btu/hrs"])* \
                              self.regional_multiplier
