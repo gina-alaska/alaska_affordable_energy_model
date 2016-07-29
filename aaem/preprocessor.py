@@ -368,7 +368,7 @@ class Preprocessor (object):
                 '# Est. potential annual heating fuel gallons displaced,\n')
 
     ## PROCESS FUNCTIONS #######################################################
-    def population (self, threshold = 20, end_year = 2040,
+    def population (self, threshold = 20, end_year = 2050,
                           percent = .02, currnet_year = 2015):
         """
         create the population input file
@@ -385,7 +385,7 @@ class Preprocessor (object):
         pop_source = "ICER's population forecast"
         
         pops = self.get_communities_data(pop_data)
-        pops = DataFrame(pops.iloc[0]["2003":str(end_year)])
+        pops = DataFrame(pops.iloc[0]["2003":])
         #~ try:
             #~ pops = DataFrame(pop_data.ix[self.com_id]["2003":str(end_year)])
         #~ except KeyError:

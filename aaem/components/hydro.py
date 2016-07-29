@@ -40,7 +40,7 @@ yaml = {'enabled': False,
 
 ## default values for yaml key/Value pairs
 yaml_defaults = {'enabled': True,
-        'lifetime': 20,
+        'lifetime': 50,
         #~ 'start year': 2017,
         }
     

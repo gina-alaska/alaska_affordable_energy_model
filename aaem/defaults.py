@@ -86,7 +86,7 @@ def build_setup_defaults (comp_lib):
                         'interest rate': .05, 
                         'discount rate': .03,
                         }
-    yml['forecast'] = {'end year': 2040}
+    yml['forecast'] = {'end year': 2080}
                       
     for comp in comp_lib:
         yml[comp] = import_module("aaem.components." + comp_lib[comp]).yaml_defaults

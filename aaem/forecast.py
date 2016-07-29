@@ -65,6 +65,17 @@ class Forecast (object):
             self.forecast_average_kW()
         
         self.cpi = self.cd.load_pp_csv("cpi.csv")
+        
+        last_cpi_year = self.cpi.index.tolist()[-1]
+        if self.end_year < last_cpi_year:
+            self.cpi = self.cpi[:self.end_year]
+        elif self.end_year > last_cpi_year:
+            self.diagnostics.add_note("Forecast",
+                    "extending cpi past avaiable data")
+            last_cpi = float(self.cpi.ix[last_cpi_year])
+            for i in range(last_cpi_year,self.end_year+1):
+                self.cpi.ix[i] = last_cpi
+
         #~ self.forecast_households()
         self.heat_demand_cols = []
         self.heating_fuel_cols = [] 
@@ -106,6 +117,16 @@ class Forecast (object):
         self.p_map = DataFrame(self.fc_specs["population"]\
                                             ["population_qualifier"])
         self.population = DataFrame(self.fc_specs["population"]["population"])
+        last_pop_year = self.population.index.tolist()[-1]
+        if self.end_year < last_pop_year:
+            self.population = self.population[:self.end_year]
+        elif self.end_year > last_pop_year:
+            self.diagnostics.add_note("Forecast",
+                    "extending popultation past avaiable data")
+            last_pop = int(round(self.population.ix[last_pop_year]))
+            for i in range(last_pop_year,self.end_year+1):
+                self.population.ix[i] = last_pop
+        
         if len(self.p_map[self.p_map == "M"] ) < 10:
             msg = "the data range is < 10 for input population "\
                   "check population.csv in the models data directory"

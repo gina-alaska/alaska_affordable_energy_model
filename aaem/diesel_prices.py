@@ -46,8 +46,19 @@ class DieselProjections (object):
         pre:
             returns the prjectied prices as an array
         """
-        return self.projected_prices[start_year-self.start_year:
-                                     end_year-self.start_year]
+        prices = self.projected_prices[start_year-self.start_year:
+                                                end_year-self.start_year]
+        range_available = len(self.projected_prices[start_year-self.start_year:
+                                                end_year-self.start_year])
+        range_wanted = end_year - start_year
+        #~ print prices
+        if range_wanted > range_available:
+            extra_needed = range_wanted - range_available
+            extra = np.zeros(extra_needed) + prices[-1]
+            prices = prices.tolist() + extra.tolist()
+            return np.array(prices)
+        else:
+            return prices
 
 
 

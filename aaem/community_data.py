@@ -110,9 +110,11 @@ class CommunityData (object):
                          ['generation diesel'].fillna(0)/\
                          self.get_item('community',"generation")
         percent_diesel = float(percent_diesel.values[-1])
+        start = self.get_item('community','current year')
+        end = self.get_item('forecast','end year')
         adder = percent_diesel * \
-            self.get_item("community","diesel prices").projected_prices/\
-            generation_eff
+            self.get_item("community","diesel prices").\
+                get_projected_prices(start,end)/generation_eff
             
         adder[np.isnan(adder)] = 0 
         
@@ -125,6 +127,7 @@ class CommunityData (object):
             self.electricity_price = [N_slope_price for y in  years]
         df = DataFrame({"year":years,
                         "price":self.electricity_price}).set_index("year")
+        #~ print df
         self.set_item("community","electric non-fuel prices",df)
         
     

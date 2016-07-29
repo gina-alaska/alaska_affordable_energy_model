@@ -750,8 +750,7 @@ class Transmission (AnnualSavings):
         """
         returns the total energy produced
         """
-        return sum(np.zeros(self.actual_project_life) + \
-                                self.pre_intertie_generation) 
+        return self.pre_intertie_generation[:self.actual_project_life]
 
     
 component = Transmission
