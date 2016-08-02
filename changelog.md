@@ -1,5 +1,15 @@
 #Change Log
 
+## [0.17.0]
+### changed
+- forecast: can extend further into the future using the last year as a flat value where actual forecasted values are unavailable
+- hydropower: lifetime set to 50 years
+- diesel prices: method for preprocessing and reading  
+- ashp both: added 2x multiplier to estimate cost of system needed
+- ashp res: added minimum 18,000 Btu/hr for size of unit installed
+- ashp res: added Capacity modifier to
+
+
 ## [0.16.13]
 ### added
 - added water/wastewater summary
