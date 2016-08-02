@@ -286,14 +286,26 @@ class ASHPResidential (ashp_base.ASHPBase):
         self.peak_monthly_btu_hr_hh = peak_monthly_btu_hr_hh
         
         
-        ratio = peak_monthly_btu_hr_hh / self.comp_specs["btu/hrs"]
+        min_tem = float(self.comp_specs['data'].ix['Minimum Temp'].astype(float))
+        temps = self.comp_specs['perfromance data']['Temperature']
+        percent = self.comp_specs['perfromance data']['Percent of Total Capacity']
+        percent_of_total_cap = min(percent)
+        if min_tem > min(temps):
+            m, b = np.polyfit(temps,percent,1) 
+            percent_of_total_cap = m * min_tem + b
+        percent_of_total_cap = min(1.0, percent_of_total_cap)
+        
+        
+        self.total_cap_required = 2 * self.peak_monthly_btu_hr_hh /\
+                                        percent_of_total_cap
+        ratio = self.total_cap_required  / self.comp_specs["btu/hrs"]
         if ratio < 1:
             self.diagnostics.add_note(self.component_name,
                 "ratio of peak mothly btu/hr/hh to btu/hrs is 1 ")
-            ration = 1.0
-        
+            ratio = 1.0
+
         self.capital_costs = self.num_houses * \
-                             round((2 * ratio) * \
+                             round((ratio) * \
                              self.comp_specs["cost per btu/hrs"])* \
                              self.regional_multiplier
 
