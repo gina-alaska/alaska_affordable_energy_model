@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.17.1]
+### changes
+- ashp: caclulation of LOCE and break even cost include electricity used saved
+
 ## [0.17.0]
 ### changed
 - forecast: can extend further into the future using the last year as a flat value where actual forecasted values are unavailable
