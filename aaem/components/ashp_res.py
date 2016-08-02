@@ -285,9 +285,15 @@ class ASHPResidential (ashp_base.ASHPBase):
             (self.precent_heated_oil+self.precent_heated_elec))
         self.peak_monthly_btu_hr_hh = peak_monthly_btu_hr_hh
         
+        
+        ratio = peak_monthly_btu_hr_hh / self.comp_specs["btu/hrs"]
+        if ratio < 1:
+            self.diagnostics.add_note(self.component_name,
+                "ratio of peak mothly btu/hr/hh to btu/hrs is 1 ")
+            ration = 1.0
+        
         self.capital_costs = self.num_houses * \
-                             round((2 * peak_monthly_btu_hr_hh / \
-                             self.comp_specs["btu/hrs"]) * \
+                             round((2 * ratio) * \
                              self.comp_specs["cost per btu/hrs"])* \
                              self.regional_multiplier
 
