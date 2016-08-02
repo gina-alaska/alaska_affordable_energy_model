@@ -91,6 +91,9 @@ def component_summary (coms, res_dir):
             except AttributeError:
                 break_even = 0
                 
+            ashp.get_diesel_prices()
+            diesel_price = float(ashp.diesel_prices[0].round(2))
+                
             l = [c, 
                  ashp.average_cop,
                  ashp.num_houses,
@@ -99,6 +102,7 @@ def component_summary (coms, res_dir):
                  ashp.electric_consumption,
                  ashp.heating_oil_saved,
                  ashp.electric_heat_energy_reduction,
+                 diesel_price,
                  break_even,
                  levelized_cost,
                  ashp.get_NPV_benefits(),
@@ -123,6 +127,7 @@ def component_summary (coms, res_dir):
              'ASHP Residential kWh consumed per year',
              "ASHP Residential Displaced Heating Oil [Gal]",
              "ASHP Residential Displaced Electricity [kWh]",
+             "Diesel Price - year 1 [$/gal]",
              'Break Even Diesel Price [$/gal]',
              'Levelized Cost Of Energy [$/MMBtu]',
              'ASHP Residential NPV benefits [$]',

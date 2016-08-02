@@ -93,6 +93,9 @@ def component_summary (coms, res_dir):
                 levelized_cost = ashp.levelized_cost_of_energy
             except AttributeError:
                 levelized_cost = 0
+                
+            ashp.get_diesel_prices()
+            diesel_price = float(ashp.diesel_prices[0].round(2))
             
             l = [c, 
                  ashp.average_cop,
@@ -101,6 +104,7 @@ def component_summary (coms, res_dir):
                  price,
                  ashp.electric_consumption,
                  ashp.heating_oil_saved,
+                 diesel_price,
                  break_even,
                  levelized_cost,
                  ashp.get_NPV_benefits(),
@@ -123,6 +127,7 @@ def component_summary (coms, res_dir):
             'Electricity Price [$/kWh]',
             'ASHP Non-Residential kWh consumed per year',
             "ASHP Non-Residential Displaced Heating Oil [Gal]",
+            "Diesel Price - year 1 [$/gal]",
             'Break Even Diesel Price [$/gal]',
             'Levelized Cost Of Energy [$/MMBtu]',
             'ASHP Non-Residential NPV benefits [$]',
