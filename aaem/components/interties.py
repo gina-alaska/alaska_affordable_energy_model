@@ -592,7 +592,7 @@ class Transmission (AnnualSavings):
                 read_csv(os.path.join(path,'yearly_electricity_summary.csv'),
                          comment='#',index_col=0)['efficiency'][-3:].mean()
                          
-        it_diesel_prices = DieselProjections(com, path)
+        it_diesel_prices = DieselProjections(path)
         self.intertie_diesel_prices = \
                 it_diesel_prices.get_projected_prices (self.start_year,
                                                         self.end_year)

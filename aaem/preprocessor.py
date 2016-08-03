@@ -1437,15 +1437,8 @@ class Preprocessor (object):
         fd.close()
         
         
-        ## update the way diesel works at some point
-        out_file = os.path.join(self.out_dir, "diesel_prices_community.csv")
-    
-        fd = open(out_file,'w')
-        fd.write("# diesel prices for " + self.com_id + '\n')
-        fd.close()
-        
-        diesel_prices = self.prices_diesel()
-        diesel_prices.T.to_csv(out_file, mode = 'a')
+        ## Diesel prices saved in diesel_prices function
+        self.prices_diesel()
         
         
 
@@ -1472,7 +1465,7 @@ class Preprocessor (object):
         try:
             keys = data.keys()[3:]
             data = np.array(data.values[0][3:], dtype = np.float64)
-       
+            prices_for = self.com_id
         except IndexError:
             self.diagnostics.add_note('Diesel Prices', 
                         'Not found. Using regional average')
@@ -1487,8 +1480,17 @@ class Preprocessor (object):
             data = data.ix[keys]
             keys = data.keys()[3:]
             data = np.array(data.mean().values[2:], dtype = np.float64)
-            
-        return DataFrame({"year":keys,"price diesel":data}).set_index("year")
+            prices_for = energy_region + " (regional average)"
+
+        self.diesel_prices = DataFrame({"year":keys,
+                        prices_for :data}).set_index("year")
+
+        out_file = os.path.join(self.out_dir, "diesel_prices_community.csv")
+    
+        fd = open(out_file,'w')
+        fd.write("# diesel prices for " + prices_for + '\n')
+        fd.close()
+        self.diesel_prices.T.to_csv(out_file, mode = 'a')
     
     def prices_biomass (self):
         """

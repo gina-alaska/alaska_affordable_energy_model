@@ -14,12 +14,13 @@ class DieselProjections (object):
     This class Projects diesel fuel prices
     """
 
-    def __init__ (self, community, data_dir):
+    def __init__ (self, data_dir):
         """
         create the projected values
         Pre:
             comminity is a valid community string (ie. Adak, Manley_Hot_Springs)
-            diesel_fuel_prices.csv exists in the data_dir
+            diesel_prices_community.csv exists in the data_dir, must have a 
+            single data row
         Post:
             self.projected_prices will contain the projected prices, and
         the start year is configred based off of it

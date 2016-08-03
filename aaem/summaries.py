@@ -622,6 +622,7 @@ def genterate_npv_summary (coms, res_dir):
         summary may be saved
     """
     for community in coms:
+        #~ print community
         components = coms[community]['model'].comps_used
         npvs = []
         for comp in components:

@@ -58,17 +58,7 @@ class CommunityData (object):
         self.data_dir = os.path.abspath(data_dir)
         self.get_csv_data()
         
-
-        name = self.get_item("community","name")
-        name = name.split('+')[0]
-        try:
-            name = self.parent
-            self.diagnostics.add_note('Community Data', 
-                            "using intertie parent diesel prices")
-        except AttributeError:
-            pass
-        self.set_item("community","diesel prices", 
-                                DieselProjections(name, data_dir))
+        self.set_item("community","diesel prices", DieselProjections(data_dir))
 
         if self.get_item("community", "model electricity"):
             self.calc_non_fuel_electricty_price ()
@@ -112,12 +102,38 @@ class CommunityData (object):
         percent_diesel = float(percent_diesel.values[-1])
         start = self.get_item('community','current year')
         end = self.get_item('forecast','end year')
-        adder = percent_diesel * \
-            self.get_item("community","diesel prices").\
-                get_projected_prices(start,end)/generation_eff
+    
+        
+        name = self.get_item("community","name")
+        name = name.split('+')[0]
+        try:
+           parent = self.parent
+        except AttributeError:
+           parent = name
+        
+        if name != parent:
+            name = parent
+            name = name.replace(" ","_")
+            self.diagnostics.add_note('Community Data', 
+                ("using intertie parent diesel prices for" 
+                            "calculating the electric price"))
+            parent_data_dir = os.path.join(os.path.split(self.data_dir)[0],name)
+            parent_data_dir += '_intertie'
+            parent_prices = DieselProjections(parent_data_dir)
+            
+            diesel_prices_for_generation = \
+                        parent_prices.get_projected_prices(start,end)
+        else:
+            diesel_prices_for_generation = \
+                    self.get_item("community","diesel prices").\
+                        get_projected_prices(start,end)
+        
+        adder = percent_diesel * diesel_prices_for_generation / generation_eff
             
         adder[np.isnan(adder)] = 0 
         
+        #~ print self.get_item("community","elec non-fuel cost")
+        #~ print adder
         price = self.get_item("community","elec non-fuel cost") + adder
         
         start_year = self.get_item("community","diesel prices").start_year
