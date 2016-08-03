@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.17.2]
+### changes
+- electricity prices are made to be consistent on interties
+
 ## [0.17.1]
 ### changes
 - ashp: caclulation of LOCE and break even cost include electricity used saved
