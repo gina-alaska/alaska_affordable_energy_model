@@ -6,9 +6,10 @@ cli_lib.py
 import os
 import shutil
 from pandas import read_csv, concat
-from aaem import summaries
+from aaem import summaries, __version__
 from aaem.components import get_raw_data_files
-
+import zipfile
+from datetime import datetime
 
 def copy_model_data (repo, raw):
     """
@@ -264,7 +265,70 @@ def compare_high_level (results1, results2):
         
         
         
-        
-        
+def get_version_number (model_root):
+    """
+    gets the current version tag from the model and data direcories
+    
+    version tag example: m1.0.0_d1.0.0 (m<MODEL VERSION>_d<DATA VERSION>)
+    
+    in:
+        model_root: root directory for model setup
+    out:
+        returns the version tag
+    """
+    data_version_file =  os.path.join(model_root, 
+                                        'setup', 'raw_data', 'VERSION')
+    try:
+        with open(data_version_file, 'r') as fd:
+            ver = fd.read().replace("\n", "")
+            ver = 'm' +  __version__  + '_d' + ver
+    except IOError:
+        date_stamp = datetime.strftime(datetime.now(), "%Y%m%d")
+        ver = 'm' + __version__ + "_d_UNKNOWN_" + date_stamp
+    return ver
+    
+def backup_data (model_root):
+    """
+    back up the current setup data
+    """
+    
+    data_version_file =  os.path.join(model_root, 
+                                        'setup', 'raw_data', 'VERSION')
+    try:
+        with open(data_version_file,'r') as fd:
+            ver = fd.read().replace('\n','')
+    except IOError:
+        ver = 'unknown_data_backup_' + \
+                datetime.strftime(datetime.now(), '%Y%m%d')
+    
+    try:
+        z = zipfile.ZipFile(os.path.join(model_root,
+                            "setup","data_"+ver+".zip"),"w")
+        for fn in os.listdir(os.path.join(model_root,"setup","raw_data")):
+            z.write(os.path.join(model_root,"setup","raw_data",fn),
+                                    os.path.join("raw_data",fn))
+        for fn in os.listdir(os.path.join(model_root,"setup","input_data")):
+            z.write(os.path.join(model_root,"setup","input_data",fn),
+                                    os.path.join("input_data",fn))
+            if os.path.isdir(os.path.join(model_root,"setup",
+                                                          "input_data",fn)):
+                for fn2 in os.listdir(os.path.join(model_root,
+                                     "setup","input_data",fn)):
+                    z.write(os.path.join(model_root,"setup","input_data",
+                                fn,fn2), os.path.join("input_data",fn,fn2))
+        z.close()
+        shutil.rmtree(os.path.join(model_root,"setup","input_data"))
+    except OSError:
+        pass
+
+
+def delete_data (model_root):
+    """
+    delete the current setup data
+    """
+    try:
+        shutil.rmtree(os.path.join(model_root,"setup","raw_data"))
+    except OSError:
+        pass
         
     
