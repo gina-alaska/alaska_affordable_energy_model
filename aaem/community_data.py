@@ -106,35 +106,64 @@ class CommunityData (object):
         
         name = self.get_item("community","name")
         name = name.split('+')[0]
-        try:
-           parent = self.parent
-        except AttributeError:
-           parent = name
-        
-        if name != parent:
-            name = parent
+        #~ try:
+           #~ parent = self.parent
+        #~ except AttributeError:
+           #~ parent = None
+        #~ print  
+        if not self.intertie is None:
+            #~ print "INTERTIED"
+            name = self.parent
             name = name.replace(" ","_")
             self.diagnostics.add_note('Community Data', 
-                ("using intertie parent diesel prices for" 
-                            "calculating the electric price"))
+                ("using intertie parent diesel prices, % diesel generation, "
+                 "genneration efficiency and electric price adders for"
+                 " calculating the electric price"))
             parent_data_dir = os.path.join(os.path.split(self.data_dir)[0],name)
             parent_data_dir += '_intertie'
             parent_prices = DieselProjections(parent_data_dir)
             
+            
+            ### GET THE PARENTS GENERATION INFO
+            elec_summary = os.path.join(parent_data_dir,
+                                            "yearly_electricity_summary.csv")
+            elec_summary = read_csv(elec_summary, comment = '#', index_col=0, 
+                                    header=0)
+                  
+            generation_eff = \
+                np.float(elec_summary['efficiency'].values[-3:].mean())
+            gen_diesel = elec_summary['generation diesel']
+            net_gen = elec_summary["net generation"]
+    
+                    
+            percent_diesel = gen_diesel.fillna(0)/net_gen
+        
+            percent_diesel = float(percent_diesel.values[-1])
+            
+            prices = os.path.join(parent_data_dir,"prices.csv")
+            
+            prices = read_csv(prices, comment = '#', index_col=0, header=0)
+            #~ print prices
+            enf_cost = np.float(prices.ix["elec non-fuel cost"])
+            
+            
             diesel_prices_for_generation = \
                         parent_prices.get_projected_prices(start,end)
         else:
+            enf_cost = self.get_item("community","elec non-fuel cost")
             diesel_prices_for_generation = \
                     self.get_item("community","diesel prices").\
                         get_projected_prices(start,end)
+    
         
         adder = percent_diesel * diesel_prices_for_generation / generation_eff
-            
+        
         adder[np.isnan(adder)] = 0 
         
         #~ print self.get_item("community","elec non-fuel cost")
         #~ print adder
-        price = self.get_item("community","elec non-fuel cost") + adder
+        price = enf_cost + adder
+        #~ print self.get_item("community","elec non-fuel cost")
         
         start_year = self.get_item("community","diesel prices").start_year
         years = range(start_year,start_year+len(price))
@@ -145,7 +174,6 @@ class CommunityData (object):
                         "price":self.electricity_price}).set_index("year")
         #~ print df
         self.set_item("community","electric non-fuel prices",df)
-        
     
     def read_config (self, config_file):
         """
