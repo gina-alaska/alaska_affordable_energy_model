@@ -143,6 +143,7 @@ class CommunityBuildings (AnnualSavings):
             self.diagnostics = diagnostics()
         self.cd = community_data.get_section('community')
         self.comp_specs =community_data.get_section('non-residential buildings')
+        self.percent_diesel = community_data.percent_diesel 
         self.component_name = 'non-residential buildings'
         self.forecast = forecast
         #~ print self.comp_specs['average refit cost']
@@ -555,9 +556,10 @@ class CommunityBuildings (AnnualSavings):
         
         
         
-        
+        # GALLONS
         self.refit_savings_fuel_Hoil_total = \
                     self.comp_specs['com building data']["Fuel Oil Post"].sum()
+        # MMBTU
         self.refit_savings_HF_total = \
             self.refit_savings_fuel_Hoil_total / constants.mmbtu_to_gal_HF
         
@@ -581,6 +583,7 @@ class CommunityBuildings (AnnualSavings):
                         self.comp_specs['com building data']["Electric"]*\
                         self.comp_specs['cohort savings multiplier']
         
+        #kWh
         self.refit_savings_kWh_total = \
                     self.comp_specs['com building data']["Electric Post"].sum()
         
@@ -608,21 +611,24 @@ class CommunityBuildings (AnnualSavings):
         returns the total fuel saved in gallons
         """
         gen_eff = self.cd["diesel generation efficiency"]
+        #~ print self.refit_savings_fuel_Hoil_total
+        ## TODO still not right. Need to back electric out completly, perhaps ??
         return sum(np.zeros(self.actual_project_life) + \
-                                self.refit_savings_HF_total +\
-                                self.refit_savings_kWh_total/gen_eff)
+                                self.refit_savings_fuel_Hoil_total +\
+                    self.percent_diesel * self.refit_savings_kWh_total/gen_eff)
                                 
     def get_total_enery_produced (self):
         """
-        returns the total energy produced
+        returns the total energy saved 
         """
+        #~ print self.refit_savings_kWh_total
+        #~ print self.refit_savings_HF_total
         return {'kWh': 
                   sum(np.zeros(self.actual_project_life) + \
-                            self.refit_kWh_consumption), 
+                            self.refit_savings_kWh_total), 
                 'MMBtu':
                   sum(np.zeros(self.actual_project_life) + \
-                    self.refit_fuel_Hoil_consumption)*\
-                    (1/constants.mmbtu_to_gal_HF)
+                        self.refit_savings_HF_total)
                }
         
     def calc_capital_costs (self):
