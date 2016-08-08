@@ -248,7 +248,8 @@ class ASHPNonResidential (ashp_base.ASHPBase):
         #~ print self.capital_costs
         #~ print self.benefit_cost_ratio
             self.calc_levelized_costs(self.comp_specs["o&m per year"])
-
+        else:
+            self.reason = "Financial Modeling disabled"
 
     def calc_capital_costs (self):
         """
