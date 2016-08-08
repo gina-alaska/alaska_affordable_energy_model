@@ -21,7 +21,21 @@ Dependencies for the Alask Affordable Energy Model can be installed using [pip](
 ## Uninstall Development version
 
     python setup.py develop -u
+    
+## Building the documentation
 
+    the documentation requires that Sphinx be installed.
+    
+    pip install Sphinx
+    
+    To build the docs in the docs/build folder. From the root of the code repo:
+
+    sphinx-build  -b html ./docs/source/ docs/build/
+    
+    or more generally:
+    
+    sphinx-build  -b html [path to docs/source/] [path to output folder]
+    
 ## development python examples:
 from an interactive python prompt (can be done from any where if installed using python setup.py develop)
 
