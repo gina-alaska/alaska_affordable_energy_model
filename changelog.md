@@ -1,5 +1,14 @@
 #Change Log
 
+## [0.17.3]
+### changes
+- updates the Levelized and Breakeven cost caclutation to include the NPV of the fuel used
+
+### fixes
+- method for caclulating intertie prices
+- waste water summary 
+- res/non-res fuel_amouts for calculating Levelized and Breakeven cost 
+
 ## [0.17.2]
 ### changes
 - electricity prices are made to be consistent on interties
