@@ -92,7 +92,7 @@ class AnnualSavings (object):
         calculates the cost of energy
         pre:
             fuel_amount is a the amount of fuel generated, used or saved
-        units may vary (i.e. kWh, gal..)
+        units may vary (i.e. kWh, gal..) per year scaler, list, or np.array 
             maintenance is the operation and maintenance cost per year as a 
         scaler, list, or np.array 
             
@@ -104,12 +104,27 @@ class AnnualSavings (object):
         if not type(maintenance) in [list,np.ndarray]:
             maintenance = list(yts) + \
                     list((np.zeros(self.actual_project_life) + maintenance))
+        else:
+            maintenance = list(yts) + list(maintenance)
         maintenance = np.array(maintenance)
         
         maintenance_npv = np.npv(self.cd['discount rate'], 
                                     np.append(yts, maintenance))
         
-        return (self.cost_npv + maintenance_npv)/ fuel_amount
+        
+        if not type(fuel_amount) in [list,np.ndarray]:
+            fuel_amount = list(yts) + \
+                    list((np.zeros(self.actual_project_life) + fuel_amount))
+        else:
+            fuel_amount  = list(yts) + list(fuel_amount)    
+        
+        fuel_amount = np.array(fuel_amount)
+        
+        fuel_npv = np.npv(self.cd['discount rate'], 
+                                    np.append(yts, fuel_amount))    
+                                
+        
+        return (self.cost_npv + maintenance_npv)/ fuel_npv
         
     def calc_levelized_costs (self, maintenance_costs):
         """

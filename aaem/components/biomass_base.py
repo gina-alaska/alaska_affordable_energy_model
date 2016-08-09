@@ -312,17 +312,15 @@ class BiomassBase (AnnualSavings):
         """
         returns the total fuel saved in gallons
         """
-        return sum(np.zeros(self.actual_project_life) + \
-                    self.heat_diesel_displaced)
+        return self.heat_diesel_displaced
                                 
     def get_total_enery_produced (self):
         """
         returns the total energy produced
         """
-        return sum(np.zeros(self.actual_project_life) + \
-                    self.biomass_fuel_consumed / \
+        return self.biomass_fuel_consumed / \
                         constants.hours_per_year * \
-                        self.comp_specs['energy density'])
+                        self.comp_specs['energy density']
 
     def save_component_csv (self, directory):
         """

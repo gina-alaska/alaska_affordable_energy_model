@@ -742,9 +742,8 @@ class Transmission (AnnualSavings):
         generation_diesel_reduction = \
                     np.array(self.pre_intertie_generation_fuel_used\
                                                 [:self.actual_project_life]) 
-        return sum(- np.array(self.lost_heat_recovery\
-                    [:self.actual_project_life]) + \
-                        generation_diesel_reduction)
+        return - np.array(self.lost_heat_recovery[:self.actual_project_life]) +\
+                        generation_diesel_reduction
     
     def get_total_enery_produced (self):
         """

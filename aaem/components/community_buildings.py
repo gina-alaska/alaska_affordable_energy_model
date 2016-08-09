@@ -608,21 +608,16 @@ class CommunityBuildings (AnnualSavings):
         returns the total fuel saved in gallons
         """
         gen_eff = self.cd["diesel generation efficiency"]
-        return sum(np.zeros(self.actual_project_life) + \
-                                self.refit_savings_HF_total +\
-                                self.refit_savings_kWh_total/gen_eff)
+        return self.refit_savings_HF_total + \
+                self.refit_savings_kWh_total / gen_eff
                                 
     def get_total_enery_produced (self):
         """
         returns the total energy produced
         """
-        return {'kWh': 
-                  sum(np.zeros(self.actual_project_life) + \
-                            self.refit_kWh_consumption), 
-                'MMBtu':
-                  sum(np.zeros(self.actual_project_life) + \
-                    self.refit_fuel_Hoil_consumption)*\
-                    (1/constants.mmbtu_to_gal_HF)
+        return {'kWh': self.refit_kWh_consumption, 
+                'MMBtu': self.refit_fuel_Hoil_consumption * \
+                                        (1/constants.mmbtu_to_gal_HF)
                }
         
     def calc_capital_costs (self):

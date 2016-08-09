@@ -560,18 +560,17 @@ class WaterWastewaterSystems (AnnualSavings):
         returns the total fuel saved in gallons
         """
         base_heat = \
-            sum(self.baseline_fuel_Hoil_consumption[:self.actual_project_life])
+            self.baseline_fuel_Hoil_consumption[:self.actual_project_life]
         
         proposed_heat = \
-            sum(self.refit_fuel_Hoil_consumption[:self.actual_project_life])
+            self.refit_fuel_Hoil_consumption[:self.actual_project_life]
             
         
-        base_elec = sum(self.baseline_kWh_consumption\
-                            [:self.actual_project_life]) / \
+        base_elec = self.baseline_kWh_consumption[:self.actual_project_life] /\
                                 self.cd["diesel generation efficiency"]
         
-        proposed_elec = sum(self.baseline_kWh_consumption\
-                            [:self.actual_project_life]) / \
+        proposed_elec = self.baseline_kWh_consumption\
+                                                [:self.actual_project_life] / \
                                 self.cd["diesel generation efficiency"]
         
         return (base_heat - proposed_heat) + (base_elec - proposed_elec)
@@ -581,10 +580,10 @@ class WaterWastewaterSystems (AnnualSavings):
         returns the total energy produced
         """
         return {'kWh': 
-                    sum(self.refit_kWh_consumption[:self.actual_project_life]), 
+                    self.refit_kWh_consumption[:self.actual_project_life], 
                 'MMBtu':
-                    sum(self.refit_fuel_Hoil_consumption\
-                        [:self.actual_project_life])*\
+                    self.refit_fuel_Hoil_consumption\
+                                                [:self.actual_project_life]*\
                         (1/constants.mmbtu_to_gal_HF)
                }
     

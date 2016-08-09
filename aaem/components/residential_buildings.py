@@ -170,9 +170,9 @@ class ResidentialBuildings(AnnualSavings):
         returns the total fuel saved in gallons
         """
         base_heat = \
-            sum(self.baseline_fuel_Hoil_consumption[:self.actual_project_life])
+            self.baseline_fuel_Hoil_consumption[:self.actual_project_life]
         post_heat = \
-            sum(self.refit_fuel_Hoil_consumption[:self.actual_project_life])
+            self.refit_fuel_Hoil_consumption[:self.actual_project_life]
        
         ## same, so can ignore
         #~ base_elec =self.baseline_kWh_consumption 
@@ -185,7 +185,7 @@ class ResidentialBuildings(AnnualSavings):
         returns the total energy produced
         """
         # no electric
-        return sum(self.refit_HF_consumption[:self.actual_project_life])
+        return self.refit_HF_consumption[:self.actual_project_life]
     
     def calc_avg_consumption (self):
         """ 

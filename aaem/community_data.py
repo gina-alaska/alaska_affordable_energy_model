@@ -145,7 +145,7 @@ class CommunityData (object):
             prices = read_csv(prices, comment = '#', index_col=0, header=0)
             #~ print prices
             enf_cost = np.float(prices.ix["elec non-fuel cost"])
-            self.get_item("community","elec non-fuel cost", enf_cost)
+            self.set_item("community","elec non-fuel cost", enf_cost)
             
             diesel_prices_for_generation = \
                         parent_prices.get_projected_prices(start,end)
