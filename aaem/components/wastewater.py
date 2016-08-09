@@ -123,10 +123,11 @@ def component_summary (coms, res_dir):
                 www.break_even_cost,
                 www.levelized_cost_of_energy['MMBtu'],
                 www.levelized_cost_of_energy['kWh'],
-                www.baseline_fuel_Hoil_consumption,
-                www.baseline_kWh_consumption,
-                savings,
-                www.baseline_kWh_consumption - www.refit_kWh_consumption])
+                www.baseline_fuel_Hoil_consumption[0],
+                www.baseline_kWh_consumption[0],
+                savings[0],
+                (www.baseline_kWh_consumption - www.refit_kWh_consumption)[0]
+                ])
         except (KeyError,AttributeError) as e:
             #~ print c +":"+ str(e)
             pass
