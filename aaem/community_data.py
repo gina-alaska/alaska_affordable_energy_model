@@ -50,6 +50,7 @@ class CommunityData (object):
         post-conditions:
             the community data object is initialized
         """
+        self.percent_diesel = 0
         self.diagnostics = diag
         if diag == None:
             self.diagnostics = diagnostics()
@@ -57,7 +58,7 @@ class CommunityData (object):
         self.load_input(override, default)
         self.data_dir = os.path.abspath(data_dir)
         self.get_csv_data()
-        
+      
         self.set_item("community","diesel prices", DieselProjections(data_dir))
 
         if self.get_item("community", "model electricity"):
@@ -158,10 +159,8 @@ class CommunityData (object):
         
         adder = percent_diesel * diesel_prices_for_generation / generation_eff
         
-        #~ print adder
-        
         adder[np.isnan(adder)] = 0 
-        
+        self.percent_diesel =  percent_diesel
         #~ print self.get_item("community","elec non-fuel cost")
         #~ print adder
         price = enf_cost + adder

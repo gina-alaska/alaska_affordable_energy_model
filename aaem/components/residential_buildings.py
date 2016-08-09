@@ -182,10 +182,13 @@ class ResidentialBuildings(AnnualSavings):
                                 
     def get_total_enery_produced (self):
         """
-        returns the total energy produced
+        returns the total energy produced saved
         """
         # no electric
-        return self.refit_HF_consumption[:self.actual_project_life]
+
+        return self.baseline_HF_consumption[:self.actual_project_life] - \
+               self.refit_HF_consumption[:self.actual_project_life]
+
     
     def calc_avg_consumption (self):
         """ 
