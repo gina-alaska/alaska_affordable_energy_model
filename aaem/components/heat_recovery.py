@@ -306,6 +306,12 @@ def component_summary (coms, res_dir):
             propsed_hr = comp.proposed_heat_recovery
             #~ eff = comp.cd["diesel generation efficiency"]
             
+            try:
+                break_even_cost = comp.break_even_cost
+                levelized_cost_of_energy = comp.levelized_cost_of_energy
+            except AttributeError:
+                break_even_cost = np.nan
+                levelized_cost_of_energy = np.nan
             
             l = [c, 
                  
@@ -315,7 +321,8 @@ def component_summary (coms, res_dir):
                  hfp,
                  diesel_price + hfp,
                  #~ eff,
-                 
+                 break_even_cost,
+                 levelized_cost_of_energy,
                  comp.get_NPV_benefits(),
                  comp.get_NPV_costs(),
                  comp.get_NPV_net_benefit(),
@@ -334,6 +341,8 @@ def component_summary (coms, res_dir):
             'Diesel price - year 1 [$/gal]',
             'Heating Fuel Premimum [$/gal]',
             'Heating Fuel Price - year 1 [$/gal]',
+            'Break Even Diesel Price [$/gal]',
+            'Levelized Cost of Energy [$/MMBtu]',
             'Heat Recovery NPV benefits [$]',
             'Heat Recovery NPV Costs [$]',
             'Heat Recovery NPV Net benefit [$]',
@@ -418,6 +427,7 @@ class HeatRecovery (AnnualSavings):
         if len(tag) > 1 and tag[1] != PROJECT_TYPE:
             self.run = False
             self.reason = "Not a " + PROJECT_TYPE + " project"
+            self.diagnostics.add_note(self.component_name, self.reason)
             return 
         
             
@@ -428,7 +438,15 @@ class HeatRecovery (AnnualSavings):
             except AttributeError:
                 self.run = False
                 self.reason = "could not find proposed heat recovery"
+                self.diagnostics.add_note(self.component_name, self.reason)
                 return 
+                
+        if np.isnan(self.proposed_heat_recovery) or \
+                self.proposed_heat_recovery == 0:
+            self.run = False
+            self.reason = "No proposed heat recovery"
+            self.diagnostics.add_note(self.component_name, self.reason)
+            return 
         
         if self.cd["model financial"]:
             # AnnualSavings functions (don't need to write)
@@ -444,6 +462,21 @@ class HeatRecovery (AnnualSavings):
             self.calc_annual_costs(self.cd['interest rate'])
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
+            
+            self.calc_levelized_costs(self.comp_specs['o&m per year'])
+            
+    
+    def get_fuel_total_saved (self):
+        """
+        returns the total fuel saved in gallons
+        """
+        return self.proposed_heat_recovery
+    
+    def get_total_enery_produced (self):
+        """
+        returns the total energy produced
+        """
+        return self.proposed_heat_recovery/ constants.mmbtu_to_gal_HF
  
     def calc_proposed_heat_recovery (self):
         """
