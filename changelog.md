@@ -1,5 +1,13 @@
 #Change Log
 
+## [0.17.4]
+### added
+- heat recovery component
+- documentation setup files
+
+### updated
+- ashp reasons for not running 
+
 ## [0.17.3]
 ### changes
 - updates the Levelized and Breakeven cost caclutation to include the NPV of the fuel used

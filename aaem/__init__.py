@@ -1,3 +1,3 @@
-__version__ = '0.17.3+hr'
+__version__ = '0.17.4'
 __url__ = 'https://github.com/gina-alaska/alaska_affordable_energy_model'
-__download_url__ = 'https://github.com/gina-alaska/alaska_affordable_energy_model/releases/tag/v0.17.3'
+__download_url__ = 'https://github.com/gina-alaska/alaska_affordable_energy_model/releases/tag/v0.17.4'
