@@ -182,10 +182,22 @@ def component_summary (coms, res_dir):
                 net_heating = 0
                 eff = solar.cd["diesel generation efficiency"]
                 red_per_year = 0
+                
+            try:
+                levelized_cost = solar.levelized_cost_of_energy
+            except AttributeError:
+                levelized_cost = 0
+
+            try:
+                break_even = solar.break_even_cost
+            except AttributeError:
+                break_even = 0
             
             l = [c, assumed_out, average_load, proposed_capacity, 
                  existing_capacity, wind_capacity, net_gen, loss_heat, hr_op,
                  net_heating, red_per_year, eff, diesel_price,
+                 break_even,
+                 levelized_cost,
                  solar.get_NPV_benefits(),
                  solar.get_NPV_costs(),
                  solar.get_NPV_net_benefit(),
@@ -212,7 +224,10 @@ def component_summary (coms, res_dir):
             'Net in Heating Oil Consumption from Proposed Solar [gal]',
             'Proposed Solar Reduction in Utility Diesel Consumed per year',
             'Diesel Generator Efficiency',
-            'Diesel Price - year 1 [$]',
+            'Diesel Price - year 1 [$/gal]',
+            'Break Even Diesel Price [$/gal]',
+            
+            'Levelized Cost Of Energy [$/kWh]',
             'Solar NPV benefits [$]',
             'Solar NPV Costs [$]',
             'Solar NPV Net benefit [$]',
@@ -325,6 +340,7 @@ class SolarPower (AnnualSavings):
             #~ print self.get_NPV_costs()
             #~ print self.get_NPV_net_benefit()
             #~ print self.get_BC_ratio()
+            self.calc_levelized_costs(self.maintenance_cost)
             
             
     def calc_average_load (self):
@@ -421,6 +437,23 @@ class SolarPower (AnnualSavings):
         self.annual_heating_savings = self.fuel_displaced * price
         #~ print self.fuel_displaced
         #~ print self.annual_heating_savings
+        
+    def get_fuel_total_saved (self):
+        """
+        returns the total fuel saved in gallons
+        """
+        base_gen_fuel = self.generation_fuel_used[:self.actual_project_life]
+        post_gen_fuel = 0
+
+        return (base_gen_fuel - post_gen_fuel) + \
+                    self.fuel_displaced[:self.actual_project_life]
+    
+    def get_total_enery_produced (self):
+        """
+        returns the total energy produced
+        """
+        gen = self.generation_proposed[:self.actual_project_life]
+        return gen
         
     def save_component_csv (self, directory):
         """

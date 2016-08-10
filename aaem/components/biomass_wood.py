@@ -90,6 +90,17 @@ def component_summary (coms, res_dir):
            
             biomass = coms[c]['model'].comps_used[COMPONENT_NAME]
             
+            try:
+                break_even = biomass.break_even_cost
+            except AttributeError:
+                break_even = 0
+               
+            
+            try:
+                levelized_cost = biomass.levelized_cost_of_energy
+            except AttributeError:
+                levelized_cost = 0
+            
             l = [c, 
                  biomass.max_boiler_output,
                  biomass.heat_displaced_sqft,
@@ -97,6 +108,8 @@ def component_summary (coms, res_dir):
                  biomass.fuel_price_per_unit,
                  biomass.comp_specs['energy density'],
                  biomass.heat_diesel_displaced,
+                 break_even,
+                 levelized_cost,
                  biomass.get_NPV_benefits(),
                  biomass.get_NPV_costs(),
                  biomass.get_NPV_net_benefit(),
@@ -117,6 +130,8 @@ def component_summary (coms, res_dir):
             'Price [$/' + biomass.units + ']',
             "Energy Density [Btu/" + biomass.units + "]",
             'Displaced Heating Oil by Biomass [Gal]',
+            'Break Even Diesel Price [$/gal]',
+            'Levelized Cost Of Energy [$/MMBtu]',
             'Bioimass Cordwood NPV benefits [$]',
             'Biomass Cordwood NPV Costs [$]',
             'Biomass Cordwood NPV Net benefit [$]',
@@ -223,6 +238,8 @@ class BiomassCordwood (bmb.BiomassBase):
             self.calc_annual_costs(self.cd['interest rate'])
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
+            
+            self.calc_levelized_costs(self.maintenance_cost)
             
     def calc_number_boilers (self):
         """

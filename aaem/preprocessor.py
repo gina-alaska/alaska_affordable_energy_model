@@ -45,7 +45,7 @@ def growth(xs, ys , x):
 
 
 class Preprocessor (object):
-    MODEL_FILES = {"DIESEL_PRICES": "diesel_fuel_prices.csv",
+    MODEL_FILES = {"DIESEL_PRICES": "diesel_prices_community.csv",
                "HDD": "hdd.csv",
                "CPI": "cpi.csv",
                "COM_BUILDING_EST": "com_building_estimates.csv",
@@ -102,7 +102,7 @@ class Preprocessor (object):
         self.prices()
 
         ### copy files that still need their own preprocessor function yet
-        shutil.copy(os.path.join(data_dir,"diesel_fuel_prices.csv"), out_dir)
+        #~ shutil.copy(os.path.join(data_dir,"diesel_fuel_prices.csv"), out_dir)
         shutil.copy(os.path.join(data_dir,"cpi.csv"), out_dir)
 
         ###
@@ -368,7 +368,7 @@ class Preprocessor (object):
                 '# Est. potential annual heating fuel gallons displaced,\n')
 
     ## PROCESS FUNCTIONS #######################################################
-    def population (self, threshold = 20, end_year = 2040,
+    def population (self, threshold = 20, end_year = 2050,
                           percent = .02, currnet_year = 2015):
         """
         create the population input file
@@ -385,7 +385,7 @@ class Preprocessor (object):
         pop_source = "ICER's population forecast"
         
         pops = self.get_communities_data(pop_data)
-        pops = DataFrame(pops.iloc[0]["2003":str(end_year)])
+        pops = DataFrame(pops.iloc[0]["2003":])
         #~ try:
             #~ pops = DataFrame(pop_data.ix[self.com_id]["2003":str(end_year)])
         #~ except KeyError:
@@ -1437,8 +1437,9 @@ class Preprocessor (object):
         fd.close()
         
         
-        ## update the way diesel works at some point
-        #~ self.prices_diesel()
+        ## Diesel prices saved in diesel_prices function
+        self.prices_diesel()
+        
         
 
     def prices_propane (self):
@@ -1464,13 +1465,32 @@ class Preprocessor (object):
         try:
             keys = data.keys()[3:]
             data = np.array(data.values[0][3:], dtype = np.float64)
-       
+            prices_for = self.com_id
         except IndexError:
+            self.diagnostics.add_note('Diesel Prices', 
+                        'Not found. Using regional average')
+            
+            keys = read_csv(os.path.join(self.data_dir, "community_list.csv"),
+            index_col=1, comment="#", header=0)
+            energy_region = str(keys['Energy Region'][self.com_id])
+            keys = keys[keys['Energy Region'] == energy_region].index.tolist()
+            
+            
             data = read_csv(in_file, index_col=3, comment="#", header=0)
+            data = data.ix[keys]
             keys = data.keys()[3:]
             data = np.array(data.mean().values[2:], dtype = np.float64)
-            
-        return DataFrame({"year":keys,"price diesel":data}).set_index("year")
+            prices_for = energy_region + " (regional average)"
+
+        self.diesel_prices = DataFrame({"year":keys,
+                        prices_for :data}).set_index("year")
+
+        out_file = os.path.join(self.out_dir, "diesel_prices_community.csv")
+    
+        fd = open(out_file,'w')
+        fd.write("# diesel prices for " + prices_for + '\n')
+        fd.close()
+        self.diesel_prices.T.to_csv(out_file, mode = 'a')
     
     def prices_biomass (self):
         """
@@ -1722,7 +1742,7 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
 
         f_path = os.path.join(out_dir,com.replace(" ","_"),
                                             "yearly_electricity_summary.csv")
-        if com != parent:# and not os.path.exists(f_path):
+        if com != parent and not os.path.exists(f_path):
             #print com + " adding data - electricity"
             shutil.copy(os.path.join(parent_dir,
                                     "yearly_electricity_summary.csv")
@@ -1734,7 +1754,7 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
                                      ") yearly_electricity_summary"))
 
         f_path = os.path.join(out_dir, com, "prices.csv")
-        if com != parent: #and not os.path.exists(f_path):
+        if com != parent and not os.path.exists(f_path):
             #print com + " adding data- prices"
             #print "copying"
             shutil.copy(os.path.join(parent_dir,

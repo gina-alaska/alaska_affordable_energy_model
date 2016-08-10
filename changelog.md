@@ -1,5 +1,48 @@
 #Change Log
 
+## [0.17.3]
+### changes
+- updates the Levelized and Breakeven cost caclutation to include the NPV of the fuel used
+
+### fixes
+- method for caclulating intertie prices
+- waste water summary 
+- res/non-res fuel_amouts for calculating Levelized and Breakeven cost 
+
+## [0.17.2]
+### changes
+- electricity prices are made to be consistent on interties
+
+## [0.17.1]
+### changes
+- ashp: caclulation of LOCE and break even cost include electricity used saved
+
+## [0.17.0]
+### changed
+- forecast: can extend further into the future using the last year as a flat value where actual forecasted values are unavailable
+- hydropower: lifetime set to 50 years
+- diesel prices: method for preprocessing and reading  
+- ashp both: added 2x multiplier to estimate cost of system needed
+- ashp res: added minimum 18,000 Btu/hr for size of unit installed
+- ashp res: added Capacity modifier to
+
+
+## [0.16.13]
+### added
+- added water/wastewater summary
+
+## [0.16.12]
+### added
+- levelized cost of energy, and break even costs added to components 
+
+### updated
+- biomass includes maintanance cost in savings
+
+## [0.16.11]
+### updated
+- transmission calculations for proposed intertie system, and heat recovery lost
+- transmission summary
+
 ## [0.16.10]
 ### updated
 - transmission component transmission loss per mile

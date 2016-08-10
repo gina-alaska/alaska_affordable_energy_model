@@ -14,28 +14,31 @@ class DieselProjections (object):
     This class Projects diesel fuel prices
     """
 
-    def __init__ (self, community, data_dir):
+    def __init__ (self, data_dir):
         """
         create the projected values
         Pre:
             comminity is a valid community string (ie. Adak, Manley_Hot_Springs)
-            diesel_fuel_prices.csv exists in the data_dir
+            diesel_prices_community.csv exists in the data_dir, must have a 
+            single data row
         Post:
             self.projected_prices will contain the projected prices, and
         the start year is configred based off of it
         """
-        df = read_csv(os.path.join(data_dir,"diesel_fuel_prices.csv"),
-                        index_col=3, comment="#", header=0)
+        df = read_csv(os.path.join(data_dir,"diesel_prices_community.csv"),
+                        index_col=0, comment="#", header=0)
+                        
+        df = df.T
 
         # 3 is the first column that has a year as the name/index
-        self.start_year = int(df.keys()[3])
-        try:
-            self.projected_prices = np.array(df.T[community][3:].values,
-                                                            dtype = np.float64)
-        except KeyError:
-            self.projected_prices = np.array(df.mean()[3:].values,
-                                                            dtype = np.float64)
-            self.msg = "average used"
+        self.start_year = int(df.index[0])
+        #~ try
+        self.projected_prices = np.array(df.T.values[0])
+        #~ print self.projected_prices
+        #~ except KeyError:
+            #~ self.projected_prices = np.array(df.mean()[3:].values,
+                                                            #~ dtype = np.float64)
+            #~ self.msg = "average used"
 
     def get_projected_prices (self, start_year, end_year):
         """
@@ -46,8 +49,19 @@ class DieselProjections (object):
         pre:
             returns the prjectied prices as an array
         """
-        return self.projected_prices[start_year-self.start_year:
-                                     end_year-self.start_year]
+        prices = self.projected_prices[start_year-self.start_year:
+                                                end_year-self.start_year]
+        range_available = len(self.projected_prices[start_year-self.start_year:
+                                                end_year-self.start_year])
+        range_wanted = end_year - start_year
+        #~ print prices
+        if range_wanted > range_available:
+            extra_needed = range_wanted - range_available
+            extra = np.zeros(extra_needed) + prices[-1]
+            prices = prices.tolist() + extra.tolist()
+            return np.array(prices)
+        else:
+            return prices
 
 
 

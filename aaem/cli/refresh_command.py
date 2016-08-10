@@ -102,6 +102,6 @@ class RefreshCommand(pycommand.CommandBase):
         except IOError:
             ver = "unknown_version_created_"+ datetime.strftime(datetime.now(),
                                                                     "%Y%m%d")
-
+        coms = sorted(coms)
         driver.setup(coms, raw, model_root, run_name = ver,
                      setup_intertie = interties)

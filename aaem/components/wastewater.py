@@ -83,6 +83,80 @@ yaml_import_lib = {'data': process_data_import}
 ## list of prerequisites for module
 prereq_comps = []
 
+## component summary
+def component_summary (coms, res_dir):
+    """
+    creates a log for the non-residental component outputs by community
+    
+    pre:
+        coms: the run model outputs: a dictionary 
+                    {<"community_name">:
+                        {'model':<a run driver object>,
+                        'output dir':<a path to the given communites outputs>
+                        },
+                     ... repeated for each community
+                    }
+        res_dir: directory to save the log in
+    
+    post:
+        a csv file "non-residential_summary.csv"log is saved in res_dir   
+    
+    """
+    out = []
+    for c in sorted(coms.keys()):
+        if c.find('+') != -1 or c.find("_intertie") != -1:
+            continue
+        try:
+            www = coms[c]['model'].comps_used['water wastewater']
+            try:
+                oil_p, elec_p =  www.hoil_price[0], www.elec_price[0]
+            except AttributeError:
+                oil_p, elec_p = 0,0
+            
+            savings = www.baseline_fuel_Hoil_consumption -\
+                      www.refit_fuel_Hoil_consumption
+            out.append([c,
+                www.get_NPV_benefits(),www.get_NPV_costs(),
+                www.get_NPV_net_benefit(),www.get_BC_ratio(),
+                oil_p, elec_p ,
+                #~ www.num_buildings , www.refit_sqft_total,
+                www.break_even_cost,
+                www.levelized_cost_of_energy['MMBtu'],
+                www.levelized_cost_of_energy['kWh'],
+                www.baseline_fuel_Hoil_consumption[0],
+                www.baseline_kWh_consumption[0],
+                savings[0],
+                (www.baseline_kWh_consumption - www.refit_kWh_consumption)[0]
+                ])
+        except (KeyError,AttributeError) as e:
+            #~ print c +":"+ str(e)
+            pass
+            
+            
+    cols = ['community',
+            'Water/Wastewater Efficiency NPV Benefit',
+            'Water/Wastewater Efficiency NPV Cost',
+            'Water/Wastewater Efficiency NPV Net Benefit',
+            'Water/Wastewater Efficiency B/C Ratio',
+            'Heating Oil Price - year 1',
+            '$ per kWh - year 1',
+            #~ 'Number Water/Wastewater Buildings',
+            #~ 'Water/Wastewater Total Square Footage',
+            'Break Even Diesel Price [$/gal]',
+            'Levelized Cost of Energy [$/MMBtu]',
+            'Levelized Cost of Energy [$/kWh]',
+            'Water/Wastewater Heating Oil Consumed(gal) - year 1',
+            'Water/Wastewater Electricity Consumed(kWh) - year 1',
+            'Water/Wastewater Efficiency Heating Oil Saved[gal/year]',
+            'Water/Wastewater Efficiency Electricity Saved[kWh/year]']
+            
+    data = DataFrame(out,columns = cols).set_index('community').round(2)
+    f_name = os.path.join(res_dir,'water-wastewater_summary.csv')
+    #~ fd = open(f_name,'w')
+    #~ fd.write("# non residental building component summary by community\n")
+    #~ fd.close()
+    data.to_csv(f_name, mode='w')
+
 class WaterWastewaterSystems (AnnualSavings):
     """
     AAEM Water & Wastewater Systems component
@@ -173,6 +247,7 @@ class WaterWastewaterSystems (AnnualSavings):
         kWh_cost = self.cd["electric non-fuel prices"].\
                                             ix[self.start_year:self.end_year-1]
         kWh_cost = kWh_cost.T.values[0]
+        self.elec_price = kWh_cost
         # kWh/yr*$/kWh
         self.baseline_kWh_cost = self.baseline_kWh_consumption * kWh_cost
         
@@ -241,6 +316,7 @@ class WaterWastewaterSystems (AnnualSavings):
         """
         self.baseline_HF_cost = np.zeros(self.project_life)
         fuel_cost = self.diesel_prices + self.cd['heating fuel premium'] #$/gal
+        self.hoil_price = fuel_cost
         wood_price = self.cd['cordwood price'] 
         # $/gal * gal/yr + $/cors * cord/yr= $/year 
         self.baseline_HF_cost += \
@@ -299,8 +375,8 @@ class WaterWastewaterSystems (AnnualSavings):
             self.calc_annual_costs(self.cd['interest rate'])
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
+            self.calc_levelized_costs(0)
 
-        
     
     def calc_baseline_kWh_consumption (self):
         """
@@ -460,8 +536,6 @@ class WaterWastewaterSystems (AnnualSavings):
         self.savings_HF_consumption = \
                 self.baseline_HF_consumption - \
                 self.refit_HF_consumption
-
-        
             
     def calc_capital_costs (self, cost_per_person = 450):
         """
@@ -481,17 +555,41 @@ class WaterWastewaterSystems (AnnualSavings):
         if np.isnan(self.capital_costs) or self.capital_costs ==0:
             self.capital_costs = float(self.comp_specs["audit cost"]) + \
                                         self.pop *  self.cost_per_person
+                                        
+    def get_fuel_total_saved (self):
+        """
+        returns the total fuel saved in gallons
+        """
+        base_heat = \
+            self.baseline_fuel_Hoil_consumption[:self.actual_project_life]
+        
+        proposed_heat = \
+            self.refit_fuel_Hoil_consumption[:self.actual_project_life]
+            
+        
+        base_elec = self.baseline_kWh_consumption[:self.actual_project_life] /\
+                                self.cd["diesel generation efficiency"]
+        
+        proposed_elec = self.baseline_kWh_consumption\
+                                                [:self.actual_project_life] / \
+                                self.cd["diesel generation efficiency"]
+        
+        return (base_heat - proposed_heat) + (base_elec - proposed_elec)
+                                
+    def get_total_enery_produced (self):
+        """
+        returns the total energy produced
+        """
+        return {'kWh': 
+                    self.refit_kWh_consumption[:self.actual_project_life], 
+                'MMBtu':
+                    self.refit_fuel_Hoil_consumption\
+                                                [:self.actual_project_life]*\
+                        (1/constants.mmbtu_to_gal_HF)
+               }
     
 # set WaterWastewaterSystems as component 
 component = WaterWastewaterSystems
     
-def test ():
-    """
-    tests the class using the manley data.
-    """
-    manley_data = CommunityData("../data/","../test_case/manley_data.yaml")
-    fc = Forecast(manley_data)
-    ww = WaterWastewaterSystems(manley_data, fc)
-    ww.run()
-    return ww, fc # return the object for further testing
+
 

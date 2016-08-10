@@ -81,6 +81,18 @@ def component_summary (coms, res_dir):
                 intertie = coms[c]['model'].cd.parent
             except AttributeError:
                 intertie = c
+            try:
+                levelized_cost = ashp.levelized_cost_of_energy
+            except AttributeError:
+                levelized_cost = 0
+                
+            try:
+                break_even = ashp.break_even_cost
+            except AttributeError:
+                break_even = 0
+                
+            ashp.get_diesel_prices()
+            diesel_price = float(ashp.diesel_prices[0].round(2))
                 
             l = [c, 
                  ashp.average_cop,
@@ -90,6 +102,9 @@ def component_summary (coms, res_dir):
                  ashp.electric_consumption,
                  ashp.heating_oil_saved,
                  ashp.electric_heat_energy_reduction,
+                 diesel_price,
+                 break_even,
+                 levelized_cost,
                  ashp.get_NPV_benefits(),
                  ashp.get_NPV_costs(),
                  ashp.get_NPV_net_benefit(),
@@ -112,6 +127,9 @@ def component_summary (coms, res_dir):
              'ASHP Residential kWh consumed per year',
              "ASHP Residential Displaced Heating Oil [Gal]",
              "ASHP Residential Displaced Electricity [kWh]",
+             "Diesel Price - year 1 [$/gal]",
+             'Break Even Diesel Price [$/gal]',
+             'Levelized Cost Of Energy [$/MMBtu]',
              'ASHP Residential NPV benefits [$]',
              'ASHP Residential NPV Costs [$]',
              'ASHP Residential NPV Net benefit [$]',
@@ -252,6 +270,7 @@ class ASHPResidential (ashp_base.ASHPBase):
         #~ print 'self.proposed_ashp_operation_cost',self.proposed_ashp_operation_cost
         #~ print self.capital_costs
         #~ print self.benefit_cost_ratio
+            self.calc_levelized_costs(self.comp_specs["o&m per year"])
 
 
     def calc_capital_costs (self):
@@ -271,9 +290,27 @@ class ASHPResidential (ashp_base.ASHPBase):
             (self.precent_heated_oil+self.precent_heated_elec))
         self.peak_monthly_btu_hr_hh = peak_monthly_btu_hr_hh
         
+        
+        min_tem = float(self.comp_specs['data'].ix['Minimum Temp'].astype(float))
+        temps = self.comp_specs['perfromance data']['Temperature']
+        percent = self.comp_specs['perfromance data']['Percent of Total Capacity']
+        percent_of_total_cap = min(percent)
+        if min_tem > min(temps):
+            m, b = np.polyfit(temps,percent,1) 
+            percent_of_total_cap = m * min_tem + b
+        percent_of_total_cap = min(1.0, percent_of_total_cap)
+        
+        
+        self.total_cap_required = 2 * self.peak_monthly_btu_hr_hh /\
+                                        percent_of_total_cap
+        ratio = self.total_cap_required  / self.comp_specs["btu/hrs"]
+        if ratio < 1:
+            self.diagnostics.add_note(self.component_name,
+                "ratio of peak mothly btu/hr/hh to btu/hrs is 1 ")
+            ratio = 1.0
+
         self.capital_costs = self.num_houses * \
-                             round((peak_monthly_btu_hr_hh / \
-                             self.comp_specs["btu/hrs"]) * \
+                             round((ratio) * \
                              self.comp_specs["cost per btu/hrs"])* \
                              self.regional_multiplier
 

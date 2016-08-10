@@ -42,6 +42,7 @@ def res_log (coms, res_dir):
                 res.get_NPV_benefits(),res.get_NPV_costs(),
                 res.get_NPV_net_benefit(),res.get_BC_ratio(),
                 res.hoil_price[0], res.init_HH, res.opportunity_HH,
+                res.break_even_cost, res.levelized_cost_of_energy,
                 res.baseline_fuel_Hoil_consumption[0]/mmbtu_to_gal_HF,
                 res.baseline_fuel_Hoil_consumption[0]/mmbtu_to_gal_HF - \
                         res.refit_fuel_Hoil_consumption[0]/mmbtu_to_gal_HF,
@@ -61,6 +62,8 @@ def res_log (coms, res_dir):
            'Heating Oil Price - year 1',
            'Occupied Houses', 
            'Houses to Retrofit', 
+           'Break Even Diesel Price [$/gal]',
+           'Levelized Cost of Energy [$/MMBtu]',
            'Residential Heating Oil Consumed(mmbtu) - year 1',
            'Residential Efficiency Heating Oil Saved(mmbtu/year)',
            'Residential Heating Oil as percent of Total Heating Fuels',
@@ -105,6 +108,9 @@ def com_log (coms, res_dir):
                 com.get_NPV_net_benefit(),com.get_BC_ratio(),
                 com.hoil_price[0], com.elec_price[0], 
                 com.num_buildings , com.refit_sqft_total,
+                com.break_even_cost,
+                com.levelized_cost_of_energy['MMBtu'],
+                com.levelized_cost_of_energy['kWh'],
                 com.baseline_fuel_Hoil_consumption,
                 com.baseline_kWh_consumption,
                 savings,
@@ -123,10 +129,13 @@ def com_log (coms, res_dir):
             '$ per kWh - year 1',
             'Number Nonresidential Buildings',
             'Nonresidential Total Square Footage',
+            'Break Even Diesel Price [$/gal]',
+            'Levelized Cost of Energy [$/MMBtu]',
+            'Levelized Cost of Energy [$/kWh]',
             'Nonresidential Heating Oil Consumed(gal) - year 1',
             'Nonresidential Electricity Consumed(kWh) - year 1',
-            'Nonresidential Efficiency Heating Oil Saved(gal/year)',
-            'Nonresidential Efficiency Electricity Saved(kWh/year)']
+            'Nonresidential Efficiency Heating Oil Saved[gal/year]',
+            'Nonresidential Efficiency Electricity Saved[kWh/year]']
             
     data = DataFrame(out,columns = cols).set_index('community').round(2)
     f_name = os.path.join(res_dir,'non-residential_summary.csv')
@@ -613,6 +622,7 @@ def genterate_npv_summary (coms, res_dir):
         summary may be saved
     """
     for community in coms:
+        #~ print community
         components = coms[community]['model'].comps_used
         npvs = []
         for comp in components:

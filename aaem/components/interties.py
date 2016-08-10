@@ -316,19 +316,44 @@ def component_summary (coms, res_dir):
                 lost_heat = it.lost_heat_recovery[0]
             except AttributeError:
                 lost_heat = np.nan
+                
+            try:
+                levelized_cost = it.levelized_cost_of_energy
+            except AttributeError:
+                levelized_cost = 0
 
+            try:
+                break_even = it.break_even_cost
+            except AttributeError:
+                break_even = 0
             
             eff = it.cd["diesel generation efficiency"]
-            
+            try:
+                pre_price = it.pre_intertie_generation_fuel_used[0] * \
+                            diesel_price
+            except AttributeError:
+                pre_price = np.nan
+                
+            try:
+                post_price = it.intertie_offset_generation_fuel_used[0] * \
+                            diesel_price_it
+            except AttributeError:
+                post_price = np.nan
+                
             try:
                 eff_it = it.intertie_generation_efficiency
             except AttributeError:
                 eff_it = np.nan
-            #~ print (diesel_price_it/eff_it - diesel_price/eff)
+                
+            
+                
+            
             try:
                 losses = it.annual_tranmission_loss
             except AttributeError:
                 losses = np.nan
+                
+            
                 
             l = [c, 
                 connect_to,
@@ -346,8 +371,16 @@ def component_summary (coms, res_dir):
                 eff_it,
                 diesel_price,
                 diesel_price_it,
+                break_even,
                 losses,
                 
+                levelized_cost,
+
+                pre_price,
+                post_price,
+                pre_price - post_price,
+                
+
                 it.get_NPV_benefits(),
                 it.get_NPV_costs(),
                 it.get_NPV_net_benefit(),
@@ -375,10 +408,17 @@ def component_summary (coms, res_dir):
            
             'Diesel Generator Efficiency in community to connect',
             'Diesel Generator Efficiency in community to connect to',
-            'Diesel Price - year 1 [$] in community to connect',
-            'Diesel Price - year 1 [$] in community to connect to',
-            
+            'Diesel Price - year 1 [$/gal] in community to connect',
+            'Diesel Price - year 1 [$/gal] in community to connect to',
+            'Break Even Diesel Price [$/gal]',
             'Annual Transmission loss percentage',
+            
+
+            'Levelized Cost Of Energy [$/kWh]',
+
+            'Status Quo generation Cost (Year 1)',
+            'Proposed generation cost (Year 1)',
+            'Benefit from reduced generation cost (year 1)',
             
             'Transmission NPV benefits [$]',
             'Transmission NPV Costs [$]',
@@ -510,6 +550,9 @@ class Transmission (AnnualSavings):
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
             #~ print self.benefit_cost_ratio
+            self.calc_levelized_costs(self.comp_specs['heat recovery o&m'])
+    
+
             
     def calc_average_load (self):
         """
@@ -549,7 +592,7 @@ class Transmission (AnnualSavings):
                 read_csv(os.path.join(path,'yearly_electricity_summary.csv'),
                          comment='#',index_col=0)['efficiency'][-3:].mean()
                          
-        it_diesel_prices = DieselProjections(com, path)
+        it_diesel_prices = DieselProjections(path)
         self.intertie_diesel_prices = \
                 it_diesel_prices.get_projected_prices (self.start_year,
                                                         self.end_year)
@@ -568,12 +611,13 @@ class Transmission (AnnualSavings):
             self.intertie_offset_generation_fuel_used is the fuel used 
         in generation gallons
         """
-        con = self.forecast.get_consumption(self.start_year,self.end_year)
+        self.generation = \
+                self.forecast.get_generation(self.start_year,self.end_year)
         dist = self.comp_specs['nearest community']['Distance to Community']
         self.annual_tranmission_loss = \
             1 - ((1-self.comp_specs['transmission loss per mile']) ** dist)
         self.intertie_offset_generation = \
-                        con * (1 + self.annual_tranmission_loss)
+                        self.generation * (1 + self.annual_tranmission_loss)
         
         gen_eff = self.intertie_generation_efficiency
         self.intertie_offset_generation_fuel_used = \
@@ -615,7 +659,9 @@ class Transmission (AnnualSavings):
 
             self.lost_heat_recovery  = [0]
         else:
-            self.lost_heat_recovery = self.pre_intertie_generation_fuel_used 
+            gen_eff = self.cd["diesel generation efficiency"]
+            self.lost_heat_recovery = \
+                (self.generation / gen_eff )* .10
     
     def calc_capital_costs (self):
         """ 
@@ -680,7 +726,30 @@ class Transmission (AnnualSavings):
         """
         price = self.diesel_prices + self.cd['heating fuel premium']
         maintenance = self.comp_specs['heat recovery o&m']
-        self.annual_heating_savings = maintenance + \
-                                    (self.lost_heat_recovery * price)
+        self.annual_heating_savings = -1 * \
+                            (maintenance + (self.lost_heat_recovery * price))
+                                    
+    def get_fuel_total_saved (self):
+        """
+        returns the total fuel saved in gallons
+        """
+        #~ print self.lost_heat_recovery
+        #~ print self.intertie_offset_generation_fuel_used
+        #~ print self.pre_intertie_generation_fuel_used
+        #~ gen_eff = self.cd["diesel generation efficiency"]
+        #~ fuel_used = self.intertie_offset_generation / gen_eff
+        
+        generation_diesel_reduction = \
+                    np.array(self.pre_intertie_generation_fuel_used\
+                                                [:self.actual_project_life]) 
+        return - np.array(self.lost_heat_recovery[:self.actual_project_life]) +\
+                        generation_diesel_reduction
+    
+    def get_total_enery_produced (self):
+        """
+        returns the total energy produced
+        """
+        return self.pre_intertie_generation[:self.actual_project_life]
 
+    
 component = Transmission
