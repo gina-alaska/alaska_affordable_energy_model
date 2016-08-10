@@ -387,7 +387,8 @@ class CommunityBuildings (AnnualSavings):
                         self.diagnostics.add_note(self.component_name, 
                             "Building Type: " + k +\
                             " not valid. Using 'other's estimates")
-                        data.ix[k][measure] = sqft_ests.ix['other']
+                        #~ print sqft_ests
+                        data.ix[k][measure] = sqft_ests.ix['Other']
             except KeyError:
                 self.diagnostics.add_note(self.component_name, 
                  "Building Type: " + k + " not valid. Using 'other's estimates")

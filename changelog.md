@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.17.5]
+## fixes
+- corrected lower case 'other' to 'Other' key in non-res building component
+
 ## [0.17.4]
 ### added
 - heat recovery component
