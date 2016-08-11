@@ -641,6 +641,31 @@ def genterate_npv_summary (coms, res_dir):
         npvs = DataFrame(npvs,
                          columns = cols).set_index('Component')
         npvs.to_csv(f_name)
+        
+def consumption_summary (coms, res_dir):
+    """ Function doc """
+    consumption = []
+    for community in coms:
+        if 1 != len(community.split('+')):
+            continue
+        it = coms[community]['model'].cd.intertie
+        if it is None:
+            it = 'parent'
+        if it == 'child':
+            continue
+        fc = coms[community]['model'].fc
+        try:
+            con = fc.consumption.ix[2010:2040].values.T[0].tolist()
+            consumption.append([community] + con)
+        except AttributeError as e:
+            #~ print community, e
+            continue
+
+    f_name = os.path.join(res_dir,'consumption_summary.csv')
+    cols = ['Community'] + [str(y) for y in range(2010,2041)]
+    summary = DataFrame(consumption,
+                     columns = cols).set_index('Community')
+    summary.to_csv(f_name)
 
 def call_comp_summaries (coms, res_dir):
     """ 
@@ -660,6 +685,7 @@ def call_comp_summaries (coms, res_dir):
         summaries may be saved
     """
     genterate_npv_summary(coms, res_dir)
+    consumption_summary(coms, res_dir)
     for comp in comp_lib:
         try:
             log = import_module("aaem.components." +comp_lib[comp]).\
@@ -667,5 +693,8 @@ def call_comp_summaries (coms, res_dir):
             log(coms, res_dir)
         except AttributeError:
             continue
+            
+
+    
            
     
