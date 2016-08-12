@@ -1,5 +1,12 @@
 #Change Log
 
+## [0.17.6]
+### changes 
+- non residential buildings component: changes to calculation of pre retofit kWh consumption
+
+### adds
+- consumption summary
+
 ## [0.17.5]
 ## fixes
 - corrected lower case 'other' to 'Other' key in non-res building component
