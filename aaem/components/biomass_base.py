@@ -318,9 +318,7 @@ class BiomassBase (AnnualSavings):
         """
         returns the total energy produced
         """
-        return self.biomass_fuel_consumed / \
-                        constants.hours_per_year * \
-                        self.comp_specs['energy density']
+        return self.biomass_fuel_consumed * self.comp_specs['energy density']/ 1e6
 
     def save_component_csv (self, directory):
         """
