@@ -42,6 +42,7 @@ from math import isnan
 from pandas import DataFrame,concat,read_csv
 from copy import deepcopy
 import os
+import copy
 
 from annual_savings import AnnualSavings
 from aaem.community_data import CommunityData
@@ -522,6 +523,11 @@ class CommunityBuildings (AnnualSavings):
         d2 = np.array(d2).T
         keys = set(keys)
         
+        
+        kwh_buildings = copy.deepcopy(d2)
+        #~ print kwh_buildings
+        
+        # step 0a: find total estmated + known consumption
         for k in keys:
             try:
                 kwh_sf = kwh_sf_ests.ix[k] # (kWh)/sqft
@@ -531,10 +537,34 @@ class CommunityBuildings (AnnualSavings):
             idx = np.logical_and(d2[:,0] == k, np.isnan(d2[:,2].astype(float)))
             sqft = d2[idx, 1].astype(np.float64) #sqft
             d2[idx, 2] = sqft * kwh_sf # kWh
-
-        data[measure] = d2[:,2].astype(np.float64)  
+          
+        
+        # step 0b: find Ratio
+        # Inventory total
+        estimated_total = d2[:,2].astype(np.float64).sum()
+        # Trend total
+        try:
+            fc_total = float(self.forecast.\
+                                        consumption_to_save.ix[self.start_year]\
+                                                        ['non-residential kWh'])
+        except AttributeError:
+            fc_total = estimated_total
+        #~ print fc_total
+        #~ print estimated_total
+        ratio =  fc_total/estimated_total
+        
+        
+        # step 1 & 2: loop if consumption known use; other wise scale:
+        for idx in range(len(kwh_buildings)):
+            if np.isnan(kwh_buildings[idx, 2].astype(float)):
+                kwh_buildings[idx, 2] = ratio * d2[idx, 2].astype(float)
+                
+                
+        
+        data[measure] =  kwh_buildings[:,2].astype(np.float64)  
         self.baseline_kWh_consumption = data[measure].sum()
-    
+        
+        
     def calc_refit_savings_HF (self):
         """ 
         calculate refit HF savings
@@ -575,7 +605,8 @@ class CommunityBuildings (AnnualSavings):
         self.additional_savings_kWh, are floating-point kWh values
         """
         try:
-            idx =np.isnan(self.comp_specs['com building data']["Electric Post"])
+            idx = \
+                np.isnan(self.comp_specs['com building data']["Electric Post"])
             self.comp_specs['com building data']["Electric Post"][idx] = \
                         self.comp_specs['com building data']["Electric"][idx]*\
                         self.comp_specs['cohort savings multiplier']
