@@ -224,9 +224,10 @@ class BiomassCordwood (bmb.BiomassBase):
             
             self.calc_number_boilers()
             self.calc_capital_costs()
+            self.fuel_price_per_unit = self.cd['cordwood price']
             self.calc_maintainance_cost()
             
-            self.fuel_price_per_unit = self.cd['cordwood price']
+            #~ self.fuel_price_per_unit = self.cd['cordwood price']
             self.calc_proposed_biomass_cost(self.fuel_price_per_unit)
             self.calc_displaced_heating_oil_price()
             
@@ -259,7 +260,7 @@ class BiomassCordwood (bmb.BiomassBase):
         maintenance  = 10 * self.comp_specs["operation cost per hour"] * \
                        self.number_boilers
         
-        fuel_cost = self.biomass_fuel_consumed * biomass.fuel_price_per_unit
+        fuel_cost = self.biomass_fuel_consumed * self.fuel_price_per_unit
         
         self.maintenance_cost = operation + maintenance + fuel_cost
 
