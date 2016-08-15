@@ -1,5 +1,10 @@
 #Change Log
 
+## [0.17.7]
+### changes
+- non-res efficiency levelized cost of energy caclulation
+- biomass cordwood levelized cost of energy caclulation
+
 ## [0.17.6]
 ### changes 
 - non residential buildings component: changes to calculation of pre retofit kWh consumption
