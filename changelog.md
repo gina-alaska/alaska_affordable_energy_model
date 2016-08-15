@@ -1,5 +1,10 @@
 #Change Log
 
+## [0.17.8]
+### fixes
+- heat recovery projects are now run
+- heat recovery est. potential is calculated correctly
+
 ## [0.17.7]
 ### changes
 - non-res efficiency levelized cost of energy caclulation
