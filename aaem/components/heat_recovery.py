@@ -129,7 +129,7 @@ def load_project_details (data_dir):
             yto = 0
         dets['expected years to operation'] = yto
     dets['expected years to operation'] = int(yto)
-    
+    #~ print dets
     return dets
     
 ## library of keys and functions for CommunityData IMPORT Keys
@@ -221,11 +221,10 @@ def preprocess_existing_projects (ppo):
     if len(project_data) != 0 and int(project_data.fillna(0).sum(axis=1)) == 0:
         project_data = DataFrame(columns=project_data.columns)
     #~ print project_data
-    
 
     for p_idx in range(len(project_data)):
         cp = project_data.ix[p_idx]
-        p_name = 'hydro+project_' + str(p_idx)
+        p_name = 'heat_recovery+project_' + str(p_idx)
         
         name = str(cp['Project Name'])
         phase = str(cp['Phase Completed'])
@@ -243,7 +242,7 @@ def preprocess_existing_projects (ppo):
         
         expected_years_to_operation = UNKNOWN
         
-        
+        projects.append(p_name)
         
         p_data[p_name] = {'name': name, 
                           'phase': phase,
@@ -430,8 +429,6 @@ class HeatRecovery (AnnualSavings):
             self.diagnostics.add_note(self.component_name, self.reason)
             return 
         
-            
-        
         if self.cd["model heating fuel"]:
             try:
                 self.calc_proposed_heat_recovery()
@@ -487,10 +484,12 @@ class HeatRecovery (AnnualSavings):
                             ['proposed gallons diesel offset']
         p_btu = self.comp_specs["project details"]\
                             ['proposed Maximum btu/hr']
+                            
+        # is there a project
         if p_gallons != UNKNOWN and p_btu != UNKNOWN:
             self.proposed_heat_recovery = p_gallons
             return
-        
+        # else:
         b1 = self.comp_specs['estimate data']\
                     ['Waste Heat Recovery Opperational']
         b2 = self.comp_specs['estimate data']\
@@ -498,51 +497,56 @@ class HeatRecovery (AnnualSavings):
                     
               
         
-        current_hr = self.comp_specs['estimate data']\
-                    ['Est. current annual heating fuel gallons displaced']  
+        #~ current_hr = self.comp_specs['estimate data']\
+                    #~ ['Est. current annual heating fuel gallons displaced'] 
+        #~ try:
+            #~ np.isnan(current_hr)
+        #~ except TypeError:
+            #~ current_hr = np.nan            
+        
         potential_hr = self.comp_specs['estimate data']\
                     ['Est. potential annual heating fuel gallons displaced']
+        
+        try:
+            np.isnan(potential_hr)
+        except TypeError:
+            potential_hr = np.nan            
+        
+        
         generation = self.forecast.generation_by_type['generation diesel']\
                                                             [self.start_year]
         gen_eff = self.cd["diesel generation efficiency"]
         
         # gallons 
         diesel_consumed = generation / gen_eff
-        hr_availble = self.comp_specs['percent heat recovery'] * \
+        hr_available = self.comp_specs['percent heat recovery'] * \
                           diesel_consumed
         #notes
         #if b1 == 'Yes' and b2 == 'Yes':
-        #   if hr_used is known and hr_extra is not
-        #      hr_used, hr_extra = .30 * hr_available
-        #   if hr_used is unknown and hr_extra is unknown
-        #      hr_used= .70 * hr_available, hr_extra = .30 * hr_available
+        #   if hr_used is known and hr_proposed is not
+        #      hr_used, hr_proposed = .30 * hr_available
+        #   if hr_used is unknown and hr_proposed is unknown
+        #      hr_used= .70 * hr_available, hr_proposed = .30 * hr_available
         #if b1 == 'Yes' and b2 == 'no':
         #   if hr_used is known:
         #       hr_used
         #   else:
         #       hr_used = hr_avaiavble
         #if b1 == 'No' and b2 == 'No':
-        #   system needs to be installes
-        
-        try:
-            np.isnan(current_hr)
-        except TypeError:
-            current_hr = np.nan
-            
-        try:
-            np.isnan(potential_hr)
-        except TypeError:
-            potential_hr = np.nan
-        
-        if b1 == 'Yes' and b2 == 'Yes' and \
-                       not np.isnan(current_hr) and np.isnan(potential_hr):
-            
-            hr_availble = current_hr + ((hr_availble) * .30)
+        #   system needs to be installed        
+        if b1 == 'Yes' and b2 == 'Yes' and np.isnan(potential_hr):
+            potential_hr = ((hr_available) * .30)
+        if b1 == 'Yes' and b2 == 'Yes':
+            pass #potential_hr 
+        elif b1 == 'Yes' and b2 == 'No':
+            potential_hr = 0
+        else:
+            potential_hr = 0
             
         
 
         
-        self.proposed_heat_recovery = hr_availble / \
+        self.proposed_heat_recovery = potential_hr / \
                                 self.comp_specs['heating conversion efficiency']
     
     
