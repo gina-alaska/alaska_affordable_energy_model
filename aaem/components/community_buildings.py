@@ -68,7 +68,8 @@ yaml = {'enabled': False,
         'cohort savings multiplier': .26,
         'com building data': 'IMPORT',
         'number buildings': 'IMPORT',
-        'com building estimates': 'IMPORT'
+        'com building estimates': 'IMPORT',
+        'heating cost precent': .6
             }
             
 yaml_defaults = {'enabled': True,
@@ -88,7 +89,10 @@ yaml_comments = {'enabled': '',
                 'cohort savings multiplier': 'pecent as decimal <float>',
                 'com building data': '',
                 'number buildings': '',
-                'com building estimates': ''
+                'com building estimates': '',
+                'heating cost precent': 
+                    ('% of total capital costs used for thermal efficiency'
+                        ' pecent as decimal <float>')
             }
             
 def load_building_data (data_dir):
@@ -650,8 +654,9 @@ class CommunityBuildings (AnnualSavings):
         """
         returns the total energy saved 
         """
-        return {'kWh': self.refit_savings_kWh_total, 
-                'MMBtu': self.refit_savings_HF_total
+        heating_cost_percent = self.comp_specs['heating cost precent']
+        return {'kWh': (self.refit_savings_kWh_total, 1 - heating_cost_percent), 
+                'MMBtu': (self.refit_savings_HF_total, heating_cost_percent)
                }
         
     def calc_capital_costs (self):

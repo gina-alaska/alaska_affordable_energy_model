@@ -151,11 +151,13 @@ class AnnualSavings (object):
         if type(energy_produced) is dict:
             self.levelized_cost_of_energy = {}
             self.levelized_cost_of_energy['MMBtu'] = \
-                self.calc_cost_of_energy(energy_produced['MMBtu'],
-                                         maintenance_costs)
+                self.calc_cost_of_energy(energy_produced['MMBtu'][0],
+                                         maintenance_costs)*\
+                                            energy_produced['MMBtu'][1]
             self.levelized_cost_of_energy['kWh'] = \
-                self.calc_cost_of_energy(energy_produced['kWh'],
-                                         maintenance_costs)
+                self.calc_cost_of_energy(energy_produced['kWh'][0],
+                                         maintenance_costs)*\
+                                            energy_produced['kWh'][1]
         else:
             self.levelized_cost_of_energy = \
                 self.calc_cost_of_energy(energy_produced, maintenance_costs)
