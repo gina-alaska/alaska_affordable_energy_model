@@ -1316,7 +1316,7 @@ class Preprocessor (object):
         fd.write("Buildings," + str(data) +"\n")
         fd.close()
 
-        self.buildigns_count_data = data
+        self.buildings_count_data = data
 
 
     def buildings_estimates(self, pop):
@@ -1725,6 +1725,10 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
     parent_dir = os.path.join(out_dir, parent.replace(" ","_"))
     #~ print com_ids
     projects = []
+    
+    total_building_count = 0
+    building_inventory = []
+    
     for com in com_ids:
 
         #~ print com
@@ -1733,6 +1737,8 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
         pp.preprocess()
         pp_data.append(pp)
         
+        building_inventory.append(pp.buildings_inventory_data)
+        total_building_count += pp.buildings_count_data
         
         copied_data = { "yearly electric summary":False,
                     "interties":False,
@@ -1991,4 +1997,21 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
                 pass
             shutil.copytree(out_dir,out_dir+project)
     #~ print pp_data
+    
+    
+    #~ print total_building_count 
+    building_inventory = concat(building_inventory) 
+    out_file = os.path.join(out_dir, "community_buildings.csv")
+    fd = open(out_file,'w')
+    fd.write(pp.buildings_inventory_header())
+    fd.close()
+    building_inventory.to_csv(out_file, mode="a", index=False)
+    
+    out_file = os.path.join(out_dir, "com_num_buildings.csv")
+    fd = open(out_file,'w')
+    fd.write(pp.buildings_count_header())
+    fd.write("key, value\n")
+    fd.write("Buildings," + str(total_building_count ) +"\n")
+    fd.close()
+    
     return pp_data, projects

@@ -148,6 +148,15 @@ class CommunityBuildings (AnnualSavings):
             self.diagnostics = diagnostics()
         self.cd = community_data.get_section('community')
         self.comp_specs =community_data.get_section('non-residential buildings')
+        
+        self.intertie = community_data.intertie
+        if self.intertie is None:
+            self.intertie = 'none'
+        else:
+            # get the intertie building inventory
+            self.get_intertie_builing_inventory(community_data)
+        
+        self.comp_specs =community_data.get_section('non-residential buildings')
         self.percent_diesel = community_data.percent_diesel 
         self.component_name = 'non-residential buildings'
         self.forecast = forecast
@@ -174,6 +183,64 @@ class CommunityBuildings (AnnualSavings):
         self.buildings_df = \
                     self.buildings_df.groupby(self.buildings_df.index).sum()
         self.buildings_df = concat([df,self.buildings_df],axis=1)
+        
+    def get_intertie_builing_inventory(self, community_data):
+        """
+        for interties we need to load the entire building inventory
+        """
+        data_dir = os.path.split(community_data.data_dir)[0]
+        parent = community_data.parent
+        it_path = os.path.join(data_dir, parent.replace(' ','_') + '_intertie')
+        ## function is at top of this file
+        self.intertie_inventory = load_building_data(it_path)
+        self.intertie_estimates = load_building_estimates(it_path)
+        self.intertie_count = load_num_buildings(it_path)
+        
+        
+        
+        #add extra buildings
+        additional_buildings = \
+            max(self.intertie_count - len(self.intertie_inventory),0)
+       
+        if additional_buildings > 0:
+            l = []
+            for i in range(additional_buildings):
+                l.append(DataFrame({"Square Feet":np.nan,}, 
+                                                        index = ["Average"]))
+            self.intertie_inventory = self.intertie_inventory.append(l)
+            
+        ### estimate the square footage for the intertie inventory
+        keys = set(self.intertie_inventory.T.keys())
+        #~ print keys
+        sqft_ests = self.intertie_estimates["Sqft"]
+        #~ print sqft_ests
+        measure = "Square Feet"
+        for k in keys:
+            try:
+                # more than one item for each k 
+                self.intertie_inventory.loc[:,measure].loc[k] = \
+                            self.intertie_inventory.loc[:,measure].loc[k].\
+                                                        fillna(sqft_ests.ix[k])
+            except AttributeError:
+                # only one item 
+                if np.isnan(self.intertie_inventory.ix[k][measure]):
+                    try:
+                        self.intertie_inventory[measure][k] = sqft_ests.ix[k]
+                    except KeyError:
+                        self.diagnostics.add_note(self.component_name, 
+                            "Building Type: " + k +\
+                            " not valid. Using 'other's estimates")
+                        #~ print sqft_ests
+                        self.intertie_inventory.ix[k][measure] = \
+                                                    sqft_ests.ix['Other']
+            except KeyError:
+                self.diagnostics.add_note(self.component_name, 
+                 "Building Type: " + k + " not valid. Using 'other's estimates")
+                self.intertie_inventory.loc[:,measure].loc[k] = \
+                    self.intertie_inventory.loc[:,measure].loc[k].\
+                                                fillna(sqft_ests.ix['Other'])        
+       
+        
         
     def save_building_summay(self, file_name):
         """
@@ -522,30 +589,65 @@ class CommunityBuildings (AnnualSavings):
         measure = "Electric"
         data = self.comp_specs['com building data']
         keys = data.T.keys()
-        d2 = data[["Square Feet", measure]].T.values.tolist()
-        d2.insert(0,keys.values.tolist())
-        d2 = np.array(d2).T
+        local_inv = data[["Square Feet", measure]].T.values.tolist()
+        local_inv.insert(0,keys.values.tolist())
+        local_inv = np.array(local_inv).T
+        inv = local_inv
+        #~ print inv
+        #~ print self.intertie 
+        if self.intertie != 'none':
+            keys = self.intertie_inventory.T.keys()
+            #~ print keys
+            it_inv = self.intertie_inventory[["Square Feet", 
+                                                measure]].T.values.tolist()
+            it_inv.insert(0,keys.values.tolist())
+            it_inv = np.array(it_inv).T
+            kwh_sf_ests = self.intertie_estimates["kWh/sf"]
+            
+            inv = it_inv
+        #~ print inv
         keys = set(keys)
+        keys.add('Average')
         
-        
-        kwh_buildings = copy.deepcopy(d2)
+        kwh_buildings = copy.deepcopy(local_inv)
         #~ print kwh_buildings
         
+        #~ print kwh_sf_ests
+        
+        
         # step 0a: find total estmated + known consumption
+        #~ print keys
         for k in keys:
             try:
                 kwh_sf = kwh_sf_ests.ix[k] # (kWh)/sqft
             except KeyError:
                 kwh_sf = kwh_sf_ests.ix['Other'] # (kwh)/sqft
             
-            idx = np.logical_and(d2[:,0] == k, np.isnan(d2[:,2].astype(float)))
-            sqft = d2[idx, 1].astype(np.float64) #sqft
-            d2[idx, 2] = sqft * kwh_sf # kWh
-          
+            idx = np.logical_and(local_inv[:,0] == k, 
+                                np.isnan(local_inv[:,2].astype(float)))
+            sqft = local_inv[idx, 1].astype(np.float64) #sqft
+            local_inv[idx, 2] = sqft * kwh_sf # kWh
+            
+        if self.intertie != 'none':
+            for k in keys:
+                try:
+                    kwh_sf = kwh_sf_ests.ix[k] # (kWh)/sqft
+                except KeyError:
+                    kwh_sf = kwh_sf_ests.ix['Other'] # (kwh)/sqft
+                     
+                idx = np.logical_and(inv[:,0] == k, 
+                                    np.isnan(inv[:,2].astype(float)))
+                sqft = inv[idx, 1].astype(np.float64) #sqft
+                inv[idx, 2] = sqft * kwh_sf # kWh
+        else:
+            inv = local_inv
         
+            
+          
+        #~ print inv
         # step 0b: find Ratio
         # Inventory total
-        estimated_total = d2[:,2].astype(np.float64).sum()
+        estimated_total = inv[:,2].astype(np.float64).sum()
         # Trend total
         try:
             fc_total = float(self.forecast.\
@@ -553,21 +655,21 @@ class CommunityBuildings (AnnualSavings):
                                                         ['non-residential kWh'])
         except AttributeError:
             fc_total = estimated_total
-        #~ print fc_total
-        #~ print estimated_total
+
+        #~ print fc_total, estimated_total
         ratio =  fc_total/estimated_total
-        
-        
+        #~ print ratio
+        #~ print kwh_buildings
         # step 1 & 2: loop if consumption known use; other wise scale:
         for idx in range(len(kwh_buildings)):
             if np.isnan(kwh_buildings[idx, 2].astype(float)):
-                kwh_buildings[idx, 2] = ratio * d2[idx, 2].astype(float)
+                kwh_buildings[idx, 2] = ratio * local_inv[idx, 2].astype(float)
                 
                 
-        
+        #~ print kwh_buildings
         data[measure] =  kwh_buildings[:,2].astype(np.float64)  
         self.baseline_kWh_consumption = data[measure].sum()
-        
+        #~ print self.baseline_kWh_consumption
         
     def calc_refit_savings_HF (self):
         """ 
@@ -693,6 +795,12 @@ class CommunityBuildings (AnnualSavings):
         #~ print self.cd["electric non-fuel prices"]
         
         
+        #~ print self.intertie
+        #~ if self.intertie == "child":
+            #~ self.baseline_kWh_cost = [0]
+            #~ self.refit_kWh_cost = [0]
+            #~ self.annual_electric_savings = [0]
+            #~ return
         
         self.baseline_kWh_cost = self.baseline_kWh_consumption * elec_price
                     
@@ -717,6 +825,11 @@ class CommunityBuildings (AnnualSavings):
         self.hoil_price = fuel_price
         self.baseline_fuel_Hoil_cost = \
                 self.baseline_fuel_Hoil_consumption * fuel_price
+                
+                
+        #~ if self.intertie == "parent":
+            #~ self.annual_heating_savings = [0]
+            #~ return
         
         self.baseline_HF_cost = self.baseline_fuel_Hoil_cost # + other?
         

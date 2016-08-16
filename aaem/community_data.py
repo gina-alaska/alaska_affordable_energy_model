@@ -449,8 +449,104 @@ class CommunityData (object):
             #~ self.set_item('non-residential buildings','number buildings',
                 #~ int(self.load_pp_csv("com_num_buildings.csv").ix["Buildings"]))
                 
+        
         try:
-            elec_summary = self.load_pp_csv("yearly_electricity_summary.csv")
+            # special loading case
+            try:
+                intertie = read_csv(os.path.join(self.data_dir,"interties.csv"),
+                            comment = '#', index_col=0,names =['key','value'])
+                self.parent = intertie.ix['parent'].values[0]
+                #~ print self.parent
+                intertie = intertie.T
+                del intertie['parent']
+                intertie = intertie.T
+                com_list = intertie.T.values[0].tolist()[1:]
+                tied = intertie.ix['Plant Intertied'].values[0]
+            except IndexError:
+                intertie = read_csv(os.path.join(self.data_dir,"interties.csv"),
+                            comment = '#', index_col=0).ix[0]
+                self.parent = self.get_item('community','name')
+                #~ print intertie.index
+                tied = intertie.ix['Plant Intertied']
+                com_list = intertie.T.values.tolist()[1:]
+            #~ print intertie.ix['Plant Intertied'].values[0]
+            self.intertie_list = com_list
+            if tied == 'No':
+                intertie = None
+            elif ''.join(com_list).replace("''","") == '':
+                # the list of subcommunites is empty, so for modeling purposes 
+                #no intertie
+                intertie = None
+            else:
+                if self.get_item('community','name') in com_list:
+                    intertie = "child"
+                elif self.get_item('community','name').find('_intertie') != -1:
+                    intertie = 'parent'
+                else:
+                    intertie = "child"
+        except IOError:
+            intertie = None
+        self.intertie = intertie
+        
+        self.copies = self.load_pp_csv("copies.csv")
+        
+        
+        prices = self.load_pp_csv("prices_non-electric_fixed.csv")
+                
+        if self.get_item('community',"propane price") in IMPORT_FLAGS:
+            self.set_item("community", "propane price",
+                            np.float(prices.ix["Propane"]))
+        if self.get_item('community',"cordwood price") in IMPORT_FLAGS:
+            self.set_item("community", "cordwood price",
+                            np.float(prices.ix["Cordwood"]))
+        if self.get_item('community',"pellet price") in IMPORT_FLAGS:
+            self.set_item("community", "pellet price",
+                            np.float(prices.ix["Pellet"]))
+        
+        limits = self.load_pp_csv("generation_limits.csv")
+        if self.get_item('community', 'hydro generation limit') in IMPORT_FLAGS:
+            try:
+                self.set_item('community','hydro generation limit',
+                                float(limits.ix["hydro"]))
+            except ValueError:
+                self.set_item('community','hydro generation limit',
+                                float(0))
+                                
+        if self.get_item('community', 'wind generation limit') in IMPORT_FLAGS:
+            try:
+                self.set_item('community','wind generation limit',
+                                float(limits.ix["wind"]))
+            except ValueError:
+                self.set_item('community','wind generation limit',
+                                float(0))
+                                
+        diesel_data = self.load_pp_csv("diesel_data.csv")
+        
+        if self.get_item('community', 
+                            'switchgear suatable for RE') in IMPORT_FLAGS:
+            sgs = diesel_data.ix['Switchgear Suitable']['value'] == 'Yes'
+            self.set_item('community','switchgear suatable for RE',sgs)
+        
+        if self.get_item('community', 
+                            'heat recovery operational') in IMPORT_FLAGS:
+            hro = diesel_data.ix['Waste Heat Recovery Opperational']\
+                                                            ['value'] == 'Yes'
+            self.set_item('community','heat recovery operational',hro)
+            
+        
+        
+        
+        try:
+            
+            if intertie is None:
+                data_dir = self.data_dir
+            else:
+                data_dir = os.path.split(self.data_dir)[0]
+                parent = self.parent.replace(' ','_')
+                data_dir = os.path.join(data_dir, parent + '_intertie')
+            
+            fpath = os.path.join(data_dir,"yearly_electricity_summary.csv")
+            elec_summary = read_csv(fpath, comment = '#', index_col=0, header=0)
         except IOError:
             if self.get_item('community',"line losses") in IMPORT_FLAGS \
               and self.get_item('community',"diesel generation efficiency") \
@@ -543,90 +639,7 @@ class CommunityData (object):
             
             #~ self.set_item('community','generation numbers', temp )
             print "Generation data not available by energy type"
-            
-        try:
-            # special loading case
-            try:
-                intertie = read_csv(os.path.join(self.data_dir,"interties.csv"),
-                            comment = '#', index_col=0,names =['key','value'])
-                self.parent = intertie.ix['parent'].values[0]
-                #~ print self.parent
-                intertie = intertie.T
-                del intertie['parent']
-                intertie = intertie.T
-                com_list = intertie.T.values[0].tolist()[1:]
-                tied = intertie.ix['Plant Intertied'].values[0]
-            except IndexError:
-                intertie = read_csv(os.path.join(self.data_dir,"interties.csv"),
-                            comment = '#', index_col=0).ix[0]
-                self.parent = self.get_item('community','name')
-                #~ print intertie.index
-                tied = intertie.ix['Plant Intertied']
-                com_list = intertie.T.values.tolist()[1:]
-            #~ print intertie.ix['Plant Intertied'].values[0]
-            self.intertie_list = com_list
-            if tied == 'No':
-                intertie = None
-            elif ''.join(com_list).replace("''","") == '':
-                # the list of subcommunites is empty, so for modeling purposes 
-                #no intertie
-                intertie = None
-            else:
-                if self.get_item('community','name') in com_list:
-                    intertie = "child"
-                elif self.get_item('community','name').find('_intertie') != -1:
-                    intertie = 'parent'
-                else:
-                    intertie = "child"
-        except IOError:
-            intertie = None
-        self.intertie = intertie
         
-        self.copies = self.load_pp_csv("copies.csv")
-        
-        
-        prices = self.load_pp_csv("prices_non-electric_fixed.csv")
-                
-        if self.get_item('community',"propane price") in IMPORT_FLAGS:
-            self.set_item("community", "propane price",
-                            np.float(prices.ix["Propane"]))
-        if self.get_item('community',"cordwood price") in IMPORT_FLAGS:
-            self.set_item("community", "cordwood price",
-                            np.float(prices.ix["Cordwood"]))
-        if self.get_item('community',"pellet price") in IMPORT_FLAGS:
-            self.set_item("community", "pellet price",
-                            np.float(prices.ix["Pellet"]))
-        
-        limits = self.load_pp_csv("generation_limits.csv")
-        if self.get_item('community', 'hydro generation limit') in IMPORT_FLAGS:
-            try:
-                self.set_item('community','hydro generation limit',
-                                float(limits.ix["hydro"]))
-            except ValueError:
-                self.set_item('community','hydro generation limit',
-                                float(0))
-                                
-        if self.get_item('community', 'wind generation limit') in IMPORT_FLAGS:
-            try:
-                self.set_item('community','wind generation limit',
-                                float(limits.ix["wind"]))
-            except ValueError:
-                self.set_item('community','wind generation limit',
-                                float(0))
-                                
-        diesel_data = self.load_pp_csv("diesel_data.csv")
-        
-        if self.get_item('community', 
-                            'switchgear suatable for RE') in IMPORT_FLAGS:
-            sgs = diesel_data.ix['Switchgear Suitable']['value'] == 'Yes'
-            self.set_item('community','switchgear suatable for RE',sgs)
-        
-        if self.get_item('community', 
-                            'heat recovery operational') in IMPORT_FLAGS:
-            hro = diesel_data.ix['Waste Heat Recovery Opperational']\
-                                                            ['value'] == 'Yes'
-            self.set_item('community','heat recovery operational',hro)
-            
         
     def load_pp_csv(self, f_name):
         """
