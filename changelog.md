@@ -1,6 +1,10 @@
 #Change Log
 
 ## [0.17.8]
+### changes
+- non residential buildings component: kWh estimattion scale fractor is changed for interties to include the whole intertie
+
+## [0.17.8]
 ### fixes
 - heat recovery projects are now run
 - heat recovery est. potential is calculated correctly
