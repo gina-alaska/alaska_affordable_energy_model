@@ -70,6 +70,10 @@ def component_summary (coms, res_dir):
         try:
             
             ashp = coms[c]['model'].comps_used[COMPONENT_NAME]
+            
+            
+            kw_exess = ashp.monthly_value_table['kWh consumed'].sum()/\
+                                constants.hours_per_year
             try:
                 tcr = ashp.total_cap_required
                 price =  float(ashp.electricity_prices.ix[ashp.start_year])
@@ -96,15 +100,17 @@ def component_summary (coms, res_dir):
                 
             ashp.get_diesel_prices()
             diesel_price = float(ashp.diesel_prices[0].round(2))
-            
+            hf_price =  diesel_price + ashp.cd['heating fuel premium']  
             l = [c, 
                  ashp.average_cop,
                  ashp.heat_displaced_sqft,
                  tcr,
                  price,
                  ashp.electric_consumption,
+                 kw_exess,
                  ashp.heating_oil_saved,
                  diesel_price,
+                 hf_price,
                  break_even,
                  levelized_cost,
                  ashp.get_NPV_benefits(),
@@ -126,9 +132,12 @@ def component_summary (coms, res_dir):
             'ASHP Non-Residential Total Nameplate Capacity Needed',
             'Electricity Price [$/kWh]',
             'ASHP Non-Residential kWh consumed per year',
+            "ASHP Non-Residential Excess Generation Capacity"
+                                        " Needed for Peak Monthly Load (kW)",
             "ASHP Non-Residential Displaced Heating Oil [Gal]",
             "Diesel Price - year 1 [$/gal]",
-            'Break Even Diesel Price [$/gal]',
+            "Heating Fuel Price - year 1 [$/gal]",
+            'Break Even Heating Fuel Price [$/gal]',
             'Levelized Cost Of Energy [$/MMBtu]',
             'ASHP Non-Residential NPV benefits [$]',
             'ASHP Non-Residential NPV Costs [$]',
@@ -247,7 +256,7 @@ class ASHPNonResidential (ashp_base.ASHPBase):
         #~ print 'self.proposed_ashp_operation_cost',self.proposed_ashp_operation_cost
         #~ print self.capital_costs
         #~ print self.benefit_cost_ratio
-            self.calc_levelized_costs(self.comp_specs["o&m per year"])
+            self.calc_levelized_costs(self.proposed_ashp_operation_cost)
         else:
             self.reason = "Financial Modeling disabled"
 
@@ -255,21 +264,31 @@ class ASHPNonResidential (ashp_base.ASHPBase):
         """
         calculate the captial costs
         """
-        min_tem = float(self.comp_specs['data'].ix['Minimum Temp'].astype(float))
+        min_tem = float(self.comp_specs['data']\
+                                .ix['Minimum Temp'].astype(float))
         temps = self.comp_specs['perfromance data']['Temperature']
-        percent = self.comp_specs['perfromance data']['Percent of Total Capacity']
+        percent = self.comp_specs['perfromance data']\
+                                    ['Percent of Total Capacity']
         percent_of_total_cap = min(percent)
         if min_tem > min(temps):
             m, b = np.polyfit(temps,percent,1) 
             percent_of_total_cap = m * min_tem + b
         percent_of_total_cap = min(1.0, percent_of_total_cap)
         
-        peak_btu_per_hr_per_sf = self.avg_gal_per_sqft * (1/constants.mmbtu_to_gal_HF) * 1e6 * float(self.comp_specs['data'].ix['Peak Month % of total']) /24/31
+        peak_btu_per_hr_per_sf = self.avg_gal_per_sqft * \
+                                    (1/constants.mmbtu_to_gal_HF) * \
+                                    1e6 * \
+                                    float(self.comp_specs['data']\
+                                        .ix['Peak Month % of total'])\
+                                    / 24 / 31
         peak_btu_per_hr =  peak_btu_per_hr_per_sf*self.heat_displaced_sqft
         self.total_cap_required = 2 * peak_btu_per_hr / percent_of_total_cap
         
         
-        self.capital_costs = self.total_cap_required/self.comp_specs["btu/hrs"]* self.comp_specs["cost per btu/hrs"]*self.regional_multiplier
+        self.capital_costs = self.total_cap_required/ \
+                                    self.comp_specs["btu/hrs"] *\
+                                    self.comp_specs["cost per btu/hrs"] *\
+                                    self.regional_multiplier
         
     def save_component_csv (self, directory):
         """

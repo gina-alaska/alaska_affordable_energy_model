@@ -69,6 +69,9 @@ def component_summary (coms, res_dir):
         try:
             
             ashp = coms[c]['model'].comps_used[COMPONENT_NAME]
+            
+            kw_exess = ashp.monthly_value_table['kWh consumed'].sum()/\
+                                constants.hours_per_year
             try:
                 peak_monthly_btu_hr_hh = ashp.peak_monthly_btu_hr_hh
                 price =  float(ashp.electricity_prices.ix[ashp.start_year])
@@ -93,16 +96,19 @@ def component_summary (coms, res_dir):
                 
             ashp.get_diesel_prices()
             diesel_price = float(ashp.diesel_prices[0].round(2))
-                
+            hf_price = diesel_price + ashp.cd['heating fuel premium']   
+            
             l = [c, 
                  ashp.average_cop,
                  ashp.num_houses,
                  peak_monthly_btu_hr_hh,
                  price,
                  ashp.electric_consumption,
+                 kw_exess,
                  ashp.heating_oil_saved,
                  ashp.electric_heat_energy_reduction,
                  diesel_price,
+                 hf_price,
                  break_even,
                  levelized_cost,
                  ashp.get_NPV_benefits(),
@@ -125,10 +131,13 @@ def component_summary (coms, res_dir):
              'ASHP Residential Peak Household Monthly Btu/hr',
              'Electricity Price [$/kWh]',
              'ASHP Residential kWh consumed per year',
+             "ASHP Residential Excess Generation Capacity"
+                                        " Needed for Peak Monthly Load (kW)",
              "ASHP Residential Displaced Heating Oil [Gal]",
              "ASHP Residential Displaced Electricity [kWh]",
              "Diesel Price - year 1 [$/gal]",
-             'Break Even Diesel Price [$/gal]',
+             "Heating Fuel Price - year 1 [$/gal]",
+             'Break Even Heating Fuel Price [$/gal]',
              'Levelized Cost Of Energy [$/MMBtu]',
              'ASHP Residential NPV benefits [$]',
              'ASHP Residential NPV Costs [$]',
@@ -270,7 +279,7 @@ class ASHPResidential (ashp_base.ASHPBase):
         #~ print 'self.proposed_ashp_operation_cost',self.proposed_ashp_operation_cost
         #~ print self.capital_costs
         #~ print self.benefit_cost_ratio
-            self.calc_levelized_costs(self.comp_specs["o&m per year"])
+            self.calc_levelized_costs(self.proposed_ashp_operation_cost)
         else:
             self.reason = "Financial Modeling disabled"
 
@@ -284,17 +293,25 @@ class ASHPResidential (ashp_base.ASHPBase):
                         constants.hours_per_year
         electric_heat = (self.pre_ashp_heating_electricty_used/self.num_houses)\
                         / constants.mmbtu_to_kWh *1e6/ constants.hours_per_year
+                        
         average_btu_per_hr =  heating_oil + electric_heat
+        
         peak_monthly_btu_hr_hh = \
             float(float(self.comp_specs['data'].ix['Peak Month % of total']) *\
             average_btu_per_hr * 12 / \
             (self.precent_heated_oil+self.precent_heated_elec))
+            
         self.peak_monthly_btu_hr_hh = peak_monthly_btu_hr_hh
         
         
-        min_tem = float(self.comp_specs['data'].ix['Minimum Temp'].astype(float))
+        min_tem = float(self.comp_specs['data']
+                                .ix['Minimum Temp'].astype(float))
+                                
         temps = self.comp_specs['perfromance data']['Temperature']
-        percent = self.comp_specs['perfromance data']['Percent of Total Capacity']
+        
+        percent = self.comp_specs['perfromance data']\
+                                    ['Percent of Total Capacity']
+                                    
         percent_of_total_cap = min(percent)
         if min_tem > min(temps):
             m, b = np.polyfit(temps,percent,1) 
