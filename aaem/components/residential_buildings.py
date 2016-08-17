@@ -173,10 +173,6 @@ class ResidentialBuildings(AnnualSavings):
             self.baseline_fuel_Hoil_consumption[:self.actual_project_life]
         post_heat = \
             self.refit_fuel_Hoil_consumption[:self.actual_project_life]
-       
-        ## same, so can ignore
-        #~ base_elec =self.baseline_kWh_consumption 
-        #~ post_elec =self.baseline_kWh_consumption 
         
         return base_heat - post_heat
                                 

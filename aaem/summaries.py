@@ -649,6 +649,7 @@ def consumption_summary (coms, res_dir):
         if 1 != len(community.split('+')):
             continue
         it = coms[community]['model'].cd.intertie
+        region = coms[community]['model'].cd.get_item('community','region')
         if it is None:
             it = 'parent'
         if it == 'child':
@@ -656,13 +657,13 @@ def consumption_summary (coms, res_dir):
         fc = coms[community]['model'].fc
         try:
             con = fc.consumption.ix[2010:2040].values.T[0].tolist()
-            consumption.append([community] + con)
+            consumption.append([community, region] + con)
         except AttributeError as e:
             #~ print community, e
             continue
 
     f_name = os.path.join(res_dir,'consumption_summary.csv')
-    cols = ['Community'] + [str(y) for y in range(2010,2041)]
+    cols = ['Community', 'region'] + [str(y) for y in range(2010,2041)]
     summary = DataFrame(consumption,
                      columns = cols).set_index('Community')
     summary.to_csv(f_name)
