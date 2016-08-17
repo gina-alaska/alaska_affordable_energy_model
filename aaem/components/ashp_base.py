@@ -378,15 +378,15 @@ class ASHPBase (AnnualSavings):
         returns the total fuel saved in gallons
         """
         eff = self.cd["diesel generation efficiency"]
-        proposed = self.electric_consumption/eff
-        return self.heating_oil_saved - proposed 
+        #~ proposed = self.electric_consumption/eff
+        return self.heating_oil_saved# - proposed 
                                 
     def get_total_enery_produced (self):
         """
         returns the total energy produced
         """
-        return self.heat_energy_produced_per_year + \
-                self.electric_consumption * (1/constants.mmbtu_to_kWh) 
+        return self.heat_energy_produced_per_year #+ \
+                #~ self.electric_consumption * (1/constants.mmbtu_to_kWh) 
                                      
     
     def save_component_csv (self, directory):
