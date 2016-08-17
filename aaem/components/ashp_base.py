@@ -377,7 +377,7 @@ class ASHPBase (AnnualSavings):
         """
         returns the total fuel saved in gallons
         """
-        eff = self.cd["diesel generation efficiency"]
+        #~ eff = self.cd["diesel generation efficiency"]
         #~ proposed = self.electric_consumption/eff
         return self.heating_oil_saved# - proposed 
                                 
