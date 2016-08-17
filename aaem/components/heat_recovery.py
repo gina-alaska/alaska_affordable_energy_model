@@ -340,7 +340,7 @@ def component_summary (coms, res_dir):
             'Diesel price - year 1 [$/gal]',
             'Heating Fuel Premimum [$/gal]',
             'Heating Fuel Price - year 1 [$/gal]',
-            'Break Even Diesel Price [$/gal]',
+            'Break Even Heating Fuel Price [$/gal]',
             'Levelized Cost of Energy [$/MMBtu]',
             'Heat Recovery NPV benefits [$]',
             'Heat Recovery NPV Costs [$]',
