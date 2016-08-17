@@ -1,6 +1,22 @@
 #Change Log
 
-## [0.17.8]
+## [0.17.10]
+### changes
+- headers: Gallons Diesel -> Gallons Heating Fuel where Nessary
+- ASHP: changes inputs to LCOE and breakeven prices
+- transmission: changes inputs to LCOE and breakeven prices
+- non-res: adds % heating cost scaler to breakeven cost calculation
+
+### adds
+- kwh consumption summary: added region column
+- ASHP (both): added excess kW column
+
+### fixes
+- biomass cordwood: fuel costs no longer doubled
+
+
+
+## [0.17.9]
 ### changes
 - non residential buildings component: kWh estimattion scale fractor is changed for interties to include the whole intertie
 
