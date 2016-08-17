@@ -353,6 +353,9 @@ class CommunityBuildings (AnnualSavings):
             
             ## no maintaince cost
             self.calc_levelized_costs(0)
+            heating_cost_percent = self.comp_specs['heating cost precent']
+            #scale by heating_cost_percent
+            self.break_even_cost *= heating_cost_percent
 
     def compare_num_buildings (self):
         """
@@ -748,9 +751,9 @@ class CommunityBuildings (AnnualSavings):
         """
         returns the total fuel saved in gallons
         """
-        gen_eff = self.cd["diesel generation efficiency"]
-        return self.refit_savings_fuel_Hoil_total+ \
-                self.refit_savings_kWh_total / gen_eff
+        #~ gen_eff = self.cd["diesel generation efficiency"]
+        return self.refit_savings_fuel_Hoil_total #+ \
+                #~ self.refit_savings_kWh_total / gen_eff
                                 
     def get_total_enery_produced (self):
         """
