@@ -70,6 +70,10 @@ def component_summary (coms, res_dir):
         try:
             
             ashp = coms[c]['model'].comps_used[COMPONENT_NAME]
+            
+            
+            kw_exess = ashp.monthly_value_table['kWh consumed'].sum()/\
+                                constants.hours_per_year
             try:
                 tcr = ashp.total_cap_required
                 price =  float(ashp.electricity_prices.ix[ashp.start_year])
@@ -103,6 +107,7 @@ def component_summary (coms, res_dir):
                  tcr,
                  price,
                  ashp.electric_consumption,
+                 kw_exess,
                  ashp.heating_oil_saved,
                  diesel_price,
                  hf_price,
@@ -127,6 +132,8 @@ def component_summary (coms, res_dir):
             'ASHP Non-Residential Total Nameplate Capacity Needed',
             'Electricity Price [$/kWh]',
             'ASHP Non-Residential kWh consumed per year',
+            "ASHP Non-Residential Excess Generation Capacity"
+                                        " Needed for Peak Monthly Load (kW)",
             "ASHP Non-Residential Displaced Heating Oil [Gal]",
             "Diesel Price - year 1 [$/gal]",
             "Heating Fuel Price - year 1 [$/gal]",

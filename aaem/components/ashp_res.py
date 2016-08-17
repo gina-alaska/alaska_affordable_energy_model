@@ -69,6 +69,9 @@ def component_summary (coms, res_dir):
         try:
             
             ashp = coms[c]['model'].comps_used[COMPONENT_NAME]
+            
+            kw_exess = ashp.monthly_value_table['kWh consumed'].sum()/\
+                                constants.hours_per_year
             try:
                 peak_monthly_btu_hr_hh = ashp.peak_monthly_btu_hr_hh
                 price =  float(ashp.electricity_prices.ix[ashp.start_year])
@@ -101,6 +104,7 @@ def component_summary (coms, res_dir):
                  peak_monthly_btu_hr_hh,
                  price,
                  ashp.electric_consumption,
+                 kw_exess,
                  ashp.heating_oil_saved,
                  ashp.electric_heat_energy_reduction,
                  diesel_price,
@@ -127,6 +131,8 @@ def component_summary (coms, res_dir):
              'ASHP Residential Peak Household Monthly Btu/hr',
              'Electricity Price [$/kWh]',
              'ASHP Residential kWh consumed per year',
+             "ASHP Residential Excess Generation Capacity"
+                                        " Needed for Peak Monthly Load (kW)",
              "ASHP Residential Displaced Heating Oil [Gal]",
              "ASHP Residential Displaced Electricity [kWh]",
              "Diesel Price - year 1 [$/gal]",
