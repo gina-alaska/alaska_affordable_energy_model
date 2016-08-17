@@ -90,6 +90,12 @@ def component_summary (coms, res_dir):
            
             biomass = coms[c]['model'].comps_used[COMPONENT_NAME]
             
+            
+            
+            biomass.get_diesel_prices()
+            diesel_price = float(biomass.diesel_prices[0].round(2))
+            hf_price = diesel_price + biomass.cd['heating fuel premium']   
+            
             try:
                 break_even = biomass.break_even_cost
             except AttributeError:
@@ -108,6 +114,7 @@ def component_summary (coms, res_dir):
                  biomass.fuel_price_per_unit,
                  biomass.comp_specs['energy density'],
                  biomass.heat_diesel_displaced,
+                 hf_price,
                  break_even,
                  levelized_cost,
                  biomass.get_NPV_benefits(),
@@ -130,7 +137,8 @@ def component_summary (coms, res_dir):
             'Price [$/' + biomass.units + ']',
             "Energy Density [Btu/" + biomass.units + "]",
             'Displaced Heating Oil by Biomass [Gal]',
-            'Break Even Diesel Price [$/gal]',
+            "Heating Fuel Price - year 1 [$/gal]",
+            'Break Even Heating Fuel Price [$/gal]',
             'Levelized Cost Of Energy [$/MMBtu]',
             'Bioimass Cordwood NPV benefits [$]',
             'Biomass Cordwood NPV Costs [$]',
