@@ -240,7 +240,9 @@ class BiomassCordwood (bmb.BiomassBase):
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
             
-            self.calc_levelized_costs(self.maintenance_cost)
+            
+            fuel_cost = self.biomass_fuel_consumed * self.fuel_price_per_unit
+            self.calc_levelized_costs(self.maintenance_cost +  fuel_cost)
             
     def calc_number_boilers (self):
         """
@@ -260,9 +262,8 @@ class BiomassCordwood (bmb.BiomassBase):
         maintenance  = 10 * self.comp_specs["operation cost per hour"] * \
                        self.number_boilers
         
-        fuel_cost = self.biomass_fuel_consumed * self.fuel_price_per_unit
-        
-        self.maintenance_cost = operation + maintenance + fuel_cost
+    
+        self.maintenance_cost = operation + maintenance
 
     def calc_capital_costs (self):
         """
