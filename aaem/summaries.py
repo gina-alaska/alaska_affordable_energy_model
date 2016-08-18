@@ -662,10 +662,10 @@ def consumption_summary (coms, res_dir):
             #~ print community, e
             continue
 
-    f_name = os.path.join(res_dir,'consumption_summary.csv')
+    f_name = os.path.join(res_dir,'kWh_consumption_summary.csv')
     cols = ['Community', 'region'] + [str(y) for y in range(2010,2041)]
     summary = DataFrame(consumption,
-                     columns = cols).set_index('Community')
+                     columns = cols).set_index('Community').fillna('N/a')
     summary.to_csv(f_name)
 
 def call_comp_summaries (coms, res_dir):
