@@ -60,6 +60,71 @@ def process_data_import(data_dir):
         
 yaml_import_lib = {'data': process_data_import}
 
+def component_summary (coms, res_dir):
+    """
+    creates a log for the residental component outputs by community
+    
+    pre:
+        coms: the run model outputs: a dictionary 
+                    {<"community_name">:
+                        {'model':<a run driver object>,
+                        'output dir':<a path to the given communites outputs>
+                        },
+                     ... repeated for each community
+                    }
+        res_dir: directory to save the log in
+    
+    post:
+        a csv file "residential_summary.csv" log is saved in res_dir   
+    
+    """
+    out = []
+    for c in sorted(coms.keys()):
+        if c.find('+') != -1 or c.find("_intertie") != -1:
+            continue
+        try:
+            res = coms[c]['model'].comps_used['residential buildings']
+            out.append([c,
+                res.get_NPV_benefits(),res.get_NPV_costs(),
+                res.get_NPV_net_benefit(),res.get_BC_ratio(),
+                res.hoil_price[0], res.init_HH, res.opportunity_HH,
+                res.break_even_cost, res.levelized_cost_of_energy,
+                res.baseline_fuel_Hoil_consumption[0]/constants.mmbtu_to_gal_HF,
+                (res.baseline_fuel_Hoil_consumption[0] - \
+                    res.proposed_fuel_Hoil_consumption[0])/\
+                        constants.mmbtu_to_gal_HF,
+                round(float(res.fuel_oil_percent)*100,2),
+                res.baseline_HF_consumption[0],
+                res.baseline_HF_consumption[0] - \
+                        res.proposed_HF_consumption[0],
+                ])
+        except (KeyError,AttributeError) as e :
+            #~ print e
+            pass
+            
+    cols = ['community',
+           'Residential Efficiency NPV Benefit',
+           'Residential Efficiency NPV Cost', 
+           'Residential Efficiency NPV Net Benefit',
+           'Residential Efficiency B/C Ratio',
+           'Heating Oil Price - year 1',
+           'Occupied Houses', 
+           'Houses to Retrofit', 
+           'Break Even Heating Fuel Price [$/gal heating oil equiv.]',
+           'Levelized Cost of Energy [$/MMBtu]',
+           'Residential Heating Oil Consumed(mmbtu) - year 1',
+           'Residential Efficiency Heating Oil Saved(mmbtu/year)',
+           'Residential Heating Oil as percent of Total Heating Fuels',
+           'Total Residentital Heating Fuels (mmbtu) - year 1',
+           'Residential Efficiency Total Heating Fuels Saved (mmbtu/year)',
+            ]
+    data = DataFrame(out,columns = cols).set_index('community').round(2)
+    f_name = os.path.join(res_dir,'residential_summary.csv')
+    #~ fd = open(f_name,'w')
+    #~ fd.write("# residental building component summary by community\n")
+    #~ fd.close()
+    data.to_csv(f_name, mode='w')
+
 class ResidentialBuildings(AnnualSavings):
     """
     for forecasting residential building consumption/savings   
@@ -135,14 +200,14 @@ class ResidentialBuildings(AnnualSavings):
         if self.cd["model electricity"]:
             
             self.calc_baseline_kWh_consumption()
-            self.calc_refit_kWh_consumption()
+            self.calc_proposed_kWh_consumption()
         
         if self.cd["model heating fuel"]:
             #~ self.calc_init_HH()
             self.calc_savings_opportunities()
             self.calc_init_consumption()
             self.calc_baseline_fuel_consumption()
-            self.calc_refit_fuel_consumption()
+            self.calc_proposed_fuel_consumption()
             self.set_forecast_columns()
         
         if self.cd["model financial"]:
@@ -150,9 +215,9 @@ class ResidentialBuildings(AnnualSavings):
             
             self.get_diesel_prices()
             self.calc_baseline_fuel_cost() 
-            self.calc_refit_fuel_cost()
+            self.calc_proposed_fuel_cost()
             self.calc_baseline_kWh_cost() 
-            self.calc_refit_kWh_cost()
+            self.calc_proposed_kWh_cost()
             
             
             self.calc_annual_electric_savings()
@@ -170,11 +235,11 @@ class ResidentialBuildings(AnnualSavings):
         returns the total fuel saved in gallons
         """
         base_heat = \
-            self.baseline_fuel_Hoil_consumption[:self.actual_project_life]
+            self.baseline_HF_consumption[:self.actual_project_life]
         post_heat = \
-            self.refit_fuel_Hoil_consumption[:self.actual_project_life]
+            self.proposed_HF_consumption[:self.actual_project_life]
         
-        return base_heat - post_heat
+        return (base_heat - post_heat) * constants.mmbtu_to_gal_HF
                                 
     def get_total_enery_produced (self):
         """
@@ -183,7 +248,7 @@ class ResidentialBuildings(AnnualSavings):
         # no electric
 
         return self.baseline_HF_consumption[:self.actual_project_life] - \
-               self.refit_HF_consumption[:self.actual_project_life]
+               self.proposed_HF_consumption[:self.actual_project_life]
 
     
     def calc_avg_consumption (self):
@@ -420,34 +485,34 @@ class ResidentialBuildings(AnnualSavings):
         # kWh/yr*$/kWh
         self.baseline_kWh_cost = self.baseline_kWh_consumption * kWh_cost
 
-    def calc_refit_fuel_consumption (self):
+    def calc_proposed_fuel_consumption (self):
         """
         """
-        self.refit_fuel_Hoil_consumption = \
+        self.proposed_fuel_Hoil_consumption = \
             self.baseline_fuel_Hoil_consumption - self.savings_HF 
-        self.refit_fuel_wood_consumption = \
+        self.proposed_fuel_wood_consumption = \
             self.baseline_fuel_wood_consumption - self.savings_wood 
-        self.refit_fuel_LP_consumption = \
+        self.proposed_fuel_LP_consumption = \
             self.baseline_fuel_LP_consumption - self.savings_LP 
-        self.refit_fuel_gas_consumption = \
+        self.proposed_fuel_gas_consumption = \
             self.baseline_fuel_gas_consumption - self.savings_gas 
-        self.refit_fuel_kWh_consumption = \
+        self.proposed_fuel_kWh_consumption = \
             self.baseline_fuel_kWh_consumption - self.savings_kWh 
                                      
-        self.refit_HF_consumption = \
+        self.proposed_HF_consumption = \
                     self.baseline_HF_consumption - self.savings_mmbtu
                     
         if self.cd['natural gas price'] == 0:
-            self.refit_fuel_gas_consumption = 0
+            self.proposed_fuel_gas_consumption = 0
         # coal,solar, other
         
-    def calc_refit_kWh_consumption (self):
+    def calc_proposed_kWh_consumption (self):
         """
         calculate the baseline kWh consumption for a community 
         """
-        self.refit_kWh_consumption = self.baseline_kWh_consumption 
+        self.proposed_kWh_consumption = self.baseline_kWh_consumption 
         
-    def calc_refit_fuel_cost (self):
+    def calc_proposed_fuel_cost (self):
         """
         """
         HF_price = (self.diesel_prices + self.cd['heating fuel premium'])
@@ -458,13 +523,13 @@ class ResidentialBuildings(AnnualSavings):
         gas_price = self.cd['natural gas price'] 
         
         
-        self.refit_HF_cost = self.refit_fuel_Hoil_consumption * HF_price + \
-                             self.refit_fuel_wood_consumption * wood_price + \
-                             self.refit_fuel_gas_consumption * gas_price + \
-                             self.refit_fuel_LP_consumption * LP_price + \
-                             self.refit_fuel_kWh_consumption * gas_price
+        self.proposed_HF_cost = self.proposed_fuel_Hoil_consumption * HF_price + \
+                             self.proposed_fuel_wood_consumption * wood_price + \
+                             self.proposed_fuel_gas_consumption * gas_price + \
+                             self.proposed_fuel_LP_consumption * LP_price + \
+                             self.proposed_fuel_kWh_consumption * gas_price
         
-    def calc_refit_kWh_cost (self):
+    def calc_proposed_kWh_cost (self):
         """
         calculate post retrofit electricity costs
         """
@@ -472,7 +537,7 @@ class ResidentialBuildings(AnnualSavings):
                                             ix[self.start_year:self.end_year-1]
         kWh_cost = kWh_cost.T.values[0]
         # kWh/yr*$/kWh
-        self.refit_kWh_cost = self.refit_kWh_consumption * kWh_cost
+        self.proposed_kWh_cost = self.proposed_kWh_consumption * kWh_cost
     
     def calc_capital_costs (self):
         """
@@ -480,7 +545,7 @@ class ResidentialBuildings(AnnualSavings):
         
         Pre:
             self.opportunity_HH, # occupied of houses  
-            self.refit_fuel_cost_rate, cost / refit
+            self.proposed_fuel_cost_rate, cost / refit
         post:
             self.capital_costs the total cost of the project
         """
@@ -500,13 +565,13 @@ class ResidentialBuildings(AnnualSavings):
         calculate the savings in HF cost
         
         pre: 
-            self.baseline_fuel_HF_cost, self.refit_HF_cost should be dollar 
+            self.baseline_fuel_HF_cost, self.proposed_HF_cost should be dollar 
         value  arrays over the project life time
         post: 
             self.annual_heating_savings array savings in HF cost
         """
         self.annual_heating_savings = self.baseline_HF_cost - \
-                                      self.refit_HF_cost
+                                      self.proposed_HF_cost
                                       
     def set_forecast_columns (self):
         """ Function doc """
@@ -574,38 +639,38 @@ class ResidentialBuildings(AnnualSavings):
             gas_price = np.nan
         
         b_oil = self.baseline_fuel_Hoil_consumption/constants.mmbtu_to_gal_HF
-        r_oil = self.refit_fuel_Hoil_consumption/constants.mmbtu_to_gal_HF
+        r_oil = self.proposed_fuel_Hoil_consumption/constants.mmbtu_to_gal_HF
         s_oil = b_oil - r_oil
         b_oil_cost = self.baseline_fuel_Hoil_consumption * HF_price
-        r_oil_cost = self.refit_fuel_Hoil_consumption * HF_price
+        r_oil_cost = self.proposed_fuel_Hoil_consumption * HF_price
         s_oil_cost = b_oil_cost - r_oil_cost
         
         b_bio = self.baseline_fuel_wood_consumption/constants.mmbtu_to_cords
-        r_bio = self.refit_fuel_wood_consumption/constants.mmbtu_to_cords
+        r_bio = self.proposed_fuel_wood_consumption/constants.mmbtu_to_cords
         s_bio = b_bio - r_bio
         b_bio_cost = self.baseline_fuel_wood_consumption * wood_price
-        r_bio_cost = self.refit_fuel_wood_consumption * wood_price
+        r_bio_cost = self.proposed_fuel_wood_consumption * wood_price
         s_bio_cost = b_bio_cost - r_bio_cost
         
         b_elec = self.baseline_fuel_kWh_consumption/constants.mmbtu_to_kWh
-        r_elec = self.refit_fuel_kWh_consumption/constants.mmbtu_to_kWh
+        r_elec = self.proposed_fuel_kWh_consumption/constants.mmbtu_to_kWh
         s_elec = b_elec - r_elec
         b_elec_cost = self.baseline_fuel_kWh_consumption * elec_price
-        r_elec_cost = self.refit_fuel_kWh_consumption * elec_price
+        r_elec_cost = self.proposed_fuel_kWh_consumption * elec_price
         s_elec_cost = b_elec_cost - r_elec_cost
         
         b_LP = self.baseline_fuel_LP_consumption/constants.mmbtu_to_gal_LP
-        r_LP = self.refit_fuel_LP_consumption/constants.mmbtu_to_gal_LP
+        r_LP = self.proposed_fuel_LP_consumption/constants.mmbtu_to_gal_LP
         s_LP = b_LP - r_LP
         b_LP_cost = self.baseline_fuel_LP_consumption * LP_price
-        r_LP_cost = self.refit_fuel_LP_consumption * LP_price
+        r_LP_cost = self.proposed_fuel_LP_consumption * LP_price
         s_LP_cost = b_LP_cost - r_LP_cost
         
         b_NG = self.baseline_fuel_gas_consumption/constants.mmbtu_to_Mcf
-        r_NG = self.refit_fuel_gas_consumption/constants.mmbtu_to_Mcf
+        r_NG = self.proposed_fuel_gas_consumption/constants.mmbtu_to_Mcf
         s_NG = b_NG - r_NG
         b_NG_cost = self.baseline_fuel_gas_consumption * gas_price
-        r_NG_cost = self.refit_fuel_gas_consumption * gas_price
+        r_NG_cost = self.proposed_fuel_gas_consumption * gas_price
         s_NG_cost = b_NG_cost - r_NG_cost
         
     
