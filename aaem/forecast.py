@@ -225,6 +225,17 @@ class Forecast (object):
                                  'consumption': cons, }).set_index('year')
         self.consumption.columns = ["consumption kWh"]
         self.consumption.index = self.consumption.index.values.astype(int)
+        
+        for year in range(min(2010,self.consumption.index[0]),
+                                    self.consumption.index[-1]):
+            try:
+                self.consumption.ix[year]
+            except KeyError:
+                self.consumption.ix[year] = np.nan
+                
+        self.consumption = self.consumption.sort()
+        #~ print self.consumption
+        
         self.start_year = int(self.yearly_res_kWh.T.keys()[-1])
         
     def forecast_generation (self):
