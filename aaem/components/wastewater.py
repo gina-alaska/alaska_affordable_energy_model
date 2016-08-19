@@ -113,8 +113,8 @@ def component_summary (coms, res_dir):
             except AttributeError:
                 oil_p, elec_p = 0,0
             
-            savings = www.baseline_fuel_Hoil_consumption -\
-                      www.refit_fuel_Hoil_consumption
+            savings = (www.baseline_HF_consumption -\
+                      www.proposed_HF_consumption) * constants.mmbtu_to_gal_HF
             out.append([c,
                 www.get_NPV_benefits(),www.get_NPV_costs(),
                 www.get_NPV_net_benefit(),www.get_BC_ratio(),
@@ -123,10 +123,10 @@ def component_summary (coms, res_dir):
                 www.break_even_cost,
                 www.levelized_cost_of_energy['MMBtu'],
                 www.levelized_cost_of_energy['kWh'],
-                www.baseline_fuel_Hoil_consumption[0],
+                www.baseline_HF_consumption[0] * constants.mmbtu_to_gal_HF,
                 www.baseline_kWh_consumption[0],
                 savings[0],
-                (www.baseline_kWh_consumption - www.refit_kWh_consumption)[0]
+                (www.baseline_kWh_consumption - www.proposed_kWh_consumption)[0]
                 ])
         except (KeyError,AttributeError) as e:
             #~ print c +":"+ str(e)
@@ -142,12 +142,12 @@ def component_summary (coms, res_dir):
             '$ per kWh - year 1',
             #~ 'Number Water/Wastewater Buildings',
             #~ 'Water/Wastewater Total Square Footage',
-            'Break Even Diesel Price [$/gal]',
+            'Break Even Diesel Price [$/gal heating oil equiv.]',
             'Levelized Cost of Energy [$/MMBtu]',
             'Levelized Cost of Energy [$/kWh]',
-            'Water/Wastewater Heating Oil Consumed(gal) - year 1',
+            'Water/Wastewater Heating Oil Equiv. Consumed(gal) - year 1',
             'Water/Wastewater Electricity Consumed(kWh) - year 1',
-            'Water/Wastewater Efficiency Heating Oil Saved[gal/year]',
+            'Water/Wastewater Efficiency Heating Oil Equiv. Saved[gal/year]',
             'Water/Wastewater Efficiency Electricity Saved[kWh/year]']
             
     data = DataFrame(out,columns = cols).set_index('community').round(2)
@@ -227,12 +227,12 @@ class WaterWastewaterSystems (AnnualSavings):
         post:
             self.annual_electric_savings is an np.array of $/year values 
         """
-        self.calc_base_electric_cost()
-        self.calc_proposed_electric_cost ()
+        self.calc_baseline_kWh_cost()
+        self.calc_proposed_kWh_cost ()
         self.annual_electric_savings = self.baseline_kWh_cost - \
-                                       self.refit_kWh_cost
+                                       self.proposed_kWh_cost
     
-    def calc_base_electric_cost (self):
+    def calc_baseline_kWh_cost (self):
         """
         calcualte the savings for the base electric savings
         pre:
@@ -251,7 +251,7 @@ class WaterWastewaterSystems (AnnualSavings):
         # kWh/yr*$/kWh
         self.baseline_kWh_cost = self.baseline_kWh_consumption * kWh_cost
         
-    def calc_proposed_electric_cost (self):
+    def calc_proposed_kWh_cost (self):
         """
         calcualte the savings for the base electric savings
         pre:
@@ -267,7 +267,7 @@ class WaterWastewaterSystems (AnnualSavings):
                                             ix[self.start_year:self.end_year-1]
         kWh_cost = kWh_cost.T.values[0]
         # kWh/yr*$/kWh
-        self.refit_kWh_cost = self.refit_kWh_consumption * kWh_cost
+        self.proposed_kWh_cost = self.proposed_kWh_consumption * kWh_cost
     
     def calc_annual_heating_savings (self):
         """
@@ -278,12 +278,12 @@ class WaterWastewaterSystems (AnnualSavings):
             self.annual_heating_savings is an np.array of $/year values (floats) 
         over the project lifetime
         """
-        self.calc_proposed_heating_cost()
-        self.calc_base_heating_cost()
+        self.calc_proposed_HF_cost()
+        self.calc_baseline_HF_cost()
         # $ / yr
-        self.annual_heating_savings = self.baseline_HF_cost - self.refit_HF_cost
+        self.annual_heating_savings = self.baseline_HF_cost - self.proposed_HF_cost
         
-    def calc_proposed_heating_cost (self):
+    def calc_proposed_HF_cost (self):
         """
         calcualte the savings for the proposed heating savings
         pre:
@@ -291,19 +291,19 @@ class WaterWastewaterSystems (AnnualSavings):
         lifetime (floats)
             'heating fuel premium' $/gal (float)
         post:
-           self.refit_HF_cost is an np.array of $/year values (floats) over the
+           self.proposed_HF_cost is an np.array of $/year values (floats) over the
         project lifetime
         """
-        self.refit_HF_cost = np.zeros(self.project_life)
+        self.proposed_HF_cost = np.zeros(self.project_life)
         fuel_cost = self.diesel_prices + self.cd['heating fuel premium']# $/gal
         wood_price = self.cd['cordwood price']
         # are there ever o&m costs
         # $/gal * gal/yr = $/year 
-        self.refit_HF_cost += \
-                self.refit_fuel_Hoil_consumption * fuel_cost +\
-                self.refit_fuel_biomass_consumption * wood_price
+        self.proposed_HF_cost += \
+                self.proposed_fuel_Hoil_consumption * fuel_cost +\
+                self.proposed_fuel_biomass_consumption * wood_price
         
-    def calc_base_heating_cost (self):
+    def calc_baseline_HF_cost (self):
         """
         calcualte the savings for the base heating savings
         pre:
@@ -343,12 +343,12 @@ class WaterWastewaterSystems (AnnualSavings):
             
         if self.cd["model electricity"]:
             self.calc_baseline_kWh_consumption()
-            self.calc_refit_kWh_consumption()
+            self.calc_proposed_kWh_consumption()
             self.calc_savings_kWh_consumption()
         
         if self.cd["model heating fuel"]:
             self.calc_baseline_HF_consumption()
-            self.calc_refit_HF_consumption()
+            self.calc_proposed_HF_consumption()
             self.calc_savings_HF_consumption()
     
             years = range(self.start_year,self.end_year)
@@ -453,7 +453,7 @@ class WaterWastewaterSystems (AnnualSavings):
             self.baseline_fuel_Hoil_consumption/constants.mmbtu_to_gal_HF + \
             self.baseline_fuel_biomass_consumption/constants.mmbtu_to_cords
             
-    def calc_refit_kWh_consumption (self):
+    def calc_proposed_kWh_consumption (self):
         """
         calculate post refit kWh use
         pre:
@@ -463,7 +463,7 @@ class WaterWastewaterSystems (AnnualSavings):
         (float)
             NOTE: if the prices are Nan or 0 they are not used
         post:
-            self.refit_kWh_consumption is an array of kWh/yr (floats) over 
+            self.proposed_kWh_consumption is an array of kWh/yr (floats) over 
         the project lifetime 
         """
         percent = 1 - self.comp_specs['electricity refit reduction']
@@ -473,9 +473,9 @@ class WaterWastewaterSystems (AnnualSavings):
                 (con != 0 and retro_con != 0):
             percent = retro_con/con
         consumption = self.baseline_kWh_consumption * percent
-        self.refit_kWh_consumption = consumption 
+        self.proposed_kWh_consumption = consumption 
 
-    def calc_refit_HF_consumption (self):
+    def calc_proposed_HF_consumption (self):
         """
         calculate post refit HF use
         pre:
@@ -484,7 +484,7 @@ class WaterWastewaterSystems (AnnualSavings):
             self.comp_specs['data'].ix['HF w/retro'] is a price (gal/yr) (float)
             NOTE: if the prices are Nan or 0 they are not used
         post:
-            self.refit_HF_consumption is an array of gal/yr values (floats) over 
+            self.proposed_HF_consumption is an array of gal/yr values (floats) over 
         the project lifetime 
         """
         percent = 1 - self.comp_specs['heating fuel refit reduction']
@@ -495,32 +495,32 @@ class WaterWastewaterSystems (AnnualSavings):
             percent = np.float64(self.comp_specs['data'].ix['HF w/Retro'])/\
                       np.float64(self.comp_specs['data'].ix['HF Used'])
         consumption = self.baseline_fuel_Hoil_consumption * percent
-        self.refit_fuel_Hoil_consumption = consumption
+        self.proposed_fuel_Hoil_consumption = consumption
         consumption = self.baseline_fuel_biomass_consumption * percent
-        self.refit_fuel_biomass_consumption = consumption
+        self.proposed_fuel_biomass_consumption = consumption
         
-        self.refit_HF_consumption = \
-                self.refit_fuel_Hoil_consumption/constants.mmbtu_to_gal_HF +\
-                self.refit_fuel_biomass_consumption/constants.mmbtu_to_cords
+        self.proposed_HF_consumption = \
+                self.proposed_fuel_Hoil_consumption/constants.mmbtu_to_gal_HF +\
+                self.proposed_fuel_biomass_consumption/constants.mmbtu_to_cords
         
     def calc_savings_kWh_consumption (self):
         """
         calculate the savings in kWh use
         pre:
-            self.baseline_kWh_consumption, self.refit_kWh_consumption are
+            self.baseline_kWh_consumption, self.proposed_kWh_consumption are
         arrays of kWh/year (floats) over the project lifetime
         post:
             self.savings_kWh_consumption arrays of kWh/year savings(floats) 
         over the project lifetime
         """
         self.savings_kWh_consumption = self.baseline_kWh_consumption -\
-                                       self.refit_kWh_consumption
+                                       self.proposed_kWh_consumption
                                        
     def calc_savings_HF_consumption (self):
         """
         calculate the savings in HF use
         pre:
-            self.baseline_HF_consumption, self.refit_HF_consumption are
+            self.baseline_HF_consumption, self.proposed_HF_consumption are
         arrays of gal/year (floats) over the project lifetime
         post:
             self.savings_HF_consumption arrays of gal/year savings(floats) 
@@ -529,13 +529,13 @@ class WaterWastewaterSystems (AnnualSavings):
         
         self.savings_fuel_Hoil_consumption = \
                 self.baseline_fuel_Hoil_consumption - \
-                self.refit_fuel_Hoil_consumption
+                self.proposed_fuel_Hoil_consumption
         self.savings_fuel_biomass_consumption = \
                 self.baseline_fuel_biomass_consumption - \
-                self.refit_fuel_biomass_consumption
+                self.proposed_fuel_biomass_consumption
         self.savings_HF_consumption = \
                 self.baseline_HF_consumption - \
-                self.refit_HF_consumption
+                self.proposed_HF_consumption
             
     def calc_capital_costs (self, cost_per_person = 450):
         """
@@ -561,10 +561,12 @@ class WaterWastewaterSystems (AnnualSavings):
         returns the total fuel saved in gallons
         """
         base_heat = \
-            self.baseline_fuel_Hoil_consumption[:self.actual_project_life]
+            self.baseline_HF_consumption[:self.actual_project_life] *\
+            constants.mmbtu_to_gal_HF
         
         proposed_heat = \
-            self.refit_fuel_Hoil_consumption[:self.actual_project_life]
+            self.proposed_HF_consumption[:self.actual_project_life] *\
+            constants.mmbtu_to_gal_HF
             
         
         base_elec = self.baseline_kWh_consumption[:self.actual_project_life] /\
@@ -573,7 +575,7 @@ class WaterWastewaterSystems (AnnualSavings):
         proposed_elec = self.baseline_kWh_consumption\
                                                 [:self.actual_project_life] / \
                                 self.cd["diesel generation efficiency"]
-        
+        #~ print (base_elec - proposed_elec)
         return (base_heat - proposed_heat) + (base_elec - proposed_elec)
                                 
     def get_total_enery_produced (self):
@@ -581,11 +583,9 @@ class WaterWastewaterSystems (AnnualSavings):
         returns the total energy produced
         """
         return {'kWh': 
-                    self.refit_kWh_consumption[:self.actual_project_life], 
+                    self.proposed_kWh_consumption[:self.actual_project_life], 
                 'MMBtu':
-                    self.refit_fuel_Hoil_consumption\
-                                                [:self.actual_project_life]*\
-                        (1/constants.mmbtu_to_gal_HF)
+                    self.proposed_HF_consumption[:self.actual_project_life]
                }
     
 # set WaterWastewaterSystems as component 
