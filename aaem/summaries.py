@@ -77,72 +77,73 @@ def res_log (coms, res_dir):
     #~ fd.close()
     data.to_csv(f_name, mode='w')
     
-def com_log (coms, res_dir): 
-    """
-    creates a log for the non-residental component outputs by community
+def com_log (coms, res_dir):
+    pass 
+    #~ """
+    #~ creates a log for the non-residental component outputs by community
     
-    pre:
-        coms: the run model outputs: a dictionary 
-                    {<"community_name">:
-                        {'model':<a run driver object>,
-                        'output dir':<a path to the given communites outputs>
-                        },
-                     ... repeated for each community
-                    }
-        res_dir: directory to save the log in
+    #~ pre:
+        #~ coms: the run model outputs: a dictionary 
+                    #~ {<"community_name">:
+                        #~ {'model':<a run driver object>,
+                        #~ 'output dir':<a path to the given communites outputs>
+                        #~ },
+                     #~ ... repeated for each community
+                    #~ }
+        #~ res_dir: directory to save the log in
     
-    post:
-        a csv file "non-residential_summary.csv"log is saved in res_dir   
+    #~ post:
+        #~ a csv file "non-residential_summary.csv"log is saved in res_dir   
     
-    """
-    out = []
-    for c in sorted(coms.keys()):
-        if c.find('+') != -1:# or c.find("_intertie") != -1:
-            continue
-        try:
-            com = coms[c]['model'].comps_used['non-residential buildings']
-            savings = com.baseline_fuel_Hoil_consumption -\
-                      com.refit_fuel_Hoil_consumption
-            out.append([c,
-                com.get_NPV_benefits(),com.get_NPV_costs(),
-                com.get_NPV_net_benefit(),com.get_BC_ratio(),
-                com.hoil_price[0], com.elec_price[0], 
-                com.num_buildings , com.refit_sqft_total,
-                com.break_even_cost,
-                com.levelized_cost_of_energy['MMBtu'],
-                com.levelized_cost_of_energy['kWh'],
-                com.baseline_fuel_Hoil_consumption,
-                com.baseline_kWh_consumption,
-                savings,
-                com.baseline_kWh_consumption - com.refit_kWh_consumption])
-        except (KeyError,AttributeError) as e:
-            #~ print c +":"+ str(e)
-            pass
+    #~ """
+    #~ out = []
+    #~ for c in sorted(coms.keys()):
+        #~ if c.find('+') != -1:# or c.find("_intertie") != -1:
+            #~ continue
+        #~ try:
+            #~ com = coms[c]['model'].comps_used['non-residential buildings']
+            #~ savings = com.baseline_fuel_Hoil_consumption -\
+                      #~ com.refit_fuel_Hoil_consumption
+            #~ out.append([c,
+                #~ com.get_NPV_benefits(),com.get_NPV_costs(),
+                #~ com.get_NPV_net_benefit(),com.get_BC_ratio(),
+                #~ com.hoil_price[0], com.elec_price[0], 
+                #~ com.num_buildings , com.refit_sqft_total,
+                #~ com.break_even_cost,
+                #~ com.levelized_cost_of_energy['MMBtu'],
+                #~ com.levelized_cost_of_energy['kWh'],
+                #~ com.baseline_fuel_Hoil_consumption,
+                #~ com.baseline_kWh_consumption,
+                #~ savings,
+                #~ com.baseline_kWh_consumption - com.refit_kWh_consumption])
+        #~ except (KeyError,AttributeError) as e:
+            #~ #print c +":"+ str(e)
+            #~ pass
             
             
-    cols = ['community',
-            'Nonresidential Efficiency NPV Benefit',
-            'Nonresidential Efficiency NPV Cost',
-            'Nonresidential Efficiency NPV Net Benefit',
-            'Nonresidential Efficiency B/C Ratio',
-            'Heating Oil Price - year 1',
-            '$ per kWh - year 1',
-            'Number Nonresidential Buildings',
-            'Nonresidential Total Square Footage',
-            'Break Even Heating Fuel Price [$/gal]',
-            'Levelized Cost of Energy [$/MMBtu]',
-            'Levelized Cost of Energy [$/kWh]',
-            'Nonresidential Heating Oil Consumed(gal) - year 1',
-            'Nonresidential Electricity Consumed(kWh) - year 1',
-            'Nonresidential Efficiency Heating Oil Saved[gal/year]',
-            'Nonresidential Efficiency Electricity Saved[kWh/year]']
+    #~ cols = ['community',
+            #~ 'Nonresidential Efficiency NPV Benefit',
+            #~ 'Nonresidential Efficiency NPV Cost',
+            #~ 'Nonresidential Efficiency NPV Net Benefit',
+            #~ 'Nonresidential Efficiency B/C Ratio',
+            #~ 'Heating Oil Price - year 1',
+            #~ '$ per kWh - year 1',
+            #~ 'Number Nonresidential Buildings',
+            #~ 'Nonresidential Total Square Footage',
+            #~ 'Break Even Heating Fuel Price [$/gal]',
+            #~ 'Levelized Cost of Energy [$/MMBtu]',
+            #~ 'Levelized Cost of Energy [$/kWh]',
+            #~ 'Nonresidential Heating Oil Consumed(gal) - year 1',
+            #~ 'Nonresidential Electricity Consumed(kWh) - year 1',
+            #~ 'Nonresidential Efficiency Heating Oil Saved[gal/year]',
+            #~ 'Nonresidential Efficiency Electricity Saved[kWh/year]']
             
-    data = DataFrame(out,columns = cols).set_index('community').round(2)
-    f_name = os.path.join(res_dir,'non-residential_summary.csv')
-    #~ fd = open(f_name,'w')
-    #~ fd.write("# non residental building component summary by community\n")
-    #~ fd.close()
-    data.to_csv(f_name, mode='w')
+    #~ data = DataFrame(out,columns = cols).set_index('community').round(2)
+    #~ f_name = os.path.join(res_dir,'non-residential_summary.csv')
+    #~ ##fd = open(f_name,'w')
+    #~ ##fd.write("# non residental building component summary by community\n")
+    #~ ##fd.close()
+    #~ data.to_csv(f_name, mode='w')
     
 def building_log(coms, res_dir):
     """
@@ -255,7 +256,7 @@ def building_log(coms, res_dir):
             
             out.append([c,percent*100,percent2*100]+ count+act+est+elec+hf)
             
-        except (KeyError,AttributeError)as e :
+        except (KeyError,AttributeError, ZeroDivisionError)as e :
             #~ print c +":"+ str(e)
             pass
     #~ print out

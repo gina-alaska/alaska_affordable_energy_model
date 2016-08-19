@@ -188,12 +188,13 @@ class BiomassBase (AnnualSavings):
             self.non_res_sqft, and self.avg_gal_per_sqft
         are numbers
         """
-        self.non_res_sqft = non_res.refit_sqft_total
+       
     
         try:
+            self.non_res_sqft = non_res.total_sqft_to_retrofit
             self.avg_gal_per_sqft = non_res.baseline_fuel_Hoil_consumption/ \
                                                             self.non_res_sqft
-        except ZeroDivisionError:
+        except (ZeroDivisionError, AttributeError):
             self.avg_gal_per_sqft = 0
         
     def calc_heat_displaced_sqft (self):

@@ -32,7 +32,7 @@
 
 ## [0.17.6]
 ### changes 
-- non residential buildings component: changes to calculation of pre retofit kWh consumption
+- non residential buildings component: changes to calculation of pre retrofit kWh consumption
 
 ### adds
 - consumption summary

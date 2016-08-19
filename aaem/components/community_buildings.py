@@ -69,7 +69,8 @@ yaml = {'enabled': False,
         'com building data': 'IMPORT',
         'number buildings': 'IMPORT',
         'com building estimates': 'IMPORT',
-        'heating cost precent': .6
+        'heating cost precent': .6,
+        'HW District price %': .5,
             }
             
 yaml_defaults = {'enabled': True,
@@ -92,7 +93,10 @@ yaml_comments = {'enabled': '',
                 'com building estimates': '',
                 'heating cost precent': 
                     ('% of total capital costs used for thermal efficiency'
-                        ' pecent as decimal <float>')
+                        ' pecent as decimal <float>'),
+                'HW District price %': 
+                    ('the percent of the heaing oil price that is'
+                                                ' the HW District price'),
             }
             
 def load_building_data (data_dir):
@@ -126,6 +130,74 @@ yaml_import_lib = {'com building data': load_building_data,
                    
 ## list of prerequisites for module
 prereq_comps = []
+
+def component_summary (coms, res_dir): 
+    """
+    creates a log for the non-residental component outputs by community
+    
+    pre:
+        coms: the run model outputs: a dictionary 
+                    {<"community_name">:
+                        {'model':<a run driver object>,
+                        'output dir':<a path to the given communites outputs>
+                        },
+                     ... repeated for each community
+                    }
+        res_dir: directory to save the log in
+    
+    post:
+        a csv file "non-residential_summary.csv"log is saved in res_dir   
+    
+    """
+    out = []
+    for c in sorted(coms.keys()):
+        if c.find('+') != -1:# or c.find("_intertie") != -1:
+            continue
+        try:
+            com = coms[c]['model'].comps_used['non-residential buildings']
+            savings = (com.baseline_HF_consumption -\
+                      com.proposed_HF_consumption ) * constants.mmbtu_to_gal_HF
+            out.append([c,
+                com.get_NPV_benefits(),com.get_NPV_costs(),
+                com.get_NPV_net_benefit(),com.get_BC_ratio(),
+                com.hoil_price[0], com.elec_price[0], 
+                com.num_buildings , com.total_sqft_to_retrofit,
+                com.break_even_cost,
+                com.levelized_cost_of_energy['MMBtu'],
+                com.levelized_cost_of_energy['kWh'],
+                com.baseline_HF_consumption * constants.mmbtu_to_gal_HF, 
+                com.baseline_kWh_consumption,
+                savings,
+                com.baseline_kWh_consumption - com.proposed_kWh_consumption])
+        except (KeyError,AttributeError) as e:
+            #~ print c +":"+ str(e)
+            pass
+            
+            
+    cols = ['community',
+            'Nonresidential Efficiency NPV Benefit',
+            'Nonresidential Efficiency NPV Cost',
+            'Nonresidential Efficiency NPV Net Benefit',
+            'Nonresidential Efficiency B/C Ratio',
+            'Heating Oil Price - year 1',
+            '$ per kWh - year 1',
+            'Number Nonresidential Buildings',
+            'Nonresidential Total Square Footage',
+            'Break Even Heating Fuel Price [$/gal heating oil equiv.]',
+            'Levelized Cost of Energy [$/MMBtu]',
+            'Levelized Cost of Energy [$/kWh]',
+            'Nonresidential Heating Oil  oil equiv. Consumed(gal) - year 1',
+            'Nonresidential Electricity Consumed(kWh) - year 1',
+            'Nonresidential Efficiency Heating Oil  oil equiv. Saved[gal/year]',
+            'Nonresidential Efficiency Electricity Saved[kWh/year]']
+            
+    data = DataFrame(out,columns = cols).set_index('community').round(2)
+    f_name = os.path.join(res_dir,'non-residential_summary.csv')
+    ##fd = open(f_name,'w')
+    ##fd.write("# non residental building component summary by community\n")
+    ##fd.close()
+    data.to_csv(f_name, mode='w')
+
 
 class CommunityBuildings (AnnualSavings):
     """
@@ -315,15 +387,32 @@ class CommunityBuildings (AnnualSavings):
             self.reason = "Not a non-residential project"
             return 
         
-        self.compare_num_buildings()
-        self.calc_refit_values()
-        self.pre_retrofit_HF_use = np.zeros(self.project_life) + \
-                                                    self.baseline_HF_consumption 
+        self.update_num_buildings()
+        #~ self.calc_refit_values()
+        
+        if len(self.comp_specs['com building data']) == 0:
+            self.run = False
+            self.reason = "No Buildings"
+            return 
+        
+        self.calc_total_sqft_to_retrofit()
+        
+        
+        self.calc_baseline_kWh_consumption()
+        self.calc_proposed_kWh_consumption()
+        
+        self.calc_baseline_HF_consumption()
+        self.calc_proposed_HF_consumption()
+        
+        #~ print self.comp_specs['com building data']
+        #~ import sys
+        #~ sys.exit()
+        #~ self.pre_retrofit_HF_use = np.zeros(self.project_life) + \
+                                                    #~ self.baseline_HF_consumption 
                                                     
         
-        self.calc_post_refit_use()
-        self.post_retrofit_HF_use = np.zeros(self.project_life) + \
-                                                    self.refit_HF_consumption   
+        #~ self.post_retrofit_HF_use = np.zeros(self.project_life) + \
+                                                    #~ self.proposed_HF_consumption  
                                                 
         years = range(self.start_year,self.end_year)
         self.forecast.add_heating_fuel_column(\
@@ -340,6 +429,7 @@ class CommunityBuildings (AnnualSavings):
         
         if self.cd["model financial"]:
             self.get_diesel_prices()
+            self.get_electricity_prices() 
             
             self.calc_capital_costs()
             self.calc_annual_electric_savings()
@@ -357,7 +447,7 @@ class CommunityBuildings (AnnualSavings):
             #scale by heating_cost_percent
             self.break_even_cost *= heating_cost_percent
 
-    def compare_num_buildings (self):
+    def update_num_buildings (self):
         """
             This function compares the counted buildings with the estimated 
         buildings
@@ -409,25 +499,26 @@ class CommunityBuildings (AnnualSavings):
         self.diagnostics.add_note(self.component_name, "Adding " + str(len(l))+\
                           " additional buildings with average square footage. ") 
         
-    def calc_refit_values (self):
-        """
-        calculate the forecast input values related to refit buildings
+    #~ def calc_refit_values (self):
+        #~ """
+        #~ calculate the forecast input values related to refit buildings
         
-        pre:
-            None
+        #~ pre:
+            #~ None
         
-        post:
-            TODO: define this better
-            refit forecast inputs are calculated.
-        """
-        self.calc_refit_sqft()
-        self.calc_refit_cost()
-        self.calc_refit_pre_HF()
-        self.calc_refit_pre_kWh()
-        self.calc_refit_savings_HF()
-        self.calc_refit_savings_kWh()
+        #~ post:
+            #~ TODO: define this better
+            #~ refit forecast inputs are calculated.
+        #~ """
+        #~ self.calc_refit_sqft()
+        #~ self.calc_refit_cost()
+        #~ self.calc_baseline_HF_consumption()
+        #~ self.calc_baseline_kWh_consumption()
+        #~ self.calc_refit_savings_HF()
+        #~ self.calc_refit_savings_kWh()
         
-    def calc_refit_sqft (self):
+        
+    def calc_total_sqft_to_retrofit (self):
         """ 
         calc refit square feet 
           
@@ -437,7 +528,7 @@ class CommunityBuildings (AnnualSavings):
         self.comp_specs['com building data'] is a Pandas DataFrame containing 
         the actual data on buildings in the community, indexed by building type
         post:
-            self.refit_sqft_total is the total sqft. that can retrofitted in
+            self.total_sqft_to_retrofit is the total sqft. that can retrofitted in
         the community. self.comp_specs['com building data']['Square Feet'] has
         been updated with square footage estimates. 
         """
@@ -469,10 +560,10 @@ class CommunityBuildings (AnnualSavings):
                  "Building Type: " + k + " not valid. Using 'other's estimates")
                 data.loc[:,measure].loc[k] = \
                     data.loc[:,measure].loc[k].fillna(sqft_ests.ix['Other'])
-        self.refit_sqft_total = data[measure].sum()
+        self.total_sqft_to_retrofit = data[measure].sum()
         
     
-    def calc_refit_cost (self):
+    def calc_capital_costs (self):
         """ 
         calc refit cost 
           
@@ -501,9 +592,9 @@ class CommunityBuildings (AnnualSavings):
             d2[idx,2] = sqft * self.refit_cost_rate  #sqft * $$/sqft = $$
         
         data[measure] = d2[:,2].astype(np.float64)  
-        self.refit_cost_total = data[measure].sum()
+        self.capital_costs = data[measure].sum()
         
-    def calc_refit_pre_HF (self):
+    def calc_baseline_HF_consumption (self):
         """ 
         calculate pre refit kWh use
         
@@ -572,7 +663,7 @@ class CommunityBuildings (AnnualSavings):
 
             
         
-    def calc_refit_pre_kWh (self):
+    def calc_baseline_kWh_consumption (self):
         """ 
         calculate pre refit kWh use
         
@@ -674,36 +765,56 @@ class CommunityBuildings (AnnualSavings):
         self.baseline_kWh_consumption = data[measure].sum()
         #~ print self.baseline_kWh_consumption
         
-    def calc_refit_savings_HF (self):
+    def calc_proposed_HF_consumption (self):
         """ 
-        calculate refit HF savings
-        
-        pre:
-            tbd
-        post: 
-            self.refit_savings_HF, self.benchmark_savings_HF,
-        self.additional_savings_HF, are floating-point HF values
         """
-        try:
-            idx =np.isnan(self.comp_specs['com building data']["Fuel Oil Post"])
-            self.comp_specs['com building data']["Fuel Oil Post"][idx] = \
-                        self.comp_specs['com building data']["Fuel Oil"][idx]*\
-                        self.comp_specs['cohort savings multiplier']
-        except TypeError:
-            self.comp_specs['com building data']["Fuel Oil Post"] = \
-                        self.comp_specs['com building data']["Fuel Oil"]*\
-                        self.comp_specs['cohort savings multiplier']
+        building_data = self.comp_specs['com building data']
+        percent_savings = self.comp_specs['cohort savings multiplier']
+        #~ fuel_type = 'Fuel Oil'
+        #~ try:
+        fuel_types = ['Fuel Oil',
+                      'Natural Gas', 
+                      'HW District',
+                      'Propane',
+                      'Biomass']
+        for fuel_type in fuel_types:
+            fuel_vals = building_data[fuel_type + ' Post']
+            idx = fuel_vals.isnull()
+            fuel_vals[idx] = building_data[fuel_type][idx] *\
+                                                (1 - percent_savings)
+       
+        #~ except TypeError:
+            
+            
+            
+            #~ self.comp_specs['com building data']["Fuel Oil Post"] = \
+                        #~ self.comp_specs['com building data']["Fuel Oil"]*\
+                        #~ self.comp_specs['cohort savings multiplier']
         
         
         
-        # GALLONS
-        self.refit_savings_fuel_Hoil_total = \
-                    self.comp_specs['com building data']["Fuel Oil Post"].sum()
-        # MMBTU
-        self.refit_savings_HF_total = \
-            self.refit_savings_fuel_Hoil_total / constants.mmbtu_to_gal_HF
         
-    def calc_refit_savings_kWh (self):
+        # by fuel type
+        self.proposed_fuel_Hoil_consumption = \
+                            building_data['Fuel Oil Post'].sum()
+        self.proposed_fuel_lng_consumption = \
+                            building_data['Natural Gas Post'].fillna(0).sum()
+        self.proposed_fuel_hr_consumption = \
+                            building_data['HW District Post'].fillna(0).sum()
+        self.proposed_fuel_propane_consumption = \
+                            building_data['Propane Post'].fillna(0).sum()
+        self.proposed_fuel_biomass_consumption = \
+                            building_data['Biomass Post'].fillna(0).sum()
+          
+        # mmbtu 
+        self.proposed_HF_consumption = \
+            self.proposed_fuel_Hoil_consumption / constants.mmbtu_to_gal_HF +\
+            self.proposed_fuel_hr_consumption/constants.mmbtu_to_gal_HF+\
+            self.proposed_fuel_lng_consumption/constants.mmbtu_to_Mcf+\
+            self.proposed_fuel_propane_consumption/constants.mmbtu_to_gal_LP+\
+            self.proposed_fuel_biomass_consumption/constants.mmbtu_to_cords              
+        
+    def calc_proposed_kWh_consumption (self):
         """ 
         calculate refit kWh savings
         
@@ -713,65 +824,69 @@ class CommunityBuildings (AnnualSavings):
             self.refit_savings_kWh, self.benchmark_savings_kWh,
         self.additional_savings_kWh, are floating-point kWh values
         """
-        try:
-            idx = \
-                np.isnan(self.comp_specs['com building data']["Electric Post"])
-            self.comp_specs['com building data']["Electric Post"][idx] = \
-                        self.comp_specs['com building data']["Electric"][idx]*\
-                        self.comp_specs['cohort savings multiplier']
-        except TypeError:
-            self.comp_specs['com building data']["Electric Post"] = \
-                        self.comp_specs['com building data']["Electric"]*\
-                        self.comp_specs['cohort savings multiplier']
+        building_data = self.comp_specs['com building data']
+        percent_savings = self.comp_specs['cohort savings multiplier']
+    
+        elec_vals = building_data['Electric Post']
+        idx = elec_vals.isnull()
+        elec_vals[idx] = building_data['Electric'][idx] * (1 - percent_savings)
         
         #kWh
-        self.refit_savings_kWh_total = \
-                    self.comp_specs['com building data']["Electric Post"].sum()
         
-    def calc_post_refit_use (self):
-        """ 
-        calculate post refit HF and kWh use
+        self.proposed_kWh_consumption = elec_vals.sum()
         
-        pre:
-            pre refit and savigns values should be calculated
-        post: 
-            refit_pre_kWh_total is the total number of kWh used after a 
-        refit(float)
-            same  for self.refit_HF_consumption but with HF
-        """
+    #~ def calc_post_refit_use (self):
+        #~ """ 
+        #~ calculate post refit HF and kWh use
         
-        self.refit_HF_consumption = self.baseline_HF_consumption - \
-                                                self.refit_savings_HF_total
-        self.refit_fuel_Hoil_consumption = \
-                self.refit_HF_consumption*constants.mmbtu_to_gal_HF
-        self.refit_kWh_consumption = self.baseline_kWh_consumption - \
-                                                self.refit_savings_kWh_total
+        #~ pre:
+            #~ pre refit and savigns values should be calculated
+        #~ post: 
+            #~ refit_pre_kWh_total is the total number of kWh used after a 
+        #~ refit(float)
+            #~ same  for self.refit_HF_consumption but with HF
+        #~ """
+        
+        #~ self.refit_HF_consumption = self.baseline_HF_consumption - \
+                                                #~ self.refit_savings_HF_total
+        #~ self.refit_fuel_Hoil_consumption = \
+                #~ self.refit_HF_consumption*constants.mmbtu_to_gal_HF
+        #~ self.refit_kWh_consumption = self.baseline_kWh_consumption - \
+                                                #~ self.refit_savings_kWh_total
                                                 
     def get_fuel_total_saved (self):
         """
         returns the total fuel saved in gallons
         """
         #~ gen_eff = self.cd["diesel generation efficiency"]
-        return self.refit_savings_fuel_Hoil_total #+ \
+        
+        HF_savings = \
+            (self.baseline_HF_consumption - self.proposed_HF_consumption) *\
+            constants.mmbtu_to_gal_HF
+        return HF_savings #+ \
                 #~ self.refit_savings_kWh_total / gen_eff
                                 
     def get_total_enery_produced (self):
         """
         returns the total energy saved 
         """
+        kWh_savings = self.baseline_kWh_consumption - \
+                        self.proposed_kWh_consumption
+        HF_savings = self.baseline_HF_consumption - \
+                        self.proposed_HF_consumption
         heating_cost_percent = self.comp_specs['heating cost precent']
-        return {'kWh': (self.refit_savings_kWh_total, 1 - heating_cost_percent), 
-                'MMBtu': (self.refit_savings_HF_total, heating_cost_percent)
+        return {'kWh': (kWh_savings, 1 - heating_cost_percent), 
+                'MMBtu': (HF_savings, heating_cost_percent)
                }
         
-    def calc_capital_costs (self):
-        """
-        pre:
-            self.refit_cost_total is a dollar value
-        post:
-            self.captial_costs is the refit cost
-        """
-        self.capital_costs = self.refit_cost_total
+    #~ def calc_capital_costs (self):
+        #~ """
+        #~ pre:
+            #~ self.refit_cost_total is a dollar value
+        #~ post:
+            #~ self.captial_costs is the refit cost
+        #~ """
+        #~ self.capital_costs = self.refit_cost_total
     
     def calc_annual_electric_savings (self):
         """
@@ -784,33 +899,27 @@ class CommunityBuildings (AnnualSavings):
         post:
             self.annual_electric_savings containt the projected savings
         """
-        #~ elec_price = self.cd["elec non-fuel cost"]+\
-                    #~ self.diesel_prices/self.cd['diesel generation efficiency']
-        #~ print self.cd["electric non-fuel prices"].ix[self.start_year:self.end_year]
-        elec_price = self.cd["electric non-fuel prices"].\
-                                            ix[self.start_year:self.end_year-1]
-        elec_price = elec_price.T.values[0]
-        #~ print self.cd["elec non-fuel cost"]
-        #~ print self.diesel_prices
-        #~ print self.cd['diesel generation efficiency']
-        self.elec_price = elec_price
-        #~ print self.elec_price 
-        #~ print self.cd["electric non-fuel prices"]
-        
+        elec_price = self.electricity_prices.ix[self.start_year:\
+                                                    self.end_year-1]
+        self.elec_price = elec_price.T.values[0]
+
+
+        #~ print self.elec_price
+        #~ print 
         
         #~ print self.intertie
         #~ if self.intertie == "child":
             #~ self.baseline_kWh_cost = [0]
-            #~ self.refit_kWh_cost = [0]
+            #~ self.proposed_kWh_cost = [0]
             #~ self.annual_electric_savings = [0]
             #~ return
         
-        self.baseline_kWh_cost = self.baseline_kWh_consumption * elec_price
+        self.baseline_kWh_cost = self.baseline_kWh_consumption * self.elec_price
                     
-        self.refit_kWh_cost = self.refit_kWh_consumption * elec_price
+        self.proposed_kWh_cost = self.proposed_kWh_consumption * self.elec_price
         
-        self.annual_electric_savings = np.zeros(self.project_life) + \
-                                       self.refit_savings_kWh_total* elec_price
+        self.annual_electric_savings = self.baseline_kWh_cost - \
+                                        self.proposed_kWh_cost
         
     def calc_annual_heating_savings (self):
         """
@@ -823,27 +932,39 @@ class CommunityBuildings (AnnualSavings):
         post:
             self.annual_heating_savings containt the projected savings
         """
-        fuel_price = (self.diesel_prices + self.cd['heating fuel premium'])
-        #~ self.fuel_price = fuel_price
-        self.hoil_price = fuel_price
+        self.hoil_price = (self.diesel_prices + self.cd['heating fuel premium'])
+        
+        hr_price = self.hoil_price * self.comp_specs['HW District price %']
+        
+        wood_price = self.cd['cordwood price'] 
+        LP_price = self.cd['propane price'] 
+        LNG_price = self.cd['natural gas price']
+
+        # heating oil
         self.baseline_fuel_Hoil_cost = \
-                self.baseline_fuel_Hoil_consumption * fuel_price
-                
-                
-        #~ if self.intertie == "parent":
-            #~ self.annual_heating_savings = [0]
-            #~ return
+                self.baseline_fuel_Hoil_consumption * self.hoil_price
+        self.proposed_fuel_Hoil_cost = \
+                self.proposed_fuel_Hoil_consumption * self.hoil_price
+        self.annual_fuel_Hoil_savings = self.baseline_fuel_Hoil_cost - \
+                                            self.proposed_fuel_Hoil_cost
         
-        self.baseline_HF_cost = self.baseline_fuel_Hoil_cost # + other?
+        # all fuels
+        self.baseline_HF_cost = \
+            self.baseline_fuel_Hoil_consumption * self.hoil_price + \
+            self.baseline_fuel_hr_consumption * hr_price + \
+            self.baseline_fuel_lng_consumption * LNG_price + \
+            self.baseline_fuel_propane_consumption * LP_price + \
+            self.baseline_fuel_biomass_consumption * wood_price
+    
+        self.proposed_HF_cost = \
+            self.baseline_fuel_Hoil_consumption * self.hoil_price + \
+            self.baseline_fuel_hr_consumption * hr_price  + \
+            self.baseline_fuel_lng_consumption * LNG_price + \
+            self.baseline_fuel_propane_consumption * LP_price + \
+            self.baseline_fuel_biomass_consumption * wood_price
         
-        self.refit_fuel_Hoil_cost = \
-                self.refit_fuel_Hoil_consumption * fuel_price
-        
-        self.refit_HF_cost = self.refit_fuel_Hoil_cost # + other
-        
-        self.annual_fuel_Hoil_savings = np.zeros(self.project_life) + \
-                                self.refit_savings_fuel_Hoil_total *(fuel_price)
-        self.annual_heating_savings = self.annual_fuel_Hoil_savings
+        self.annual_heating_savings = self.baseline_HF_cost - \
+                                            self.proposed_HF_cost
         
     
 component = CommunityBuildings

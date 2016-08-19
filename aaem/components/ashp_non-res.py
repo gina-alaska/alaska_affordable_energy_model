@@ -193,12 +193,13 @@ class ASHPNonResidential (ashp_base.ASHPBase):
         if len(tag) > 1 and tag[1].split('_')[0] != 'ASHP_res':
             return 
         non_res = comps['non-residential buildings']
-        self.non_res_sqft = non_res.refit_sqft_total
     
         try:
+            self.non_res_sqft = non_res.total_sqft_to_retrofit
             self.avg_gal_per_sqft = non_res.baseline_fuel_Hoil_consumption/ \
                                                             self.non_res_sqft
-        except ZeroDivisionError:
+        except (ZeroDivisionError, AttributeError):
+            self.non_res_sqft = 0
             self.avg_gal_per_sqft = 0
         
         
