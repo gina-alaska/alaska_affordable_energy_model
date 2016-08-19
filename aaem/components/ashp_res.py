@@ -70,8 +70,8 @@ def component_summary (coms, res_dir):
             
             ashp = coms[c]['model'].comps_used[COMPONENT_NAME]
             
-            kw_exess = ashp.monthly_value_table['kWh consumed'].sum()/\
-                                constants.hours_per_year
+            kw_exess = ashp.monthly_value_table['kWh consumed'].max()/\
+                                (24 * 31)
             try:
                 peak_monthly_btu_hr_hh = ashp.peak_monthly_btu_hr_hh
                 price =  float(ashp.electricity_prices.ix[ashp.start_year])
