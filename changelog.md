@@ -1,5 +1,18 @@
 #Change Log
 
+## [0.17.11]
+### changes 
+- for components break even cost in gal heating oil equiv.
+- renames efficiency components function names to be more consistent with newer components
+- moves res/non-res summary functions to respective component files
+
+### fixes
+- non-residential proposed value calculations
+- missing years in consumption input data issue in forecast and some summaries
+- range of yeas to use when calculating LCOE/break even price
+- ashp Excess Generation Capacity needed calculation
+
+
 ## [0.17.10]
 ### changes
 - headers: Gallons Diesel -> Gallons Heating Fuel where Nessary
