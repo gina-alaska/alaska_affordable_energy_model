@@ -102,10 +102,9 @@ class AnnualSavings (object):
         yts = np.zeros((self.start_year - self.cd["current year"])+1)
         
         if not type(maintenance) in [list,np.ndarray]:
-            maintenance = list(yts) + \
-                    list((np.zeros(self.actual_project_life) + maintenance))
+            maintenance = np.zeros(self.actual_project_life) +  maintenance
         else:
-            maintenance = list(yts) + list(maintenance)
+            maintenance = maintenance[:self.actual_project_life]
         maintenance = np.array(maintenance)
         
         maintenance_npv = np.npv(self.cd['discount rate'], 
@@ -113,12 +112,9 @@ class AnnualSavings (object):
         
         
         if not type(fuel_amount) in [list,np.ndarray]:
-            fuel_amount = list(yts) + \
-                    list((np.zeros(self.actual_project_life) + fuel_amount))
+            fuel_amount = np.zeros(self.actual_project_life) + fuel_amount
         else:
-            fuel_amount  = list(yts) + list(fuel_amount)    
-        
-        fuel_amount = np.array(fuel_amount)
+            fuel_amount = fuel_amount[:self.actual_project_life]  
         
         fuel_npv = np.npv(self.cd['discount rate'], 
                                     np.append(yts, fuel_amount))    

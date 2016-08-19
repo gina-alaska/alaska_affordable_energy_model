@@ -72,8 +72,8 @@ def component_summary (coms, res_dir):
             ashp = coms[c]['model'].comps_used[COMPONENT_NAME]
             
             
-            kw_exess = ashp.monthly_value_table['kWh consumed'].sum()/\
-                                constants.hours_per_year
+            kw_exess = ashp.monthly_value_table['kWh consumed'].max()/\
+                                (24 * 31)
             try:
                 tcr = ashp.total_cap_required
                 price =  float(ashp.electricity_prices.ix[ashp.start_year])
@@ -100,7 +100,8 @@ def component_summary (coms, res_dir):
                 
             ashp.get_diesel_prices()
             diesel_price = float(ashp.diesel_prices[0].round(2))
-            hf_price =  diesel_price + ashp.cd['heating fuel premium']  
+            hf_price =  diesel_price + ashp.cd['heating fuel premium'] 
+            
             l = [c, 
                  ashp.average_cop,
                  ashp.heat_displaced_sqft,
@@ -258,6 +259,7 @@ class ASHPNonResidential (ashp_base.ASHPBase):
         #~ print self.capital_costs
         #~ print self.benefit_cost_ratio
             self.calc_levelized_costs(self.proposed_ashp_operation_cost)
+            
         else:
             self.reason = "Financial Modeling disabled"
 
