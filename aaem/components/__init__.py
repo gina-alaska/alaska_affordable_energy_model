@@ -13,6 +13,7 @@ comp_lib = {
     'Hydropower': 'hydro',
     'transmission': 'interties',
     'heat recovery': 'heat_recovery',
+    'diesel efficiency': 'diesel_efficiency',
         }
 
 comp_order = ["residential buildings",
@@ -26,7 +27,8 @@ comp_order = ["residential buildings",
               'ASHP non-residential',
               'Hydropower',
               'transmission',
-              'heat recovery',]
+              'heat recovery',
+              'diesel efficiency']
 
 def get_raw_data_files():
     raw_data_files = []
