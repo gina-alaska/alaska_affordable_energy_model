@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.17.12]
+### adds
+- diesel efficiency component
+
 ## [0.17.11]
 ### changes 
 - for components break even cost in gal heating oil equiv.
