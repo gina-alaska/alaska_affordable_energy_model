@@ -38,6 +38,7 @@ yaml = {'enabled': False,
                             'operational costs': UNKNOWN,
                             'expected years to operation': 3,
                             },
+        'data': IMPORT,
         'lifetime': 'ABSOLUTE DEFAULT',
         'start year': 'ABSOLUTE DEFAULT',
         'efficiency improvment': 1.1,
@@ -62,10 +63,12 @@ yaml_comments = {'enabled': '',
         'start year': 'start year <int>'}
        
 ## Functions for CommunityData IMPORT keys
-#~ def process_data_import(data_dir):
-    #~ """
-    #~ """
-    #~ pass
+def process_data_import(data_dir):
+    """
+    """
+    data_file = os.path.join(data_dir, "diesel_data.csv")
+    data = read_csv(data_file, comment = '#', index_col=0, header=0)
+    return data['value'].to_dict()
     
 #~ def load_project_details (data_dir):
     #~ """
@@ -123,33 +126,14 @@ yaml_comments = {'enabled': '',
     #~ return dets
     
 #~ ## library of keys and functions for CommunityData IMPORT Keys
-yaml_import_lib = {}#'project details': load_project_details}# fill in
+yaml_import_lib = {'data':process_data_import}
+                #~ 'project details': load_project_details}# fill in
     
-## preprocessing functons 
-#~ def preprocess_header (ppo):
-    #~ """
-    #~ """
-    #~ return  "# " + ppo.com_id + " compdata data\n"+ \
-            #~ ppo.comments_dataframe_divide
-    
-#~ def preprocess (ppo):
-    #~ """
-    
-    #~ """
-    #~ #CHANGE THIS
-    #~ out_file = os.path.join(ppo.out_dir,"comp_data.csv")
-
-    #~ fd = open(out_file,'w')
-    #~ fd.write(preprocess_header(ppo))
-    #~ fd.close()
-
-    #~ # create data and uncomment this
-    #~ data.to_csv(out_file, mode = 'a',header=False)
-    
-    #~ ppo.MODEL_FILES['COMP_DATA'] = "comp_data.csv" # CHANGE THIS
+#~ ## preprocessing functons 
+# diesel preprocessing is in preprocessor.py
     
 ## list of wind preprocessing functions
-#~ preprocess_funcs = []#preprocess]
+#~ preprocess_funcs = [preprocess]
 
 ## preprocess the existing projects
 ### This function is called differently from the other preprocessor functions,
@@ -204,7 +188,112 @@ yaml_not_to_save = []
 def component_summary (coms, res_dir):
     """
     """
-    pass
+    out = []
+    for c in sorted(coms.keys()):
+        it = coms[c]['model'].cd.intertie
+        if it is None:
+            it = 'parent'
+        if it == 'child' or c.find("+") != -1:
+            continue
+        #~ if c.find("_intertie") != -1:
+            #~ continue
+        try:
+            comp = coms[c]['model'].comps_used[COMPONENT_NAME]
+            
+            comp.get_diesel_prices()
+            diesel_price = float(comp.diesel_prices[0].round(2))
+            try:
+                average_load = comp.average_load
+            except AttributeError:
+                average_load = np.nan
+            try:
+                current_capacity = comp.comp_specs['data']\
+                                            ['Total Capacity (in kW)']
+            except AttributeError:
+                current_capacity = np.nan
+            try:
+                max_capacity = comp.max_capacity
+            except AttributeError:
+                max_capacity = np.nan
+            try:
+                generation = comp.generation[0]
+            except AttributeError:
+                generation = np.nan
+            try:
+                baseline_eff = comp.baseline_diesel_efficiency
+            except AttributeError:
+                baseline_eff = np.nan
+            try:
+                proposed_eff = comp.baseline_diesel_efficiency
+            except AttributeError:
+                proposed_eff = np.nan
+            try:
+                baseline_fuel = comp.baseline_generation_fuel_use[0]
+            except AttributeError:
+                baseline_fuel = np.nan
+            try:
+                proposed_fuel = comp.proposed_generation_fuel_use[0]
+            except AttributeError:
+                proposed_fuel = np.nan
+            
+            try:
+                break_even_cost = comp.break_even_cost
+                levelized_cost_of_energy = comp.levelized_cost_of_energy
+            except AttributeError:
+                break_even_cost = np.nan
+                levelized_cost_of_energy = np.nan
+            
+            l = [c, 
+                 average_load,
+                 current_capacity,
+                 max_capacity,
+                 generation,
+                 
+                 baseline_eff,
+                 proposed_eff,
+                 baseline_fuel,
+                 proposed_fuel,
+                 diesel_price,
+                 
+                 break_even_cost,
+                 levelized_cost_of_energy,
+                 comp.get_NPV_benefits(),
+                 comp.get_NPV_costs(),
+                 comp.get_NPV_net_benefit(),
+                 comp.get_BC_ratio(),
+                 comp.reason
+                ]
+            out.append(l)
+            
+        except (KeyError,AttributeError) as e:
+            print e
+            pass
+    
+    cols = ['Community', 'Average Load [kW]', 'Current Capacity [kW]',
+            'Max Capacity [kW]', 'Generation - year 1[kWh]',
+            
+            'Baseline Diesel Generator Efficiency [Gal/kWh]',
+            'Proposed Diesel Generator Efficiency [Gal/kWh]',
+            'Baseline Generation Fuel Consumption [Gal]',
+            'proposed Generation Fuel Consumption [Gal]',
+            'Diesel price - year 1 [$/gal]',
+            
+            'Break Even Diesel Price [$/gal]',
+            'Levelized Cost of Energy [$/MMBtu]',
+            'Heat Recovery NPV benefits [$]',
+            'Heat Recovery NPV Costs [$]',
+            'Heat Recovery NPV Net benefit [$]',
+            'Heat Recovery Benefit Cost Ratio',
+            'notes'
+            ]
+    
+    data = DataFrame(out,columns = cols).set_index('Community')#.round(2)
+    f_name = os.path.join(res_dir,
+                COMPONENT_NAME.replace(" ","_") + '_summary.csv')
+    #~ fd = open(f_name,'w')
+    #~ fd.write(("# " + COMPONENT_NAME + " summary\n"))
+    #~ fd.close()
+    data.to_csv(f_name, mode='w')
 
 ## list of prerequisites for module
 prereq_comps = [] ## FILL in if needed
@@ -267,6 +356,7 @@ class DieselEfficiency(AnnualSavings):
             # change these below
             
         self.calc_average_load()
+        self.calc_max_capacity()
         self.calc_baseline_generation_fuel_use()
         
         self.calc_proposed_generation_fuel_use()
@@ -287,6 +377,7 @@ class DieselEfficiency(AnnualSavings):
             self.calc_annual_costs(self.cd['interest rate'])
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
+            self.calc_levelized_costs(0)
         
     def calc_average_load (self):
         """
@@ -318,14 +409,17 @@ class DieselEfficiency(AnnualSavings):
                         self.comp_specs['efficiency improvment']
         self.proposed_generation_fuel_use = self.generation / \
                                         self.proposed_diesel_efficiency 
+                                        
+    def calc_max_capacity (self):
+        """
+        """
+        self.max_load = self.generation[:self.actual_project_life].max() / \
+                                                    constants.hours_per_year
+        self.max_capacity = 13.416 * self.max_load ** (1 - 0.146)  
     
     def calc_capital_costs (self):
         """ Function Doc"""
-        max_load = self.generation[:self.actual_project_life].max() / \
-                                                    constants.hours_per_year
-        proposed_cap = 13.416 * max_load ** (1-0.146 )  
-        
-        self.capital_costs = (1.8 + .001 * proposed_cap)*1000000
+        self.capital_costs = (1.8 + .001 * self.max_capacity) * 1000000
     
     def calc_oppex (self):
         """
@@ -346,8 +440,6 @@ class DieselEfficiency(AnnualSavings):
         """
         price = self.diesel_prices
         
-        
-        
         base = self.baseline_generation_fuel_use * price + self.oppex
         proposed = self.proposed_generation_fuel_use * price + self.oppex
         
@@ -357,6 +449,78 @@ class DieselEfficiency(AnnualSavings):
         """
         """
         self.annual_heating_savings = 0
+        
+    def get_fuel_total_saved (self):
+        """
+        returns the total fuel saved in gallons
+        """
+        return self.baseline_generation_fuel_use - \
+                self.proposed_generation_fuel_use
+    
+    def get_total_enery_produced (self):
+        """
+        returns the total energy produced
+        """
+        return self.get_fuel_total_saved() / constants.mmbtu_to_gal_HF
+        
+    def save_component_csv (self, directory):
+        """
+        save the output from the component.
+        """
+        #~ return
+        if not self.run:
+            return
+        
+        
+        years = np.array(range(self.project_life)) + self.start_year
+
+        
+        df = DataFrame({
+                "Diesel Efficiency: Generation (kWh/year)": self.generation,
+                'Diesel Efficiency: Baseline Diesel'
+                    ' Generator Efficiency [Gal/kWh]':
+                                            self.baseline_diesel_efficiency,
+                'Diesel Efficiency: Proposed Diesel'
+                    ' Generator Efficiency [Gal/kWh]':
+                                            self.proposed_diesel_efficiency,
+                'Diesel Efficiency: Utility Diesel Baseline (gallons/year)':
+                                        self.baseline_generation_fuel_use,
+                'Diesel Efficiency: Utility Diesel Proposed (gallons/year)':
+                                        self.proposed_generation_fuel_use,
+                'Diesel Efficiency: Utility Diesel Displaced (gallons/year)':
+                                        self.baseline_generation_fuel_use - \
+                                        self.proposed_generation_fuel_use,
+                "Diesel Efficiency: Electricity Cost Savings ($/year)": 
+                                            self.get_electric_savings_costs(),
+                "Diesel Efficiency: Project Capital Cost ($/year)": 
+                                            self.get_capital_costs(),
+                "Diesel Efficiency: Total Cost Savings ($/year)":
+                                            self.get_total_savings_costs(),
+                "Diesel Efficiency: Net Benefit ($/year)":
+                                                self.get_net_beneft(),
+                       }, years)
+
+        df["Community"] = self.cd['name']
+        
+        ol = ["Community",
+              "Diesel Efficiency: Generation (kWh/year)",
+              'Diesel Efficiency: Baseline Diesel'
+                    ' Generator Efficiency [Gal/kWh]',
+              'Diesel Efficiency: Proposed Diesel'
+                    ' Generator Efficiency [Gal/kWh]',
+              'Diesel Efficiency: Utility Diesel Baseline (gallons/year)',
+              'Diesel Efficiency: Utility Diesel Proposed (gallons/year)',
+              'Diesel Efficiency: Utility Diesel Displaced (gallons/year)',
+              "Diesel Efficiency: Electricity Cost Savings ($/year)",
+              "Diesel Efficiency: Project Capital Cost ($/year)",
+              "Diesel Efficiency: Total Cost Savings ($/year)",
+              "Diesel Efficiency: Net Benefit ($/year)"]
+        fname = os.path.join(directory,
+                             self.cd['name'] + '_' + \
+                             self.component_name + "_output.csv")
+        fname = fname.replace(" ","_")
+        
+        df[ol].ix[:self.actual_end_year].to_csv(fname, index_label="Year")
         
 component = DieselEfficiency
 
