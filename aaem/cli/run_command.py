@@ -7,6 +7,7 @@ import pycommand
 from aaem import driver, __version__, __download_url__ , summaries
 from default_cases import __DEV_COMS_RUN__ as __DEV_COMS__ 
 from datetime import datetime
+from pandas import read_csv
 import os.path
 import shutil
 import sys
@@ -57,6 +58,13 @@ class RunCommand(pycommand.CommandBase):
         
         if self.flags.dev:
             coms = __DEV_COMS__
+     
+        if len(coms) == 1:
+            com_file = os.path.join(os.path.split(base)[0],
+                                        'setup','raw_data','community_list.csv')
+            com_file = read_csv(com_file, index_col = 0)
+            if coms[0] in set(com_file['Energy Region'].values):
+                coms = cli_lib.get_regional_coms(coms[0], com_file, config)
         
         plot = False
         if self.flags.plot:
@@ -77,6 +85,9 @@ class RunCommand(pycommand.CommandBase):
         
         if self.flags.log:
             sys.stdout  = open(self.flags.log, 'w')
+    
+
+            
         coms = driver.run(batch, "", img_dir, plot = plot)
         
         cli_lib.generate_summaries (coms, base)

@@ -261,8 +261,29 @@ def compare_high_level (results1, results2):
                 print "\t\tdifferences found in " + c
         
         
+def get_regional_coms (region, com_list, path):
+    """
+    get a list of communities and projects for a region
+    
+    input:
+        region: a region <str>
+        com_list: DataFrame of the community_list.csv file <pandas.DataFrame>
+        path: path to config folder for the list of a project <str>
         
-        
+    output:
+        return a sorted list of projects and communities <list>
+    
+    """
+    #~ print os.listdir(path)
+    lis = [x.replace(' ','_') for x in \
+                com_list[com_list['Energy Region'] == region]\
+                ['Community'].values.tolist()] 
+    coms = []
+    for c in lis:
+        coms += [x for x in os.listdir(path) if x.find(c) != -1]
+    return sorted(coms)
+                
+    
         
         
     
