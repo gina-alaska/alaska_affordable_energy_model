@@ -60,11 +60,11 @@ class RunCommand(pycommand.CommandBase):
             coms = __DEV_COMS__
      
         if len(coms) == 1:
-            com_file = os.path.join(os.path.split(base)[0],
-                                        'setup','raw_data','community_list.csv')
-            com_file = read_csv(com_file, index_col = 0)
-            if coms[0] in set(com_file['Energy Region'].values):
-                coms = cli_lib.get_regional_coms(coms[0], com_file, config)
+            region = coms[0]
+            coms = cli_lib.get_regional_coms(region, base)
+            #~ if coms = []:
+                #~ print "Region " + region + " is not a valid energy region"
+                #~ return
         
         plot = False
         if self.flags.plot:
