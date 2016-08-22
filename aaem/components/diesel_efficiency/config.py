@@ -1,5 +1,8 @@
+"""
+config.py
 
-
+    config info for cd yaml file
+"""
 COMPONENT_NAME = "diesel efficiency"
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"

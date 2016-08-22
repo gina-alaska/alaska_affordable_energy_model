@@ -1,9 +1,21 @@
+"""
+inputs.py
+
+    inputs functions for component
+"""
 import os.path
 from pandas import read_csv
 
 ## Functions for CommunityData IMPORT keys
 def process_data_import(data_dir):
     """
+        reads input data from "diesel_data.csv"
+        
+    input:
+        data_dir: directory with "diesel_data.csv" [string]
+    
+    output:
+        returns dictionay of data values
     """
     data_file = os.path.join(data_dir, "diesel_data.csv")
     data = read_csv(data_file, comment = '#', index_col=0, header=0)

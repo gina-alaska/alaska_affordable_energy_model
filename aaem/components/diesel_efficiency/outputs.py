@@ -1,3 +1,8 @@
+"""
+outputs.py
+
+ouputs for diesel_efficiency component
+"""
 import os.path
 import numpy as np
 from pandas import DataFrame
@@ -5,6 +10,15 @@ from config import COMPONENT_NAME
 
 def component_summary (coms, res_dir):
     """
+    generates the summary for diesel efficiency compoenent
+    
+    input:
+        coms: set of resultes from model <dict>
+        res_dir: path to results directory <string>
+    
+    output:
+        saves diesel_efficiecy_summary.csv in res_dir
+    
     """
     out = []
     for c in sorted(coms.keys()):
@@ -42,7 +56,7 @@ def component_summary (coms, res_dir):
             except AttributeError:
                 baseline_eff = np.nan
             try:
-                proposed_eff = comp.baseline_diesel_efficiency
+                proposed_eff = comp.proposed_diesel_efficiency
             except AttributeError:
                 proposed_eff = np.nan
             try:
@@ -88,20 +102,20 @@ def component_summary (coms, res_dir):
             pass
     
     cols = ['Community', 'Average Load [kW]', 'Current Capacity [kW]',
-            'Max Capacity [kW]', 'Generation - year 1[kWh]',
+            'Proposed Capacity [kW]', 'Generation - year 1[kWh]',
             
             'Baseline Diesel Generator Efficiency [Gal/kWh]',
             'Proposed Diesel Generator Efficiency [Gal/kWh]',
             'Baseline Generation Fuel Consumption [Gal]',
-            'proposed Generation Fuel Consumption [Gal]',
+            'Proposed Generation Fuel Consumption [Gal]',
             'Diesel price - year 1 [$/gal]',
             
             'Break Even Diesel Price [$/gal]',
             'Levelized Cost of Energy [$/MMBtu]',
-            'Heat Recovery NPV benefits [$]',
-            'Heat Recovery NPV Costs [$]',
-            'Heat Recovery NPV Net benefit [$]',
-            'Heat Recovery Benefit Cost Ratio',
+            'Diesel Efficiency NPV benefits [$]',
+            'Diesel Efficiency NPV Costs [$]',
+            'Diesel Efficiency NPV Net benefit [$]',
+            'Diesel Efficiency Benefit Cost Ratio',
             'notes'
             ]
     

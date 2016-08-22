@@ -1,6 +1,8 @@
 """
 diesel_efficiency.py
 
+    OLD diesel_efficiency: TODO DELETE
+
     model component for findng economic benefits related to improving 
 diesel generation efficiency in a community
 """
