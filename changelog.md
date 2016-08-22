@@ -1,5 +1,16 @@
 #Change Log
 
+## [0.17.13]
+### fixes
+- diesel efficiency summary headings
+- biomass pellet LCOE/breakeven price input includes fuel cost
+
+### adds
+- documentation for diesel efficiency
+
+### changes
+- structure of diesel efficiency component
+
 ## [0.17.12]
 ### adds
 - diesel efficiency component
