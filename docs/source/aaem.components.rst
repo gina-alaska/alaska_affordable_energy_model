@@ -1,6 +1,13 @@
 aaem.components package
 =======================
 
+Subpackages
+-----------
+
+.. toctree::
+
+    aaem.components.diesel_efficiency
+
 Submodules
 ----------
 
@@ -72,6 +79,14 @@ aaem.components.component_template module
 -----------------------------------------
 
 .. automodule:: aaem.components.component_template
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+aaem.components.heat_recovery module
+------------------------------------
+
+.. automodule:: aaem.components.heat_recovery
     :members:
     :undoc-members:
     :show-inheritance:

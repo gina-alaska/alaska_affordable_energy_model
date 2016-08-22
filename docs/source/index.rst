@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 2
 
    instructions
+   modules
 
 Indices and tables
 ==================
