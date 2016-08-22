@@ -1,10 +1,10 @@
 """
-component_template.py
+diesel_efficiency.py
 
-a template for adding components
+    OLD diesel_efficiency: TODO DELETE
 
-
-
+    model component for findng economic benefits related to improving 
+diesel generation efficiency in a community
 """
 import numpy as np
 from math import isnan
@@ -19,14 +19,6 @@ from aaem.forecast import Forecast
 from aaem.diagnostics import diagnostics
 import aaem.constants as constants
 
-
-## steps for using
-### 1) copy this file as component_name.py and go throug this file folloing the 
-###    commented instructions
-### 2) add new components things to default yaml file
-### 3) add the component to __init__ in this directory
-
-# change to component name (i.e. 'residential buildings')
 COMPONENT_NAME = "diesel efficiency"
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
