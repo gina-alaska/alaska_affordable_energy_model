@@ -188,12 +188,13 @@ class BiomassBase (AnnualSavings):
             self.non_res_sqft, and self.avg_gal_per_sqft
         are numbers
         """
-        self.non_res_sqft = non_res.refit_sqft_total
+       
     
         try:
+            self.non_res_sqft = non_res.total_sqft_to_retrofit
             self.avg_gal_per_sqft = non_res.baseline_fuel_Hoil_consumption/ \
                                                             self.non_res_sqft
-        except ZeroDivisionError:
+        except (ZeroDivisionError, AttributeError):
             self.avg_gal_per_sqft = 0
         
     def calc_heat_displaced_sqft (self):
@@ -312,17 +313,13 @@ class BiomassBase (AnnualSavings):
         """
         returns the total fuel saved in gallons
         """
-        return sum(np.zeros(self.actual_project_life) + \
-                    self.heat_diesel_displaced)
+        return self.heat_diesel_displaced
                                 
     def get_total_enery_produced (self):
         """
         returns the total energy produced
         """
-        return sum(np.zeros(self.actual_project_life) + \
-                    self.biomass_fuel_consumed / \
-                        constants.hours_per_year * \
-                        self.comp_specs['energy density'])
+        return self.biomass_fuel_consumed * self.comp_specs['energy density']/ 1e6
 
     def save_component_csv (self, directory):
         """

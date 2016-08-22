@@ -550,7 +550,7 @@ class Transmission (AnnualSavings):
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
             #~ print self.benefit_cost_ratio
-            self.calc_levelized_costs(self.comp_specs['heat recovery o&m'])
+            self.calc_levelized_costs(self.proposed_generation_cost)
     
 
             
@@ -704,14 +704,15 @@ class Transmission (AnnualSavings):
             except ValueError:
                 maintenance = self.comp_specs['diesel generator o&m'][kW]
                 
-        base = maintenance + \
+        self.baseline_generation_cost = maintenance + \
             (self.pre_intertie_generation_fuel_used * self.diesel_prices)
         
         maintenance = self.capital_costs * self.comp_specs['percent o&m']
-        proposed = maintenance + \
+        self.proposed_generation_cost = maintenance + \
                 self.intertie_offset_generation_fuel_used * \
                 self.intertie_diesel_prices
-        self.annual_electric_savings = base - proposed 
+        self.annual_electric_savings = self.baseline_generation_cost -\
+                                        self.proposed_generation_cost
         #~ print 'self.annual_electric_savings',self.annual_electric_savings
         
         
@@ -742,9 +743,8 @@ class Transmission (AnnualSavings):
         generation_diesel_reduction = \
                     np.array(self.pre_intertie_generation_fuel_used\
                                                 [:self.actual_project_life]) 
-        return sum(- np.array(self.lost_heat_recovery\
-                    [:self.actual_project_life]) + \
-                        generation_diesel_reduction)
+        return - np.array(self.lost_heat_recovery[:self.actual_project_life]) +\
+                        generation_diesel_reduction
     
     def get_total_enery_produced (self):
         """

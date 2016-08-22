@@ -92,7 +92,7 @@ class AnnualSavings (object):
         calculates the cost of energy
         pre:
             fuel_amount is a the amount of fuel generated, used or saved
-        units may vary (i.e. kWh, gal..)
+        units may vary (i.e. kWh, gal..) per year scaler, list, or np.array 
             maintenance is the operation and maintenance cost per year as a 
         scaler, list, or np.array 
             
@@ -102,14 +102,25 @@ class AnnualSavings (object):
         yts = np.zeros((self.start_year - self.cd["current year"])+1)
         
         if not type(maintenance) in [list,np.ndarray]:
-            maintenance = list(yts) + \
-                    list((np.zeros(self.actual_project_life) + maintenance))
+            maintenance = np.zeros(self.actual_project_life) +  maintenance
+        else:
+            maintenance = maintenance[:self.actual_project_life]
         maintenance = np.array(maintenance)
         
         maintenance_npv = np.npv(self.cd['discount rate'], 
                                     np.append(yts, maintenance))
         
-        return (self.cost_npv + maintenance_npv)/ fuel_amount
+        
+        if not type(fuel_amount) in [list,np.ndarray]:
+            fuel_amount = np.zeros(self.actual_project_life) + fuel_amount
+        else:
+            fuel_amount = fuel_amount[:self.actual_project_life]  
+        
+        fuel_npv = np.npv(self.cd['discount rate'], 
+                                    np.append(yts, fuel_amount))    
+                                
+        
+        return (self.cost_npv + maintenance_npv)/ fuel_npv
         
     def calc_levelized_costs (self, maintenance_costs):
         """
@@ -136,11 +147,13 @@ class AnnualSavings (object):
         if type(energy_produced) is dict:
             self.levelized_cost_of_energy = {}
             self.levelized_cost_of_energy['MMBtu'] = \
-                self.calc_cost_of_energy(energy_produced['MMBtu'],
-                                         maintenance_costs)
+                self.calc_cost_of_energy(energy_produced['MMBtu'][0],
+                                         maintenance_costs)*\
+                                            energy_produced['MMBtu'][1]
             self.levelized_cost_of_energy['kWh'] = \
-                self.calc_cost_of_energy(energy_produced['kWh'],
-                                         maintenance_costs)
+                self.calc_cost_of_energy(energy_produced['kWh'][0],
+                                         maintenance_costs)*\
+                                            energy_produced['kWh'][1]
         else:
             self.levelized_cost_of_energy = \
                 self.calc_cost_of_energy(energy_produced, maintenance_costs)

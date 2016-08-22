@@ -35,7 +35,7 @@ yaml = {'enabled': False,
         'perfromance data': 'IMPORT',
         'data':'IMPORT',
         'heating oil efficiency': .75,
-        'o&m per year':320
+        'o&m per year': 320
         }
 
 ## default values for yaml key/Value pairs
@@ -314,7 +314,6 @@ class ASHPBase (AnnualSavings):
         self.get_electricity_prices()
         cost = self.electricity_prices * self.electric_consumption +\
                                        self.comp_specs["o&m per year"]
-        
         self.proposed_ashp_operation_cost = cost.values.T[0].tolist()
         
     def calc_ashp_system_pramaters (self):
@@ -377,17 +376,16 @@ class ASHPBase (AnnualSavings):
         """
         returns the total fuel saved in gallons
         """
-        eff = self.cd["diesel generation efficiency"]
-        proposed = self.electric_consumption/eff
-        return sum(np.zeros(self.actual_project_life) + \
-                                (self.heating_oil_saved - proposed ))
+        #~ eff = self.cd["diesel generation efficiency"]
+        #~ proposed = self.electric_consumption/eff
+        return self.heating_oil_saved #- proposed 
                                 
     def get_total_enery_produced (self):
         """
         returns the total energy produced
         """
-        return sum(np.zeros(self.actual_project_life) + \
-                    self.heat_energy_produced_per_year + self.electric_consumption*(1/constants.mmbtu_to_kWh)) 
+        return self.heat_energy_produced_per_year #+ \
+                #~ self.electric_consumption * (1/constants.mmbtu_to_kWh) 
                                      
     
     def save_component_csv (self, directory):

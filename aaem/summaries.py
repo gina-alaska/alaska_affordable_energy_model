@@ -14,136 +14,6 @@ from constants import mmbtu_to_gal_LP, mmbtu_to_Mcf, mmbtu_to_cords
 from aaem.components import comp_lib
 from copy import deepcopy
 
-def res_log (coms, res_dir):
-    """
-    creates a log for the residental component outputs by community
-    
-    pre:
-        coms: the run model outputs: a dictionary 
-                    {<"community_name">:
-                        {'model':<a run driver object>,
-                        'output dir':<a path to the given communites outputs>
-                        },
-                     ... repeated for each community
-                    }
-        res_dir: directory to save the log in
-    
-    post:
-        a csv file "residential_summary.csv" log is saved in res_dir   
-    
-    """
-    out = []
-    for c in sorted(coms.keys()):
-        if c.find('+') != -1 or c.find("_intertie") != -1:
-            continue
-        try:
-            res = coms[c]['model'].comps_used['residential buildings']
-            out.append([c,
-                res.get_NPV_benefits(),res.get_NPV_costs(),
-                res.get_NPV_net_benefit(),res.get_BC_ratio(),
-                res.hoil_price[0], res.init_HH, res.opportunity_HH,
-                res.break_even_cost, res.levelized_cost_of_energy,
-                res.baseline_fuel_Hoil_consumption[0]/mmbtu_to_gal_HF,
-                res.baseline_fuel_Hoil_consumption[0]/mmbtu_to_gal_HF - \
-                        res.refit_fuel_Hoil_consumption[0]/mmbtu_to_gal_HF,
-                round(float(res.fuel_oil_percent)*100,2),
-                res.baseline_HF_consumption[0],
-                res.baseline_HF_consumption[0] - \
-                        res.refit_HF_consumption[0],
-                ])
-        except (KeyError,AttributeError) :
-            pass
-            
-    cols = ['community',
-           'Residential Efficiency NPV Benefit',
-           'Residential Efficiency NPV Cost', 
-           'Residential Efficiency NPV Net Benefit',
-           'Residential Efficiency B/C Ratio',
-           'Heating Oil Price - year 1',
-           'Occupied Houses', 
-           'Houses to Retrofit', 
-           'Break Even Diesel Price [$/gal]',
-           'Levelized Cost of Energy [$/MMBtu]',
-           'Residential Heating Oil Consumed(mmbtu) - year 1',
-           'Residential Efficiency Heating Oil Saved(mmbtu/year)',
-           'Residential Heating Oil as percent of Total Heating Fuels',
-           'Total Residentital Heating Fuels (mmbtu) - year 1',
-           'Residential Efficiency Total Heating Fuels Saved (mmbtu/year)',
-            ]
-    data = DataFrame(out,columns = cols).set_index('community').round(2)
-    f_name = os.path.join(res_dir,'residential_summary.csv')
-    #~ fd = open(f_name,'w')
-    #~ fd.write("# residental building component summary by community\n")
-    #~ fd.close()
-    data.to_csv(f_name, mode='w')
-    
-def com_log (coms, res_dir): 
-    """
-    creates a log for the non-residental component outputs by community
-    
-    pre:
-        coms: the run model outputs: a dictionary 
-                    {<"community_name">:
-                        {'model':<a run driver object>,
-                        'output dir':<a path to the given communites outputs>
-                        },
-                     ... repeated for each community
-                    }
-        res_dir: directory to save the log in
-    
-    post:
-        a csv file "non-residential_summary.csv"log is saved in res_dir   
-    
-    """
-    out = []
-    for c in sorted(coms.keys()):
-        if c.find('+') != -1 or c.find("_intertie") != -1:
-            continue
-        try:
-            com = coms[c]['model'].comps_used['non-residential buildings']
-            savings = com.baseline_fuel_Hoil_consumption -\
-                      com.refit_fuel_Hoil_consumption
-            out.append([c,
-                com.get_NPV_benefits(),com.get_NPV_costs(),
-                com.get_NPV_net_benefit(),com.get_BC_ratio(),
-                com.hoil_price[0], com.elec_price[0], 
-                com.num_buildings , com.refit_sqft_total,
-                com.break_even_cost,
-                com.levelized_cost_of_energy['MMBtu'],
-                com.levelized_cost_of_energy['kWh'],
-                com.baseline_fuel_Hoil_consumption,
-                com.baseline_kWh_consumption,
-                savings,
-                com.baseline_kWh_consumption - com.refit_kWh_consumption])
-        except (KeyError,AttributeError) as e:
-            #~ print c +":"+ str(e)
-            pass
-            
-            
-    cols = ['community',
-            'Nonresidential Efficiency NPV Benefit',
-            'Nonresidential Efficiency NPV Cost',
-            'Nonresidential Efficiency NPV Net Benefit',
-            'Nonresidential Efficiency B/C Ratio',
-            'Heating Oil Price - year 1',
-            '$ per kWh - year 1',
-            'Number Nonresidential Buildings',
-            'Nonresidential Total Square Footage',
-            'Break Even Diesel Price [$/gal]',
-            'Levelized Cost of Energy [$/MMBtu]',
-            'Levelized Cost of Energy [$/kWh]',
-            'Nonresidential Heating Oil Consumed(gal) - year 1',
-            'Nonresidential Electricity Consumed(kWh) - year 1',
-            'Nonresidential Efficiency Heating Oil Saved[gal/year]',
-            'Nonresidential Efficiency Electricity Saved[kWh/year]']
-            
-    data = DataFrame(out,columns = cols).set_index('community').round(2)
-    f_name = os.path.join(res_dir,'non-residential_summary.csv')
-    #~ fd = open(f_name,'w')
-    #~ fd.write("# non residental building component summary by community\n")
-    #~ fd.close()
-    data.to_csv(f_name, mode='w')
-    
 def building_log(coms, res_dir):
     """
     creates a log for the non-residental component buildings outputs by community
@@ -255,7 +125,7 @@ def building_log(coms, res_dir):
             
             out.append([c,percent*100,percent2*100]+ count+act+est+elec+hf)
             
-        except (KeyError,AttributeError)as e :
+        except (KeyError,AttributeError, ZeroDivisionError)as e :
             #~ print c +":"+ str(e)
             pass
     #~ print out
@@ -643,6 +513,32 @@ def genterate_npv_summary (coms, res_dir):
         npvs = DataFrame(npvs,
                          columns = cols).set_index('Component')
         npvs.to_csv(f_name)
+        
+def consumption_summary (coms, res_dir):
+    """ Function doc """
+    consumption = []
+    for community in coms:
+        if 1 != len(community.split('+')):
+            continue
+        it = coms[community]['model'].cd.intertie
+        region = coms[community]['model'].cd.get_item('community','region')
+        if it is None:
+            it = 'parent'
+        if it == 'child':
+            continue
+        fc = coms[community]['model'].fc
+        try:
+            con = fc.consumption.ix[2010:2040].values.T[0].tolist()
+            consumption.append([community, region] + con)
+        except AttributeError as e:
+            #~ print community, e
+            continue
+
+    f_name = os.path.join(res_dir,'kWh_consumption_summary.csv')
+    cols = ['Community', 'region'] + [str(y) for y in range(2010,2041)]
+    summary = DataFrame(consumption,
+                     columns = cols).set_index('Community').fillna('N/a')
+    summary.to_csv(f_name)
 
 def call_comp_summaries (coms, res_dir):
     """ 
@@ -662,6 +558,7 @@ def call_comp_summaries (coms, res_dir):
         summaries may be saved
     """
     genterate_npv_summary(coms, res_dir)
+    consumption_summary(coms, res_dir)
     for comp in comp_lib:
         try:
             log = import_module("aaem.components." +comp_lib[comp]).\
@@ -669,5 +566,8 @@ def call_comp_summaries (coms, res_dir):
             log(coms, res_dir)
         except AttributeError:
             continue
+            
+
+    
            
     

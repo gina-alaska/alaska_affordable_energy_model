@@ -1,5 +1,80 @@
 #Change Log
 
+## [0.17.12]
+### adds
+- diesel efficiency component
+
+## [0.17.11]
+### changes 
+- for components break even cost in gal heating oil equiv.
+- renames efficiency components function names to be more consistent with newer components
+- moves res/non-res summary functions to respective component files
+
+### fixes
+- non-residential proposed value calculations
+- missing years in consumption input data issue in forecast and some summaries
+- range of yeas to use when calculating LCOE/break even price
+- ashp Excess Generation Capacity needed calculation
+
+
+## [0.17.10]
+### changes
+- headers: Gallons Diesel -> Gallons Heating Fuel where Nessary
+- ASHP: changes inputs to LCOE and breakeven prices
+- transmission: changes inputs to LCOE and breakeven prices
+- non-res: adds % heating cost scaler to breakeven cost calculation
+
+### adds
+- kwh consumption summary: added region column
+- ASHP (both): added excess kW column
+
+### fixes
+- biomass cordwood: fuel costs no longer doubled
+
+
+
+## [0.17.9]
+### changes
+- non residential buildings component: kWh estimattion scale fractor is changed for interties to include the whole intertie
+
+## [0.17.8]
+### fixes
+- heat recovery projects are now run
+- heat recovery est. potential is calculated correctly
+
+## [0.17.7]
+### changes
+- non-res efficiency levelized cost of energy caclulation
+- biomass cordwood levelized cost of energy caclulation
+
+## [0.17.6]
+### changes 
+- non residential buildings component: changes to calculation of pre retrofit kWh consumption
+
+### adds
+- consumption summary
+
+## [0.17.5]
+## fixes
+- corrected lower case 'other' to 'Other' key in non-res building component
+
+## [0.17.4]
+### added
+- heat recovery component
+- documentation setup files
+
+### updated
+- ashp reasons for not running 
+
+## [0.17.3]
+### changes
+- updates the Levelized and Breakeven cost caclutation to include the NPV of the fuel used
+
+### fixes
+- method for caclulating intertie prices
+- waste water summary 
+- res/non-res fuel_amouts for calculating Levelized and Breakeven cost 
+
 ## [0.17.2]
 ### changes
 - electricity prices are made to be consistent on interties

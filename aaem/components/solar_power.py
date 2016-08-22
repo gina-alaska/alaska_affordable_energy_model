@@ -442,18 +442,18 @@ class SolarPower (AnnualSavings):
         """
         returns the total fuel saved in gallons
         """
-        base_gen_fuel = sum(self.generation_fuel_used[:self.actual_project_life])
+        base_gen_fuel = self.generation_fuel_used[:self.actual_project_life]
         post_gen_fuel = 0
 
-        return (base_gen_fuel - post_gen_fuel) +\
-                sum(self.fuel_displaced[:self.actual_project_life])
+        return (base_gen_fuel - post_gen_fuel) + \
+                    self.fuel_displaced[:self.actual_project_life]
     
     def get_total_enery_produced (self):
         """
         returns the total energy produced
         """
         gen = self.generation_proposed[:self.actual_project_life]
-        return sum(gen)
+        return gen
         
     def save_component_csv (self, directory):
         """

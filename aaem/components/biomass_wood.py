@@ -90,6 +90,12 @@ def component_summary (coms, res_dir):
            
             biomass = coms[c]['model'].comps_used[COMPONENT_NAME]
             
+            
+            
+            biomass.get_diesel_prices()
+            diesel_price = float(biomass.diesel_prices[0].round(2))
+            hf_price = diesel_price + biomass.cd['heating fuel premium']   
+            
             try:
                 break_even = biomass.break_even_cost
             except AttributeError:
@@ -108,6 +114,7 @@ def component_summary (coms, res_dir):
                  biomass.fuel_price_per_unit,
                  biomass.comp_specs['energy density'],
                  biomass.heat_diesel_displaced,
+                 hf_price,
                  break_even,
                  levelized_cost,
                  biomass.get_NPV_benefits(),
@@ -130,7 +137,8 @@ def component_summary (coms, res_dir):
             'Price [$/' + biomass.units + ']',
             "Energy Density [Btu/" + biomass.units + "]",
             'Displaced Heating Oil by Biomass [Gal]',
-            'Break Even Diesel Price [$/gal]',
+            "Heating Fuel Price - year 1 [$/gal]",
+            'Break Even Heating Fuel Price [$/gal]',
             'Levelized Cost Of Energy [$/MMBtu]',
             'Bioimass Cordwood NPV benefits [$]',
             'Biomass Cordwood NPV Costs [$]',
@@ -224,9 +232,10 @@ class BiomassCordwood (bmb.BiomassBase):
             
             self.calc_number_boilers()
             self.calc_capital_costs()
+            self.fuel_price_per_unit = self.cd['cordwood price']
             self.calc_maintainance_cost()
             
-            self.fuel_price_per_unit = self.cd['cordwood price']
+            #~ self.fuel_price_per_unit = self.cd['cordwood price']
             self.calc_proposed_biomass_cost(self.fuel_price_per_unit)
             self.calc_displaced_heating_oil_price()
             
@@ -239,7 +248,9 @@ class BiomassCordwood (bmb.BiomassBase):
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
             
-            self.calc_levelized_costs(self.maintenance_cost)
+            
+            fuel_cost = self.biomass_fuel_consumed * self.fuel_price_per_unit
+            self.calc_levelized_costs(self.maintenance_cost +  fuel_cost)
             
     def calc_number_boilers (self):
         """
@@ -259,6 +270,7 @@ class BiomassCordwood (bmb.BiomassBase):
         maintenance  = 10 * self.comp_specs["operation cost per hour"] * \
                        self.number_boilers
         
+    
         self.maintenance_cost = operation + maintenance
 
     def calc_capital_costs (self):
