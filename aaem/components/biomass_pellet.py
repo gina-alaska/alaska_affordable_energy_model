@@ -290,7 +290,8 @@ class BiomassPellet (bmb.BiomassBase):
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
             
-            self.calc_levelized_costs(self.maintenance_cost)
+            fuel_cost = self.biomass_fuel_consumed * self.fuel_price_per_unit
+            self.calc_levelized_costs(self.maintenance_cost +  fuel_cost)
 
             
     def calc_maintainance_cost(self):
