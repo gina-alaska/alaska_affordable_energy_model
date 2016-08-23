@@ -261,8 +261,7 @@ def compare_high_level (results1, results2):
             except ValueError:
                 print "\t\tdifferences found in " + c
         
-        
-        
+
 def get_version_number (model_root):
     """
     gets the current version tag from the model and data direcories
@@ -328,5 +327,35 @@ def delete_data (model_root):
         shutil.rmtree(os.path.join(model_root,"setup","raw_data"))
     except OSError:
         pass
+        
+        
+def get_regional_coms (region, base):
+    """
+    get a list of communities and projects for a region
+    
+    input:
+        region: a region <str>
+        com_list: Pathe to the model version directory being run
+        
+    output:
+        return a sorted list of projects and communities <list>
+    
+    """
+    com_file = os.path.join(os.path.split(base)[0],
+                                        'setup','raw_data','community_list.csv')
+    com_file = read_csv(com_file, index_col = 0)
+    
+    if not (region in set(com_file['Energy Region'].values)):
+        return [region]
+    
+    lis = [x.replace(' ','_') for x in \
+                com_file[com_file['Energy Region'] == region]\
+                ['Community'].values.tolist()] 
+    coms = []
+    for c in lis:
+        coms += [x for x in os.listdir(os.path.join(base,
+                                            "config")) if x.find(c) != -1]
+    return sorted(coms)
+                
         
     
