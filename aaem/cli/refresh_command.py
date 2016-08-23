@@ -49,38 +49,8 @@ class RefreshCommand(pycommand.CommandBase):
             print "Refresh Error: please provide a path to the aaem data repo"
             return 0
 
-        try:
-            fd = open(os.path.join(model_root,'setup','raw_data',"VERSION"),'r')
-            ver = fd.read().replace("\n","")
-            fd.close()
-        except IOError:
-            ver = "unknown_version_backup_"+ datetime.strftime(datetime.now(),
-                                                                    "%Y%m%d")
-        #~ print ver
-        try:
-            z = zipfile.ZipFile(os.path.join(model_root,
-                                "setup","data_"+ver+".zip"),"w")
-            for fn in os.listdir(os.path.join(model_root,"setup","raw_data")):
-                z.write(os.path.join(model_root,"setup","raw_data",fn),
-                                        os.path.join("raw_data",fn))
-            for fn in os.listdir(os.path.join(model_root,"setup","input_data")):
-                z.write(os.path.join(model_root,"setup","input_data",fn),
-                                        os.path.join("input_data",fn))
-                if os.path.isdir(os.path.join(model_root,"setup",
-                                                              "input_data",fn)):
-                    for fn2 in os.listdir(os.path.join(model_root,
-                                         "setup","input_data",fn)):
-                        z.write(os.path.join(model_root,"setup","input_data",
-                                    fn,fn2), os.path.join("input_data",fn,fn2))
-            z.close()
-            shutil.rmtree(os.path.join(model_root,"setup","input_data"))
-        except OSError:
-            pass
-
-        try:
-            shutil.rmtree(os.path.join(model_root,"setup","raw_data"))
-        except OSError:
-            pass
+        cli_lib.backup_data(model_root)
+        cli_lib.delete_data(model_root)
 
         raw = os.path.join(model_root, 'setup', "raw_data")
         os.makedirs(os.path.join(model_root, 'setup',"raw_data"))
@@ -94,14 +64,9 @@ class RefreshCommand(pycommand.CommandBase):
             coms = read_csv(os.path.join(raw,'community_list.csv'),
                          comment="#",index_col=0).Community.tolist()
             interties = True
-        try:
-            fd = open(os.path.join(model_root,'setup','raw_data',"VERSION"),'r')
-            ver = fd.read().replace("\n","")
-            ver = 'm'+ __version__ +'_d' +ver
-            fd.close()
-        except IOError:
-            ver = "unknown_version_created_"+ datetime.strftime(datetime.now(),
-                                                                    "%Y%m%d")
+        
+        ver = cli_lib.get_version_number(model_root)
+        
         coms = sorted(coms)
         driver.setup(coms, raw, model_root, run_name = ver,
                      setup_intertie = interties)
