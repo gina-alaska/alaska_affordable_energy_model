@@ -502,7 +502,8 @@ def genterate_npv_summary (coms, res_dir):
                          components[comp].get_NPV_net_benefit(),
                          components[comp].get_BC_ratio()
                         ])
-        f_name = os.path.join(res_dir,community,community + '_npv_summary.csv')
+        f_name = os.path.join(res_dir,community.replace(' ','_'),
+                                community.replace(' ','_') + '_npv_summary.csv')
         cols = ['Component', 
                 community +': NPV Benefits',
                 community +': NPV Cost', 

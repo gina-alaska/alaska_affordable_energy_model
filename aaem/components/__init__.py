@@ -2,7 +2,7 @@ from importlib import import_module
 
 comp_lib = {
     "residential buildings": "residential_buildings",
-    "non-residential buildings": "community_buildings",
+    "non-residential buildings": "non-residential",
     "water wastewater": "wastewater",
     "wind power": "wind_power",
     'solar power': "solar_power",
@@ -11,7 +11,7 @@ comp_lib = {
     'ASHP residential': 'ashp_res',
     'ASHP non-residential': 'ashp_non-res',
     'Hydropower': 'hydro',
-    'transmission': 'interties',
+    'transmission': 'transmission',
     'heat recovery': 'heat_recovery',
     'diesel efficiency': 'diesel_efficiency',
         }

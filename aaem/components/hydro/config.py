@@ -1,32 +1,28 @@
 """
 config.py
 
-    config info for cd yaml file
+    Hydropower config info for community data yaml file
 """
-COMPONENT_NAME = "diesel efficiency"
+COMPONENT_NAME = "Hydropower"
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
 
 ## List of yaml key/value pairs
 yaml = {'enabled': False,
-        "project details": {'phase': 'Reconnaissance',
-                            'capital costs': UNKNOWN,
-                            'operational costs': UNKNOWN,
-                            'expected years to operation': 3,
-                            },
-        'data': IMPORT,
+        "project details": IMPORT,
         'lifetime': 'ABSOLUTE DEFAULT',
         'start year': 'ABSOLUTE DEFAULT',
-        'efficiency improvment': 1.1,
-        'o&m costs': {150: 84181.00,
-                      360: 113410.00,
-                      600: 134434.00,
-                      'else':103851.00 }
+        'percent excess energy': .15,
+        'percent excess energy capturable': .7,
+        'efficiency electric boiler': .99,
+        'efficiency heating oil boiler': .8,
+        'percent heat recovered': .15,
+        'percent o&m': .01
         }
 
 ## default values for yaml key/Value pairs
 yaml_defaults = {'enabled': True,
-        'lifetime': 20,
+        'lifetime': 50,
         #~ 'start year': 2017,
         }
     
@@ -37,14 +33,9 @@ yaml_order = ['enabled', 'lifetime', 'start year']
 yaml_comments = {'enabled': '',
         'lifetime': 'number years <int>',
         'start year': 'start year <int>'}
-
-
+        
 ## list of data keys not to save when writing the CommunityData output
 yaml_not_to_save = []
 
 ## list of prerequisites for module
-prereq_comps = [] ## FILL in if needed
-
-
-
-
+prereq_comps = []

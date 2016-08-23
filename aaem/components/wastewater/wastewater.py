@@ -12,7 +12,7 @@ import numpy as np
 import os
 from pandas import DataFrame, read_csv
 
-from annual_savings import AnnualSavings
+from aaem.components.annual_savings import AnnualSavings
 from aaem.community_data import CommunityData
 from aaem.forecast import Forecast
 from aaem.diagnostics import diagnostics

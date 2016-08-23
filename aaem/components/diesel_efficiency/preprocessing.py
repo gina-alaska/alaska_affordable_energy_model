@@ -3,6 +3,9 @@ preprocessing.py
 
     prporcessing for this component is elsewhere 
 """
+## List of raw data files required for wind power preproecssing 
+raw_data_files = ['project_development_timeframes.csv']
+
 #~ ## preprocessing functons 
 # diesel preprocessing is in preprocessor.py
     

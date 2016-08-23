@@ -1,27 +1,28 @@
 """
 config.py
 
-    config info for cd yaml file
+    Heat Recovery config info for community data yaml file
 """
-COMPONENT_NAME = "diesel efficiency"
+COMPONENT_NAME = "heat recovery"
+PROJECT_TYPE = 'heat_recovery'
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
 
 ## List of yaml key/value pairs
 yaml = {'enabled': False,
-        "project details": {'phase': 'Reconnaissance',
-                            'capital costs': UNKNOWN,
-                            'operational costs': UNKNOWN,
-                            'expected years to operation': 3,
-                            },
-        'data': IMPORT,
+        "project details": IMPORT,
+        'estimate data': IMPORT,
+        'estimate pipe distance': 1500,
+        'estimate pipe cost/ft': 135,
+        'estimate buildings to heat': 2,
+        'estimate cost/building':40000,
+        
         'lifetime': 'ABSOLUTE DEFAULT',
         'start year': 'ABSOLUTE DEFAULT',
-        'efficiency improvment': 1.1,
-        'o&m costs': {150: 84181.00,
-                      360: 113410.00,
-                      600: 134434.00,
-                      'else':103851.00 }
+        'percent heat recovery': .10,
+        'heating conversion efficiency': .75,
+        
+        'o&m per year': 500
         }
 
 ## default values for yaml key/Value pairs
@@ -37,14 +38,9 @@ yaml_order = ['enabled', 'lifetime', 'start year']
 yaml_comments = {'enabled': '',
         'lifetime': 'number years <int>',
         'start year': 'start year <int>'}
-
-
+       
 ## list of data keys not to save when writing the CommunityData output
 yaml_not_to_save = []
 
 ## list of prerequisites for module
-prereq_comps = [] ## FILL in if needed
-
-
-
-
+prereq_comps = []
