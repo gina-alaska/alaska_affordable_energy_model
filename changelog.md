@@ -1,5 +1,13 @@
 #Change Log
 
+## [0.18.0]
+### adds 
+- regional option to cli run command
+
+### changes
+- cli setup command redone
+- restructures all compopnentes
+
 ## [0.17.13]
 ### fixes
 - diesel efficiency summary headings
