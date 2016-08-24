@@ -133,7 +133,7 @@ class Forecast (object):
             self.diagnostics.add_warning("forecast", msg)
         
         
-    def forecast_consumption (self):
+    def forecast_consumption (self, consumption_sacler = 1.0):
         """
         pre:
             tbd.
@@ -215,6 +215,7 @@ class Forecast (object):
                                  'consumption': cons, 
                                  'res': r,
                                  'non res' : nr}).set_index('year')
+        consumption *= consumption_sacler
         consumption = consumption[["consumption", 'res', 'non res']]
         consumption.columns = ["consumption kWh", 
                                'residential kWh',
