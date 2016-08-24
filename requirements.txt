@@ -4,3 +4,4 @@ ipython
 pyyaml
 pycommand
 matplotlib
+Sphinx
