@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.18.1]
+### changes
+- updates the sphinx docs config
+
 ## [0.18.0]
 ### adds 
 - regional option to cli run command
