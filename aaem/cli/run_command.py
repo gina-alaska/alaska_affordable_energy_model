@@ -4,7 +4,7 @@ run_command.py
     A commad for the cli to run the model
 """
 import pycommand
-from aaem import driver, __version__, __download_url__ , summaries
+from aaem import __version__, __download_url__ , summaries
 from default_cases import __DEV_COMS_RUN__ as __DEV_COMS__ 
 from datetime import datetime
 from pandas import read_csv
@@ -12,6 +12,8 @@ import os.path
 import shutil
 import sys
 import cli_lib
+
+from aaem import driver_2 as driver
 
 
 
@@ -51,11 +53,16 @@ class RunCommand(pycommand.CommandBase):
             return 0
         
         config = os.path.join(base,"config")
+        
+        gc = '__global_config.yaml'
+        
         if len(self.args[1:]) != 0:
             coms = self.args[1:]
         else:
-            coms = [a for a in os.listdir(config) if '.' not in a]
-        
+            s_text = '_config.yaml'
+            coms = [a.split(s_text)[0]\
+                        for a in os.listdir(config) if (s_text in a and gc != a)]
+    
         if self.flags.dev:
             coms = __DEV_COMS__
      
@@ -70,41 +77,44 @@ class RunCommand(pycommand.CommandBase):
         if self.flags.plot:
             plot = True    
         
-        batch = {}
-        for com in coms:
-            batch[com] = os.path.join(config, com.replace(" ","_"),
-                                        com.replace(" ","_") + "_driver.yaml")
-
-        
         try:
             shutil.rmtree(os.path.join(base,'results'))
         except OSError:
             pass
+        
         sout = sys.stdout
-        
-        
         if self.flags.log:
             sys.stdout  = open(self.flags.log, 'w')
+            
+        run_driver = driver.Driver(base)
+        coms = sorted(coms)
+        for com in coms:
+            print com
+            run_driver.run(com)
+
+        
+
+        
     
 
             
-        coms = driver.run(batch, "", img_dir, plot = plot)
+        #~ coms = driver.run(batch, "", img_dir, plot = plot)
         
-        cli_lib.generate_summaries (coms, base)
+        #~ cli_lib.generate_summaries (coms, base)
         
         
         sys.stdout = sout
         
-        fd = open(os.path.join(base, "version_metadata.txt"), 'r')
-        lines = fd.read().split("\n")
-        fd.close()
-        fd = open(os.path.join(base, "version_metadata.txt"), 'w')
-        fd.write(( "Code Version: "+ __version__ + "\n" 
-                   "Code URL: "+ __download_url__ + "\n" 
-                   "" + lines[2] +'\n'
-                "Date Run: "+ datetime.strftime(datetime.now(),"%Y-%m-%d")+'\n'
-                 ))
-        fd.close()
+        #~ fd = open(os.path.join(base, "version_metadata.txt"), 'r')
+        #~ lines = fd.read().split("\n")
+        #~ fd.close()
+        #~ fd = open(os.path.join(base, "version_metadata.txt"), 'w')
+        #~ fd.write(( "Code Version: "+ __version__ + "\n" 
+                   #~ "Code URL: "+ __download_url__ + "\n" 
+                   #~ "" + lines[2] +'\n'
+                #~ "Date Run: "+ datetime.strftime(datetime.now(),"%Y-%m-%d")+'\n'
+                 #~ ))
+        #~ fd.close()
         
         if self.flags.time:
             print "model run time: " + str(datetime.now() - start)

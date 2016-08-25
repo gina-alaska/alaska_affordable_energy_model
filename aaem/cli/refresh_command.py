@@ -8,11 +8,13 @@ import sys
 import os.path
 import shutil
 import zipfile
-from aaem import driver, __version__
+from aaem import  __version__
 from datetime import datetime
 from pandas import read_csv
 from default_cases import __DEV_COMS__
 import cli_lib
+
+from aaem import driver_2 as driver
 
 class RefreshCommand(pycommand.CommandBase):
     """
@@ -49,24 +51,21 @@ class RefreshCommand(pycommand.CommandBase):
             print "Refresh Error: please provide a path to the aaem data repo"
             return 0
 
-        cli_lib.backup_data(model_root)
-        cli_lib.delete_data(model_root)
-
-        raw = os.path.join(model_root, 'setup', "raw_data")
-        os.makedirs(os.path.join(model_root, 'setup',"raw_data"))
+    
         
-        cli_lib.copy_model_data (repo, raw)
+     
         #avaliable coms
         if self.flags.dev:
             coms = __DEV_COMS__
             interties = False
         else:
-            coms = read_csv(os.path.join(raw,'community_list.csv'),
+            coms = read_csv(os.path.join(repo,'community_list.csv'),
                          comment="#",index_col=0).Community.tolist()
             interties = True
         
         ver = cli_lib.get_version_number(model_root)
         
         coms = sorted(coms)
-        driver.setup(coms, raw, model_root, run_name = ver,
-                     setup_intertie = interties)
+        driver.Setup(model_root, coms, repo, tag = ver).setup()
+        
+        
