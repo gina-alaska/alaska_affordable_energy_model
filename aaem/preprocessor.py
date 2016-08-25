@@ -1632,7 +1632,7 @@ def preprocess (data_dir, out_dir, com_id, dev = False):
 
     pp = preprocess_no_intertie(data_dir,
                         os.path.join(out_dir,com_id.replace(" ","_")), com_id,
-                                                                    diag, dev)
+                                                                    diag)
     try:
         if pp.it_ids["Plant Intertied"].lower() == "yes":
             #~ print "JADA"
@@ -1688,11 +1688,15 @@ def preprocess (data_dir, out_dir, com_id, dev = False):
 
 
 
-def preprocess_no_intertie (data_dir, out_dir, com_id, diagnostics, dev = False):
+def preprocess_no_intertie (data_dir, out_dir, com_id, diagnostics):
     """
     """
-    if os.path.exists(os.path.join(out_dir))and not dev:
-        return False
+    if os.path.exists(os.path.join(out_dir)):
+        it = read_csv(os.path.join(data_dir, 'interties.csv'), index_col = 0)
+        if (it == com_id).any().any() == True:
+            return False
+
+        
     pp = Preprocessor(com_id, data_dir,out_dir, diagnostics)
     pp.preprocess()
     
