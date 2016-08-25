@@ -40,7 +40,7 @@ class Driver (object):
     """ 
     Driver for the AAEM.
     """
-    def __init__ (self, model_root, community):
+    def __init__ (self, model_root):
         """ 
         set up driver 
         
@@ -50,38 +50,14 @@ class Driver (object):
             model is ready to be run
         """
         self.model_root = model_root
-        self.di = diagnostics()
-        self.community = community.replace(' ', '_')
-        self.data_dir = os.path.join(model_root, 'input_data', self.community)
-        self.community_config = os.path.join(model_root, 'config', self.community, 'community_data.yaml')
-        self.global_config = os.path.join(model_root, 'config', 'test_defaults.yaml')
         
-    
-    
-    
-    def setup ():
-        """ Function doc """
-        try:
-            self.cd = CommunityData(self.data_dir,
-                                    self.community_config, 
-                                    self.global_config, 
-                                    self.di)
-        except IOError as e:
-            raise RuntimeError, \
-                ("A Fatal Error Has occurred, ("+ str(e) +")", self.di)
-        try:
-            self.fc = Forecast(self.cd, self.di)
-        except RuntimeError as e:
-            raise RuntimeError, \
-                    ("A Fatal Error Has occurred, ("+ str(e) +")", self.di)
+        # default locations
+        self.inputs_dir = os.path.join(model_root, 'input_files')
+        self.config_dir = os.path.join(model_root, 'config')
+        self.global_config = os.path.join(model_root, 
+                                            'config', '__global_config.yaml')
+                                            
         self.load_comp_lib()
-        self.plot = False
-        
-    def toggle_ploting (self):
-        """
-        toggles plotting feature
-        """
-        self.plot = not self.plot
         
     def load_comp_lib (self):
         """
@@ -95,32 +71,19 @@ class Driver (object):
         self.comp_lib = comp_lib
         self.comp_order = comp_order
         
-    def run_components (self):
+    def get_prereqs(self, comp_name):
         """
-        run enabled components
-        pre:
-            self.comp_lib exists
-        post:
-            self.comps_used is a dictionary of the used components. 
         """
-        self.comps_used = {}
-        for comp in self.comp_order:
-            if self.cd.get_item(comp,"enabled") == False:
-                continue
-                
-            prereq = {}
-            pr_list = \
-                import_module("aaem.components." + comp_lib[comp]).prereq_comps
-            for pr in pr_list:
-                prereq[pr] = self.comps_used[pr]
-                
-            component = self.get_component(self.comp_lib[comp])(self.cd,
-                                                                self.fc,
-                                                                self.di,
-                                                                prereq)
-            component.run()
-            self.comps_used[comp] = component
-
+        try:
+            return self.preq_lib[comp_name]
+        except AttributeError:
+            self.preq_lib = {}
+        except KeyError:
+            pass
+            
+        self.preq_lib[comp_name] = \
+                    import_module("aaem.components." + comp_name).prereq_comps
+        return self.preq_lib[comp_name]
     
     def get_component (self, comp_name):
         """
@@ -130,9 +93,75 @@ class Driver (object):
         post:
             returns imported module
         """
-        return import_module("aaem.components." + comp_name).component
+        try:
+            return self.imported_comps[comp_name]
+        except AttributeError:
+            self.imported_comps = {}
+        except KeyError:
+            pass
+            
+        self.imported_comps[comp_name] = \
+                    import_module("aaem.components." + comp_name).component
+        return self.imported_comps[comp_name]
         
-    def save_components_output (self, directory):
+    def setup_community (self, community, i_dir = None,
+                                c_config = None, g_config = None):
+        """ Function doc """
+        diag = diagnostics()
+        
+        
+        
+        if c_config is None:
+            c_config = os.path.join(self.config_dir,
+                                community.replace(' ','_') + "_config.yaml")
+        
+        if g_config is None:
+            g_config = self.global_config
+            
+        if i_dir is None:
+            i_dir = os.path.join(self.inputs_dir, community.replace(' ','_')) 
+            
+        try:
+            cd = CommunityData(i_dir, c_config, g_config, diag)
+        except IOError as e:
+            raise RuntimeError, \
+                ("A Fatal Error Has occurred, ("+ str(e) +")", diag)
+        try:
+            fc = Forecast(cd, diag)
+        except RuntimeError as e:
+            raise RuntimeError, \
+                    ("A Fatal Error Has occurred, ("+ str(e) +")", diag)
+        
+        return cd, fc, diag
+        
+    def run_components (self, cd, fc, diag):
+        """
+        run enabled components
+        pre:
+            self.comp_lib exists
+        post:
+            self.comps_used is a dictionary of the used components. 
+        """
+        comps_used = {}
+        for comp in self.comp_order:
+            if cd.get_item(comp, "enabled") == False:
+                continue
+                
+            prereq = {}
+            pr_list = self.get_prereqs(self.comp_lib[comp])
+                
+            for pr in pr_list:
+                prereq[pr] = comps_used[pr]
+                
+            CompClass = self.get_component(self.comp_lib[comp])
+            component = CompClass (cd, fc, diag, prereq)
+            component.run()
+            
+            comps_used[comp] = component
+        return comps_used
+    
+        
+    def save_components_output (self, comps_used, community, tag = ''):
         """
         save the output from each component
         pre:
@@ -141,18 +170,23 @@ class Driver (object):
             for each component in self.comps_used the electric, heating, and
         financial outputs are saved as csv files 
         """
+        if tag != '':
+            tag = '_' + tag
+        directory = os.path.join(self.model_root, 'results' + tag,
+                                            community.replace(' ','_'),
+                                            "component_outputs/")
         
         try:
-            os.makedirs(os.path.join(directory, "component_outputs/"))
+            os.makedirs(os.path.join(directory))
         except OSError:
             pass
+            
+        for comp in comps_used:
+            comps_used[comp].save_csv_outputs(directory)
+            comps_used[comp].save_additional_output(directory)
     
-        for comp in self.comps_used:
-            self.comps_used[comp].save_csv_outputs(os.path.join(directory,
-                                                          "component_outputs/"))
-            self.comps_used[comp].save_additional_output(directory)
-    
-    def save_forecast_output (self, directory, img_dir):
+    def save_forecast_output (self, fc, community, img_dir, 
+                                                    plot = False, tag = ''):
         """
         save the forecast output:
         pre:
@@ -160,9 +194,14 @@ class Driver (object):
         post: 
             the forecast is saved as a csv file
         """
-        self.fc.save_forecast(directory, img_dir, self.plot)
+        if tag != '':
+            tag = '_' + tag
+        directory = os.path.join(self.model_root, 'results' + tag,
+                                            community.replace(' ','_'))
+        
+        fc.save_forecast(directory, img_dir, plot)
     
-    def save_input_files (self, directory):
+    def save_input_files (self, cd, community, tag = ''):
         """ 
         save the config used
         pre:
@@ -170,9 +209,14 @@ class Driver (object):
         post:
             the inputs used for each component are saved
         """
-        self.cd.save_model_inputs(os.path.join(directory,"config_used.yaml"))
+        if tag != '':
+            tag = '_' + tag
+        directory = os.path.join(self.model_root, 'results' + tag,
+                                            community.replace(' ','_'))
+        
+        cd.save_model_inputs(os.path.join(directory,"config_used.yaml"))
     
-    def save_diagnostics (self, directory):
+    def save_diagnostics (self, diag, community, tag = ''):
         """ 
         save the diagnostics
         pre:
@@ -180,24 +224,83 @@ class Driver (object):
         post:
             diagnostics file is saved
         """
-        self.di.save_messages(os.path.join(directory,
-            self.cd.get_item("community", 'name').replace(" ","_")\
-                                                +"_runtime_diagnostics.csv"))
+        if tag != '':
+            tag = '_' + tag
+        directory = os.path.join(self.model_root, 'results' + tag,
+                                            community.replace(' ','_'))
+                                            
+        diag.save_messages(os.path.join(directory, 
+                    community.replace(" ","_") + "_runtime_diagnostics.csv"))
+                    
+    def store_results (self, name, comps_used, tag = '', overwrite = False):
+        """
+        """
+        if tag != '':
+            tag = '_' + tag
+        directory = os.path.join(self.model_root, 'results' + tag)
         
-    def run (self, model_root, scalers):
+        picklename = os.path.join(directory,'binary_results.pkl')
+        if overwrite:
+            mode = 'rb'
+        else:
+            mode = 'ab'
+            
+        with open(picklename, mode) as pkl:
+             pickle.dump([name, comps_used], pkl, pickle.HIGHEST_PROTOCOL)
+             
+    def load_results (self, tag = ''):
+        if tag != '':
+            tag = '_' + tag
+        directory = os.path.join(self.model_root, 'results' + tag)
+        results = {}
+        picklename = os.path.join(directory,'binary_results.pkl')
+        with open(picklename, 'rb') as pkl:
+            while True:
+                try:
+                    temp = pickle.load(pkl)
+                    key = temp[0]
+                    i = 0
+                    while key in results.keys():
+                        key = key.split(' #')[0] + ' #' + str(i)
+                        i += 1
+                    
+                    results[key] = temp[1]
+                except:
+                    break
+        return results
+        
+    def run (self, community, name = None, 
+                    i_dir = None, c_config = None, g_config = None,
+                    tag = '', img_dir = None, plot = False):
         """
         model root ./model/m0.18.0... 
         """
-        self.load_comp_lib()
-        self.run_components()
-        self.save_components_output(out_dir)
-        self.copy_inputs() 
+        if name is None:
+            name = community
         
-        self.save_forecast_output(out_dir, img_dir)
-        self.save_input_files(out_dir)
-        self.save_diagnostics(out_dir) 
+        temp = tag
+        if img_dir is None:
+            if temp != '':
+                temp = '_' + tag
+            img_dir = os.path.join(self.model_root, 'results' + temp, 'plots')
         
-        return self, out_dir
+        cd, fc, diag = self.setup_community(community)
+        comps_used = self.run_components(cd, fc, diag)
+        
+        self.save_components_output(comps_used, community)
+        
+        self.save_forecast_output(fc, community, img_dir, plot, tag)
+        self.save_input_files(cd, community, tag )
+        self.save_diagnostics(diag, community, tag) 
+        self.store_results(name, comps_used, tag)
+        
+    def run_many (self, communities):
+        """ Function doc """
+        for c in communities:
+            self.run(c)
+            
+    def save_summaries (self, tag):
+        pass
     
 
 
@@ -263,7 +366,7 @@ class Setup (object):
                                                         'LNG used in community'
             
             config_file = os.path.join(config_path, 
-                                c.replace(' ','_') + '_community_data.yaml')
+                                c.replace(' ','_') + '_config.yaml')
             header = 'community data for ' + c 
             write_config_file(config_file, config, comments, 
                                             s_order = ['community',],
@@ -276,7 +379,7 @@ class Setup (object):
     def setup_global_config (self):
         """ Function doc """
         config_path = os.path.join(self.model_root, self.tag, 'config', 
-                                                    "__golbal_config.yaml")
+                                                    "__global_config.yaml")
         with open(config_path, 'w') as def_file:
             def_file.write(yaml.dump(defaults.build_setup_defaults(comp_lib),
                                                 default_flow_style = False))
