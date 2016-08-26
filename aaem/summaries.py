@@ -37,12 +37,12 @@ def building_log(coms, res_dir):
         if c.find('+') != -1 or c.find("_intertie") != -1:
             continue
         try:
-            com = coms[c]['model'].comps_used['non-residential buildings']
+            com = coms[c]['non-residential buildings']
             
             
-            types = coms[c]['model'].cd.get_item('non-residential buildings',
+            types = coms[c]['community data'].get_item('non-residential buildings',
                                                 "com building estimates").index
-            estimates =coms[c]['model'].cd.get_item('non-residential buildings',
+            estimates =coms[c]['community data'].get_item('non-residential buildings',
                                                 "com building data").fillna(0)
             
             num  = 0
@@ -190,12 +190,12 @@ def village_log (coms, res_dir):
         if c.find('+') != -1 or c.find("_intertie") != -1:
             continue
         try:
-            start_year = coms[c]['model'].cd.get_item('community', 
+            start_year = coms[c]['community data'].get_item('community', 
                                                         'current year')
-            consumption = int(coms[c]['model'].fc.consumption.ix[start_year])
-            population = int(coms[c]['model'].fc.population.ix[start_year])
+            consumption = int(coms[c]['forecast'].consumption.ix[start_year])
+            population = int(coms[c]['forecast'].population.ix[start_year])
             try:
-                res = coms[c]['model'].comps_used['residential buildings']
+                res = coms[c]['residential buildings']
                 res_con = [res.baseline_HF_consumption[0], 
                                 res.baseline_kWh_consumption[0] / mmbtu_to_kWh]
                 res_cost = [res.baseline_HF_cost[0], res.baseline_kWh_cost[0]]
@@ -203,7 +203,7 @@ def village_log (coms, res_dir):
                 res_con = [np.nan, np.nan]
                 res_cost = [np.nan, np.nan]
             try:
-                com = coms[c]['model'].comps_used['non-residential buildings']
+                com = coms[c]['non-residential buildings']
                 com_con = [com.baseline_HF_consumption,
                             com.baseline_kWh_consumption / mmbtu_to_kWh]
                 com_cost = [com.baseline_HF_cost[0],com.baseline_kWh_cost[0]]
@@ -211,7 +211,7 @@ def village_log (coms, res_dir):
                 com_con = [np.nan, np.nan]
                 com_cost = [np.nan, np.nan]
             try:
-                ww = coms[c]['model'].comps_used['water wastewater']
+                ww = coms[c]['water wastewater']
                 ww_con = [ww.baseline_HF_consumption[0],
                           ww.baseline_kWh_consumption[0] / mmbtu_to_kWh ]
                 ww_cost = [ww.baseline_HF_cost[0],ww.baseline_kWh_cost[0]]
@@ -219,7 +219,7 @@ def village_log (coms, res_dir):
                 ww_con = [np.nan, np.nan]
                 ww_cost = [np.nan, np.nan]
             t = [c, consumption, population, 
-                 coms[c]['model'].cd.get_item('community','region')] +\
+                 coms[c]['community data'].get_item('community','region')] +\
                  res_con + com_con + ww_con + res_cost + com_cost + ww_cost 
             out.append(t)
         except AttributeError:
@@ -257,21 +257,21 @@ def fuel_oil_log (coms, res_dir):
         if c+"_intertie" in coms.keys():
             continue
         try:
-            it = coms[c]['model'].cd.intertie
+            it = coms[c]['community data'].intertie
             if it is None:
                 it = 'parent'
                 
             if c.find("_intertie") == -1:
-                res = coms[c]['model'].comps_used['residential buildings']
-                com = coms[c]['model'].comps_used['non-residential buildings']
-                wat = coms[c]['model'].comps_used['water wastewater']
+                res = coms[c]['residential buildings']
+                com = coms[c]['non-residential buildings']
+                wat = coms[c]['water wastewater']
             else:
                 k = c.replace("_intertie","")
-                res = coms[k]['model'].comps_used['residential buildings']
-                com = coms[k]['model'].comps_used['non-residential buildings']
-                wat = coms[k]['model'].comps_used['water wastewater']
+                res = coms[k]['residential buildings']
+                com = coms[k]['non-residential buildings']
+                wat = coms[k]['water wastewater']
             
-            eff = coms[c]['model'].cd.get_item("community",
+            eff = coms[c]['community data'].get_item("community",
                                             "diesel generation efficiency")
             if eff == 0:
                 eff = np.nan
@@ -279,10 +279,10 @@ def fuel_oil_log (coms, res_dir):
             year = res.start_year
             try:
                 try:
-                    elec = float(coms[c]['model'].fc.generation_by_type[\
+                    elec = float(coms[c]['forecast'].generation_by_type[\
                                 "generation diesel"][year]) / eff
                 except KeyError:
-                    elec = float(coms[c]['model'].fc.generation_by_type[\
+                    elec = float(coms[c]['forecast'].generation_by_type[\
                                 "generation_diesel [kWh/year]"][year]) / eff
             except KeyError:
                 elec = 0
@@ -334,21 +334,21 @@ def forecast_comparison_log (coms, res_dir):
     for c in sorted(coms.keys()):
         
         try:
-            it = coms[c]['model'].cd.intertie
+            it = coms[c]['community data'].intertie
             if it is None:
                 it = 'parent'
             if it == 'child':
                 continue
             try:
-                it_list = coms[c]['model'].cd.intertie_list
+                it_list = coms[c]['community data'].intertie_list
                 it_list = [c] + list(set(it_list).difference(["''"]))
             except AttributeError:
                 it_list = [c]
             #~ print it_list
-            res = coms[c]['model'].comps_used['residential buildings']
-            com = coms[c]['model'].comps_used['non-residential buildings']
-            wat = coms[c]['model'].comps_used['water wastewater']
-            fc = coms[c]['model'].fc
+            res = coms[c]['residential buildings']
+            com = coms[c]['non-residential buildings']
+            wat = coms[c]['water wastewater']
+            fc = coms[c]['forecast']
             
             first_year = max([res.start_year,
                               com.start_year,
@@ -361,10 +361,10 @@ def forecast_comparison_log (coms, res_dir):
             
             for ic in it_list:
                 try:
-                    ires = coms[ic]['model'].comps_used['residential buildings']
+                    ires = coms[ic]['residential buildings']
                     icom = coms[ic]['model'].\
                         comps_used['non-residential buildings']
-                    iwat = coms[ic]['model'].comps_used['water wastewater']
+                    iwat = coms[ic]['water wastewater']
                 except KeyError:
                     continue
                 res_kwh +=  ires.baseline_kWh_consumption[first_year - ires.start_year]
@@ -441,14 +441,14 @@ def electric_price_summary (coms, res_dir):
     for c in sorted(coms.keys()):
         #~ print c
         try:
-            it = coms[c]['model'].cd.intertie
+            it = coms[c]['community data'].intertie
             if it is None:
                 it = 'parent'
             if it == 'child':
                 continue
-            base_cost = float(coms[c]['model'].cd.get_item("community",
+            base_cost = float(coms[c]['community data'].get_item("community",
                                             "elec non-fuel cost"))
-            prices = deepcopy(coms[c]['model'].cd.get_item("community",
+            prices = deepcopy(coms[c]['community data'].get_item("community",
                                             "electric non-fuel prices"))
             #~ print prices
             prices[c] = prices['price']
@@ -493,15 +493,18 @@ def genterate_npv_summary (coms, res_dir):
     """
     for community in coms:
         #~ print community
-        components = coms[community]['model'].comps_used
+        components = coms[community]
         npvs = []
         for comp in components:
-            npvs.append([comp, 
+            try:
+                npvs.append([comp, 
                          components[comp].get_NPV_benefits(),
                          components[comp].get_NPV_costs(),
                          components[comp].get_NPV_net_benefit(),
                          components[comp].get_BC_ratio()
                         ])
+            except AttributeError:
+                pass
 
         f_name = os.path.join(res_dir,community.replace(' ','_'),
                                 community.replace(' ','_') + '_npv_summary.csv')
@@ -520,13 +523,13 @@ def consumption_summary (coms, res_dir):
     for community in coms:
         if 1 != len(community.split('+')):
             continue
-        it = coms[community]['model'].cd.intertie
-        region = coms[community]['model'].cd.get_item('community','region')
+        it = coms[community]['community data'].intertie
+        region = coms[community]['community data'].get_item('community','region')
         if it is None:
             it = 'parent'
         if it == 'child':
             continue
-        fc = coms[community]['model'].fc
+        fc = coms[community]['forecast']
         try:
             con = fc.consumption.ix[2010:2040].values.T[0].tolist()
             consumption.append([community, region] + con)

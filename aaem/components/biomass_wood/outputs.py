@@ -16,7 +16,7 @@ def component_summary (coms, res_dir):
     """
     out = []
     for c in sorted(coms.keys()):
-        #~ it = coms[c]['model'].cd.intertie
+        #~ it = coms[c]['community data'].intertie
         #~ if it is None:
             #~ it = 'parent'
         #~ if it == 'child':
@@ -26,7 +26,7 @@ def component_summary (coms, res_dir):
         try:
             
            
-            biomass = coms[c]['model'].comps_used[COMPONENT_NAME]
+            biomass = coms[c][COMPONENT_NAME]
             
             
             

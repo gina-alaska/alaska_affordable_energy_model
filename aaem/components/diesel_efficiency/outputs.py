@@ -23,7 +23,7 @@ def component_summary (coms, res_dir):
     """
     out = []
     for c in sorted(coms.keys()):
-        it = coms[c]['model'].cd.intertie
+        it = coms[c]['community data'].intertie
         if it is None:
             it = 'parent'
         if it == 'child' or c.find("+") != -1:
@@ -31,7 +31,7 @@ def component_summary (coms, res_dir):
         #~ if c.find("_intertie") != -1:
             #~ continue
         try:
-            comp = coms[c]['model'].comps_used[COMPONENT_NAME]
+            comp = coms[c][COMPONENT_NAME]
             
             comp.get_diesel_prices()
             diesel_price = float(comp.diesel_prices[0].round(2))

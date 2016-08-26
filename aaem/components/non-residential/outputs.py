@@ -32,7 +32,7 @@ def component_summary (coms, res_dir):
         if c.find('+') != -1:# or c.find("_intertie") != -1:
             continue
         try:
-            com = coms[c]['model'].comps_used['non-residential buildings']
+            com = coms[c]['non-residential buildings']
             savings = (com.baseline_HF_consumption -\
                       com.proposed_HF_consumption ) * constants.mmbtu_to_gal_HF
             out.append([c,

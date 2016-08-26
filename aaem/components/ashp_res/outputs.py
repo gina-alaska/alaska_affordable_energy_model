@@ -16,7 +16,7 @@ def component_summary (coms, res_dir):
     """
     out = []
     for c in sorted(coms.keys()):
-        #~ it = coms[c]['model'].cd.intertie
+        #~ it = coms[c]['community data'].intertie
         #~ if it is None:
             #~ it = 'parent'
         #~ if it == 'child':
@@ -25,7 +25,7 @@ def component_summary (coms, res_dir):
             continue
         try:
             
-            ashp = coms[c]['model'].comps_used[COMPONENT_NAME]
+            ashp = coms[c][COMPONENT_NAME]
             
             kw_exess = ashp.monthly_value_table['kWh consumed'].max()/\
                                 (24 * 31)
@@ -38,7 +38,7 @@ def component_summary (coms, res_dir):
                 price = 0
            
             try:
-                intertie = coms[c]['model'].cd.parent
+                intertie = coms[c]['community data'].parent
             except AttributeError:
                 intertie = c
             try:

@@ -30,8 +30,9 @@ except ImportError:
     import pickle
 
 
-from aaem import __version__
+from aaem import summaries, __version__
 from aaem.components import comp_lib, comp_order
+
 
 import zipfile
 
@@ -292,6 +293,9 @@ class Driver (object):
         self.save_forecast_output(fc, community, img_dir, plot, tag)
         self.save_input_files(cd, community, tag )
         self.save_diagnostics(diag, community, tag) 
+        
+        comps_used['community data'] = cd
+        comps_used['forecast'] = fc
         self.store_results(name, comps_used, tag)
         
     def run_many (self, communities):
@@ -299,8 +303,21 @@ class Driver (object):
         for c in communities:
             self.run(c)
             
-    def save_summaries (self, tag):
-        pass
+    def save_summaries (self, tag = ''):
+        res = self.load_results(tag)
+        
+        if tag != '':
+            tag = '_' + tag
+        directory = os.path.join(self.model_root, 'results' + tag)
+        
+        summaries.village_log(res,directory)
+        summaries.building_log(res,directory)
+        summaries.fuel_oil_log(res,directory)
+        summaries.forecast_comparison_log(res,directory)
+        summaries.electric_price_summary(res,directory)
+        summaries.call_comp_summaries(res,directory)
+        
+        
     
 
 

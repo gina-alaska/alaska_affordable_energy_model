@@ -32,7 +32,7 @@ def component_summary (coms, res_dir):
         if c.find('+') != -1 or c.find("_intertie") != -1:
             continue
         try:
-            res = coms[c]['model'].comps_used['residential buildings']
+            res = coms[c]['residential buildings']
             out.append([c,
                 res.get_NPV_benefits(),res.get_NPV_costs(),
                 res.get_NPV_net_benefit(),res.get_BC_ratio(),

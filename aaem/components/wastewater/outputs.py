@@ -33,7 +33,7 @@ def component_summary (coms, res_dir):
         if c.find('+') != -1 or c.find("_intertie") != -1:
             continue
         try:
-            www = coms[c]['model'].comps_used['water wastewater']
+            www = coms[c]['water wastewater']
             try:
                 oil_p, elec_p =  www.hoil_price[0], www.elec_price[0]
             except AttributeError:

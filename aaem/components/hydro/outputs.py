@@ -15,14 +15,14 @@ def component_summary (coms, res_dir):
     """
     out = []
     for c in sorted(coms.keys()):
-        it = coms[c]['model'].cd.intertie
+        it = coms[c]['community data'].intertie
         if it is None:
             it = 'parent'
         if it == 'child':
             continue
         try:
             # ??? NPV or year one
-            hydro = coms[c]['model'].comps_used['Hydropower']
+            hydro = coms[c]['Hydropower']
             
             start_yr = hydro.comp_specs['start year']
             hydro.get_diesel_prices()
