@@ -105,16 +105,15 @@ class RunCommand(pycommand.CommandBase):
         run_driver = driver.Driver(base)
         for com in sorted(coms):
             print com
-            #~ try:
-            run_driver.run(com, 
+            try:
+                run_driver.run(com, 
                     c_config = cli_lib.get_alt_community_config(alt_config,com),
                     img_dir = img_dir,
                     plot = plot)
-            #~ except RuntimeError as e :
-                #~ print e
-                #~ print
-                #~ print "RUN ERROR: "+ com + " not a configured community/project"
-                #~ print
+            except (RuntimeError, IOError) as e :
+                print
+                print "RUN ERROR: "+ com + " not a configured community/project"
+                print
                 
         try:
             run_driver.save_summaries()

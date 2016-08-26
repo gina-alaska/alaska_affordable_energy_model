@@ -108,11 +108,19 @@ class Driver (object):
             com_dir = community.replace(' ','_').split('+')[0]
             i_dir = os.path.join(self.inputs_dir, com_dir) 
             
-        #~ try:
-        cd = CommunityData(i_dir, c_config, g_config, diag)
-        #~ except IOError as e:
-            #~ raise RuntimeError, \
-                #~ ("A Fatal Error Has occurred, ("+ str(e) +")")
+        
+        tag = '+'.join(community.replace(' ','_').split('+')[1:]).lower()
+        if tag == '':
+            tag = None  
+
+        if not os.path.exists(c_config):
+            raise IOError, "Config Does not exist for " + community
+            
+        try:
+            cd = CommunityData(i_dir, c_config, g_config, diag, tag)
+        except IOError as e:
+            raise RuntimeError, \
+                ("A Fatal Error Has occurred, ("+ str(e) +")")
         try:
             fc = Forecast(cd, diag)
         except RuntimeError as e:

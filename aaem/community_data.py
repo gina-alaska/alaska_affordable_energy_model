@@ -25,7 +25,8 @@ PATH = os.path.join
 class CommunityData (object):
     """ Class doc """
     
-    def __init__ (self, data_dir, override, default="defaults", diag = None):
+    def __init__ (self, data_dir, override, default="defaults", diag = None,
+                                                                    tag = None):
         """
             set up the object
         
@@ -50,6 +51,7 @@ class CommunityData (object):
         post-conditions:
             the community data object is initialized
         """
+        self.tag = tag
         self.percent_diesel = 0
         self.diagnostics = diag
         if diag == None:
@@ -58,7 +60,7 @@ class CommunityData (object):
         self.load_input(override, default)
         self.data_dir = os.path.abspath(data_dir)
         self.get_csv_data()
-      
+        
         self.set_item("community","diesel prices", DieselProjections(data_dir))
 
         if self.get_item("community", "model electricity"):
@@ -371,7 +373,13 @@ class CommunityData (object):
             keys = lib.keys()
             for k in keys:
                 if self.get_item(comp, k) in IMPORT_FLAGS:
-                    self.set_item(comp,k, lib[k](self.data_dir))
+                    
+                    # if is this a project fake a 'projcet dir' 
+                    data_dir = self.data_dir
+                    if k == 'project details' and not self.tag is None:
+                        data_dir = os.path.join(os.path.split(data_dir)[0], 
+                                    os.path.split(data_dir)[1]+'+'+self.tag)
+                    self.set_item(comp,k, lib[k](data_dir))
         
         #~ comp_name = 'residential_buildings'
         #~ lib = import_module("aaem.components." + comp_name).yaml_import_lib

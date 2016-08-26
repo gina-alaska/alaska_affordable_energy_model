@@ -29,16 +29,17 @@ def load_project_details (data_dir):
         'transmission capital cost'(float), 'operational costs'(float),
         'expected years to operation'(int),
     """
+    tag = os.path.split(data_dir)[1].split('+')
+    data_dir = os.path.join(os.path.split(data_dir)[0],tag[0])
     try:
-        tag = os.path.split(data_dir)[1].split('+')
         project_type = tag[1]
-        tag = tag[1] + '+' +tag[2]
         if project_type != 'hydro':
             tag = None
+        else:
+            tag = '+'.join(tag[1:])
     except IndexError:
         tag = None
     
-        
     # get the estimated years to operation
     # CHANGE THIS Replace the PROJECT_TYPE with the type of the project
     data_file = os.path.join(data_dir, 'project_development_timeframes.csv')
