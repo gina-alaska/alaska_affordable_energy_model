@@ -3,33 +3,18 @@ driver.py
 
     will run the model
 """
+from aaem import summaries, __version__, __download_url__
+from aaem.components import comp_lib, comp_order
 from community_data import CommunityData
 from forecast import Forecast
-import plot
 from diagnostics import diagnostics
-from preprocessor import preprocess, Preprocessor
+from preprocessor import preprocess
 import defaults
-from constants import mmbtu_to_kWh, mmbtu_to_gal_HF
-import shutil
-from pandas import DataFrame, read_csv, concat
-
-import colors
-
-import numpy as np
 
 import yaml
 import os.path
 from importlib import import_module
 from datetime import datetime
-import warnings
-import sys
-
-
-
-from aaem import summaries, __version__, __download_url__
-from aaem.components import comp_lib, comp_order
-
-
 import zipfile
 try:
     import cPickle as pickle

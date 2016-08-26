@@ -80,12 +80,21 @@ class RunCommand(pycommand.CommandBase):
         except OSError:
             pass
         
+        # add these options
+        #~ name = None 
+        #~ i_dir = None
+        #~ c_config = None 
+        #~ g_config = None
+        #~ tag = '' 
+        #~ img_dir = None 
+        
         sout = sys.stdout
         if self.flags.log:
             sys.stdout  = open(self.flags.log, 'w')
             
         run_driver = driver.Driver(base)
         coms = sorted(coms)
+    
         for com in coms:
             print com
             run_driver.run(com)
