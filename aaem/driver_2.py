@@ -16,6 +16,7 @@ import os.path
 from importlib import import_module
 from datetime import datetime
 import zipfile
+import shutil
 try:
     import cPickle as pickle
     #~ print "C Pickle"
@@ -104,18 +105,19 @@ class Driver (object):
             g_config = self.global_config
             
         if i_dir is None:
-            i_dir = os.path.join(self.inputs_dir, community.replace(' ','_')) 
+            com_dir = community.replace(' ','_').split('+')[0]
+            i_dir = os.path.join(self.inputs_dir, com_dir) 
             
-        try:
-            cd = CommunityData(i_dir, c_config, g_config, diag)
-        except IOError as e:
-            raise RuntimeError, \
-                ("A Fatal Error Has occurred, ("+ str(e) +")", diag)
+        #~ try:
+        cd = CommunityData(i_dir, c_config, g_config, diag)
+        #~ except IOError as e:
+            #~ raise RuntimeError, \
+                #~ ("A Fatal Error Has occurred, ("+ str(e) +")")
         try:
             fc = Forecast(cd, diag)
         except RuntimeError as e:
             raise RuntimeError, \
-                    ("A Fatal Error Has occurred, ("+ str(e) +")", diag)
+                    ("A Fatal Error Has occurred, ("+ str(e) +")")
         
         return cd, fc, diag
         
@@ -269,7 +271,8 @@ class Driver (object):
                 temp = '_' + tag
             img_dir = os.path.join(self.model_root, 'results' + temp, 'plots')
         
-        cd, fc, diag = self.setup_community(community)
+        cd, fc, diag = self.setup_community(community, i_dir, 
+                                                        c_config, g_config)
         comps_used = self.run_components(cd, fc, diag)
         
         self.save_components_output(comps_used, community)
@@ -329,7 +332,7 @@ class Setup (object):
         
         self.tag = tag
         if tag is None:
-            self.tag = make_version_tag
+            self.tag = self.make_version_tag()
         #~ self.raw_directory = os.path.join(model_root, 'setup', "raw_data")
         #~ self.preprocessed_directory = \
                 #~ os.path.join(model_root, 'setup', "input_data")
@@ -348,18 +351,20 @@ class Setup (object):
         setup_path = os.path.join(self.model_root, self.tag)
     
         try:
-            os.makedirs(os.path.join(setup_path, "input_files"))
+            shutil.rmtree(os.path.join(setup_path, "input_files"))
         except OSError:
             pass
         try:
-            os.makedirs(os.path.join(setup_path, "config"))
+            shutil.rmtree(os.path.join(setup_path, "config"))
         except OSError:
             pass
+        
+        os.makedirs(os.path.join(setup_path, "input_files"))
+        os.makedirs(os.path.join(setup_path, "config"))
             
     def setup_community_configs (self, coms = None):
         """ Function doc """
         config_path = os.path.join(self.model_root, self.tag, 'config')
-        
         if coms is None:
             coms = self.communities
         
@@ -389,7 +394,15 @@ class Setup (object):
                                                         'natural gas used',
                                                         'natural gas price']},
                                             header = header)
+            
+    def setup_community_list (self):
+        config_path = os.path.join(self.model_root, self.tag, 'config', 
+                                                    '__community_list.csv')
+        src_path = os.path.join(self.data_repo, 'community_list.csv')
         
+        
+        shutil.copy(src_path, config_path)
+
     def setup_global_config (self):
         """ Function doc """
         config_path = os.path.join(self.model_root, self.tag, 'config', 
@@ -432,8 +445,14 @@ class Setup (object):
         data_version_file = os.path.join(self.data_repo, 'VERSION')
         with open(data_version_file, 'r') as fd:
             ver = fd.read().replace("\n", "")
-        with open(os.path.join(input_path,
-                            'input_files_metadata.yaml'), 'w') as meta:
+            
+        md_dir = os.path.join(input_path, "__metadata")
+        try:
+            os.makedirs(md_dir)
+        except OSError:
+            pass
+        m = 'w'
+        with open(os.path.join(md_dir, 'input_files_metadata.yaml'), m) as meta:
             meta.write(yaml.dump({'upadted': datetime.strftime(datetime.now(),
                                                         "%Y-%m-%d %H:%M:%S"),
                                   'data version': ver},
@@ -445,7 +464,12 @@ class Setup (object):
         with open(data_version_file, 'r') as fd:
             ver = fd.read().replace("\n", "")
     
-        z = zipfile.ZipFile(os.path.join(input_path, "raw_data.zip"),"w")
+        md_dir = os.path.join(input_path, "__metadata")
+        try:
+            os.makedirs(md_dir)
+        except OSError:
+            pass
+        z = zipfile.ZipFile(os.path.join(md_dir, "raw_data.zip"),"w")
         for raw in [f for f in os.listdir(self.data_repo) if '.csv' in f]:
             z.write(os.path.join(self.data_repo,raw), raw)
         z.write(os.path.join(data_version_file), 'VERSION')
@@ -461,6 +485,7 @@ class Setup (object):
         self.setup_global_config()
         ids = self.setup_input_files()
         self.setup_community_configs(ids)
+        self.setup_community_list()
         return True
         
         

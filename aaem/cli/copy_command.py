@@ -13,12 +13,13 @@ class CopyCommand(pycommand.CommandBase):
     """
     copy command class
     """
-    usagestr = 'usage: copy [options] path_to_model_run_to_copy'
+    usagestr = 'usage: copy [options] source destination'
     description = 'set up a new model run based off an old one'
     
     optionList = (
-           ('tag', ('t', "<name>", "tag for run directory")),
-    )
+            ('force',('f', False, "force overwrite of existing directorys")),
+                
+                 )
     description = ('Set up a new model run based off an old one\n\n'
                    'options: \n'
                    "  " + str([o[0] + ': ' + o[1][2] + '. Use: --' +\
@@ -32,43 +33,33 @@ class CopyCommand(pycommand.CommandBase):
         run the command
         """
         if self.args and os.path.exists(self.args[0]):
-            base = os.path.abspath(self.args[0])
+            source = os.path.abspath(self.args[0])
         else:
-            print  "Copy Error: needs a existing run"
+            print  "Copy Error: source must exist"
             return 0
     
+        if self.args:
+            try:
+                dest = os.path.abspath(self.args[1])
+            except IndexError:
+                print  "Copy Error: destination needed"
+                return 0
+                
+        force = True
+        if self.flags.force is None:
+            force = False
         
-        model_root = os.path.split(base)[0]
-        
-        if self.flags.tag:
-            tag = self.flags.tag
-        else:
-            tag = datetime.strftime(datetime.now(),"%Y%m%d%H%M%S")
-        new = os.path.join(model_root, tag)
+        if os.path.exists(dest) and not force:
+            print "Copy Error: " + dest + \
+                            " exists. Use force flag (-f) to overwrite"
+            return
         
         try:
-            shutil.copytree(os.path.join(base,"input_data"), 
-                                                os.path.join(new,"input_data"))
-            shutil.copytree(os.path.join(base,"config"), 
-                                                os.path.join(new,"config"))
-            #~ shutil.copy(os.path.join(base, "version_metadata.txt"),new)
-            
-            fd = open(os.path.join(base, "version_metadata.txt"), 'r')
-            lines = fd.read().split("\n")
-            print lines
-            fd.close()
-            fd = open(os.path.join(new, "version_metadata.txt"), 'w')
-            fd.write(( "Code Version: "+ __version__ + "\n" 
-                       "Code URL: "+ __download_url__ + "\n" 
-                       "" + lines[2]  +'\n'
-                "Date Run: "+ datetime.strftime(datetime.now(),"%Y-%m-%d")+'\n'
-                     ))
-            fd.close()
-            
+            shutil.rmtree(dest)
         except OSError:
-            print "Copy Error: This copy already exists"
-            return 0
-        config = os.path.join(new,"config")
-        coms = [a for a in os.listdir(config) if '.' not in a]
-        for com in coms:
-            driver.write_driver(com, new)
+            pass
+            
+        print "Copying ..."
+        
+        for sd in ['config', 'input_files']:
+            shutil.copytree(os.path.join(source, sd), os.path.join(dest, sd))

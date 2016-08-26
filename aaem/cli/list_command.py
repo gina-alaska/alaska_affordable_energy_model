@@ -11,7 +11,7 @@ class ListCommand(pycommand.CommandBase):
     """
     list command class
     """
-    usagestr = 'usage: list  path_to_model'
+    usagestr = 'usage: list path_to_model'
 
     description = ('List Communities that can be run.\n')
 
@@ -27,6 +27,9 @@ class ListCommand(pycommand.CommandBase):
         
 
         config = os.path.join(base,"config")
-        coms = [a for a in os.listdir(config) if '.' not in a]
+        gc = '__global_config.yaml'
+        s_text = '_config.yaml'
+        coms = [a.split(s_text)[0]\
+                        for a in os.listdir(config) if (s_text in a and gc != a)]
         for com in coms:
             print com

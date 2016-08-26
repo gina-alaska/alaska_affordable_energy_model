@@ -4,10 +4,7 @@ run_command.py
     A commad for the cli to run the model
 """
 import pycommand
-from aaem import __version__, __download_url__ , summaries
 from default_cases import __DEV_COMS_RUN__ as __DEV_COMS__ 
-from datetime import datetime
-from pandas import read_csv
 import os.path
 import shutil
 import sys
@@ -27,7 +24,10 @@ class RunCommand(pycommand.CommandBase):
     optionList = (
             ('dev', ('d', False, "use only development communities")),
             ('log', ('l', "<log_file>", "name/path of file to log outputs to")),
-            ('plot',('p', False, "run the ploting functionality")),
+            ('plot',('p', '<directory>', 
+                        "run the ploting functionality and save in directory")),
+            ('force',('f', False, "force overwrite of existing directories")),
+            ('config',('c','<directory>', "alternate config directory")),
            )
     description =('Run model for given communities. (default = all communities)'
                     'options: \n'
@@ -41,44 +41,55 @@ class RunCommand(pycommand.CommandBase):
         """
         run the command
         """
-        start = datetime.now()
-        
+        # get arguments
         if self.args and os.path.exists(self.args[0]):
             base = os.path.abspath(self.args[0])
-            img_dir = os.path.join(base,'results','__images')
         else:
-            print  "run needs a directory"
+            print
+            print "RUN ERROR: needs a directory"
+            print RunCommand.usagestr
+            print
             return 0
         
-        config = os.path.join(base,"config")
-        
-        gc = '__global_config.yaml'
-        
-        if len(self.args[1:]) != 0:
-            coms = self.args[1:]
-        else:
-            s_text = '_config.yaml'
-            coms = [a.split(s_text)[0]\
-                        for a in os.listdir(config) if (s_text in a and gc != a)]
-    
+        # Get communites to run
         if self.flags.dev:
+            # Developmet coms
             coms = __DEV_COMS__
-     
-        if len(coms) == 1:
-            region = coms[0]
-            coms = cli_lib.get_regional_coms(region, base)
-            #~ if coms = []:
-                #~ print "Region " + region + " is not a valid energy region"
-                #~ return
+        elif len(self.args[1:]) != 0:
+            # listed coms
+            coms = self.args[1:]
+            if len(coms) == 1:
+                # Regional coms
+                region = coms[0]
+                coms = cli_lib.get_regional_coms(region, base)
+        else:
+            # ALL COMS
+            coms = cli_lib.get_config_coms(base)
         
+        # other options
         plot = False
-        if self.flags.plot:
+        img_dir = None
+        if not self.flags.plot is None:
             plot = True    
+            img_dir = self.flags.plot
         
-        try:
+        force = True
+        if self.flags.force is None:
+            force = False
+            
+        alt_config = None
+        if not self.flags.config is None:
+            alt_config = self.flags.config
+        
+        if os.path.exists(os.path.join(base,'results')) and force:
             shutil.rmtree(os.path.join(base,'results'))
-        except OSError:
-            pass
+        elif os.path.exists(os.path.join(base,'results')):
+            print
+            print "RUN ERROR: " + os.path.join(base,'results') + \
+                        " exists. Use force flag (-f) to overwrite"
+            print
+            return 0
+    
         
         # add these options
         #~ name = None 
@@ -86,19 +97,32 @@ class RunCommand(pycommand.CommandBase):
         #~ c_config = None 
         #~ g_config = None
         #~ tag = '' 
-        #~ img_dir = None 
-        
+    
         sout = sys.stdout
         if self.flags.log:
             sys.stdout  = open(self.flags.log, 'w')
             
         run_driver = driver.Driver(base)
-        coms = sorted(coms)
-    
-        for com in coms:
+        for com in sorted(coms):
             print com
-            run_driver.run(com)
-        run_driver.save_summaries()
+            #~ try:
+            run_driver.run(com, 
+                    c_config = cli_lib.get_alt_community_config(alt_config,com),
+                    img_dir = img_dir,
+                    plot = plot)
+            #~ except RuntimeError as e :
+                #~ print e
+                #~ print
+                #~ print "RUN ERROR: "+ com + " not a configured community/project"
+                #~ print
+                
+        try:
+            run_driver.save_summaries()
+        except IOError:
+            print
+            print "RUN ERROR: No valid communities/projects provided"
+            print
+            return 0
         run_driver.save_metadata()
         
         sys.stdout = sout

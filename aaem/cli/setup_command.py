@@ -7,21 +7,22 @@ import pycommand
 import sys
 import os.path
 import shutil
-from aaem import driver
 from pandas import read_csv
 from default_cases import __DEV_COMS__
 import cli_lib
+
+from aaem import driver_2 as driver
 
 class SetupCommand(pycommand.CommandBase):
     """
     setup command class
     """
     usagestr = \
-        'usage: setup [options] data_repo [path to setup at (deafult: ./)]'
+        'usage: setup [options] location_to_setup data_repo [tag]'
     optionList = (
-           #~ ('path', ('p', "<name>", "path to location to setup/run  model")),
+           
            ('dev', ('d', False, "use only development communities")),
-           #~ ('name', ('n', "<name>", "name of model")),
+           ('force',('f', False, "force overwrite of existing directories")),
     )
 
     description = ('Set up directory for running AAEM Models\n\n'
@@ -36,72 +37,78 @@ class SetupCommand(pycommand.CommandBase):
         """
         run the command
         """
-        if self.args and os.path.exists(self.args[0]):
-            repo = os.path.abspath(self.args[0])
-        else:
-            print  "Setup Error: please provide a path to the aaem data repo"
+        # argument setup
+        if len(self.args) < 2 :
+            print 
+            print "SETUP ERROR: provide location to setup & the data repo"
+            print  SetupCommand.usagestr
+            print 
             return 0
-
-
-        path = os.getcwd()
-        if len(self.args[1:]) != 0:
-            path = self.args[1]
-
-        #add this later?
-        name = ""
-        #~ if self.flags.name:
-            #~ name = '_' + self.flags.name
-
-
-
-
-        model_root = os.path.join(path,"model" + name)
-        #~ print model_root
-        try:
-            os.makedirs(os.path.join(model_root))
-        except OSError:
-            pass
-            #~ print "Setup Error: model already setup at provided location"
-            #~ return 0
-            
-            
-        try:
-            os.makedirs(os.path.join(model_root, 'setup',"raw_data"))
-        except OSError:
-            cli_lib.backup_data(model_root)
-            cli_lib.delete_data(model_root)
-            os.makedirs(os.path.join(model_root, 'setup',"raw_data"))
-
-        raw = os.path.join(model_root, 'setup', "raw_data")
-        cli_lib.copy_model_data (repo, raw)
-        #avaliable coms
-
-        if self.flags.dev:
-            coms = __DEV_COMS__
-            full = False
-        else:
-            coms = read_csv(os.path.join(raw,'community_list.csv'),
-                         comment="#",index_col=0).Community.tolist()
-            full = True
-
-
-        ver = cli_lib.get_version_number(model_root)
-        img_dir = os.path.join(model_root,ver,'results','__images')
-
         
+        model_root = self.args[0]
+    
+        repo = os.path.abspath(self.args[1])
+        
+        if not os.path.exists(repo):
+            print
+            print  "SETUP ERROR: provided repo directory does not exist"
+            print  SetupCommand.usagestr
+            print
+            return 0
+            
+        try:
+            tag = self.args[2]
+        except IndexError:
+            tag = None
+        
+        # option setup
+        force = True
+        if self.flags.force is None:
+            force = False
 
-        print "Setting up..."
-        config = driver.setup(coms, raw, model_root,run_name = ver, setup_intertie = full)
+        ## SET UP
+        print repo
+        try:
+            if self.flags.dev:
+                coms = __DEV_COMS__
+            else:
+                coms = read_csv(os.path.join(repo,'community_list.csv'), 
+                                    comment="#",index_col=0).Community.tolist()
+            print "Setting up ..."
+
+            my_setup = driver.Setup(model_root, coms, repo, tag)
+            if not my_setup.setup(force):
+                pth = os.path.join(model_root, my_setup.tag)
+                print 
+                print "SETUP ERROR: " + pth + \
+                        " exists. Use force flag (-f) to overwrite"
+                print
+                return
+            
+        except IOError:
+            print
+            print  "SETUP ERROR: provided repo has missing files"
+            print  SetupCommand.usagestr
+            print
+            return
+
+
+        ## Generate inital results
         print "Running ..."
         
+        base = os.path.join(model_root,my_setup.tag)
         try:
-            shutil.rmtree(os.path.join(model_root,ver,'results'))
+            shutil.rmtree(os.path.join(base,'results'))
         except OSError:
             pass
-        coms = driver.run(config, "",img_dir )
-        
-        base = os.path.join(model_root,ver)
-        cli_lib.generate_summaries (coms, base)
+    
+        my_driver = driver.Driver(base)
+        for com in sorted(cli_lib.get_config_coms(base)):
+            print com
+            my_driver.run(com)
+        my_driver.save_summaries()
+        my_driver.save_metadata()
+
 
 
 

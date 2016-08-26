@@ -146,15 +146,15 @@ class Preprocessor (object):
             #~ print l
             #~ print l
             for i in l:
-                if self.out_dir[-1] == "/" or self.out_dir[-1] == "\\":
-                    root =  self.out_dir[:-1]
+                #~ if self.out_dir[-1] == "/" or self.out_dir[-1] == "\\":
+                    #~ root =  self.out_dir[:-1]
                 #~ print root+"+wind_project_" + str(i)
-                try:
-                    shutil.rmtree(root+'+'+i)
-                except OSError:
-                    pass
+                #~ try:
+                    #~ shutil.rmtree(root+'+'+i)
+                #~ except OSError:
+                    #~ pass
                 self.projects.append('+'+i)
-                shutil.copytree(self.out_dir,root+'+'+i)
+                #~ shutil.copytree(self.out_dir,root+'+'+i)
 
 
 
@@ -1278,6 +1278,7 @@ class Preprocessor (object):
             fd.close()
             data.to_csv(out_file, mode = 'a')
             self.it_ids = data
+            
             return data
 
         except KeyError:
@@ -1627,7 +1628,7 @@ class Preprocessor (object):
 
 def preprocess (data_dir, out_dir, com_id, dev = False):
     """ Function doc """
-    #print com_id
+    #~ print com_id
     diag = diagnostics()
 
     pp = preprocess_no_intertie(data_dir,
@@ -1666,10 +1667,9 @@ def preprocess (data_dir, out_dir, com_id, dev = False):
                                  "Includes dianostis for " + str(ids))
                 pp = preprocess_intertie(data_dir, out_dir, ids, diag)
 
-                pp = ids + pp[1]
+                pp = [com_id + '_intertie'] + ids + pp[1]
             else:
-                
-                pp = ids 
+                pp = [com_id + '_intertie'] + ids 
                 #~ print pp 
         else:
             pp = [com_id] + [com_id + pro for pro in pp.projects]
@@ -1681,8 +1681,6 @@ def preprocess (data_dir, out_dir, com_id, dev = False):
     diag.save_messages(os.path.join(out_dir,
                        str(com_id.replace(" ","_")) +\
                             "_preprocessor_diagnostics.csv"))
-                            
-    #~ print pp
     return pp
 
 
@@ -1706,16 +1704,16 @@ def preprocess_no_intertie (data_dir, out_dir, com_id, diagnostics):
                     'HDD': False
                 }
     #~ print [''] + pp.projects
-    for project in [''] + pp.projects:
-        if out_dir[-1] in ['/','\\']:
-            out_dir = out_dir[:-1]
-        f_path = os.path.join(out_dir+project,'copies.csv')
-        if not os.path.exists(f_path):
+    #~ for project in [''] + pp.projects:
+        #~ if out_dir[-1] in ['/','\\']:
+            #~ out_dir = out_dir[:-1]
+    f_path = os.path.join(out_dir,'copies.csv')
+        #~ if not os.path.exists(f_path):
         
-            fd = open(f_path,'w')
-            fd.write("# a list of copied data for the child community")
-            fd.close()
-            DataFrame(copied_data,["copied"]).T.to_csv(f_path,mode='a')
+    fd = open(f_path,'w')
+    fd.write("# a list of copied data for the child community")
+    fd.close()
+    DataFrame(copied_data,["copied"]).T.to_csv(f_path,mode='a')
     
     
    
@@ -1837,11 +1835,11 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
         
         DataFrame(copied_data,["copied"]).T.to_csv(f_path,mode='a')
         for project in pp.projects:
-            if out_dir[-1] in ['/','\\']:
-                out_dir = out_dir[:-1]
-            shutil.rmtree(os.path.join(out_dir,com.replace(" ","_")+project))
+            #~ if out_dir[-1] in ['/','\\']:
+                #~ out_dir = out_dir[:-1]
+            #~ shutil.rmtree(os.path.join(out_dir,com.replace(" ","_")+project))
             projects.append(com+project)
-            shutil.copytree(os.path.join(out_dir,com.replace(" ","_")),os.path.join(out_dir,com.replace(" ","_")+project))
+            #~ shutil.copytree(os.path.join(out_dir,com.replace(" ","_")),os.path.join(out_dir,com.replace(" ","_")+project))
     
     # for intertie
     #   generation = generation(parent) +
@@ -1991,15 +1989,15 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
             Preprocessor.MODEL_FILES[f]),out_dir) 
          
     for project in  pp_data[0].projects:
-            if out_dir[-1] in ['/','\\']:
-                out_dir = out_dir[:-1]
-            #~ shutil.rmtree(out_dir+project)
+            #~ if out_dir[-1] in ['/','\\']:
+                #~ out_dir = out_dir[:-1]
+            #~ ##~ shutil.rmtree(out_dir+project)
             projects.append(parent+'_intertie'+project)
-            try:
-                shutil.rmtree(out_dir+project)
-            except OSError:
-                pass
-            shutil.copytree(out_dir,out_dir+project)
+            #~ try:
+                #~ shutil.rmtree(out_dir+project)
+            #~ except OSError:
+                #~ pass
+            #~ shutil.copytree(out_dir,out_dir+project)
     #~ print pp_data
     
     

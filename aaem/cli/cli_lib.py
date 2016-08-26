@@ -10,64 +10,7 @@ from aaem import summaries, __version__
 from aaem.components import get_raw_data_files
 import zipfile
 from datetime import datetime
-
-def copy_model_data (repo, raw):
-    """
-        copies the data needed to run the model from the data repo to the raw 
-    data folder.
-    
-    pre:
-        repo : path to the data repo
-        raw: path to the raw data folder
-    post:
-        the files used to run the preprocessor are copied to the raw directory
-    """
-    shutil.copy(os.path.join(repo,
-                    "power-cost-equalization-pce-data.csv"), raw)
-    shutil.copy(os.path.join(repo, "com_building_estimates.csv"), raw)
-    shutil.copy(os.path.join(repo, "com_num_buildings.csv"), raw)
-    shutil.copy(os.path.join(repo, "cpi.csv"), raw)
-    shutil.copy(os.path.join(repo, "diesel_fuel_prices.csv"), raw)
-    shutil.copy(os.path.join(repo, "eia_generation.csv"), raw)
-    shutil.copy(os.path.join(repo, "eia_sales.csv"), raw)
-    shutil.copy(os.path.join(repo, "hdd.csv"), raw)
-    shutil.copy(os.path.join(repo, "heating_fuel_premium.csv"), raw)
-    shutil.copy(os.path.join(repo, "interties.csv"), raw)
-    shutil.copy(os.path.join(repo, "non_res_buildings.csv"), raw)
-    shutil.copy(os.path.join(repo, "population.csv"), raw)
-    shutil.copy(os.path.join(repo, "purchased_power_lib.csv"), raw)
-    shutil.copy(os.path.join(repo, "res_fuel_source.csv"), raw)
-    shutil.copy(os.path.join(repo, "res_model_data.csv"), raw)
-    shutil.copy(os.path.join(repo, "valdez_kwh_consumption.csv"), raw)
-    shutil.copy(os.path.join(repo, "ww_assumptions.csv"), raw)
-    shutil.copy(os.path.join(repo, "ww_data.csv"), raw)
-    shutil.copy(os.path.join(repo, "VERSION"), raw)
-    shutil.copy(os.path.join(repo, "community_list.csv"), raw)
-    shutil.copy(os.path.join(repo, "propane_price_estimates.csv"), raw)
-    shutil.copy(os.path.join(repo, "biomass_prices.csv"), raw)
-    shutil.copy(os.path.join(repo, "generation_limits.csv"), raw)
-    
-    for f in get_raw_data_files():
-        shutil.copy(os.path.join(repo, f), raw)
-    
-  
-def generate_summaries (coms, base):
-    """
-        generates the summaries 
-    
-    pre:
-        coms : dictionary of run communites
-        base: path to root of out put folder
-    post:
-        summaries are written
-    """
-    summaries.village_log(coms,os.path.join(base,'results'))
-    summaries.building_log(coms,os.path.join(base,'results'))
-    summaries.fuel_oil_log(coms,os.path.join(base,'results'))
-    summaries.forecast_comparison_log(coms,os.path.join(base,'results'))
-    summaries.call_comp_summaries(coms,os.path.join(base,'results'))
-    summaries.electric_price_summary(coms,os.path.join(base,'results'))
-    
+   
 def list_files (directory, root = None):
     """ Function doc """
     l = []
@@ -81,7 +24,6 @@ def list_files (directory, root = None):
         else:
             l += list_files(os.path.join(directory,item),root)
     return l
-    
     
 def compare_indepth (results1, results2, coms):
     """
@@ -260,75 +202,7 @@ def compare_high_level (results1, results2):
                     #~ print "all differents"
             except ValueError:
                 print "\t\tdifferences found in " + c
-        
-
-def get_version_number (model_root):
-    """
-    gets the current version tag from the model and data direcories
-    
-    version tag example: m1.0.0_d1.0.0 (m<MODEL VERSION>_d<DATA VERSION>)
-    
-    in:
-        model_root: root directory for model setup
-    out:
-        returns the version tag
-    """
-    data_version_file =  os.path.join(model_root, 
-                                        'setup', 'raw_data', 'VERSION')
-    try:
-        with open(data_version_file, 'r') as fd:
-            ver = fd.read().replace("\n", "")
-            ver = 'm' +  __version__  + '_d' + ver
-    except IOError:
-        date_stamp = datetime.strftime(datetime.now(), "%Y%m%d")
-        ver = 'm' + __version__ + "_d_UNKNOWN_" + date_stamp
-    return ver
-    
-def backup_data (model_root):
-    """
-    back up the current setup data
-    """
-    
-    data_version_file =  os.path.join(model_root, 
-                                        'setup', 'raw_data', 'VERSION')
-    try:
-        with open(data_version_file,'r') as fd:
-            ver = fd.read().replace('\n','')
-    except IOError:
-        ver = 'unknown_data_backup_' + \
-                datetime.strftime(datetime.now(), '%Y%m%d')
-    
-    try:
-        z = zipfile.ZipFile(os.path.join(model_root,
-                            "setup","data_"+ver+".zip"),"w")
-        for fn in os.listdir(os.path.join(model_root,"setup","raw_data")):
-            z.write(os.path.join(model_root,"setup","raw_data",fn),
-                                    os.path.join("raw_data",fn))
-        for fn in os.listdir(os.path.join(model_root,"setup","input_data")):
-            z.write(os.path.join(model_root,"setup","input_data",fn),
-                                    os.path.join("input_data",fn))
-            if os.path.isdir(os.path.join(model_root,"setup",
-                                                          "input_data",fn)):
-                for fn2 in os.listdir(os.path.join(model_root,
-                                     "setup","input_data",fn)):
-                    z.write(os.path.join(model_root,"setup","input_data",
-                                fn,fn2), os.path.join("input_data",fn,fn2))
-        z.close()
-        shutil.rmtree(os.path.join(model_root,"setup","input_data"))
-    except OSError:
-        pass
-
-
-def delete_data (model_root):
-    """
-    delete the current setup data
-    """
-    try:
-        shutil.rmtree(os.path.join(model_root,"setup","raw_data"))
-    except OSError:
-        pass
-        
-        
+             
 def get_regional_coms (region, base):
     """
     get a list of communities and projects for a region
@@ -341,8 +215,7 @@ def get_regional_coms (region, base):
         return a sorted list of projects and communities <list>
     
     """
-    com_file = os.path.join(os.path.split(base)[0],
-                                        'setup','raw_data','community_list.csv')
+    com_file = os.path.join(base, 'config', '__community_list.csv')
     com_file = read_csv(com_file, index_col = 0)
     
     if not (region in set(com_file['Energy Region'].values)):
@@ -352,10 +225,40 @@ def get_regional_coms (region, base):
                 com_file[com_file['Energy Region'] == region]\
                 ['Community'].values.tolist()] 
     coms = []
+    
+    
+    config = os.path.join(base, 'config')
+    gc = '__global_config.yaml'
+    s_text = '_config.yaml'
+    all_coms = [a.split(s_text)[0]\
+                        for a in os.listdir(config) if (s_text in a and gc != a)]
+    
     for c in lis:
-        coms += [x for x in os.listdir(os.path.join(base,
-                                            "config")) if x.find(c) != -1]
+        coms += [x for x in all_coms if x.find(c) != -1]
     return sorted(coms)
                 
-        
+def get_config_coms (base):
+    """
+    get the communities/projects that have configuration information available
     
+    input:
+        base: path to model
+        
+    output:
+        returns list of communities/projects
+    """
+    config = os.path.join(base,"config")
+    gc = '__global_config.yaml'
+    s_text = '_config.yaml'
+    return [a.split(s_text)[0]\
+                    for a in os.listdir(config) if (s_text in a and gc != a)]
+                    
+def get_alt_community_config (directory, community):
+    """ Function doc """
+    alt = None
+    if not directory is None:
+        alt = os.path.join(directory,
+                                community.replace(' ','_') + "_config.yaml")
+        if not os.path.exists(alt):
+            alt = None
+    return alt

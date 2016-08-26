@@ -21,7 +21,7 @@ class RefreshCommand(pycommand.CommandBase):
     refesh command class
     refesh command class
     """
-    usagestr = 'usage: refresh model_dir data_repo'
+    usagestr = 'usage: refresh model_dir data_repo [tag]'
     optionList = (
            ('dev', ('d', False, "use only development communities")),
            ('force',('f', False, "force refresh of existing directory")),
@@ -54,7 +54,7 @@ class RefreshCommand(pycommand.CommandBase):
             try:
                 tag = self.args[2]
             except IndexError:
-                tag = cli_lib.get_version_number(model_root)
+                tag = None
            
         force = True
         if self.flags.force is None:
@@ -66,11 +66,10 @@ class RefreshCommand(pycommand.CommandBase):
         else:
             coms = read_csv(os.path.join(repo,'community_list.csv'),
                          comment="#",index_col=0).Community.tolist()
-        
-        
-        coms = sorted(coms)
-        if not driver.Setup(model_root, coms, repo, tag).setup(force):
-            pth = os.path.join(model_root, tag)
+    
+        my_setup = driver.Setup(model_root, sorted(coms), repo, tag)
+        if not my_setup.setup(force):
+            pth = os.path.join(model_root, my_setup.tag)
             print "Refresh Error: " + pth + \
                     " exists. Use force flag (-f) to overwrite"
         
