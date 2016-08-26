@@ -23,18 +23,19 @@ from importlib import import_module
 from datetime import datetime
 import warnings
 import sys
+
+
+
+from aaem import summaries, __version__, __download_url__
+from aaem.components import comp_lib, comp_order
+
+
+import zipfile
 try:
     import cPickle as pickle
     #~ print "C Pickle"
 except ImportError:
     import pickle
-
-
-from aaem import summaries, __version__
-from aaem.components import comp_lib, comp_order
-
-
-import zipfile
 
 
 class Driver (object):
@@ -109,8 +110,6 @@ class Driver (object):
                                 c_config = None, g_config = None):
         """ Function doc """
         diag = diagnostics()
-        
-        
         
         if c_config is None:
             c_config = os.path.join(self.config_dir,
@@ -302,6 +301,19 @@ class Driver (object):
         """ Function doc """
         for c in communities:
             self.run(c)
+            
+    def save_metadata (self, tag = ""):
+        """ Function doc """
+        if tag != '':
+            tag = '_' + tag
+        directory = os.path.join(self.model_root, 'results' + tag)
+        
+        with open(os.path.join(directory, "version_metadata.txt"), 'w') as fd:
+             ts = datetime.strftime(datetime.now(), "%Y-%m-%d")
+             fd.write(("Code Version: " + __version__ + "\n" 
+                       "Code URL: " + __download_url__ + "\n" 
+                       "Date Run: " + ts + '\n' ))
+
             
     def save_summaries (self, tag = ''):
         res = self.load_results(tag)

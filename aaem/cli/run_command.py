@@ -27,8 +27,6 @@ class RunCommand(pycommand.CommandBase):
     optionList = (
             ('dev', ('d', False, "use only development communities")),
             ('log', ('l', "<log_file>", "name/path of file to log outputs to")),
-            ('time',('t', False,
-                    "Displays the total running time at the end of execution")),
             ('plot',('p', False, "run the ploting functionality")),
            )
     description =('Run model for given communities. (default = all communities)'
@@ -91,30 +89,8 @@ class RunCommand(pycommand.CommandBase):
         for com in coms:
             print com
             run_driver.run(com)
-
-        
-
-        
-    
-
-            
-        #~ coms = driver.run(batch, "", img_dir, plot = plot)
-        
-        #~ cli_lib.generate_summaries (coms, base)
-        
+        run_driver.save_summaries()
+        run_driver.save_metadata()
         
         sys.stdout = sout
         
-        #~ fd = open(os.path.join(base, "version_metadata.txt"), 'r')
-        #~ lines = fd.read().split("\n")
-        #~ fd.close()
-        #~ fd = open(os.path.join(base, "version_metadata.txt"), 'w')
-        #~ fd.write(( "Code Version: "+ __version__ + "\n" 
-                   #~ "Code URL: "+ __download_url__ + "\n" 
-                   #~ "" + lines[2] +'\n'
-                #~ "Date Run: "+ datetime.strftime(datetime.now(),"%Y-%m-%d")+'\n'
-                 #~ ))
-        #~ fd.close()
-        
-        if self.flags.time:
-            print "model run time: " + str(datetime.now() - start)

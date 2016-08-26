@@ -24,8 +24,7 @@ class RefreshCommand(pycommand.CommandBase):
     usagestr = 'usage: refresh model_dir data_repo'
     optionList = (
            ('dev', ('d', False, "use only development communities")),
-           #~ ('path', ('p', "<name>", "path to location to setup/run  model")),
-           #~ ('name', ('n', "<name>", "name of model")),
+           ('force',('f', False, "force refresh of existing directory")),
     )
 
     description = ('Refresh the data from the data repo\n\n'
@@ -51,21 +50,27 @@ class RefreshCommand(pycommand.CommandBase):
             print "Refresh Error: please provide a path to the aaem data repo"
             return 0
 
-    
-        
+        if self.args:
+            try:
+                tag = self.args[2]
+            except IndexError:
+                tag = cli_lib.get_version_number(model_root)
+           
+        force = True
+        if self.flags.force is None:
+            force = False
      
-        #avaliable coms
         if self.flags.dev:
             coms = __DEV_COMS__
             interties = False
         else:
             coms = read_csv(os.path.join(repo,'community_list.csv'),
                          comment="#",index_col=0).Community.tolist()
-            interties = True
         
-        ver = cli_lib.get_version_number(model_root)
         
         coms = sorted(coms)
-        driver.Setup(model_root, coms, repo, tag = ver).setup()
-        
+        if not driver.Setup(model_root, coms, repo, tag).setup(force):
+            pth = os.path.join(model_root, tag)
+            print "Refresh Error: " + pth + \
+                    " exists. Use force flag (-f) to overwrite"
         
