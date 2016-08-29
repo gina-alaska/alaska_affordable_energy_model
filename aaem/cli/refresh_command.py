@@ -4,12 +4,7 @@ refresh_command.py
     A commad for the cli to refresh the data
 """
 import pycommand
-import sys
 import os.path
-import shutil
-import zipfile
-from aaem import  __version__
-from datetime import datetime
 from pandas import read_csv
 from default_cases import __DEV_COMS__
 import cli_lib

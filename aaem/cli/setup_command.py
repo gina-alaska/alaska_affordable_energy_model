@@ -4,7 +4,6 @@ setup_command.py
     A commad for the cli to setup the model
 """
 import pycommand
-import sys
 import os.path
 import shutil
 from pandas import read_csv

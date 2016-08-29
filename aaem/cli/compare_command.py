@@ -5,11 +5,8 @@ run_command.py
 """
 import pycommand
 import os.path
-import filecmp
 
 import cli_lib
-
-
 
 class CompareCommand(pycommand.CommandBase):
     """
