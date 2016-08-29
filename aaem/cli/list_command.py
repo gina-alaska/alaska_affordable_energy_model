@@ -13,7 +13,8 @@ class ListCommand(pycommand.CommandBase):
     """
     usagestr = 'usage: list path_to_model'
 
-    description = ('List Communities that can be run.\n')
+    description = ('List Communities that can be run from standard '
+                        'setup directory.\n')
 
     def run(self):
         """
@@ -22,7 +23,8 @@ class ListCommand(pycommand.CommandBase):
         if self.args and os.path.exists(self.args[0]):
             base = os.path.abspath(self.args[0])
         else:
-            print  "List Error: needs a existing run"
+            msg = "LIST ERROR: needs a existing run"
+            cli_lib.print_error_message(msg, ListCommand.usagestr)
             return 0
         
 
