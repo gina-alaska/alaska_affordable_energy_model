@@ -39,10 +39,8 @@ class SetupCommand(pycommand.CommandBase):
         """
         # argument setup
         if len(self.args) < 2 :
-            print 
-            print "SETUP ERROR: provide location to setup & the data repo"
-            print  SetupCommand.usagestr
-            print 
+            msg = "SETUP ERROR: provide location to setup & the data repo"
+            cli_lib.print_error_message(msg, SetupCommand.usagestr)
             return 0
         
         model_root = self.args[0]
@@ -50,10 +48,8 @@ class SetupCommand(pycommand.CommandBase):
         repo = os.path.abspath(self.args[1])
         
         if not os.path.exists(repo):
-            print
-            print  "SETUP ERROR: provided repo directory does not exist"
-            print  SetupCommand.usagestr
-            print
+            msg = "SETUP ERROR: provided repo directory does not exist"
+            cli_lib.print_error_message(msg, SetupCommand.usagestr)
             return 0
             
         try:
@@ -79,17 +75,14 @@ class SetupCommand(pycommand.CommandBase):
             my_setup = driver.Setup(model_root, coms, repo, tag)
             if not my_setup.setup(force):
                 pth = os.path.join(model_root, my_setup.tag)
-                print 
-                print "SETUP ERROR: " + pth + \
+                msg = "SETUP ERROR: " + pth + \
                         " exists. Use force flag (-f) to overwrite"
-                print
+                cli_lib.print_error_message(msg, SetupCommand.usagestr)
                 return
             
         except IOError:
-            print
-            print  "SETUP ERROR: provided repo has missing files"
-            print  SetupCommand.usagestr
-            print
+            msg = "SETUP ERROR: provided repo has missing files"
+            cli_lib.print_error_message(msg, SetupCommand.usagestr)
             return
 
 

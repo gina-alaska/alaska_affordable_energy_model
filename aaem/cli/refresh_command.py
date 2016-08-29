@@ -44,6 +44,7 @@ class RefreshCommand(pycommand.CommandBase):
         else:
             print "Refresh Error: please provide a path to the model"
             return 0
+            
         if self.args and os.path.exists(self.args[1]):
             repo = os.path.abspath(self.args[1])
         else:

@@ -45,10 +45,8 @@ class RunCommand(pycommand.CommandBase):
         if self.args and os.path.exists(self.args[0]):
             base = os.path.abspath(self.args[0])
         else:
-            print
-            print "RUN ERROR: needs a directory"
-            print RunCommand.usagestr
-            print
+            msg = "RUN ERROR: needs a directory"
+            cli_lib.print_error_message(msg, RunCommand.usagestr)
             return 0
         
         # Get communites to run
@@ -84,10 +82,9 @@ class RunCommand(pycommand.CommandBase):
         if os.path.exists(os.path.join(base,'results')) and force:
             shutil.rmtree(os.path.join(base,'results'))
         elif os.path.exists(os.path.join(base,'results')):
-            print
-            print "RUN ERROR: " + os.path.join(base,'results') + \
+            msg =  "RUN ERROR: " + os.path.join(base,'results') + \
                         " exists. Use force flag (-f) to overwrite"
-            print
+            cli_lib.print_error_message(msg, RunCommand.usagestr)
             return 0
     
         
@@ -110,17 +107,15 @@ class RunCommand(pycommand.CommandBase):
                     c_config = cli_lib.get_alt_community_config(alt_config,com),
                     img_dir = img_dir,
                     plot = plot)
-            except (RuntimeError, IOError) as e :
-                print
-                print "RUN ERROR: "+ com + " not a configured community/project"
-                print
+            except (RuntimeError, IOError) as e:
+                msg = "RUN ERROR: "+ com + " not a configured community/project"
+                cli_lib.print_error_message(msg)
                 
         try:
             run_driver.save_summaries()
         except IOError:
-            print
-            print "RUN ERROR: No valid communities/projects provided"
-            print
+            msg = "RUN ERROR: No valid communities/projects provided"
+            cli_lib.print_error_message(msg)
             return 0
         run_driver.save_metadata()
         

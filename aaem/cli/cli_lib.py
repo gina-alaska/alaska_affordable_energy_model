@@ -262,3 +262,12 @@ def get_alt_community_config (directory, community):
         if not os.path.exists(alt):
             alt = None
     return alt
+    
+def print_error_message (msg, use = None):
+    """
+    """
+    print 
+    print msg
+    if not use is None:
+        print use
+    print 
