@@ -7,7 +7,6 @@ import pycommand
 import os.path
 import filecmp
 
-
 import cli_lib
 
 
@@ -16,13 +15,11 @@ class CompareCommand(pycommand.CommandBase):
     """
     compare command class
     """
-    usagestr = ('usage: compare path_to_model_1 path_to_model_2'
+    usagestr = ('usage: compare path_to_results_1 path_to_results_2'
                     ' [list_of_communities (with underscores)]')
 
     description = ('compares results of two model runs. If a list of'
                    ' communities is provided, an in depth by provided\n')
-                  #~ # ' community comparsion will take place. Otherwise a high'
-                  #~ #' level comparsion of all communites will occur\n')
 
     def run(self):
         """
@@ -30,10 +27,11 @@ class CompareCommand(pycommand.CommandBase):
         """
         if self.args and os.path.exists(self.args[0]) \
                      and os.path.exists(self.args[1]):
-            results1 = os.path.join(os.path.abspath(self.args[0]),'results')
-            results2 = os.path.join(os.path.abspath(self.args[1]),'results')
+            results1 = os.path.abspath(self.args[0])
+            results2 = os.path.abspath(self.args[1])
         else:
-            print  "Compare Error: needs 2 existing runs"
+            msg = "Compare Error: needs 2 existing runs"
+            cli_lib.print_error_message(msg, CompareCommand.usagestr)
             return 0
         
         
@@ -45,7 +43,3 @@ class CompareCommand(pycommand.CommandBase):
 
         
 
-        
-        #~ comp = filecmp.dircmp(path1,path2)
-
-        #~ print comp.report_full_closure()
