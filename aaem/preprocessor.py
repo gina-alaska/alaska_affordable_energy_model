@@ -1669,7 +1669,8 @@ def preprocess (data_dir, out_dir, com_id, dev = False):
 
                 pp = [com_id + '_intertie'] + ids + pp[1]
             else:
-                pp = [com_id + '_intertie'] + ids 
+                pp = ids
+                #~ pp = [com_id + '_intertie'] + ids 
                 #~ print pp 
         else:
             pp = [com_id] + [com_id + pro for pro in pp.projects]
