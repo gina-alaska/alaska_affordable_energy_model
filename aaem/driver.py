@@ -32,10 +32,22 @@ class Driver (object):
         """ 
         set up driver 
         
-        pre:
-            infile is an absolute path 
+        input:
+            model_root: path to model root <string>
+        
+        output:
+            none
+        
+        preconditions:
+            none
+       
         post:
-            model is ready to be run
+            self.model_root: is the model root path
+            self.inputs_dir: is the default inputs directory
+            self.config_dir: is the default confing directory
+            self.global_config: is the default global config directory
+            self.comp_lib: is a dictionay of components
+            self.comp_order: list of the order of components to run
         """
         self.model_root = model_root
         
@@ -44,23 +56,24 @@ class Driver (object):
         self.config_dir = os.path.join(model_root, 'config')
         self.global_config = os.path.join(model_root, 
                                             'config', '__global_config.yaml')
-                                            
-        self.load_comp_lib()
-        
-    def load_comp_lib (self):
-        """
-        load the component library
-        pre:
-            comp_lib.yaml is a library of all available model components
-        post:
-            self.comp_lib is a dictonarey the maps the names of components in
-        absolute defaults, to the python modules. 
-        """
         self.comp_lib = comp_lib
         self.comp_order = comp_order
         
     def get_prereqs(self, comp_name):
         """
+        get the prerequisits for a component
+        
+        inputs:
+            comp_name: component name <string>
+            
+        outputs:
+            returns list of prerequsite components
+            
+        preconditions:
+            None
+        
+        postconditions:
+            None
         """
         try:
             return self.preq_lib[comp_name]
@@ -75,11 +88,19 @@ class Driver (object):
     
     def get_component (self, comp_name):
         """
-        import a component
-        pre:
-            comp name is the name of a component
-        post:
-            returns imported module
+        get a component class
+        
+        inputs:
+            comp_name: component name <string>
+            
+        outputs:
+            returns a component class
+            
+        preconditions:
+            None
+        
+        postconditions:
+            None
         """
         try:
             return self.imported_comps[comp_name]
@@ -94,7 +115,27 @@ class Driver (object):
         
     def setup_community (self, community, i_dir = None,
                                 c_config = None, g_config = None):
-        """ Function doc """
+        """
+        setup a community to run the model
+        
+        inputs:
+            community: a community/project <string>
+            i_dir: (optional) non default input files directory <string> 
+            c_config: (optional) non default community config file <string>
+            g_config: (optional) non default global config file <string>
+            
+        outputs:
+            returns an initilized CommunityData, Forecast, Diagnostic object for 
+        the community
+        
+        preconditions:
+            self.config_dir: default path to config files <string>
+            self.inputs_dir: defailt path to input files <string>
+            self.global_config: default global config <string>
+        
+        postconditions:
+            None
+        """
         diag = diagnostics()
         
         if c_config is None:
