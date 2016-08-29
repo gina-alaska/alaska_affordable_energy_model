@@ -5,9 +5,7 @@ run_command.py
 """
 import pycommand
 import shutil
-import os.path
-from aaem import driver, __version__, __download_url__ 
-from datetime import datetime
+import os.path 
 
 class CopyCommand(pycommand.CommandBase):
     """
@@ -35,14 +33,16 @@ class CopyCommand(pycommand.CommandBase):
         if self.args and os.path.exists(self.args[0]):
             source = os.path.abspath(self.args[0])
         else:
-            print  "Copy Error: source must exist"
+            msg =  "COPY ERROR: source must exist"
+            cli_lib.print_error_message(msg, CopyCommand.usagestr)
             return 0
     
         if self.args:
             try:
                 dest = os.path.abspath(self.args[1])
             except IndexError:
-                print  "Copy Error: destination needed"
+                msg = "COPY ERROR: destination needed"
+                cli_lib.print_error_message(msg, CopyCommand.usagestr)
                 return 0
                 
         force = True
@@ -50,8 +50,9 @@ class CopyCommand(pycommand.CommandBase):
             force = False
         
         if os.path.exists(dest) and not force:
-            print "Copy Error: " + dest + \
+            msg = "COPY ERROR: " + dest + \
                             " exists. Use force flag (-f) to overwrite"
+            cli_lib.print_error_message(msg, CopyCommand.usagestr)
             return
         
         try:
