@@ -170,7 +170,6 @@ class Driver (object):
         directory = os.path.join(self.model_root, 'results' + tag,
                                             community.replace(' ','_'),
                                             "component_outputs/")
-        
         try:
             os.makedirs(os.path.join(directory))
         except OSError:
@@ -193,7 +192,11 @@ class Driver (object):
             tag = '_' + tag
         directory = os.path.join(self.model_root, 'results' + tag,
                                             community.replace(' ','_'))
-        
+                                            
+        try:
+            os.makedirs(os.path.join(directory))
+        except OSError:
+            pass
         fc.save_forecast(directory, img_dir, plot)
     
     def save_input_files (self, cd, community, tag = ''):
@@ -208,7 +211,10 @@ class Driver (object):
             tag = '_' + tag
         directory = os.path.join(self.model_root, 'results' + tag,
                                             community.replace(' ','_'))
-        
+        try:
+            os.makedirs(os.path.join(directory))
+        except OSError:
+            pass
         cd.save_model_inputs(os.path.join(directory,"config_used.yaml"))
     
     def save_diagnostics (self, diag, community, tag = ''):
@@ -223,7 +229,11 @@ class Driver (object):
             tag = '_' + tag
         directory = os.path.join(self.model_root, 'results' + tag,
                                             community.replace(' ','_'))
-                                            
+        try:
+            os.makedirs(os.path.join(directory))
+        except OSError:
+            pass
+                                        
         diag.save_messages(os.path.join(directory, 
                     community.replace(" ","_") + "_runtime_diagnostics.csv"))
                     
@@ -247,6 +257,10 @@ class Driver (object):
         if tag != '':
             tag = '_' + tag
         directory = os.path.join(self.model_root, 'results' + tag)
+        try:
+            os.makedirs(os.path.join(directory))
+        except OSError:
+            pass
         results = {}
         picklename = os.path.join(directory,'binary_results.pkl')
         with open(picklename, 'rb') as pkl:
@@ -283,11 +297,10 @@ class Driver (object):
                                                         c_config, g_config)
         comps_used = self.run_components(cd, fc, diag)
         
-        self.save_components_output(comps_used, community)
-        
-        self.save_forecast_output(fc, community, img_dir, plot, tag)
-        self.save_input_files(cd, community, tag )
-        self.save_diagnostics(diag, community, tag) 
+        self.save_components_output(comps_used, name)
+        self.save_forecast_output(fc, name, img_dir, plot, tag)
+        self.save_input_files(cd, name, tag )
+        self.save_diagnostics(diag, name, tag) 
         
         comps_used['community data'] = cd
         comps_used['forecast'] = fc
@@ -304,6 +317,11 @@ class Driver (object):
             tag = '_' + tag
         directory = os.path.join(self.model_root, 'results' + tag)
         
+        try:
+            os.makedirs(os.path.join(directory))
+        except OSError:
+            pass
+        
         with open(os.path.join(directory, "version_metadata.txt"), 'w') as fd:
              ts = datetime.strftime(datetime.now(), "%Y-%m-%d")
              fd.write(("Code Version: " + __version__ + "\n" 
@@ -317,7 +335,10 @@ class Driver (object):
         if tag != '':
             tag = '_' + tag
         directory = os.path.join(self.model_root, 'results' + tag)
-        
+        try:
+            os.makedirs(os.path.join(directory))
+        except OSError:
+            pass
         summaries.village_log(res,directory)
         summaries.building_log(res,directory)
         summaries.fuel_oil_log(res,directory)
@@ -531,8 +552,60 @@ def write_config_file(path, config, comments, s_order = None, i_orders = None, i
         conf.write(text)
     
     
-            
+def script_validator (script_file):
+    """ Function doc """
+    extns = ['yaml','yml']
+    with open(script_file, 'r') as sf:
+        script = yaml.load(sf)
     
+    gcfg = script['global']['config']
+    if not os.path.isfile(gcfg) and \
+           not os.path.split(gcfg)[1].split('.')[1] in extns:
+        raise StandardError, "golbal config not a yaml file"
+    
+    try:
+        img_dir = script['global']['image directory']
+    except KeyError:
+        script['global']['image directory'] = None
+        img_dir = None
+    
+    try:
+        plot = script['global']['plot']
+    except KeyError:
+        script['global']['plot'] = False
+        plot = False 
+        
+    try:
+        res_tag = script['global']['results tag']
+    except KeyError:
+        script['global']['results tag'] = ''
+        res_tag = '' 
+    
+    errors = []
+    for com in script['communities']:
+        if not os.path.exists(com['input files']):
+            errors.append(com['community'] + ': input files is not a directory')
+        if not os.path.isfile(gcfg) and \
+                not os.path.split(gcfg)[1].split('.')[1] in extns:
+            errors.append(com['community'] + ': config not a yaml file')
+        try:    
+            com['name']
+        except KeyError:
+            com['name'] = None
+            
+        if com['name'] is None:
+            com['name'] = com['community']
+        
+    if len(errors) != 0:
+        errs = '\n'.join(errors)
+        raise StandardError, errs
+    
+    return script
+        
+    
+    
+
+
     
     
     

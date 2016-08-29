@@ -252,19 +252,17 @@ def get_config_coms (base):
     s_text = '_config.yaml'
     return [a.split(s_text)[0]\
                     for a in os.listdir(config) if (s_text in a and gc != a)]
-                    
-def get_alt_community_config (directory, community):
-    """ Function doc """
-    alt = None
-    if not directory is None:
-        alt = os.path.join(directory,
-                                community.replace(' ','_') + "_config.yaml")
-        if not os.path.exists(alt):
-            alt = None
-    return alt
     
 def print_error_message (msg, use = None):
     """
+    print an errom message to the console
+    
+    input:
+        msg: the message <string>
+        use: (optional) the useage string for the command <string>
+        
+    output:
+        none
     """
     print 
     print msg
