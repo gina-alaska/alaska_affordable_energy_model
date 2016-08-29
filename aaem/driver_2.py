@@ -170,6 +170,7 @@ class Driver (object):
         directory = os.path.join(self.model_root, 'results' + tag,
                                             community.replace(' ','_'),
                                             "component_outputs/")
+        #~ print directory
         try:
             os.makedirs(os.path.join(directory))
         except OSError:
@@ -297,7 +298,7 @@ class Driver (object):
                                                         c_config, g_config)
         comps_used = self.run_components(cd, fc, diag)
         
-        self.save_components_output(comps_used, name)
+        self.save_components_output(comps_used, name, tag)
         self.save_forecast_output(fc, name, img_dir, plot, tag)
         self.save_input_files(cd, name, tag )
         self.save_diagnostics(diag, name, tag) 

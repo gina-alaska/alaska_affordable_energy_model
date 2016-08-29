@@ -25,6 +25,7 @@ class RunCommand(pycommand.CommandBase):
             ('plot',('p', '<directory>', 
                         "run the ploting functionality and save in directory")),
             ('force',('f', False, "force overwrite of existing directories")),
+            ('tag',('t', '<tag>', "tag for results directory")),
            )
     description =('Run model for given communities. (default = all communities)'
                     'options: \n'
@@ -108,7 +109,7 @@ class RunCommand(pycommand.CommandBase):
                 msg = "RUN ERROR: No valid communities/projects provided"
                 cli_lib.print_error_message(msg)
                 return 0
-            run_driver.save_metadata()
+            run_driver.save_metadata(script['global']['results tag'])
                     
         else:
             # run regular
@@ -134,12 +135,18 @@ class RunCommand(pycommand.CommandBase):
                 plot = True    
                 img_dir = self.flags.plot
             
-            
+            tag = ''
+            if not self.flags.tag is None:
+                tag = self.flags.tag
+            if tag != '':
+                rd = 'results_' + tag 
+            else:
+                rd = 'results'
             ## results exist?
-            if os.path.exists(os.path.join(base,'results')) and force:
-                shutil.rmtree(os.path.join(base,'results'))
-            elif os.path.exists(os.path.join(base,'results')):
-                msg =  "RUN ERROR: " + os.path.join(base,'results') + \
+            if os.path.exists(os.path.join(base, rd)) and force:
+                shutil.rmtree(os.path.join(base, rd))
+            elif os.path.exists(os.path.join(base, rd)):
+                msg =  "RUN ERROR: " + os.path.join(base, rd) + \
                             " exists. Use force flag (-f) to overwrite"
                 cli_lib.print_error_message(msg, RunCommand.usagestr)
                 return 0
@@ -150,7 +157,8 @@ class RunCommand(pycommand.CommandBase):
             for com in sorted(coms):
                 print com
                 try:
-                    run_driver.run(com, img_dir = img_dir, plot = plot)
+                    run_driver.run(com, img_dir = img_dir,
+                                    plot = plot, tag = tag)
                 except (RuntimeError, IOError) as e:
                     msg = "RUN ERROR: "+ com + \
                                     " not a configured community/project"
@@ -158,12 +166,12 @@ class RunCommand(pycommand.CommandBase):
             
             # save summaries
             try:
-                run_driver.save_summaries()
+                run_driver.save_summaries(tag)
             except IOError:
                 msg = "RUN ERROR: No valid communities/projects provided"
                 cli_lib.print_error_message(msg)
                 return 0
-            run_driver.save_metadata()
+            run_driver.save_metadata(tag)
             
         sys.stdout = sout
         
