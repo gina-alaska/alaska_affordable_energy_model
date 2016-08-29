@@ -10,7 +10,7 @@ import shutil
 import sys
 import cli_lib
 
-from aaem import driver_2 as driver
+from aaem import driver
 
 
 class RunCommand(pycommand.CommandBase):
