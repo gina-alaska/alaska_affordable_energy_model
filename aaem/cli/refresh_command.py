@@ -42,13 +42,15 @@ class RefreshCommand(pycommand.CommandBase):
         if self.args and os.path.exists(self.args[0]):
             model_root = os.path.abspath(self.args[0])
         else:
-            print "Refresh Error: please provide a path to the model"
+            msg = "REFRESH ERROR: please provide a path to the model"
+            cli_lib.print_error_message(msg, RefreshCommand.usagestr)
             return 0
             
         if self.args and os.path.exists(self.args[1]):
             repo = os.path.abspath(self.args[1])
         else:
-            print "Refresh Error: please provide a path to the aaem data repo"
+            msg = "REFRESH ERROR: please provide a path to the aaem data repo"
+            cli_lib.print_error_message(msg, RefreshCommand.usagestr)
             return 0
 
         if self.args:
@@ -71,6 +73,7 @@ class RefreshCommand(pycommand.CommandBase):
         my_setup = driver.Setup(model_root, sorted(coms), repo, tag)
         if not my_setup.setup(force):
             pth = os.path.join(model_root, my_setup.tag)
-            print "Refresh Error: " + pth + \
+            msg = "REFRESH ERRO: " + pth + \
                     " exists. Use force flag (-f) to overwrite"
+            cli_lib.print_error_message(msg, RefreshCommand.usagestr)
         
