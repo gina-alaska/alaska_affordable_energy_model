@@ -32,7 +32,7 @@ class AnnualSavings (object):
         self.annual_total_savings = self.annual_electric_savings + \
                               self.annual_heating_savings
     
-    def calc_annual_costs (self, rate):
+    def calc_annual_costs (self, rate, cost_scaler = 1.0):
         """
         calculate the cost of the project for each year.
         
@@ -44,6 +44,7 @@ class AnnualSavings (object):
             self.annual_costs will be a numpy array of dollar values 
         indicating the cost of the project per year.
         """
+        self.capital_costs *= cost_scaler
         cost_per_year = -np.pmt(rate, self.actual_project_life, 
                                     self.capital_costs) 
         cpi= self.forecast.cpi.ix[self.start_year:self.end_year-1].T.values[0]
