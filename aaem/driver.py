@@ -27,6 +27,15 @@ except ImportError:
 class Driver (object):
     """ 
     Driver for the AAEM.
+    
+    Invariants:
+        these variables should not change after intitilazation 
+            self.model_root: is the model root path
+            self.inputs_dir: is the default inputs directory
+            self.config_dir: is the default confing directory
+            self.global_config: is the default global config directory
+            self.comp_lib: is a dictionay of components
+            self.comp_order: list of the order of components to run
     """
     def __init__ (self, model_root):
         """ 
@@ -129,9 +138,7 @@ class Driver (object):
         the community
         
         preconditions:
-            self.config_dir: default path to config files <string>
-            self.inputs_dir: defailt path to input files <string>
-            self.global_config: default global config <string>
+            See class invariants
         
         postconditions:
             None
@@ -173,10 +180,22 @@ class Driver (object):
     def run_components (self, cd, fc, diag):
         """
         run enabled components
-        pre:
-            self.comp_lib exists
+        
+        intputs:
+            cd: An initilized aaem.CommunityData object <aaem.CommunityData>
+            fc: An initilized aaem.Forecast object <aaem.Forecast>
+            diag: An initilized aaem.Diagnostis object <aaem.Diagnostics>
+            cd, fc, and diag, should be for the same community
+        
+        outputs:
+            returns comps_used, a dictionary of excuted components
+        
+        preconditions:
+            see class invariants
+            
         post:
-            self.comps_used is a dictionary of the used components. 
+            none
+            
         """
         comps_used = {}
         for comp in self.comp_order:
@@ -200,11 +219,20 @@ class Driver (object):
     def save_components_output (self, comps_used, community, tag = ''):
         """
         save the output from each component
-        pre:
-            self.comps_used should be a set of run components
-        post:
-            for each component in self.comps_used the electric, heating, and
-        financial outputs are saved as csv files 
+        
+        inputs:
+            comps_used: a dictionary of excuted components <dictionary>
+            community: community or 'name' <string>
+            tag: (optional) tag for results dir <string>
+            
+        outputs:
+            saves components as .csv files
+            
+        preconditions:
+            see invariants
+            
+        postconditions:
+            None
         """
         if tag != '':
             tag = '_' + tag
@@ -224,11 +252,23 @@ class Driver (object):
     def save_forecast_output (self, fc, community, img_dir, 
                                                     plot = False, tag = ''):
         """
-        save the forecast output:
-        pre:
-            forecast.save_forecast preconditions are met.
-        post: 
-            the forecast is saved as a csv file
+        save the forecast output
+        
+        inputs:
+            fc: excuted forecast object <aaem.Forecast>
+            community: community or 'name' <string>
+            img_dir: directory to save plots <strings>
+            plot: (optional, default False)boolean to plot <bool>
+            tag: (optional) tag for results dir <string>
+            
+        outputs:
+            saves forecast as .csv files, and plots, if plot == True
+            
+        preconditions:
+            see invariants
+            
+        postconditions:
+            None
         """
         if tag != '':
             tag = '_' + tag
@@ -243,11 +283,21 @@ class Driver (object):
     
     def save_input_files (self, cd, community, tag = ''):
         """ 
-        save the config used
-        pre:
-            model needs to have been run
-        post:
-            the inputs used for each component are saved
+        save the input files (confing yaml)
+        
+        inputs:
+            cd: excuted community data object <aaem.CommunityData>
+            community: community or 'name' <string>
+            tag: (optional) tag for results dir <string>
+            
+        outputs:
+            saves config used as a yaml file
+            
+        preconditions:
+            see invariants
+            
+        postconditions:
+            None
         """
         if tag != '':
             tag = '_' + tag
@@ -261,11 +311,21 @@ class Driver (object):
     
     def save_diagnostics (self, diag, community, tag = ''):
         """ 
-        save the diagnostics
-        pre:
-            directory is the location to save the file
-        post:
-            diagnostics file is saved
+        save the diagnostic
+        
+        inputs:
+            diag: excuted diagnostics object <aaem.Diagnostics>
+            community: community or 'name' <string>
+            tag: (optional) tag for results dir <string>
+            
+        outputs:
+            saves diagnostic as .csv files
+            
+        preconditions:
+            see invariants
+            
+        postconditions:
+            None
         """
         if tag != '':
             tag = '_' + tag
@@ -281,6 +341,23 @@ class Driver (object):
                     
     def store_results (self, name, comps_used, tag = '', overwrite = False):
         """
+        store results in binary pickle file
+        
+        inputs:
+            name: community name or assigned 'name' <string>
+            comps_used: a dictionary of excuted components <dictionary>
+            tag: (optional) tag for results dir <string>
+            overwrite: (optional, default: False) if true overwrite the 
+                .pkl file <bool>
+            
+        outputs:
+            saves binary output
+            
+        preconditions:
+            see invariants
+            
+        postconditions:
+            None
         """
         if tag != '':
             tag = '_' + tag
@@ -296,6 +373,22 @@ class Driver (object):
              pickle.dump([name, comps_used], pkl, pickle.HIGHEST_PROTOCOL)
              
     def load_results (self, tag = ''):
+        """
+            load a set of binary results from a piclkle file in the results 
+        directory
+        
+        inputs:
+            tag: (optional) tag for results dir <string>
+            
+        outputs:
+            returns results as a dictionart of communities
+            
+        preconditions:
+            see invariants
+            
+        postconditions:
+            None
+        """
         if tag != '':
             tag = '_' + tag
         directory = os.path.join(self.model_root, 'results' + tag)
@@ -324,7 +417,30 @@ class Driver (object):
                     i_dir = None, c_config = None, g_config = None,
                     tag = '', img_dir = None, plot = False):
         """
-        model root ./model/m0.18.0... 
+        run the model for a community
+        
+        inputs:
+            community: the community <string>
+            name: (optional, default: community) the assinged name for 
+                the run <string>
+            i_dir: (optional, default: none) alternate path to inputs 
+                directory <string> 
+            c_config: (optional, default: none) alternate community config 
+                file <string>
+            g_config: (optional, default: none) alternat global confing 
+                file <string>
+            tag: (optional) tag for results dir <string>
+            img_dir: directory to save plots <strings>
+            plot: (optional, default False)boolean to plot <bool>
+            
+        outputs:
+            the model is run for a community/project/assigned 'name'
+            
+        preconditions:
+            see invariants
+            
+        postconditions:
+            None
         """
         if name is None:
             name = community
@@ -349,12 +465,31 @@ class Driver (object):
         self.store_results(name, comps_used, tag)
         
     def run_many (self, communities):
-        """ Function doc """
+        """
+        run a list of communites using default options
+        
+        inputs:
+            communities: a list of communities <list>
+        """
         for c in communities:
             self.run(c)
             
     def save_metadata (self, tag = ""):
-        """ Function doc """
+        """
+        save model metadata
+        
+        inputs:
+            tag: (optional) tag for results dir <string>
+            
+        outputs:
+            saves version_metadata.txt
+            
+        preconditions:
+            see invariants
+            
+        postconditions:
+            None
+        """
         if tag != '':
             tag = '_' + tag
         directory = os.path.join(self.model_root, 'results' + tag)
@@ -372,6 +507,22 @@ class Driver (object):
 
             
     def save_summaries (self, tag = ''):
+        """
+            save the summaries for the communities in a results directories 
+        binary results file
+        
+        inputs:
+            tag: (optional) tag for results dir <string>
+            
+        outputs:
+            sumamry files are saved
+            
+        preconditions:
+            see invariants
+            
+        postconditions:
+            None
+        """
         res = self.load_results(tag)
         
         if tag != '':
@@ -393,10 +544,31 @@ class Driver (object):
 
 
 class Setup (object):
-    """ Class doc """
+    """
+    setup the structure needed to run the model
+    
+    class invariants:
+        self.model_root: is the model root path <string>
+        self.communities: list of communities to setup <string>
+        self.data_repo: path data repo <string>
+        self.tag: tag used a the directory to setup the model in 
+            model_root <string>
+    """
     
     def __init__ (self, model_root, communities, data_repo, tag = None):
-        """ Class initialiser """
+        """
+        initilizer 
+        
+        inputs:
+            model_root: model root path <string>
+            communities: list of communities to setup <string>
+            data_repo: path to data repo <sting>
+            tag: (optional) tag to use as self.tag setup sub directory,
+                if not provided self.tag will be m<version>_d<version> <string> 
+            
+        postconditions:
+            see invatiants
+        """
         self.model_root = model_root
         self.communities = communities
         self.data_repo = data_repo
@@ -404,13 +576,19 @@ class Setup (object):
         self.tag = tag
         if tag is None:
             self.tag = self.make_version_tag()
-        #~ self.raw_directory = os.path.join(model_root, 'setup', "raw_data")
-        #~ self.preprocessed_directory = \
-                #~ os.path.join(model_root, 'setup', "input_data")
                 
                 
     def make_version_tag (self):
-        """ Function doc """
+        """
+        generate a version tag
+        
+        precondition:
+            see invariants
+            'VERSION' file must exist in repo
+            
+        outputs
+            returns tag
+        """
         data_version_file = os.path.join(self.data_repo, 'VERSION')
         with open(data_version_file, 'r') as fd:
             ver = fd.read().replace("\n", "")
@@ -418,7 +596,16 @@ class Setup (object):
         return ver
         
     def setup_directories (self):
-        """ Function doc """
+        """ 
+        setup the directories
+        
+        preconditions:
+            see invariats
+            
+        postconditions:
+            config and input_files are removed and then
+            config and input_files directories are created.
+        """
         setup_path = os.path.join(self.model_root, self.tag)
     
         try:
@@ -434,7 +621,17 @@ class Setup (object):
         os.makedirs(os.path.join(setup_path, "config"))
             
     def setup_community_configs (self, coms = None):
-        """ Function doc """
+        """
+        set up the conigureation files
+        
+        inputs:
+            coms: (optional) alterante of communites to setup should be a 
+                subset of self.communities
+        
+        post conditions:
+            saves a configuration .yaml for each community/ projcet in coms or 
+        self.communities
+        """
         config_path = os.path.join(self.model_root, self.tag, 'config')
         if coms is None:
             coms = self.communities
@@ -467,15 +664,30 @@ class Setup (object):
                                             header = header)
             
     def setup_community_list (self):
+        """
+        create the community list file from the repo
+        
+        preconditions:
+            see invariants, community_list.csv sould exist in data repo
+            
+        postcondition:
+            '__community_list.csv' saved in config directory
+        """
         config_path = os.path.join(self.model_root, self.tag, 'config', 
                                                     '__community_list.csv')
         src_path = os.path.join(self.data_repo, 'community_list.csv')
-        
-        
         shutil.copy(src_path, config_path)
 
     def setup_global_config (self):
-        """ Function doc """
+        """
+        setup global config
+        
+        preconditions:
+            see invariants
+            
+        postcondition:
+            default '__global_config.yaml' saved in config directory
+        """
         config_path = os.path.join(self.model_root, self.tag, 'config', 
                                                     "__global_config.yaml")
         with open(config_path, 'w') as def_file:
@@ -483,7 +695,18 @@ class Setup (object):
                                                 default_flow_style = False))
             
     def setup_input_files (self):
-        """ Function doc """
+        """
+        setup the input files, preprocessing the data
+        
+        preconditions:
+            see invariants
+            
+        postconditons:
+            sets up input files, and metadata
+            
+        output:
+            returns the list of ids
+        """
         input_path = os.path.join(self.model_root,self.tag,"input_files")
         
         ids = self.preprocess_input_files(input_path)
@@ -493,6 +716,18 @@ class Setup (object):
         return ids
         
     def preprocess_input_files (self, input_path):
+        """
+        preprocess input files
+        
+        inputs:
+            input_path: path to preprocess the data into <string>
+            
+        preconditions:
+            see invatiants
+            
+        outputs:
+            returns ids of preprocessed communities/projects including interies
+        """
         all_ids = []
         for c in self.communities:
             it_batch = {}
@@ -502,6 +737,15 @@ class Setup (object):
         return all_ids
             
     def move_input_files_diagnostics (self, input_path):
+        """
+        move the input file diagnostics to a '__diagnostic_files' sub directory
+        
+        inputs:
+            input_path: path to preprocess the data into <string>
+        
+        postconditions:
+            move the input file diagnostics
+        """
         diag_path = os.path.join(input_path, '__diagnostic_files')
         try:
             os.makedirs(diag_path)
@@ -511,8 +755,16 @@ class Setup (object):
             os.rename(os.path.join(input_path,diagf),
                         os.path.join(diag_path,diagf))
           
-    def write_input_files_metadata (self, input_path ):
-        """ Function doc """
+    def write_input_files_metadata (self, input_path):
+        """ 
+        write data metadata
+        
+        inputs:
+            input_path: path to inputs directory <string>
+            
+        outputs:
+            saves 'input_files_metadata.yaml' in "__metadata" subdirectory
+        """
         data_version_file = os.path.join(self.data_repo, 'VERSION')
         with open(data_version_file, 'r') as fd:
             ver = fd.read().replace("\n", "")
@@ -530,7 +782,15 @@ class Setup (object):
                                   default_flow_style = False))
                                   
     def archive_input_files_raw_data (self, input_path):
-        """ """
+        """
+        saves an archive of the raw data in the meta dat folder
+        
+        inputs:
+            input_path: path to inputs directory<string>
+            
+        outputs:
+            saves in "raw_data.zip" in "__metadata" subdirectory
+        """
         data_version_file = os.path.join(self.data_repo, 'VERSION')
         with open(data_version_file, 'r') as fd:
             ver = fd.read().replace("\n", "")
@@ -547,7 +807,15 @@ class Setup (object):
 
         
     def setup (self, force = False):
-        """ Function doc """
+        """
+        run the setup functionality
+        
+        inputs:
+            force: (optional) overwrirte existing files <boolean>
+            
+        outputs:
+            model structure is setup
+        """
         setup_path = os.path.join(self.model_root, self.tag)
         if os.path.exists(setup_path) and force == False:
             return False
@@ -560,8 +828,22 @@ class Setup (object):
         return True
         
         
-def write_config_file(path, config, comments, s_order = None, i_orders = None, indent = '  ' , header = ''):
+def write_config_file(path, config, comments, s_order = None, i_orders = None, 
+                            indent = '  ' , header = ''):
     """
+    write a config yaml file
+    
+    inputs:
+        path: filename to save file at <string>
+        config: dictionary of configs <dict>
+        comments: dictionary of comments <dict>
+        s_order: (optional) order of sections <list>
+        i_orders: (optional) order of items in sections <dict>
+        indent: (optional) indent spacing <sting>
+        header: (optional) header line <string>
+        
+    outputs:
+        saves config .yaml file at path
     """
     nl = '\n'
     text = '# ' + header + nl
@@ -595,7 +877,16 @@ def write_config_file(path, config, comments, s_order = None, i_orders = None, i
     
     
 def script_validator (script_file):
-    """ Function doc """
+    """
+        validate a script(very basic), will raise a standard error if a problem 
+    is found
+    
+    inputs:
+        script file: a script file
+    
+    outputs:
+        retuns a validated script to use to run the model
+    """
     extns = ['yaml','yml']
     with open(script_file, 'r') as sf:
         script = yaml.load(sf)
