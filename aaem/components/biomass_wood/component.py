@@ -41,7 +41,7 @@ class BiomassCordwood (bmb.BiomassBase):
         ### ADD other intiatzation stuff
         
     
-    def run (self):
+    def run (self, scalers = {'captial costs':1.0}):
         """
         run the forecast model
         

@@ -26,6 +26,8 @@ class RunCommand(pycommand.CommandBase):
                         "run the ploting functionality and save in directory")),
             ('force',('f', False, "force overwrite of existing directories")),
             ('tag',('t', '<tag>', "tag for results directory")),
+            ('scalers', ('s', '<scalers>',
+                                    'dictioanry of scalers as a string')),
            )
     description =('Run model for given communities. (default = all communities)'
                     'options: \n'
@@ -96,7 +98,8 @@ class RunCommand(pycommand.CommandBase):
                                    img_dir = script['global']['image diretory'],
                                    plot = script['global']['plot'],
                                    tag = script['global']['results tag'],
-                                   c_mult = mult)
+                                   c_mult = mult,
+                                   scalers = com['scalers'])
                 except (RuntimeError, IOError) as e:
                     print e
                     msg = "RUN ERROR: "+ com['community'] + \
@@ -128,8 +131,13 @@ class RunCommand(pycommand.CommandBase):
                     coms = cli_lib.get_regional_coms(region, base)
             else:
                 # ALL COMS
-                coms = cli_lib.get_config_coms(base)
-            
+                try:
+                    coms = cli_lib.get_config_coms(base)
+                except OSError:
+                    msg = ("RUN ERROR: structure to run model does "
+                                            "not exist at provided path")
+                    cli_lib.print_error_message(msg)
+                    return 0
             # other options
             plot = False
             img_dir = None
@@ -144,6 +152,23 @@ class RunCommand(pycommand.CommandBase):
                 rd = 'results_' + tag 
             else:
                 rd = 'results'
+                
+            scalers = driver.default_scalers
+            if not self.flags.scalers is None:
+                items = self.flags.scalers.replace('{','').\
+                                           replace('}','').\
+                                           strip().split(',')
+                for i in items:
+                    item = i.split(":")
+                    key = item[0].strip().strip('"\'')
+                    try:
+                        scalers[key]
+                    except KeyError:
+                        msg = "SCALER ERROR: " + key + " is not a valid scaler"
+                        cli_lib.print_error_message(msg)
+                        return 0
+                    scalers[key] = float(item[1])                                    
+                
             ## results exist?
             if os.path.exists(os.path.join(base, rd)) and force:
                 shutil.rmtree(os.path.join(base, rd))
@@ -152,7 +177,6 @@ class RunCommand(pycommand.CommandBase):
                             " exists. Use force flag (-f) to overwrite"
                 cli_lib.print_error_message(msg, RunCommand.usagestr)
                 return 0
-        
             
             ## Run 
             run_driver = driver.Driver(base)
@@ -160,7 +184,7 @@ class RunCommand(pycommand.CommandBase):
                 print com
                 try:
                     run_driver.run(com, img_dir = img_dir,
-                                    plot = plot, tag = tag)
+                                    plot = plot, tag = tag, scalers = scalers)
                 except (RuntimeError, IOError) as e:
                     msg = "RUN ERROR: "+ com + \
                                     " not a configured community/project"

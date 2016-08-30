@@ -162,7 +162,7 @@ class BiomassBase (AnnualSavings):
         #~ print 'self.displaced_heating_oil_price'
         #~ print self.displaced_heating_oil_price
     
-    def run (self):
+    def run (self, scalers = {'captial costs':1.0}):
         """
         run the forecast model
         

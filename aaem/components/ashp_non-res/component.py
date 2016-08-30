@@ -70,7 +70,7 @@ class ASHPNonResidential (ashp_base.ASHPBase):
                         
         #~ print self.heat_energy_produced_per_year
         
-    def run (self):
+    def run (self, scalers = {'captial costs':1.0}):
         """
         run the forecast model
         
@@ -103,7 +103,8 @@ class ASHPNonResidential (ashp_base.ASHPBase):
             self.calc_annual_heating_savings()
             
             self.calc_annual_total_savings()
-            self.calc_annual_costs(self.cd['interest rate'])
+            self.calc_annual_costs(self.cd['interest rate'],
+                                            scalers['captial costs'])
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
         #~ print 'self.monthly_value_table'

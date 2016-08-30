@@ -11,6 +11,10 @@ communities:
     name: Adak 1
     input files: <path>
     config: <config>.yaml
+    scalers: 
+      diesel price: 1.0
+      captial costs: 1.0
+      kWh consumption: 1.0
 
   - community: Adak
     name: Adak 2

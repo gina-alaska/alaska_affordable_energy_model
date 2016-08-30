@@ -30,7 +30,8 @@ class CommunityData (object):
                         alt_community_conf = None, 
                         alt_global_conf = None,
                         alt_construction_multipliers = None,
-                        diag = None, tag = None):
+                        diag = None, tag = None, 
+                        scalers = {'diesel price':1.0}):
         """
             set up the object
         
@@ -97,7 +98,8 @@ class CommunityData (object):
         self.data_dir = os.path.abspath(data_dir)
         self.get_csv_data()
         
-        self.set_item("community","diesel prices", DieselProjections(data_dir))
+        self.set_item("community","diesel prices",
+                        DieselProjections(data_dir, scalers['diesel price']))
 
         if self.get_item("community", "model electricity"):
             self.calc_non_fuel_electricty_price ()

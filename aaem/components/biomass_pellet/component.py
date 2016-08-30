@@ -37,7 +37,7 @@ class BiomassPellet (bmb.BiomassBase):
         self.units = "tons"
         self.reason = "OK"
         
-    def run (self):
+    def run (self, scalers = {'captial costs':1.0}):
         """
         run the forecast model
         

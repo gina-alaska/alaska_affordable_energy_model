@@ -181,7 +181,7 @@ class WaterWastewaterSystems (AnnualSavings):
                 self.baseline_fuel_Hoil_consumption * fuel_cost +\
                 self.baseline_fuel_biomass_consumption * wood_price
         
-    def run (self):
+    def run (self, scalers = {'captial costs':1.0}):
         """
         runs the model for the inputs section of the wastewater tab
         pre-conditions:

@@ -56,7 +56,7 @@ class Hydropower (AnnualSavings):
         # not used here
         pass
         
-    def run (self):
+    def run (self, scalers = {'captial costs':1.0}):
         """
         run the forecast model
         

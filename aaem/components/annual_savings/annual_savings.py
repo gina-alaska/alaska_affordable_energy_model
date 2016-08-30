@@ -242,7 +242,7 @@ class AnnualSavings (object):
         " self.project_life, of dollar values(numbers)"
     
     @abstractmethod
-    def run (self):
+    def run (self, scalers = {'captial costs':1.0}):
         """
         abstract function 
         should be implemented by child class to run component

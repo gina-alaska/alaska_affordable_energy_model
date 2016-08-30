@@ -24,6 +24,11 @@ except ImportError:
     import pickle
 
 
+default_scalers = {'diesel price': 1.0,
+                  'captial costs': 1.0,
+                  'kWh consumption': 1.0
+                  }
+
 class Driver (object):
     """ 
     Driver for the AAEM.
@@ -126,7 +131,7 @@ class Driver (object):
         
     def setup_community (self, community, i_dir = None,
                                 c_config = None, g_config = None,
-                                constuction_mult = None):
+                                constuction_mult = None, scalers = None):
         """
         setup a community to run the model
         
@@ -175,19 +180,20 @@ class Driver (object):
                                alt_global_conf = g_config,
                                alt_construction_multipliers = constuction_mult,
                                diag = diag, 
-                               tag = tag)
+                               tag = tag,
+                               scalers = scalers)
         except IOError as e:
             raise RuntimeError, \
                 ("A Fatal Error Has occurred, ("+ str(e) +")")
         try:
-            fc = Forecast(cd, diag)
+            fc = Forecast(cd, diag, scalers)
         except RuntimeError as e:
             raise RuntimeError, \
                     ("A Fatal Error Has occurred, ("+ str(e) +")")
         
         return cd, fc, diag
         
-    def run_components (self, cd, fc, diag):
+    def run_components (self, cd, fc, diag, scalers):
         """
         run enabled components
         
@@ -220,7 +226,7 @@ class Driver (object):
                 
             CompClass = self.get_component(self.comp_lib[comp])
             component = CompClass (cd, fc, diag, prereq)
-            component.run()
+            component.run(scalers)
             
             comps_used[comp] = component
         return comps_used
@@ -426,7 +432,8 @@ class Driver (object):
     def run (self, community, name = None, 
                     i_dir = None, c_config = None, 
                     g_config = None, c_mult = None,
-                    tag = '', img_dir = None, plot = False):
+                    tag = '', img_dir = None, plot = False,
+                    scalers = None):
         """
         run the model for a community
         
@@ -453,6 +460,9 @@ class Driver (object):
         postconditions:
             None
         """
+        if scalers is None:
+            scalers = default_scalers
+        
         if name is None:
             name = community
         
@@ -463,8 +473,9 @@ class Driver (object):
             img_dir = os.path.join(self.model_root, 'results' + temp, 'plots')
         
         cd, fc, diag = self.setup_community(community, i_dir, c_config, 
-                                                            g_config, c_mult)
-        comps_used = self.run_components(cd, fc, diag)
+                                                    g_config, c_mult, scalers)
+        
+        comps_used = self.run_components(cd, fc, diag, scalers)
         
         self.save_components_output(comps_used, name, tag)
         self.save_forecast_output(fc, name, img_dir, plot, tag)
@@ -883,7 +894,6 @@ def write_config_file(path, config, comments, s_order = None, i_orders = None,
     defaults.save_config(path, config, comments, s_order, 
                                 i_orders, indent, header)
     
-    
 def script_validator (script_file):
     """
         validate a script(very basic), will raise a standard error if a problem 
@@ -941,6 +951,17 @@ def script_validator (script_file):
             
         if com['name'] is None:
             com['name'] = com['community']
+            
+        try:
+            com['scalers']
+        except KeyError:
+            com['scalers'] = default_scalers
+            
+        for scaler in default_scalers:
+            try:
+                com['scalers'][scaler]
+            except KeyError:
+                com['scalers'][scaler] = default_scalers[scaler]
         
     if len(errors) != 0:
         errs = '\n'.join(errors)

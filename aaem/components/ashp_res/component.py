@@ -86,7 +86,7 @@ class ASHPResidential (ashp_base.ASHPBase):
                         self.electric_heat_energy_savings.values.T[0]
         
         
-    def run (self):
+    def run (self, scalers = {'captial costs':1.0}):
         """
         run the forecast model
         

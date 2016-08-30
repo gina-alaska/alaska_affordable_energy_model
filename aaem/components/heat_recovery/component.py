@@ -62,7 +62,7 @@ class HeatRecovery (AnnualSavings):
         # WRITE this
         pass
         
-    def run (self):
+    def run (self, scalers = {'captial costs':1.0}):
         """
         run the forecast model
         

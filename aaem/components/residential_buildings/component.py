@@ -62,7 +62,7 @@ class ResidentialBuildings(AnnualSavings):
         HH =self.comp_specs['data'].ix['total_occupied']
         self.init_HH = int(round(HH*(val / self.base_pop)))
         
-    def run (self):
+    def run (self, scalers = {'captial costs':1.0}):
         """ 
         
         run the forecast model

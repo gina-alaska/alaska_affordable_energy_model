@@ -26,7 +26,8 @@ from datetime import datetime
 class Forecast (object):
     """ Class doc """
     
-    def __init__ (self, community_data, diag = None):
+    def __init__ (self, community_data, diag = None, 
+                        scalers = {'kWh consumption':1.0}):
         """
         pre:
             self.cd is a community_data instance. 
@@ -60,7 +61,7 @@ class Forecast (object):
             #~ self.base_non_res_consumption = \
                 #~ float(kWh['consumption non-residential'].ix[yr])
             #~ self.base_total_consumption = float(kWh['consumption'].ix[yr])
-            self.forecast_consumption()
+            self.forecast_consumption(scalers['kWh consumption'])
             self.forecast_generation()
             try:
                 self.forecast_generation_by_type()
@@ -227,7 +228,8 @@ class Forecast (object):
         self.consumption_to_save = consumption
         
         self.consumption = DataFrame({'year':years, 
-                                 'consumption': cons, }).set_index('year')
+                                 'consumption': cons, }).set_index('year') 
+        self.consumption *= consumption_sacler
         self.consumption.columns = ["consumption kWh"]
         self.consumption.index = self.consumption.index.values.astype(int)
         

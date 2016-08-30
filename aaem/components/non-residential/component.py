@@ -189,7 +189,7 @@ class CommunityBuildings (AnnualSavings):
         self.save_building_summay(os.path.join(path,"non_residential_buildings_summary.csv"))
         
     
-    def run (self):
+    def run (self, scalers = {'captial costs':1.0}):
         """
         run the forecast model
         

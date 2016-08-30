@@ -56,7 +56,7 @@ class DieselEfficiency(AnnualSavings):
                         self.forecast.end_year - self.comp_specs["start year"])
         
         
-    def run (self):
+    def run (self, scalers = {'captial costs':1.0}):
         """
         run the forecast model
 
