@@ -1,5 +1,25 @@
 #Change Log
 
+## [0.19.0]
+### added
+- ability to run a group of communities/ modified communities from cli
+- add scalers for, Diesel Price, kWh consumption, and Capital Costs
+- ability to pass scalers to run command in cli
+- cli will not overwrite existing files unless -f (force flag) is provided
+- functionality to easily save a community data config file
+
+### changed
+- restructured input file and config directories, 
+- a community and its project will have different config files, but the same input files
+- completely rewrote driver internal functionality
+- updated all cli command messages
+- changed cli setup command structure
+
+### removed
+- old component files
+- unused imports
+
+
 ## [0.18.1]
 ### changes
 - updates the sphinx docs config
