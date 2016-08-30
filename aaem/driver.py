@@ -880,35 +880,8 @@ def write_config_file(path, config, comments, s_order = None, i_orders = None,
     outputs:
         saves config .yaml file at path
     """
-    nl = '\n'
-    text = '# ' + header + nl
-    
-    if s_order is None:
-        s_order = config.keys()
-    
-    for section in s_order:
-        text += section + ':' + nl
-        
-        if i_orders is None:
-            current_i_order = config[section].keys()
-        else: 
-            current_i_order = i_orders[section]
-            
-        for item in current_i_order:
-            try:
-                text += indent + str(item) + ': ' +  str(config[section][item])
-            except KeyError:
-                continue
-            try:
-                text +=  ' # ' +  str(comments[section][item]) 
-            except KeyError:
-                pass
-            
-            text += nl
-        text += nl + nl        
-        
-    with open(path, 'w') as conf:
-        conf.write(text)
+    defaults.save_config(path, config, comments, s_order, 
+                                i_orders, indent, header)
     
     
 def script_validator (script_file):

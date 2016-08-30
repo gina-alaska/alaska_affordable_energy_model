@@ -1,535 +1,141 @@
 """
 defaults.py
 
-this file contains default yaml file info as strings
+for generating default config structures
 """
 
 from importlib import import_module
 
 
 import aaem.config as config
+from aaem.components import comp_lib, comp_order
 
-
-class ConfigurationFile (object):
-    """ Class doc """
-    
-    def __init__ (self):
-        """ Class initialiser """
-        pass
-    
-    @staticmethod
-    def save (filename, config, comments, s_order = None, i_orders = None, 
-                            indent = '  ' , header = ''):
-        """ Function doc """
-        print filename
-        nl = '\n'
-        text = '# ' + header + nl
-        
-        if s_order is None:
-            s_order = config.keys()
-        
-        for section in s_order:
-            text += section + ':' + nl
-            
-            if i_orders is None:
-                current_i_order = config[section].keys()
-            else: 
-                current_i_order = i_orders[section]
-                
-            for item in current_i_order:
-                try:
-                    text += indent + str(item) + ': ' +  str(config[section][item])
-                except KeyError:
-                    continue
-                try:
-                    text +=  ' # ' +  str(comments[section][item]) 
-                except KeyError:
-                    pass
-                
-                text += nl
-            text += nl + nl        
-            
-        with open(filename, 'w') as conf:
-            conf.write(text)
-            
-    @staticmethod
-    def save_structure (filename = "default_config.yaml"):
-        """ Function doc """
-        pass
-        
-    @staticmethod      
-    def build_structure (comp_lib):
-        """ Function doc """
-        
-        section_order = config.non_component_config_sections
-        conf, orders, comments, defaults = \
-                config.get_config(section_order)
-        
-        for comp in comp_lib:
-            cfg = import_module("aaem.components." + comp_lib[comp]+ '.config')
-            print cfg.yaml_order
-            #~ yml[comp] = import_module("aaem.components." + comp_name)
-        return yml
-    
-
-
-
-
-
-
-
-
-yml = {}
-yml['community'] = {
-                'name': 'ABSOLUTE DEFAULT NAME',
-                'region': 'IMPORT',
-                'construction multiplier': 'IMPORT',
-                'current year': 'ABSOLUTE DEFAULT',
-                'model financial': True,
-                'model electricity': True,
-                'model heating fuel': True,
-                'natural gas used': False,
-                'interest rate': .05, 
-                'discount rate': .03,
-                'heating fuel premium': 'IMPORT',
-                'diesel generation efficiency': 'IMPORT',
-                'generation': 'IMPORT',
-                'consumption kWh': 'ABSOLUTE DEFAULT',
-                'consumption HF': 'IMPORT',
-                'line losses': 'IMPORT',
-                'max line losses': .4,
-                'default line losses': .1,
-                'default diesel generator efficiency': 12,
-                'res non-PCE elec cost': 'IMPORT',
-                'elec non-fuel cost': 'IMPORT',
-                'HDD': 'IMPORT',
-                'diesel prices': 'IMPORT',
-                'electric non-fuel prices': 'IMPORT',
-                'propane price': 'IMPORT',
-                'biomass price': 'IMPORT',
-                'natural gas price': 0,
-                'hydro generation limit': 'IMPORT' ,
-                'wind generation limit': 'IMPORT' ,
-                'wind generation precent': .2,
-                'generation numbers': 'IMPORT',
-                'switchgear suatable for RE': 'IMPORT',
-                'switchgear cost': 150000,
-                'heat recovery operational': 'IMPORT',
-                    }
-                    
-yml_comments = {}                   
-yml_comments['community'] = {
-                'name': 'Name of community <String>',
-                'region': 'Name of region <String>',
-                'current year': 
-                    'Year for which the NPV calculations are based <int>',
-                'model financial': 
-                    'Flag to run the models financal portions <bool>',
-                'model electricity': 
-                    'Flag to run the models electric portions <bool>',
-                'model heating fuel': 
-                    'Flag to run the models heating portions <bool>',
-                'natural gas used':  
-                    'Flag indcating the use of natrual gas <bool>',
-                'interest rate': 
-                    'Interest rate for projects (% as decimal) <float>', 
-                'discount rate': 
-                    'Discount rate for projects (% as decimal) <float>',
-                'heating fuel premium': 
-                    'Premium added to Heating Oil costs ($) <float>',
-                'diesel generation efficiency': 
-                    'efficiency of diesel generator (kWh/gal) <float>',
-                'default diesel generator efficiency':
-                    'default diesel generation efficiency (kWh/gal) <float>',
-                'generation': 'Generation (read from file)',
-                'consumption kWh': 'ABSOLUTE DEFAULT',
-                'consumption HF': 'Heating Fuel consumption (read from file)',
-                'line losses': 
-                    'Percent kWh lost in transmission (% as decimal) <float>',
-                'max line losses':  
-                    'maximum for line losses (% as decimal) <float>',
-                'default line losses': 
-                    'default for line losses (% as decimal) <float>',
-                'res non-PCE elec cost': 
-                    'price of non PCE elctricity ($) <float>',
-                'elec non-fuel cost': 
-                    'cost of electricity not associated with fuel ($) <float>',
-                'HDD': 'Heating Degree Days <float>',
-                'diesel prices': 'prices of diesel (read from file)',
-                'electric non-fuel prices': 
-                    'electric non-fuel prices (read from file)',
-                'propane price': 'propane price ($) <float>',
-                'biomass price': 'biomass price ($) <float>',
-                'natural gas price': 'natural gas price ($) <float>',
-                'hydro generation limit': 
-                    'Maximum Hydro generation for current system (kWh) <float>',
-                'wind generation limit': 
-                    'Maximum Wind generation for current system (kWh) <float>' ,
-                'wind generation precent':
-                    ('Percent of maximum wind generation '
-                     'useable (% as decimal) <float>'),
-                'generation numbers': '(read from file)',
-                'switchgear suatable for RE': 
-                    ('Flag indicating if power house controls are suatable '
-                     'for renewable sources <bool>'),
-                'switchgear cost': 
-                    'cost of switch gear ($) <float>',
-                'heat recovery operational': 
-                    'Flag indcation if the heatrecovery is operational <bool>',
-                    }
-                    
-yml_order = {}                   
-yml_order['community'] = [
-                'name',
-                'region',
-                'current year',
-                'model financial',
-                'model electricity',
-                'model heating fuel',
-                'natural gas used',
-                'interest rate', 
-                'discount rate',
-                'heating fuel premium',
-                'diesel generation efficiency',
-                'default diesel generator efficiency',
-                'generation',
-                'consumption kWh',
-                'consumption HF',
-                'line losses',
-                'max line losses',
-                'default line losses',
-                'res non-PCE elec cost',
-                'elec non-fuel cost',
-                'HDD',
-                'diesel prices',
-                'electric non-fuel prices',
-                'propane price',
-                'biomass price',
-                'natural gas price',
-                'hydro generation limit',
-                'wind generation limit',
-                'wind generation precent',
-                'generation numbers',
-                'switchgear suatable for RE',
-                'switchgear cost',
-                'heat recovery operational',
-                ]
-
-                    
-yml['forecast'] = {
-                'end year': 'ABSOLUTE DEFAULT',
-                'population': 'IMPORT',
-                'electricity': 'IMPORT' 
-                  }
-                  
-yml_order['forecast'] = ['end year','population','electricity']                 
-
-                  
-#~ yml['construction multipliers'] = {
-                #~ "Aleutians": 1.4 ,
-                #~ "Bering Straits": 1.8,
-                #~ "Bristol Bay": 1.25 ,
-                #~ "Copper River/Chugach": 1.1 ,
-                #~ "Kodiak": 1.18,
-                #~ "Lower Yukon-Kuskokwim": 1.6 ,
-                #~ "North Slope": 1.8 ,
-                #~ "Northwest Arctic": 1.7 ,
-                #~ "Southeast": 1.15 ,
-                #~ "Yukon-Koyukuk/Upper Tanana": 1.4 
-                                    #~ }
-                                    
-                                    
-
-
-
-
-def importer (comp_name):
-    return import_module("aaem.components." + comp_name).yaml
-    
-def importer2 (comp_name):
-    return import_module("aaem.components." + comp_name)
-
-#~ a = importer('community_buildings')
-def build_defaults (comp_lib):
+def save_config (filename, config, comments, s_order = None, i_orders = None, 
+                        indent = '  ' , header = ''):
     """
+    write a config yaml file
+    
+    inputs:
+        filename: filename to save file at <string>
+        config: dictionary of configs <dict>
+        comments: dictionary of comments <dict>
+        s_order: (optional) order of sections <list>
+        i_orders: (optional) order of items in sections <dict>
+        indent: (optional) indent spacing <sting>
+        header: (optional) header line <string>
+        
+    outputs:
+        saves config .yaml file at path
     """
-    yml = {}
-    yml['community'] = {
-                        'name': 'ABSOLUTE DEFAULT NAME',
-                        'region': 'IMPORT',
-                        'construction multiplier': 'IMPORT',
-                        'current year': 'ABSOLUTE DEFAULT',
-                        'model financial': True,
-                        'model electricity': True,
-                        'model heating fuel': True,
-                        'natural gas used': False,
-                        'interest rate': .05, 
-                        'discount rate': .03,
-                        'heating fuel premium': 'IMPORT',
-                        'diesel generation efficiency': 'IMPORT',
-                        'diesel generator o&m cost' : 0.02,
-                        'generation': 'IMPORT',
-                        'consumption kWh': 'ABSOLUTE DEFAULT',
-                        'consumption HF': 'IMPORT',
-                        'line losses': 'IMPORT',
-                        'max line losses': .4,
-                        'default line losses': .1,
-                        'default diesel generator efficiency': 12,
-                        'res non-PCE elec cost': 'IMPORT',
-                        'elec non-fuel cost': 'IMPORT',
-                        'HDD': 'IMPORT',
-                        'diesel prices': 'IMPORT',
-                        'electric non-fuel prices': 'IMPORT',
-                        'propane price': 'IMPORT',
-                        'cordwood price': 'IMPORT',
-                        'pellet price': 'IMPORT',
-                        'natural gas price': 0,
-                        'hydro generation limit': 'IMPORT' ,
-                        'wind generation limit': 'IMPORT' ,
-                        'wind generation precent': .2,
-                        'generation numbers': 'IMPORT',
-                        'switchgear suatable for RE': 'IMPORT',
-                        'switchgear cost': 150000,
-                        'heat recovery operational': 'IMPORT',
-                        
-                        
-                        }
-    yml['forecast'] = {'end year': 'ABSOLUTE DEFAULT',
-                       'population': 'IMPORT',
-                       'electricity': 'IMPORT' 
-                      }
+    nl = '\n'
+    text = '# ' + header + nl
+    
+    if s_order is None:
+        s_order = config.keys()
+    
+    for section in s_order:
+        text += section + ':' + nl
+        
+        if i_orders is None:
+            current_i_order = config[section].keys()
+        else: 
+            current_i_order = i_orders[section]
+            
+        for item in current_i_order:
+            try:
+                text += indent + str(item) + ': ' +  str(config[section][item])
+            except KeyError:
+                continue
+            try:
+                text +=  ' # ' +  str(comments[section][item]) 
+            except KeyError:
+                pass
+            
+            text += nl
+        text += nl + nl        
+        
+    with open(filename, 'w') as conf:
+        conf.write(text)
+    
+def save_structure ( filename = "default_config.yaml"):
+    """
+    save the full model structure
+    
+    input:
+        filename
+    
+    output:
+        saves a file
+    """
+    section_order, conf, orders, comments, defaults = \
+                                        gennerate_config_structures()
+            
+    save_config(filename, conf, comments, section_order, orders,
+                            header = "structure of model config file")
+    
+def gennerate_config_structures ():
+    """
+    generate all the configuratin structure info
+    
+    input: none
+    
+    output:
+        returns the desired section order[list], full configuration{dict}, 
+            item orders for each section{dict}, comments {dict}, and 
+            default values {dict},
+    """
+    
+    conf, orders, comments, defaults = \
+            config.get_config(config.non_component_config_sections)
+    
+    for comp in comp_lib:
+        cfg = import_module("aaem.components." + comp_lib[comp]+ '.config')
+        
+        order = list(cfg.yaml_order) + \
+                    list(set(cfg.yaml_order) ^ set(cfg.yaml.keys()))
+        orders[comp] = order
+        
+        conf[comp] = cfg.yaml
+        comments[comp] = cfg.yaml_comments
+        defaults[comp] = cfg.yaml_defaults
+        
+        
+        
+    section_order = config.non_component_config_sections + comp_order
+    return section_order, conf, orders, comments, defaults
+    
+
+def build_defaults (comp_lib = None):
+    """
+    build defaults 
+    
+    input:
+        comp_lib: left in for old code
+        
+    output:
+        returns a configuration
+    """
+    return gennerate_config_structures()[1]
+
+
+def build_setup_defaults (comp_lib = None):
+    """
+    build defaults with defaults values filled in
+    
+    input:
+        comp_lib: left in for old code
+        
+    output:
+        returns a configuration
+    """
+    cfg = gennerate_config_structures()
+    conf = cfg[1]
+    defaults = cfg[4]
+    
+    
+    for section in defaults:
+        for item in defaults[section]:
+           conf[section][item] = defaults[section][item]
                       
-    #~ yml['construction multipliers'] = {
-              #~ "Aleutians": 1.4 ,
-              #~ "Bering Straits": 1.8,
-              #~ "Bristol Bay": 1.25 ,
-              #~ "Copper River/Chugach": 1.1 ,
-              #~ "Kodiak": 1.18,
-              #~ "Lower Yukon-Kuskokwim": 1.6 ,
-              #~ "North Slope": 1.8 ,
-              #~ "Northwest Arctic": 1.7 ,
-              #~ "Southeast": 1.15 ,
-              #~ "Yukon-Koyukuk/Upper Tanana": 1.4 
-              #~ }
-    for comp in comp_lib:
-        yml[comp] = importer(comp_lib[comp])
-    return yml
-
-
-def build_setup_defaults (comp_lib):
-    """
-    """
-    yml = {}
-    yml['community'] = {'current year': 2015,
-                        'model financial': True,
-                        'model electricity': True,
-                        'model heating fuel': True,
-                        'interest rate': .05, 
-                        'discount rate': .03,
-                        }
-    yml['forecast'] = {'end year': 2080}
-                      
-    for comp in comp_lib:
-        yml[comp] = import_module("aaem.components." + comp_lib[comp]).yaml_defaults
-    return yml
     
-def save_defaults (comp_lib, filename = "default_config.yaml"):
-    """ Function doc """
-    nl = "\n"
-    ind = "  "
-    text = "# default values for all config varaiables" +nl
-    for s in ['community','forecast','construction multipliers']:
-        text += s +  ":" + nl 
-        try:
-            for k in yml_order[s]:
-                try:
-                    text += ind + k + ": " + str(yml[s][k]) + '\t # ' + str(yml_comments[s][k]) + nl
-                except KeyError:
-                    text += ind + k + ": " + str(yml[s][k]) + nl
-        except KeyError:
-            for k in yml[s]:
-                try:
-                    text += ind + k + ": " + str(yml[s][k]) + '\t # ' + str(yml_comments[s][k]) + nl
-                except KeyError:
-                    text += ind + k + ": " + str(yml[s][k]) + nl
-        text += nl
-    
-    for comp in comp_lib:
-        component = importer2(comp_lib[comp])
-        text += comp + ":" + nl
-        try:
-            for k in component.yaml_order:
-                try:
-                    text += ind + k + ": " + str(component.yaml[k]) + '\t # ' + str(component.yaml_comments[k]) + nl
-                except KeyError:
-                    text += ind + k + ": " + str(component.yaml[k]) + nl
-        except KeyError:
-            for k in yml[s]:
-                try:
-                    text += ind + k + ": " + str(component.yaml[k]) + '\t # ' + str(component.yaml_comments[k]) + nl
-                except KeyError:
-                    text += ind + k + ": " + str(component.yaml[k]) + nl
-        
-        
-        
-        
-        text += nl
-        
-        
-    fd = open(filename, 'w')
-    fd.write(text)
-    fd.close()
-    
-        
-    #~ return text
-    
-
-
-### This is the absolute default yaml string used by the model
-absolute = """community: 
-  name: ABSOLUTE DEFAULT NAME # community name <string>
-  region: IMPORT # name <string>
-  current year: ABSOLUTE DEFAULT  #year to base npv calculations on <int>
-  model financial: True 
-  model electricity: True
-  model heating fuel: True
- 
-  natural gas used: False # is natural gas used in the community
- 
-  #AEA ASSUMPTIONS
-  interest rate: .05 # rate as decimal <float> (ex. .05) 
-  discount rate: .03 # rate as decimal <float> (ex. .03)
-  heating fuel premium: IMPORT # price/gallon <float> (ex. 0.45)
-
-  # fuel repairs: 500 # price/yr <float> TODO: still used??
-  # fuel o&m: 1000 # # price/yr <float> TODO: still used??
-  # diesel generator o&m: 84181 # price/yr <float> TODO: still used??
-  diesel generation efficiency: IMPORT #10.802351555 # kWh/gal <float>
-
-  #do these come from community profiles?
-  generation: IMPORT # kWh generated/yr  <float> 123456.00
-  #consumption kWh: ABSOLUTE DEFAULT # kWh consumed/year <float> 12345.00
-
-  consumption HF: IMPORT # gallons HF consumed/year <float> 12345.00
-
-  line losses: IMPORT #rate as decimal <float> (ex. .1210)
-  max line losses: .4 # rate a decimal maximum allowed line losses
-  default line losses: .1 # rate a decimal line losses will be set to this if they are less than zero
-
-  res non-PCE elec cost: IMPORT # $cost/kWh <float> (ex. .83)
-  elec non-fuel cost: IMPORT # $cost/kWh <float> (ex. .83)
-
-  HDD: IMPORT
-  diesel prices: IMPORT
-  electric non-fuel prices: IMPORT
-  propane price: IMPORT
-  biomass price: IMPORT
-  natural gas price: 0
-  
-  hydro generation limit: IMPORT # kWh 
-  wind generation limit: IMPORT # kWh
-  wind generation precent: .2 # max percent of wind generation limit to use
-
-  generation numbers: IMPORT
-
-forecast:
-  end year: ABSOLUTE DEFAULT  # end year <int>
-  population: IMPORT
-  electricity: IMPORT 
-
-residential buildings:
-  min kWh per household: 6000 # minimum average consumed kWh/year per house<int>
-  enabled: False
-  lifetime: ABSOLUTE DEFAULT # number years <int>  
-  start year: ABSOLUTE DEFAULT # start year <int>
-  average refit cost: 11000 # cost/refit <float>
-  data: IMPORT
-
-non-residential buildings:
-  enabled: False
-  lifetime: ABSOLUTE DEFAULT # number years <int>  
-  start year: ABSOLUTE DEFAULT # start year <int>
-  average refit cost: 7.00 # cost/sqft. <float>
-  cohort savings multiplier: .26 # pecent as decimal <float>
-  com building data: IMPORT
-  number buildings: IMPORT
-  com building estimates: IMPORT
-
-water wastewater:
-  enabled: False
-  lifetime:  ABSOLUTE DEFAULT # number years <int>  
-  start year:  ABSOLUTE DEFAULT # start year <int>
-  audit cost: 10000 # price <float> (ex. 10000)
-  average refit cost: 360.00 # cost/per person <float>
-  data: IMPORT
-
-  electricity refit reduction: .25 # decimal precent <float> percent saved by preforming electricity refit 
-  heating fuel refit reduction: .35 # decimal precent <float> percent saved by preforming heating fuel refit 
-  
-  
-  heat recovery multiplier:
-    True: .5 # precent as decimal <float> 
-    False: 1.0 # precent as decimal <float> 
-
-#interties:
-#  enabled: False
-#  lifetime : ABSOLUTE DEFAULT # number years <int> 
-#  start year : ABSOLUTE DEFAULT # start year <int>
-#  phase: ABSOLUTE DEFAULT # project phase <string> 
-#  hr installed: ABSOLUTE DEFAULT # is the hreat recovery installed <bool>
-#  hr operational: ABSOLUTE DEFAULT # is the heat recovery operational <bool>
-#  road needed: ABSOLUTE DEFAULT # is a road needed <bool> 
-#  cost known: ABSOLUTE DEFAULT # is the cost known <bool>
-#  cost: ABSOLUTE DEFAULT # cost for initerite <float>
-#  resource potential: ABSOLUTE DEFAULT #<string>
-#  resource certainty: ABSOLUTE DEFAULT #<string>
-  
-  
-#  loss per mile: .001 # precent as decimal <float> (ex. .001)
-#  o&m cost: 10000.00 # $cost/kWh <float> 
-#  transmission line cost : 
-#    True:  500000 # road needed
-#    False: 250000 # road not needed
-
-#TODO: move to anoter file and save value used with output??
-# like what happens with the .csv stuff
-construction multipliers:
-  "Aleutians": 1.4 # precent as decimal <float> (ex. 1.4)
-  "Bering Straits": 1.8 # precent as decimal <float> (ex. 1.8)
-  "Bristol Bay": 1.25 # precent as decimal <float> (ex. 1.25)
-  "Copper River/Chugach": 1.1 # precent as decimal <float> (ex. 1.1)
-  "Kodiak": 1.18 # precent as decimal <float> (ex. 1.18)
-  "Lower Yukon-Kuskokwim": 1.6 # precent as decimal <float> (ex. 1.6)
-  "North Slope": 1.8 # precent as decimal <float> (ex. 1.8)
-  "Northwest Arctic": 1.7 # precent as decimal <float> (ex. 1.7)
-  "Southeast": 1.15 # precent as decimal <float> (ex. 1.15)
-  "Yukon-Koyukuk/Upper Tanana": 1.4 # precent as decimal <float> (ex. 1.4)
-"""
-
-
-### This is used as the model defaults uesd by set up in creating runs of the 
-### model
-for_setup = """community: 
-  current year: 2014 #year to base npv calculations on <int>
-  interest rate: .05 # rate as decimal <float> (ex. .05) 
-  discount rate: .03 # rate as decimal <float> (ex. .03)
-  model financial: True
-
-forecast:
-  end year: 2040 # end year <int>
-
-residential buildings: 
-  enabled: True
-  lifetime: 15 # number years <int>  
-  start year: 2017 # start year <int>
-
-non-residential buildings:
-  enabled: True
-  lifetime: 10 # number years <int>  
-  start year: 2017 # start year <int>
-
-water wastewater:
-  enabled: True
-  lifetime: 15 # number years <int>  
-  start year: 2017 # start year <int>
-"""
+    return conf
