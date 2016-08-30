@@ -65,6 +65,8 @@ class Driver (object):
         self.config_dir = os.path.join(model_root, 'config')
         self.global_config = os.path.join(model_root, 
                                             'config', '__global_config.yaml')
+        self.constuction_multipliers  = os.path.join(model_root, 'config', 
+                                            '__construction_multipliers.yaml')
         self.comp_lib = comp_lib
         self.comp_order = comp_order
         
@@ -123,7 +125,8 @@ class Driver (object):
         return self.imported_comps[comp_name]
         
     def setup_community (self, community, i_dir = None,
-                                c_config = None, g_config = None):
+                                c_config = None, g_config = None,
+                                constuction_mult = None):
         """
         setup a community to run the model
         
@@ -156,6 +159,8 @@ class Driver (object):
             com_dir = community.replace(' ','_').split('+')[0]
             i_dir = os.path.join(self.inputs_dir, com_dir) 
             
+        if constuction_mult is None:
+           constuction_mult = self.constuction_multipliers 
         
         tag = '+'.join(community.replace(' ','_').split('+')[1:]).lower()
         if tag == '':
@@ -165,7 +170,12 @@ class Driver (object):
             raise IOError, "Config Does not exist for " + community
             
         try:
-            cd = CommunityData(i_dir, c_config, g_config, diag, tag)
+            cd = CommunityData(alt_data_dir = i_dir,
+                               alt_community_conf = c_config,
+                               alt_global_conf = g_config,
+                               alt_construction_multipliers = constuction_mult,
+                               diag = diag, 
+                               tag = tag)
         except IOError as e:
             raise RuntimeError, \
                 ("A Fatal Error Has occurred, ("+ str(e) +")")
@@ -414,7 +424,8 @@ class Driver (object):
         return results
         
     def run (self, community, name = None, 
-                    i_dir = None, c_config = None, g_config = None,
+                    i_dir = None, c_config = None, 
+                    g_config = None, c_mult = None,
                     tag = '', img_dir = None, plot = False):
         """
         run the model for a community
@@ -451,8 +462,8 @@ class Driver (object):
                 temp = '_' + tag
             img_dir = os.path.join(self.model_root, 'results' + temp, 'plots')
         
-        cd, fc, diag = self.setup_community(community, i_dir, 
-                                                        c_config, g_config)
+        cd, fc, diag = self.setup_community(community, i_dir, c_config, 
+                                                            g_config, c_mult)
         comps_used = self.run_components(cd, fc, diag)
         
         self.save_components_output(comps_used, name, tag)
@@ -684,6 +695,22 @@ class Setup (object):
                                                     '__community_list.csv')
         src_path = os.path.join(self.data_repo, 'community_list.csv')
         shutil.copy(src_path, config_path)
+        
+    def setup_construction_multipliers (self):
+        """
+        create the construction multipliers file from the repo
+        
+        preconditions:
+            see invariants, construction multipliers.yaml sould exist in 
+        data repo
+            
+        postcondition:
+            '__construction multipliers.yaml' saved in config directory
+        """
+        config_path = os.path.join(self.model_root, self.tag, 'config', 
+                                              '__construction_multipliers.yaml')
+        src_path = os.path.join(self.data_repo, 'construction_multipliers.yaml')
+        shutil.copy(src_path, config_path)
 
     def setup_global_config (self):
         """
@@ -832,6 +859,7 @@ class Setup (object):
         ids = self.setup_input_files()
         self.setup_community_configs(ids)
         self.setup_community_list()
+        self.setup_construction_multipliers()
         return True
         
         
@@ -920,6 +948,11 @@ def script_validator (script_file):
     except KeyError:
         script['global']['results tag'] = ''
         res_tag = '' 
+        
+    try:
+        script['global']['construction multipliers']
+    except KeyError:
+        script['global']['construction multipliers'] = None
     
     errors = []
     for com in script['communities']:

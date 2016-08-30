@@ -25,8 +25,12 @@ PATH = os.path.join
 class CommunityData (object):
     """ Class doc """
     
-    def __init__ (self, data_dir, override, default="defaults", diag = None,
-                                                                    tag = None):
+    def __init__ (self, community = None, model_root = None, 
+                        alt_data_dir = None,
+                        alt_community_conf = None, 
+                        alt_global_conf = None,
+                        alt_construction_multipliers = None,
+                        diag = None, tag = None):
         """
             set up the object
         
@@ -46,18 +50,50 @@ class CommunityData (object):
                     residential.csv,
                     wastewater_data.csv,
                     yearly_electricity_summary.csv,
-            override: a community_data.yaml file
-            default: optionally a community_data.yaml file
+            community_conf: a community_data.yaml file
+            global_conf: optionally a community_data.yaml file
         post-conditions:
             the community data object is initialized
         """
+        if not community is None and not model_root is None:
+            if not alt_data_dir is None or \
+               not alt_community_conf is None or \
+               not alt_global_conf is None or \
+               not alt_construction_multipliers is None:
+                raise RuntimeError, ('Too may arguments, please provide only '
+                                     '"community" and "model_root"  or '
+                                     '"alt_data_dir" and "alt_community_conf"'
+                                     ' and  "alt_global_conf" and '
+                                     '"alt_construction_multipliers"')
+            community_conf = os.path.join(model_root, 'config',
+                                            community + '_config.yaml')
+            global_conf = os.path.join(model_root, 'config',
+                                            '__global_config.yaml')
+            data_dir = os.path.join(model_root, 'input_files', 
+                                            community.replace(' ','_'))
+            construction_multipliers = os.path.join(model_root, 'config',
+                                            '__construction_multipliers.yaml') 
+        elif not alt_data_dir is None and not alt_community_conf is None and\
+             not alt_global_conf is None and \
+             not alt_construction_multipliers is None:
+            data_dir = alt_data_dir
+            community_conf = alt_community_conf
+            global_conf = alt_global_conf
+            construction_multipliers = alt_construction_multipliers
+        else:
+            raise RuntimeError, ('Not enough arguments, please provide only '
+                                     '"community" and "model_root"  or '
+                                     '"alt_data_dir" and "alt_community_conf"'
+                                     ' and  "alt_global_conf" '
+                                     '"alt_construction_multipliers"')
+        
         self.tag = tag
         self.percent_diesel = 0
         self.diagnostics = diag
         if diag == None:
             self.diagnostics = diagnostics()
             
-        self.load_input(override, default)
+        self.load_input(community_conf, global_conf)
         self.data_dir = os.path.abspath(data_dir)
         self.get_csv_data()
         
@@ -66,6 +102,24 @@ class CommunityData (object):
         if self.get_item("community", "model electricity"):
             self.calc_non_fuel_electricty_price ()
         self.check_auto_disable_conditions ()
+        
+        self.load_construction_multipliers(construction_multipliers)
+        
+    def load_construction_multipliers (self, cm_file):
+        """
+        input:
+            cm_file: path to construction mulitplier yaml file <string>
+            
+        postconditions:
+            item 'community','construction multiplier' is set
+        """
+        if self.get_item('community','construction multiplier') == 'IMPORT':
+            if cm_file is None:
+                raise ValueError, "NO Construction multipliers"
+            
+            with open(cm_file) as f:
+                cm = yaml.load(f)[self.get_item('community', 'region')]
+            self.set_item('community','construction multiplier',cm)
     
     def check_auto_disable_conditions  (self):
         """

@@ -42,7 +42,7 @@ class ResidentialBuildings(AnnualSavings):
         self.component_name = 'residential buildings'
         self.forecast = forecast
         self.refit_cost_rate = self.comp_specs['average refit cost'] * \
-      community_data.get_section('construction multipliers')[self.cd["region"]]
+                community_data.get_item('community','construction multiplier')
         self.set_project_life_details(self.comp_specs["start year"],
                                       self.comp_specs["lifetime"],
                         self.forecast.end_year - self.comp_specs["start year"])

@@ -48,8 +48,8 @@ class ASHPBase (AnnualSavings):
                         
         ### ADD other intiatzation stuff
         self.load_prerequisite_variables(prerequisites)
-        self.regional_multiplier = community_data.get_section('construction multipliers')[self.cd["region"]]
-
+        self.regional_multiplier = \
+                community_data.get_item('community','construction multiplier')
         
     def load_prerequisite_variables (self, comps):
         """

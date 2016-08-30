@@ -7,10 +7,83 @@ this file contains default yaml file info as strings
 from importlib import import_module
 
 
+import aaem.config as config
+
+
+class ConfigurationFile (object):
+    """ Class doc """
+    
+    def __init__ (self):
+        """ Class initialiser """
+        pass
+    
+    @staticmethod
+    def save (filename, config, comments, s_order = None, i_orders = None, 
+                            indent = '  ' , header = ''):
+        """ Function doc """
+        print filename
+        nl = '\n'
+        text = '# ' + header + nl
+        
+        if s_order is None:
+            s_order = config.keys()
+        
+        for section in s_order:
+            text += section + ':' + nl
+            
+            if i_orders is None:
+                current_i_order = config[section].keys()
+            else: 
+                current_i_order = i_orders[section]
+                
+            for item in current_i_order:
+                try:
+                    text += indent + str(item) + ': ' +  str(config[section][item])
+                except KeyError:
+                    continue
+                try:
+                    text +=  ' # ' +  str(comments[section][item]) 
+                except KeyError:
+                    pass
+                
+                text += nl
+            text += nl + nl        
+            
+        with open(filename, 'w') as conf:
+            conf.write(text)
+            
+    @staticmethod
+    def save_structure (filename = "default_config.yaml"):
+        """ Function doc """
+        pass
+        
+    @staticmethod      
+    def build_structure (comp_lib):
+        """ Function doc """
+        
+        section_order = config.non_component_config_sections
+        conf, orders, comments, defaults = \
+                config.get_config(section_order)
+        
+        for comp in comp_lib:
+            cfg = import_module("aaem.components." + comp_lib[comp]+ '.config')
+            print cfg.yaml_order
+            #~ yml[comp] = import_module("aaem.components." + comp_name)
+        return yml
+    
+
+
+
+
+
+
+
+
 yml = {}
 yml['community'] = {
                 'name': 'ABSOLUTE DEFAULT NAME',
                 'region': 'IMPORT',
+                'construction multiplier': 'IMPORT',
                 'current year': 'ABSOLUTE DEFAULT',
                 'model financial': True,
                 'model electricity': True,
@@ -152,18 +225,18 @@ yml['forecast'] = {
 yml_order['forecast'] = ['end year','population','electricity']                 
 
                   
-yml['construction multipliers'] = {
-                "Aleutians": 1.4 ,
-                "Bering Straits": 1.8,
-                "Bristol Bay": 1.25 ,
-                "Copper River/Chugach": 1.1 ,
-                "Kodiak": 1.18,
-                "Lower Yukon-Kuskokwim": 1.6 ,
-                "North Slope": 1.8 ,
-                "Northwest Arctic": 1.7 ,
-                "Southeast": 1.15 ,
-                "Yukon-Koyukuk/Upper Tanana": 1.4 
-                                    }
+#~ yml['construction multipliers'] = {
+                #~ "Aleutians": 1.4 ,
+                #~ "Bering Straits": 1.8,
+                #~ "Bristol Bay": 1.25 ,
+                #~ "Copper River/Chugach": 1.1 ,
+                #~ "Kodiak": 1.18,
+                #~ "Lower Yukon-Kuskokwim": 1.6 ,
+                #~ "North Slope": 1.8 ,
+                #~ "Northwest Arctic": 1.7 ,
+                #~ "Southeast": 1.15 ,
+                #~ "Yukon-Koyukuk/Upper Tanana": 1.4 
+                                    #~ }
                                     
                                     
 
@@ -184,6 +257,7 @@ def build_defaults (comp_lib):
     yml['community'] = {
                         'name': 'ABSOLUTE DEFAULT NAME',
                         'region': 'IMPORT',
+                        'construction multiplier': 'IMPORT',
                         'current year': 'ABSOLUTE DEFAULT',
                         'model financial': True,
                         'model electricity': True,
@@ -225,18 +299,18 @@ def build_defaults (comp_lib):
                        'electricity': 'IMPORT' 
                       }
                       
-    yml['construction multipliers'] = {
-              "Aleutians": 1.4 ,
-              "Bering Straits": 1.8,
-              "Bristol Bay": 1.25 ,
-              "Copper River/Chugach": 1.1 ,
-              "Kodiak": 1.18,
-              "Lower Yukon-Kuskokwim": 1.6 ,
-              "North Slope": 1.8 ,
-              "Northwest Arctic": 1.7 ,
-              "Southeast": 1.15 ,
-              "Yukon-Koyukuk/Upper Tanana": 1.4 
-              }
+    #~ yml['construction multipliers'] = {
+              #~ "Aleutians": 1.4 ,
+              #~ "Bering Straits": 1.8,
+              #~ "Bristol Bay": 1.25 ,
+              #~ "Copper River/Chugach": 1.1 ,
+              #~ "Kodiak": 1.18,
+              #~ "Lower Yukon-Kuskokwim": 1.6 ,
+              #~ "North Slope": 1.8 ,
+              #~ "Northwest Arctic": 1.7 ,
+              #~ "Southeast": 1.15 ,
+              #~ "Yukon-Koyukuk/Upper Tanana": 1.4 
+              #~ }
     for comp in comp_lib:
         yml[comp] = importer(comp_lib[comp])
     return yml

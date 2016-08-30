@@ -62,8 +62,7 @@ class WaterWastewaterSystems (AnnualSavings):
                         self.forecast.end_year - self.comp_specs["start year"])
         
         average = self.comp_specs['average refit cost']
-        mult = community_data.get_item('construction multipliers',
-                                       self.cd["region"])  
+        mult = community_data.get_item('community','construction multiplier')
         self.cost_per_person = average * mult 
         
         

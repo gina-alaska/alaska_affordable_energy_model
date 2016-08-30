@@ -88,13 +88,15 @@ class RunCommand(pycommand.CommandBase):
             for com in script['communities']:
                 print 'community:', com['community'], 'name:', com['name']
                 try:
+                    mult = script['global']['construction multipliers']
                     run_driver.run(com['community'], com['name'],
                                    i_dir = com['input files'],
                                    c_config = com['config'],
                                    g_config = script['global']['config'],
                                    img_dir = script['global']['image diretory'],
                                    plot = script['global']['plot'],
-                                   tag = script['global']['results tag'])
+                                   tag = script['global']['results tag'],
+                                   c_mult = mult)
                 except (RuntimeError, IOError) as e:
                     print e
                     msg = "RUN ERROR: "+ com['community'] + \

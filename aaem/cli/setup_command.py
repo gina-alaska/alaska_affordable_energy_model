@@ -79,7 +79,8 @@ class SetupCommand(pycommand.CommandBase):
                 cli_lib.print_error_message(msg, SetupCommand.usagestr)
                 return
             
-        except IOError:
+        except IOError as e:
+            print e
             msg = "SETUP ERROR: provided repo has missing files"
             cli_lib.print_error_message(msg, SetupCommand.usagestr)
             return

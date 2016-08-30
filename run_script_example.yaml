@@ -1,6 +1,7 @@
 global:
   root: '<path>'
   config: <path>/__global_config.yaml
+  construction multipliers: <path>/__construction_multipliers.yaml
   image diretory: None
   plot: False
   results tag: 'scripts_test'

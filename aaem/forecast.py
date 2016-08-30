@@ -19,6 +19,10 @@ import copy
 from datetime import datetime
 
 
+
+
+
+
 class Forecast (object):
     """ Class doc """
     
