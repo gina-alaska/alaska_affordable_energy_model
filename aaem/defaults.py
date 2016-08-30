@@ -193,6 +193,7 @@ def build_defaults (comp_lib):
                         'discount rate': .03,
                         'heating fuel premium': 'IMPORT',
                         'diesel generation efficiency': 'IMPORT',
+                        'diesel generator o&m cost' : 0.02,
                         'generation': 'IMPORT',
                         'consumption kWh': 'ABSOLUTE DEFAULT',
                         'consumption HF': 'IMPORT',
@@ -206,7 +207,8 @@ def build_defaults (comp_lib):
                         'diesel prices': 'IMPORT',
                         'electric non-fuel prices': 'IMPORT',
                         'propane price': 'IMPORT',
-                        'biomass price': 'IMPORT',
+                        'cordwood price': 'IMPORT',
+                        'pellet price': 'IMPORT',
                         'natural gas price': 0,
                         'hydro generation limit': 'IMPORT' ,
                         'wind generation limit': 'IMPORT' ,
@@ -244,14 +246,14 @@ def build_setup_defaults (comp_lib):
     """
     """
     yml = {}
-    yml['community'] = {'current year': 2014,
+    yml['community'] = {'current year': 2015,
                         'model financial': True,
                         'model electricity': True,
                         'model heating fuel': True,
                         'interest rate': .05, 
                         'discount rate': .03,
                         }
-    yml['forecast'] = {'end year': 2040}
+    yml['forecast'] = {'end year': 2080}
                       
     for comp in comp_lib:
         yml[comp] = import_module("aaem.components." + comp_lib[comp]).yaml_defaults

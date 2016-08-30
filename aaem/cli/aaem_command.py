@@ -1,7 +1,4 @@
-# remove warnings in cli
 import warnings
-warnings.filterwarnings("ignore")
-
 import pycommand
 import sys
 
@@ -41,7 +38,7 @@ class AaemCommand(pycommand.CommandBase):
         }
         
     optionList = (
-            ('dev', ('d', False, "use only development communities")),
+            ('warn', ('w', False, "show all warnings")),
             ('time',('t', False,
                     "Displays the total running time at the end of execution")),
            #~ ('path', ('p', "<name>", "path to location to setup/run  model")),
@@ -49,6 +46,10 @@ class AaemCommand(pycommand.CommandBase):
     )
 
     def run(self):
+        # ignore warings in cli
+        if not self.flags.warn:
+            warnings.filterwarnings("ignore")
+            
         try:
             cmd = super(AaemCommand, self).run()
         except pycommand.CommandExit as e:

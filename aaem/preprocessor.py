@@ -45,7 +45,7 @@ def growth(xs, ys , x):
 
 
 class Preprocessor (object):
-    MODEL_FILES = {"DIESEL_PRICES": "diesel_fuel_prices.csv",
+    MODEL_FILES = {"DIESEL_PRICES": "diesel_prices_community.csv",
                "HDD": "hdd.csv",
                "CPI": "cpi.csv",
                "COM_BUILDING_EST": "com_building_estimates.csv",
@@ -102,7 +102,7 @@ class Preprocessor (object):
         self.prices()
 
         ### copy files that still need their own preprocessor function yet
-        shutil.copy(os.path.join(data_dir,"diesel_fuel_prices.csv"), out_dir)
+        #~ shutil.copy(os.path.join(data_dir,"diesel_fuel_prices.csv"), out_dir)
         shutil.copy(os.path.join(data_dir,"cpi.csv"), out_dir)
 
         ###
@@ -135,6 +135,26 @@ class Preprocessor (object):
                 continue
             for fn in l:
                 fn(self)
+        self.projects = []
+        for comp in comp_lib:
+            try:
+                fn = import_module("aaem.components." +comp_lib[comp]).\
+                                                    preprocess_existing_projects
+            except AttributeError:
+                continue
+            l = fn(self)
+            #~ print l
+            #~ print l
+            for i in l:
+                #~ if self.out_dir[-1] == "/" or self.out_dir[-1] == "\\":
+                    #~ root =  self.out_dir[:-1]
+                #~ print root+"+wind_project_" + str(i)
+                #~ try:
+                    #~ shutil.rmtree(root+'+'+i)
+                #~ except OSError:
+                    #~ pass
+                self.projects.append('+'+i)
+                #~ shutil.copytree(self.out_dir,root+'+'+i)
 
 
 
@@ -348,7 +368,7 @@ class Preprocessor (object):
                 '# Est. potential annual heating fuel gallons displaced,\n')
 
     ## PROCESS FUNCTIONS #######################################################
-    def population (self, threshold = 20, end_year = 2040,
+    def population (self, threshold = 20, end_year = 2050,
                           percent = .02, currnet_year = 2015):
         """
         create the population input file
@@ -365,7 +385,7 @@ class Preprocessor (object):
         pop_source = "ICER's population forecast"
         
         pops = self.get_communities_data(pop_data)
-        pops = DataFrame(pops.iloc[0]["2003":str(end_year)])
+        pops = DataFrame(pops.iloc[0]["2003":])
         #~ try:
             #~ pops = DataFrame(pop_data.ix[self.com_id]["2003":str(end_year)])
         #~ except KeyError:
@@ -692,6 +712,10 @@ class Preprocessor (object):
         try:
             if self.com_id == "Craig":
                 data = data.loc[["Craig","Craig, Klawock"]]
+            elif self.com_id == "Upper Kalskag":
+                data = data.ix['Kalskag']
+            elif self.com_id == "Klukwan":
+                data = data.loc[["Klukwan","Chilkat Valley"]]
             else:
                 data = data.ix[self.com_id]
         except KeyError:
@@ -705,7 +729,7 @@ class Preprocessor (object):
                                          "unbilled_kwh", "fuel_cost"]]
 
         last_year = data["year"].max()
-        while len(data[data["year"] == last_year]) != 12:
+        while len(data[data["year"] == last_year])%12 != 0:
             last_year -= 1
 
 
@@ -715,6 +739,10 @@ class Preprocessor (object):
                                          "community_kwh_sold",
                                          "government_kwh_sold",
                                          "unbilled_kwh"]].mean().sum())
+        if np.isnan(elec_fuel_cost):
+            elec_fuel_cost = 0.0
+            self.diagnostics.add_note("Electricity Prices PCE",
+                                "fuel price not available, seting to 0")
 
         res_nonPCE_price = data[data["year"] == \
                                 last_year]["residential_rate"].mean()
@@ -956,6 +984,11 @@ class Preprocessor (object):
             if self.com_id == "Craig":
                 data = data.loc[["Craig","Craig, Klawock"]]
                 self.combined_com = True
+            elif self.com_id == "Upper Kalskag":
+                data = data.ix['Kalskag']
+            elif self.com_id == "Klukwan":
+                data = data.loc[["Klukwan","Chilkat Valley"]]
+                self.combined_com = True
             else:
                 data = data.loc[self.com_id]
         except KeyError:
@@ -984,6 +1017,10 @@ class Preprocessor (object):
             try:
                 if self.com_id == "Craig":
                     data = data.loc[["Craig","Craig, Klawock"]]
+                elif self.com_id == "Upper Kalskag":
+                    data = data.ix['Kalskag']
+                elif self.com_id == "Klukwan":
+                    data = data.loc[["Klukwan","Chilkat Valley"]]
                 else:
                     data = data.loc[self.com_id]
             except KeyError:
@@ -991,7 +1028,6 @@ class Preprocessor (object):
         except:
              self.diagnostics.add_note("PCE Electricity",
              "Reading purchased from no utilities listed for community")
-
         ## Determine if and what kind of power is purchased
         try:
             sources = sorted(set(data[data["purchased_from"].notnull()]\
@@ -1090,7 +1126,7 @@ class Preprocessor (object):
         sums = []
         for year in set(data["year"].values):
             #take full years only
-            if len(data[data["year"] == year]) != 12:
+            if len(data[data["year"] == year])%12 != 0:
                 continue
             ## sum of every value for the year
             temp = data[data["year"] == year].sum()
@@ -1211,7 +1247,9 @@ class Preprocessor (object):
 
         df.to_csv(out_file,mode="a")
 
+        #~ print self.electricity_data
         self.electricity_data = df
+        #~ print self.electricity_data
         self.purchase_type = p_key
 
     def interties (self):
@@ -1233,12 +1271,14 @@ class Preprocessor (object):
             if data['Plant Intertied'] == 'Yes' and \
                data['Other Community on Intertie'] != "''":
                 self.intertied = True
+            data['parent'] = self.com_id
             out_file = os.path.join(self.out_dir, "interties.csv")
             fd = open(out_file,'w')
             fd.write(self.interties_header())
             fd.close()
             data.to_csv(out_file, mode = 'a')
             self.it_ids = data
+            
             return data
 
         except KeyError:
@@ -1277,7 +1317,7 @@ class Preprocessor (object):
         fd.write("Buildings," + str(data) +"\n")
         fd.close()
 
-        self.buildigns_count_data = data
+        self.buildings_count_data = data
 
 
     def buildings_estimates(self, pop):
@@ -1390,12 +1430,17 @@ class Preprocessor (object):
         fd.write(self.hdd_header())
         fd.write("fuel, price\n")
         fd.write("Propane," + str(self.prices_propane()) +"\n")
-        fd.write("Biomass," + str(self.prices_biomass()) +"\n")
+        
+        cord, pellet = self.prices_biomass()
+        
+        fd.write("Cordwood," + str(cord) +"\n")
+        fd.write("Pellet," + str(pellet) +"\n")
         fd.close()
         
         
-        ## update the way diesel works at some point
-        #~ self.prices_diesel()
+        ## Diesel prices saved in diesel_prices function
+        self.prices_diesel()
+        
         
 
     def prices_propane (self):
@@ -1421,36 +1466,67 @@ class Preprocessor (object):
         try:
             keys = data.keys()[3:]
             data = np.array(data.values[0][3:], dtype = np.float64)
-       
+            prices_for = self.com_id
         except IndexError:
+            self.diagnostics.add_note('Diesel Prices', 
+                        'Not found. Using regional average')
+            
+            keys = read_csv(os.path.join(self.data_dir, "community_list.csv"),
+            index_col=1, comment="#", header=0)
+            energy_region = str(keys['Energy Region'][self.com_id])
+            keys = keys[keys['Energy Region'] == energy_region].index.tolist()
+            
+            
             data = read_csv(in_file, index_col=3, comment="#", header=0)
+            data = data.ix[keys]
             keys = data.keys()[3:]
             data = np.array(data.mean().values[2:], dtype = np.float64)
-            
-        return DataFrame({"year":keys,"price diesel":data}).set_index("year")
+            prices_for = energy_region + " (regional average)"
+
+        self.diesel_prices = DataFrame({"year":keys,
+                        prices_for :data}).set_index("year")
+
+        out_file = os.path.join(self.out_dir, "diesel_prices_community.csv")
+    
+        fd = open(out_file,'w')
+        fd.write("# diesel prices for " + prices_for + '\n')
+        fd.close()
+        self.diesel_prices.T.to_csv(out_file, mode = 'a')
     
     def prices_biomass (self):
         """
         """
-        in_file = os.path.join(self.data_dir, "biomass_price_estimates.csv")
+        in_file = os.path.join(self.data_dir, "biomass_prices.csv")
         data = read_csv(in_file, index_col=0,comment = "#", header=0)
         
         if len(self.get_communities_data(data)['Source'])==0:
             self.diagnostics.add_warning("prices-biomass", "not found")
-            return 0
+            return 0,0
         self.diagnostics.add_warning("prices-biomass", "price source: " +\
                       str(self.get_communities_data(data)['Source']))
         try:
-            val = float(self.get_communities_data(data)['Biomass ($/Cord)'])         
+            cord = float(self.get_communities_data(data)['Biomass ($/Cord)'])         
         except ValueError:
             self.diagnostics.add_note("prices-biomass", 
                                         "is N/a treating as $0")
-            val = 0
-        if np.isnan(val):
+            cord = 0
+        if np.isnan(cord):
             self.diagnostics.add_note("prices-biomass", 
                                         "is N/a treating as $0")
-            val = 0 
-        return val
+            cord = 0 
+            
+        try:
+            pellet = \
+                float(self.get_communities_data(data)['Pellets ($/ton)'])         
+        except ValueError:
+            self.diagnostics.add_note("prices-biomass", 
+                                        "is N/a treating as $0")
+            pellet = 0
+        if np.isnan(pellet):
+            self.diagnostics.add_note("prices-biomass", 
+                                        "is N/a treating as $0")
+            pellet = 0 
+        return cord, pellet
         
     def generation_limits (self):
         in_file = os.path.join(self.data_dir, "generation_limits.csv")
@@ -1538,21 +1614,29 @@ class Preprocessor (object):
         ids = data.ix[data.index[data.T[data.T==self.com_id].any()]]
         region = ids['Energy Region'].values[0]
         ids = ids[ids.keys()[ids.keys()!='Energy Region']].set_index("Model ID")
-        self.energy_region = region
+        self.energy_region = region.replace(' Region','')
+        #~ print ids
         self.id_df = ids
-        self.id_list = ids.values[0].tolist()
+        il = ids.values[0].tolist()
+
+        self.id_list = []
+        for i in il:
+            if type(i) != str and np.isnan(i):
+               continue
+            self.id_list.append(i)
+            
 
 def preprocess (data_dir, out_dir, com_id, dev = False):
     """ Function doc """
-    #print com_id
+    #~ print com_id
     diag = diagnostics()
 
     pp = preprocess_no_intertie(data_dir,
                         os.path.join(out_dir,com_id.replace(" ","_")), com_id,
-                                                                    diag, dev)
+                                                                    diag)
     try:
         if pp.it_ids["Plant Intertied"].lower() == "yes":
-
+            #~ print "JADA"
             ids = pp.it_ids[['Other Community on Intertie',
                              'Other Community on Intertie.1',
                              'Other Community on Intertie.2',
@@ -1571,6 +1655,7 @@ def preprocess (data_dir, out_dir, com_id, dev = False):
                              'Other Community on Intertie.15',
                              #'Other Community on Intertie.16',
                            ]].values
+            #~ print ids
             ids = ids[ids != "''"].tolist()
 
 
@@ -1582,12 +1667,18 @@ def preprocess (data_dir, out_dir, com_id, dev = False):
                                  "Includes dianostis for " + str(ids))
                 pp = preprocess_intertie(data_dir, out_dir, ids, diag)
 
-            pp = ids
+                pp = [com_id + '_intertie'] + ids + pp[1]
+            else:
+                pp = ids
+                #~ pp = [com_id + '_intertie'] + ids 
+                #~ print pp 
         else:
-            pp = [com_id]
+            pp = [com_id] + [com_id + pro for pro in pp.projects]
     except AttributeError:
-        pp = [com_id]
-
+        try:
+            pp = [com_id] + [com_id + pro for pro in pp.projects]
+        except AttributeError:
+            pp = [com_id]
     diag.save_messages(os.path.join(out_dir,
                        str(com_id.replace(" ","_")) +\
                             "_preprocessor_diagnostics.csv"))
@@ -1596,11 +1687,15 @@ def preprocess (data_dir, out_dir, com_id, dev = False):
 
 
 
-def preprocess_no_intertie (data_dir, out_dir, com_id, diagnostics, dev = False):
+def preprocess_no_intertie (data_dir, out_dir, com_id, diagnostics):
     """
     """
-    if os.path.exists(os.path.join(out_dir))and not dev:
-        return False
+    if os.path.exists(os.path.join(out_dir)):
+        it = read_csv(os.path.join(data_dir, 'interties.csv'), index_col = 0)
+        if (it == com_id).any().any() == True:
+            return False
+
+        
     pp = Preprocessor(com_id, data_dir,out_dir, diagnostics)
     pp.preprocess()
     
@@ -1609,14 +1704,17 @@ def preprocess_no_intertie (data_dir, out_dir, com_id, diagnostics, dev = False)
                     'prices': False,
                     'HDD': False
                 }
-    
+    #~ print [''] + pp.projects
+    #~ for project in [''] + pp.projects:
+        #~ if out_dir[-1] in ['/','\\']:
+            #~ out_dir = out_dir[:-1]
     f_path = os.path.join(out_dir,'copies.csv')
-    if not os.path.exists(f_path):
-    
-        fd = open(f_path,'w')
-        fd.write("# a list of copied data for the child community")
-        fd.close()
-        DataFrame(copied_data,["copied"]).T.to_csv(f_path,mode='a')
+        #~ if not os.path.exists(f_path):
+        
+    fd = open(f_path,'w')
+    fd.write("# a list of copied data for the child community")
+    fd.close()
+    DataFrame(copied_data,["copied"]).T.to_csv(f_path,mode='a')
     
     
    
@@ -1624,10 +1722,16 @@ def preprocess_no_intertie (data_dir, out_dir, com_id, diagnostics, dev = False)
 
 def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
     """ Function doc """
+    #~ print com_ids
     parent = com_ids[0]
     pp_data = []
     parent_dir = os.path.join(out_dir, parent.replace(" ","_"))
     #~ print com_ids
+    projects = []
+    
+    total_building_count = 0
+    building_inventory = []
+    
     for com in com_ids:
 
         #~ print com
@@ -1636,6 +1740,8 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
         pp.preprocess()
         pp_data.append(pp)
         
+        building_inventory.append(pp.buildings_inventory_data)
+        total_building_count += pp.buildings_count_data
         
         copied_data = { "yearly electric summary":False,
                     "interties":False,
@@ -1659,6 +1765,7 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
         f_path = os.path.join(out_dir, com, "prices.csv")
         if com != parent and not os.path.exists(f_path):
             #print com + " adding data- prices"
+            #print "copying"
             shutil.copy(os.path.join(parent_dir,
                                     "prices.csv")
                                     ,os.path.join(out_dir,com.replace(" ","_")))
@@ -1666,10 +1773,11 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
             diagnostics.add_warning("Intertie update (prices)",
                                     ("" + com + " is using it's "
                                      "parent's (" + parent + ""
-                                     ") prices"))
+                                     ") prices. "
+                                     "Interties Alaways Use parents Prices"))
                                      
         if com != parent and os.path.exists(f_path):
-            #~ print com
+            ##print com
             p_file = os.path.join(parent_dir, "prices.csv")
             parent_prices = read_csv(p_file, comment = '#', index_col = 0)
             prices = read_csv(f_path, comment = '#', index_col = 0)
@@ -1727,7 +1835,12 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
         fd.close()
         
         DataFrame(copied_data,["copied"]).T.to_csv(f_path,mode='a')
-    
+        for project in pp.projects:
+            #~ if out_dir[-1] in ['/','\\']:
+                #~ out_dir = out_dir[:-1]
+            #~ shutil.rmtree(os.path.join(out_dir,com.replace(" ","_")+project))
+            projects.append(com+project)
+            #~ shutil.copytree(os.path.join(out_dir,com.replace(" ","_")),os.path.join(out_dir,com.replace(" ","_")+project))
     
     # for intertie
     #   generation = generation(parent) +
@@ -1816,10 +1929,11 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
     
 
     out_dir = os.path.join(out_dir,com_ids[0].replace(" ","_") +'_intertie')
+    #~ print out_dir
     try:
-            os.makedirs(out_dir)
+        os.makedirs(out_dir)
     except OSError:
-            pass
+        pass
 
 
     diagnostics.add_note("Intertie (population)",
@@ -1874,6 +1988,33 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
             continue
         shutil.copy(os.path.join(parent_dir,
             Preprocessor.MODEL_FILES[f]),out_dir) 
-              
-
-    return pp_data
+         
+    for project in  pp_data[0].projects:
+            #~ if out_dir[-1] in ['/','\\']:
+                #~ out_dir = out_dir[:-1]
+            #~ ##~ shutil.rmtree(out_dir+project)
+            projects.append(parent+'_intertie'+project)
+            #~ try:
+                #~ shutil.rmtree(out_dir+project)
+            #~ except OSError:
+                #~ pass
+            #~ shutil.copytree(out_dir,out_dir+project)
+    #~ print pp_data
+    
+    
+    #~ print total_building_count 
+    building_inventory = concat(building_inventory) 
+    out_file = os.path.join(out_dir, "community_buildings.csv")
+    fd = open(out_file,'w')
+    fd.write(pp.buildings_inventory_header())
+    fd.close()
+    building_inventory.to_csv(out_file, mode="a", index=False)
+    
+    out_file = os.path.join(out_dir, "com_num_buildings.csv")
+    fd = open(out_file,'w')
+    fd.write(pp.buildings_count_header())
+    fd.write("key, value\n")
+    fd.write("Buildings," + str(total_building_count ) +"\n")
+    fd.close()
+    
+    return pp_data, projects

@@ -6,68 +6,11 @@ cli_lib.py
 import os
 import shutil
 from pandas import read_csv, concat
-from aaem import summaries
+from aaem import summaries, __version__
 from aaem.components import get_raw_data_files
-
-
-def copy_model_data (repo, raw):
-    """
-        copies the data needed to run the model from the data repo to the raw 
-    data folder.
-    
-    pre:
-        repo : path to the data repo
-        raw: path to the raw data folder
-    post:
-        the files used to run the preprocessor are copied to the raw directory
-    """
-    shutil.copy(os.path.join(repo,
-                    "power-cost-equalization-pce-data.csv"), raw)
-    shutil.copy(os.path.join(repo, "com_building_estimates.csv"), raw)
-    shutil.copy(os.path.join(repo, "com_num_buildings.csv"), raw)
-    shutil.copy(os.path.join(repo, "cpi.csv"), raw)
-    shutil.copy(os.path.join(repo, "diesel_fuel_prices.csv"), raw)
-    shutil.copy(os.path.join(repo, "eia_generation.csv"), raw)
-    shutil.copy(os.path.join(repo, "eia_sales.csv"), raw)
-    shutil.copy(os.path.join(repo, "hdd.csv"), raw)
-    shutil.copy(os.path.join(repo, "heating_fuel_premium.csv"), raw)
-    shutil.copy(os.path.join(repo, "interties.csv"), raw)
-    shutil.copy(os.path.join(repo, "non_res_buildings.csv"), raw)
-    shutil.copy(os.path.join(repo, "population.csv"), raw)
-    shutil.copy(os.path.join(repo, "purchased_power_lib.csv"), raw)
-    shutil.copy(os.path.join(repo, "res_fuel_source.csv"), raw)
-    shutil.copy(os.path.join(repo, "res_model_data.csv"), raw)
-    shutil.copy(os.path.join(repo, "valdez_kwh_consumption.csv"), raw)
-    shutil.copy(os.path.join(repo, "ww_assumptions.csv"), raw)
-    shutil.copy(os.path.join(repo, "ww_data.csv"), raw)
-    shutil.copy(os.path.join(repo, "VERSION"), raw)
-    shutil.copy(os.path.join(repo, "community_list.csv"), raw)
-    shutil.copy(os.path.join(repo, "propane_price_estimates.csv"), raw)
-    shutil.copy(os.path.join(repo, "biomass_price_estimates.csv"), raw)
-    shutil.copy(os.path.join(repo, "generation_limits.csv"), raw)
-    
-    for f in get_raw_data_files():
-        shutil.copy(os.path.join(repo, f), raw)
-    
-  
-def generate_summaries (coms, base):
-    """
-        generates the summaries 
-    
-    pre:
-        coms : dictionary of run communites
-        base: path to root of out put folder
-    post:
-        summaries are written
-    """
-    summaries.res_log(coms,os.path.join(base,'results'))
-    summaries.com_log(coms,os.path.join(base,'results'))
-    summaries.village_log(coms,os.path.join(base,'results'))
-    summaries.building_log(coms,os.path.join(base,'results'))
-    summaries.fuel_oil_log(coms,os.path.join(base,'results'))
-    summaries.forecast_comparison_log(coms,os.path.join(base,'results'))
-    summaries.call_comp_summaries(coms,os.path.join(base,'results'))
-    
+import zipfile
+from datetime import datetime
+   
 def list_files (directory, root = None):
     """ Function doc """
     l = []
@@ -81,7 +24,6 @@ def list_files (directory, root = None):
         else:
             l += list_files(os.path.join(directory,item),root)
     return l
-    
     
 def compare_indepth (results1, results2, coms):
     """
@@ -227,6 +169,8 @@ def compare_high_level (results1, results2):
     print ""
     
     for f in to_compare:
+        if ".pkl" in f:
+            continue
         f1 = read_csv(os.path.join(results1,f), index_col = 0, comment = '#').fillna("null")
         f2 = read_csv(os.path.join(results2,f), index_col = 0, comment = '#').fillna("null")
         print "summary: " + f
@@ -258,10 +202,70 @@ def compare_high_level (results1, results2):
                     #~ print "all differents"
             except ValueError:
                 print "\t\tdifferences found in " + c
-        
-        
-        
-        
-        
-        
+             
+def get_regional_coms (region, base):
+    """
+    get a list of communities and projects for a region
     
+    input:
+        region: a region <str>
+        com_list: Pathe to the model version directory being run
+        
+    output:
+        return a sorted list of projects and communities <list>
+    
+    """
+    com_file = os.path.join(base, 'config', '__community_list.csv')
+    com_file = read_csv(com_file, index_col = 0)
+    
+    if not (region in set(com_file['Energy Region'].values)):
+        return [region]
+    
+    lis = [x.replace(' ','_') for x in \
+                com_file[com_file['Energy Region'] == region]\
+                ['Community'].values.tolist()] 
+    coms = []
+    
+    
+    config = os.path.join(base, 'config')
+    gc = '__global_config.yaml'
+    s_text = '_config.yaml'
+    all_coms = [a.split(s_text)[0]\
+                        for a in os.listdir(config) if (s_text in a and gc != a)]
+    
+    for c in lis:
+        coms += [x for x in all_coms if x.find(c) != -1]
+    return sorted(coms)
+                
+def get_config_coms (base):
+    """
+    get the communities/projects that have configuration information available
+    
+    input:
+        base: path to model
+        
+    output:
+        returns list of communities/projects
+    """
+    config = os.path.join(base,"config")
+    gc = '__global_config.yaml'
+    s_text = '_config.yaml'
+    return [a.split(s_text)[0]\
+                    for a in os.listdir(config) if (s_text in a and gc != a)]
+    
+def print_error_message (msg, use = None):
+    """
+    print an errom message to the console
+    
+    input:
+        msg: the message <string>
+        use: (optional) the useage string for the command <string>
+        
+    output:
+        none
+    """
+    print 
+    print msg
+    if not use is None:
+        print use
+    print 

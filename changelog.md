@@ -1,6 +1,295 @@
 #Change Log
 
-## [0.14.2]
+## [0.18.1]
+### changes
+- updates the sphinx docs config
+
+## [0.18.0]
+### adds 
+- regional option to cli run command
+
+### changes
+- cli setup command redone
+- restructures all compopnentes
+
+## [0.17.13]
+### fixes
+- diesel efficiency summary headings
+- biomass pellet LCOE/breakeven price input includes fuel cost
+
+### adds
+- documentation for diesel efficiency
+
+### changes
+- structure of diesel efficiency component
+
+## [0.17.12]
+### adds
+- diesel efficiency component
+
+## [0.17.11]
+### changes 
+- for components break even cost in gal heating oil equiv.
+- renames efficiency components function names to be more consistent with newer components
+- moves res/non-res summary functions to respective component files
+
+### fixes
+- non-residential proposed value calculations
+- missing years in consumption input data issue in forecast and some summaries
+- range of yeas to use when calculating LCOE/break even price
+- ashp Excess Generation Capacity needed calculation
+
+
+## [0.17.10]
+### changes
+- headers: Gallons Diesel -> Gallons Heating Fuel where Nessary
+- ASHP: changes inputs to LCOE and breakeven prices
+- transmission: changes inputs to LCOE and breakeven prices
+- non-res: adds % heating cost scaler to breakeven cost calculation
+
+### adds
+- kwh consumption summary: added region column
+- ASHP (both): added excess kW column
+
+### fixes
+- biomass cordwood: fuel costs no longer doubled
+
+
+
+## [0.17.9]
+### changes
+- non residential buildings component: kWh estimattion scale fractor is changed for interties to include the whole intertie
+
+## [0.17.8]
+### fixes
+- heat recovery projects are now run
+- heat recovery est. potential is calculated correctly
+
+## [0.17.7]
+### changes
+- non-res efficiency levelized cost of energy caclulation
+- biomass cordwood levelized cost of energy caclulation
+
+## [0.17.6]
+### changes 
+- non residential buildings component: changes to calculation of pre retrofit kWh consumption
+
+### adds
+- consumption summary
+
+## [0.17.5]
+## fixes
+- corrected lower case 'other' to 'Other' key in non-res building component
+
+## [0.17.4]
+### added
+- heat recovery component
+- documentation setup files
+
+### updated
+- ashp reasons for not running 
+
+## [0.17.3]
+### changes
+- updates the Levelized and Breakeven cost caclutation to include the NPV of the fuel used
+
+### fixes
+- method for caclulating intertie prices
+- waste water summary 
+- res/non-res fuel_amouts for calculating Levelized and Breakeven cost 
+
+## [0.17.2]
+### changes
+- electricity prices are made to be consistent on interties
+
+## [0.17.1]
+### changes
+- ashp: caclulation of LOCE and break even cost include electricity used saved
+
+## [0.17.0]
+### changed
+- forecast: can extend further into the future using the last year as a flat value where actual forecasted values are unavailable
+- hydropower: lifetime set to 50 years
+- diesel prices: method for preprocessing and reading  
+- ashp both: added 2x multiplier to estimate cost of system needed
+- ashp res: added minimum 18,000 Btu/hr for size of unit installed
+- ashp res: added Capacity modifier to
+
+
+## [0.16.13]
+### added
+- added water/wastewater summary
+
+## [0.16.12]
+### added
+- levelized cost of energy, and break even costs added to components 
+
+### updated
+- biomass includes maintanance cost in savings
+
+## [0.16.11]
+### updated
+- transmission calculations for proposed intertie system, and heat recovery lost
+- transmission summary
+
+## [0.16.10]
+### updated
+- transmission component transmission loss per mile
+
+### added
+- documentation for interties.py (transmission comp)
+
+## [0.16.9]
+### updated
+- interties cost savings 
+
+## [0.16.8]
+### added
+- consumption col to village log
+
+### fixes
+- population col in village log
+
+## [0.16.7]
+### added
+- Transmission component
+
+## [0.16.6]
+### changes
+- hydro project tags are based on index, project names are saved as information in input data
+
+### fixes
+- generating summaries for running model with only interties no longer crashs
+
+## [0.16.5]
+### fixes
+- preprocessor coping for intertie projects
+- added hr used flag check for calculating heating fuel lost
+
+
+## [0.16.4]
+### changed
+- intertied community prices (diesel & electric) are the same 
+- hydro proposed generation is capped for actual diesel generation
+- fixed diesel prices when community is tagged with a project
+
+## [0.16.3]
+### fixed
+- Hydro summary headers
+
+### changed
+- population added to village sector summary
+- hydro Net generation maxed at actual consumption of start year
+
+## [0.16.2]
+### added
+- hydropower component
+
+### updated
+- all other components are updated to ignore projects not from their components
+- summaries and outputs updated to disregard non related projects
+
+## [0.16.1]
+### added
+- file for each community summarizing the npv values per component
+
+### upadate
+- updated headings for component outputs
+- added intertie column for ASHP summaries
+- added diesel prices to Solar and Wind Summaries
+- updated the component template
+
+## [0.16.0]
+### added
+- intergration of existing projects for wind
+- support to driver for exiting projects
+
+### changed
+- current year to 2015
+
+## [0.15.5]
+## fixed
+- data in peak monthly btu/hr column of ashp residential summary
+
+## added
+- intertie column to ashp summaries
+
+## [0.15.4]
+### fixed
+- biomass pellet price key
+- ASHP formulas fixed
+
+### added
+- monthly ashp table files added to community component output folders
+
+
+## [0.15.3]
+### fixed
+- headers in summaries
+- conversion factors in summaries
+
+## [0.15.2]
+### fixed
+- bug in summaries related to rounding 
+
+## [0.15.1]
+### changed
+- summary file headers for all componentes have been updated
+
+## [0.15.0]
+### changed
+- biomass price keys have been renamed, and expanded for pellet prices
+- added test for running for biomass wood based on resource availability
+
+## [0.14.9]
+### added 
+- ASHP (air source heat pump) base component
+- Non-residential ASHP component
+- Residential ASHP component
+
+### fixes
+- bug in cli copy where metadata.txt was not copied
+- bug in cli compare caused by .pkl file
+- bug in fuel oil summary, where non-res heating fuel total was shown as opposed to non-res heating oil.
+
+## [0.14.8]
+### added 
+- electric price summary
+
+## [0.14.7]
+### changed
+- speed up cli run command
+
+### added
+- output of results in a binary fromat (python pickle)
+
+## [0.14.6]
+### changed
+- plots not generated by default with cli
+
+### added
+- order for componentes to run it to insure that values needed in biomass components are calculated ahead of time
+- plot(-p) option added to cli, to generate plots
+
+### updated
+- wing power, proposed generation takes existing solar generation into account
+- wind power, added test to check for proposed capacity > 0 before doing calculations
+- wind power, added more reasons for not runing
+- solar power, proposed generation takes existing wind generation into account
+- biomass pellet, added road_system test
+
+### fixed 
+- copy errors between biomass base and biomass pellet and biomass cordwood 
+- Klukwan preprocessing for generation data, now includes Chilkat Valley
+- missing prices fix; if a given fuel price is N/A, default to 0 
+
+## [0.14.5]
+### added 
+- biomass base
+- biomass cordwood
+- biomass pellet
+
+## [0.14.4]
 ### changed 
 - updated solar and wind component outputs
 - changed solar default values (.3 -> .15, no powerhouse cost)
@@ -8,8 +297,7 @@
 ### fixed
 - generation calculation with missing lineloss fixed
 
-
-## [0.14.2]
+## [0.14.3]
 ### changed 
 - solar and wind output headers
 - subtracts existing solar load from propoesed when calculating proposed
@@ -26,8 +314,6 @@
 
 ### fixed
 - PCE generator efficiency is now calculated from only the diesel generation 
-
-
 
 ## [0.14.1]
 ### fixed

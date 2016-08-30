@@ -5,6 +5,7 @@ help_command.py
 """
 import pycommand
 import aaem.cli
+import cli_lib
 
 class HelpCommand(pycommand.CommandBase):
     """
@@ -22,9 +23,10 @@ class HelpCommand(pycommand.CommandBase):
             print aaem.cli.AaemCommand.commands[self.args[0]].description
             return 0
         elif self.args:
-            print ("command: [" + self.args[0] + "] not recongnized.\n"
+            msg = ("command: [" + self.args[0] + "] not recongnized.\n"
             "  avaliable commands: " + str(aaem.cli.AaemCommand.commands.keys()) 
                     )
+            cli_lib.print_error_message (msg)
         else:
             print aaem.cli.AaemCommand.usagestr
             print aaem.cli.AaemCommand.description    

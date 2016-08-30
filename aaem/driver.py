@@ -3,637 +3,949 @@ driver.py
 
     will run the model
 """
+from aaem import summaries, __version__, __download_url__
+from aaem.components import comp_lib, comp_order
 from community_data import CommunityData
 from forecast import Forecast
-import plot
 from diagnostics import diagnostics
-from preprocessor import preprocess, Preprocessor
+from preprocessor import preprocess
 import defaults
-from constants import mmbtu_to_kWh, mmbtu_to_gal_HF
-import shutil
-from pandas import DataFrame, read_csv, concat
-
-import colors
-
-import numpy as np
 
 import yaml
 import os.path
 from importlib import import_module
 from datetime import datetime
-import warnings
-import sys
-
-
-
-
-from aaem.components import comp_lib
-
+import zipfile
+import shutil
+try:
+    import cPickle as pickle
+    #~ print "C Pickle"
+except ImportError:
+    import pickle
 
 
 class Driver (object):
     """ 
     Driver for the AAEM.
-    """
     
-    def __init__ (self, data_dir ,overrides, defaults):
+    Invariants:
+        these variables should not change after intitilazation 
+            self.model_root: is the model root path
+            self.inputs_dir: is the default inputs directory
+            self.config_dir: is the default confing directory
+            self.global_config: is the default global config directory
+            self.comp_lib: is a dictionay of components
+            self.comp_order: list of the order of components to run
+    """
+    def __init__ (self, model_root):
         """ 
         set up driver 
         
-        pre:
-            infile is an absolute path 
-        post:
-            model is ready to be run
-        """
-        self.di= diagnostics()
-        try:
-            self.cd = CommunityData(data_dir, overrides, defaults, self.di)
-        except IOError as e:
-            raise RuntimeError, \
-                ("A Fatal Error Has occurred, ("+ str(e) +")", self.di)
-        try:
-            self.fc = Forecast(self.cd, self.di)
-        except RuntimeError as e:
-            raise RuntimeError, \
-                    ("A Fatal Error Has occurred, ("+ str(e) +")", self.di)
-        self.load_comp_lib()
+        input:
+            model_root: path to model root <string>
         
-    def load_comp_lib (self):
-        """
-        load the component library
-        pre:
-            comp_lib.yaml is a library of all available model components
+        output:
+            none
+        
+        preconditions:
+            none
+       
         post:
-            self.comp_lib is a dictonarey the maps the names of components in
-        absolute defaults, to the python modules. 
+            self.model_root: is the model root path
+            self.inputs_dir: is the default inputs directory
+            self.config_dir: is the default confing directory
+            self.global_config: is the default global config directory
+            self.comp_lib: is a dictionay of components
+            self.comp_order: list of the order of components to run
         """
-        #~ fd = open("comp_lib.yaml", 'r')
-        #~ self.comp_lib = yaml.load(fd)
-        #~ fd.close()
+        self.model_root = model_root
+        
+        # default locations
+        self.inputs_dir = os.path.join(model_root, 'input_files')
+        self.config_dir = os.path.join(model_root, 'config')
+        self.global_config = os.path.join(model_root, 
+                                            'config', '__global_config.yaml')
         self.comp_lib = comp_lib
+        self.comp_order = comp_order
         
-    def run_components (self):
+    def get_prereqs(self, comp_name):
         """
-        run enabled components
-        pre:
-            self.comp_lib exists
-        post:
-            self.comps_used is a dictionary of the used components. 
+        get the prerequisits for a component
+        
+        inputs:
+            comp_name: component name <string>
+            
+        outputs:
+            returns list of prerequsite components
+            
+        preconditions:
+            None
+        
+        postconditions:
+            None
         """
-        self.comps_used = {}
-        for comp in self.comp_lib:
-            if self.cd.get_item(comp,"enabled") == False:
-                continue
-            component = self.get_component(self.comp_lib[comp])(self.cd,
-                                                                self.fc,
-                                                                self.di)
-            component.run()
-            self.comps_used[comp] = component
-
+        try:
+            return self.preq_lib[comp_name]
+        except AttributeError:
+            self.preq_lib = {}
+        except KeyError:
+            pass
+            
+        self.preq_lib[comp_name] = \
+                    import_module("aaem.components." + comp_name).prereq_comps
+        return self.preq_lib[comp_name]
     
     def get_component (self, comp_name):
         """
-        import a component
-        pre:
-            comp name is the name of a component
-        post:
-            returns imported module
-        """
-        return import_module("aaem.components." + comp_name).component
+        get a component class
         
-    def save_components_output (self, directory):
+        inputs:
+            comp_name: component name <string>
+            
+        outputs:
+            returns a component class
+            
+        preconditions:
+            None
+        
+        postconditions:
+            None
+        """
+        try:
+            return self.imported_comps[comp_name]
+        except AttributeError:
+            self.imported_comps = {}
+        except KeyError:
+            pass
+            
+        self.imported_comps[comp_name] = \
+                    import_module("aaem.components." + comp_name).component
+        return self.imported_comps[comp_name]
+        
+    def setup_community (self, community, i_dir = None,
+                                c_config = None, g_config = None):
+        """
+        setup a community to run the model
+        
+        inputs:
+            community: a community/project <string>
+            i_dir: (optional) non default input files directory <string> 
+            c_config: (optional) non default community config file <string>
+            g_config: (optional) non default global config file <string>
+            
+        outputs:
+            returns an initilized CommunityData, Forecast, Diagnostic object for 
+        the community
+        
+        preconditions:
+            See class invariants
+        
+        postconditions:
+            None
+        """
+        diag = diagnostics()
+        
+        if c_config is None:
+            c_config = os.path.join(self.config_dir,
+                                community.replace(' ','_') + "_config.yaml")
+        
+        if g_config is None:
+            g_config = self.global_config
+            
+        if i_dir is None:
+            com_dir = community.replace(' ','_').split('+')[0]
+            i_dir = os.path.join(self.inputs_dir, com_dir) 
+            
+        
+        tag = '+'.join(community.replace(' ','_').split('+')[1:]).lower()
+        if tag == '':
+            tag = None  
+
+        if not os.path.exists(c_config):
+            raise IOError, "Config Does not exist for " + community
+            
+        try:
+            cd = CommunityData(i_dir, c_config, g_config, diag, tag)
+        except IOError as e:
+            raise RuntimeError, \
+                ("A Fatal Error Has occurred, ("+ str(e) +")")
+        try:
+            fc = Forecast(cd, diag)
+        except RuntimeError as e:
+            raise RuntimeError, \
+                    ("A Fatal Error Has occurred, ("+ str(e) +")")
+        
+        return cd, fc, diag
+        
+    def run_components (self, cd, fc, diag):
+        """
+        run enabled components
+        
+        intputs:
+            cd: An initilized aaem.CommunityData object <aaem.CommunityData>
+            fc: An initilized aaem.Forecast object <aaem.Forecast>
+            diag: An initilized aaem.Diagnostis object <aaem.Diagnostics>
+            cd, fc, and diag, should be for the same community
+        
+        outputs:
+            returns comps_used, a dictionary of excuted components
+        
+        preconditions:
+            see class invariants
+            
+        post:
+            none
+            
+        """
+        comps_used = {}
+        for comp in self.comp_order:
+            if cd.get_item(comp, "enabled") == False:
+                continue
+                
+            prereq = {}
+            pr_list = self.get_prereqs(self.comp_lib[comp])
+                
+            for pr in pr_list:
+                prereq[pr] = comps_used[pr]
+                
+            CompClass = self.get_component(self.comp_lib[comp])
+            component = CompClass (cd, fc, diag, prereq)
+            component.run()
+            
+            comps_used[comp] = component
+        return comps_used
+    
+        
+    def save_components_output (self, comps_used, community, tag = ''):
         """
         save the output from each component
-        pre:
-            self.comps_used should be a set of run components
-        post:
-            for each component in self.comps_used the electric, heating, and
-        financial outputs are saved as csv files 
-        """
         
-        try:
-            os.makedirs(os.path.join(directory, "component_outputs/"))
-        except OSError:
-            pass
-    
-        for comp in self.comps_used:
-            self.comps_used[comp].save_csv_outputs(os.path.join(directory,
-                                                          "component_outputs/"))
-            self.comps_used[comp].save_additional_output(directory)
-    
-    def save_forecast_output (self, directory, img_dir):
-        """
-        save the forecast output:
-        pre:
-            forecast.save_forecast preconditions are met.
-        post: 
-            the forecast is saved as a csv file
-        """
-        self.fc.save_forecast(directory, img_dir)
-    
-    def save_input_files (self, directory):
-        """ 
-        save the config used
-        pre:
-            model needs to have been run
-        post:
-            the nputs used for each component are saved
-        """
-        self.cd.save_model_inputs(os.path.join(directory,"config_used.yaml"))
-    
-    def save_diagnostics (self, directory):
-        """ 
-        save the diagnostics
-        pre:
-            directory is the location to save the file
-        post:
-            diagnostics file is saved
-        """
-        self.di.save_messages(os.path.join(directory,
-            self.cd.get_item("community", 'name').replace(" ","_")\
-                                                +"_runtime_diagnostics.csv"))
-        
-
-def run_model_simple (model_root, run_name, community):
-    """
-    simple run function 
-    
-    assumes directory structure used by default in cli
-        -model_root
-        --setup\
-        ---input_data
-        ---raw
-        --<runs>
-        ---config
-        ----test_defaults.yaml
-        ----<communities>
-        ---input_data
-        ----<communities>
-        ---results
-        ----<communities>
-    """
-    com = community.replace(" ","_")
-    overrides = os.path.join(model_root, run_name, "config", 
-                                                    com, "community_data.yaml") 
-    defaults = os.path.join(model_root, run_name, "config", 
-                                                          "test_defaults.yaml")
-
-    input_data = os.path.join(model_root, run_name, "input_data", com)
-    out_dir =os.path.join(model_root, run_name, "results", com)
-    
-    run_model(name = community, override_data = overrides,
-              default_data = defaults, input_data = input_data, 
-              results_dir = out_dir, results_suffix = None)
-
-def run_model (config_file = None, name = None, override_data = None, 
-                            default_data = None, input_data = None,
-                            results_dir = None, results_suffix = None, 
-                            img_dir = None):
-    """ 
-    run the model given an input file
-    pre:
-        config_file is the absolute path to a yaml file with this format:
-            |------ config example -------------
-            |name: #community name
-            |overrides: # a path (ex:"..test_case/manley_data.yaml")
-            |defaults: # blank or a path
-            |output directory path: # a path
-            |output directory suffix: TIMESTAMP # TIMESTAMP|NONE|<string>
-            |-------------------------------------
-            The Following will override the information in the config_file and 
-        are optional 
-        
-        note: if config file is None(not provided) all of these must be provided
-            name: is a string (Community Name)
-            override_data: a communit_data.yaml file
-            default_data: a communit_data.yaml file
-            output directory path: path to where outputs should exist
-            output directory suffix: suffix to add to directory
-    post:
-        The model will have been run, and outputs saved.  
-    """
-    if config_file:
-        fd = open(config_file, 'r')
-        config = yaml.load(fd)
-        fd.close()
-    else:
-        config = {}
-        
-    if name:
-        config['name'] = name
-    if override_data:
-        config['overrides'] = override_data
-    if default_data:
-        config['defaults'] = default_data
-    if input_data:
-        config['data directory'] = input_data
-    if results_dir:
-        config['output directory path'] = results_dir
-    if results_suffix:
-        config['output directory suffix'] = results_suffix
-    
-    data_dir = os.path.abspath(config['data directory'])
-    overrides = os.path.abspath(config['overrides'])
-    defaults = "defaults" if config['defaults'] is None else\
-                os.path.abspath(config['defaults'])
-    
-    out_dir = config['output directory path']
-    
-    out_dir = os.path.abspath(out_dir)
-
-    suffix = config['output directory suffix']
-    if suffix == "TIMESTAMP":
-        timestamp = datetime.strftime(datetime.now(),"%Y%m%d%H%M%S")
-        out_dir+= "_"  + timestamp 
-    elif suffix != "NONE":
-        out_dir+= "_" + suffix 
-    else:
-        pass
-
-    out_dir = os.path.join(out_dir,config['name'],"")
-    try:
-        os.makedirs(out_dir)
-    except OSError:
-        pass
-    try:
-        model = Driver(data_dir, overrides, defaults)
-        model.load_comp_lib()
-        model.run_components()
-        model.save_components_output(out_dir)
-        try:
-            shutil.copytree(data_dir,os.path.join(out_dir, "input_data"))
-            try:
-                shutil.copy(os.path.join(data_dir , '..', 
-             config['name'].replace(" ", "_") + "_preprocessor_diagnostis.csv"),
-                os.path.join(out_dir))
-            except IOError:
-                pass
-        except OSError:
-            pass
-        model.save_forecast_output(out_dir, img_dir)
-        model.save_input_files(out_dir)
-        model.save_diagnostics(out_dir) 
-    except RuntimeError as e:
-        print "Fatal Error see Diagnostics"
-        print str(e[0])
-        d = e[1]
-        d.add_error("FATAL", str(e[0]))
-        d.save_messages(os.path.join(out_dir,"diagnostics.csv"))
-        model = None
-    return model, out_dir
-
-def config_split (root, out):
-    """
-    find all of the similarities in community data files and pull them out
-    pre:
-        root: the root of the config directory
-            root/
-            --comunity1
-            --comunity2
-              ...
-        out: output directory
-    """
-    root = os.path.abspath(root)
-    coms = os.listdir(root)
-    ymls = {}
-    for com in coms:
-        fd = open(os.path.join(root,com,"config_used.yaml"))
-        ymls[com] = yaml.load(fd)
-        fd.close()
-    
-    com0 = coms[0]
-    common = {}
-    for comp in ymls[com0]:
-        unit = {}
-        del_keys = []
-        for key in ymls[com0][comp]:
-            inall = True
-            for com in coms:
-                if com == com0:
-                    continue
-                if ymls[com][comp][key] != ymls[com0][comp][key]:
-                    inall = False
-                    break
-            if inall:
-                unit[key] = ymls[com0][comp][key]
-                del_keys.append(key)
-        for com in coms:
-            for key in del_keys:
-                #~ print key
-                del ymls[com][comp][key]
-        common[comp] = unit
-    
-    for com in coms:
-        del_comps = []
-        for comp in ymls[com]:
-            #~ print comp + "_" + str(len
-            if len(ymls[com][comp]) == 0:
-                del_comps.append(comp)
-        for comp in del_comps:
-            del ymls[com][comp]
-        
-    fd = open(os.path.join(out,"shared_config.yaml"), 'w')
-    text = yaml.dump(common, default_flow_style=False) 
-    fd.write(text)
-    fd.close()
-    
-    for com in coms:
-        fd = open(os.path.join(out,com,"community_data.yaml"), 'w')
-        text = yaml.dump(ymls[com], default_flow_style=False) 
-        fd.write(text)
-        fd.close()
-        
-    
-
-
-def run_batch (config, suffix = "TS", img_dir = None):
-    """
-    run a set of communities
-    
-    pre:
-        config: a library formated {"comunity1, <path to driver file>",
-                                    "comunity2, <path to driver file>",...}
-                or a .yaml file that would create that when read.
-        suffix:
-            suffix for the results directory
-    post:
-        model is run for the communities, and the outputs are saved in a common 
-    directory subdivided by community. 
-    """
-    #~ log = open("Fail.log", 'w')
-    
-    try:
-        fd = open(config, 'r')
-        config = yaml.load(fd)
-        fd.close()
-    except:
-        pass
-    communities = {}
-    
-    if suffix == "TS":
-        suffix = datetime.strftime(datetime.now(),"%Y%m%d%H%M%S")
-    for key in sorted(config.keys()):
-        print key
-        #~ try:
-        #~ start = datetime.now()
-        r_val = run_model(config[key], results_suffix = suffix, 
-                          img_dir = img_dir)
-        communities[key] = {"model": r_val[0], "directory": r_val[1]}
-        #~ print datetime.now() - start
-        #~ except StandardError as e :
-             #~ log.write("COMMUNITY: " + key + "\n\n")
-             #~ log.write( str(sys.exc_info()[0]) + "\n\n")
-             #~ log.write( str(e) + "\n\n")
-             #~ log.write("--------------------------------------\n\n")
-             
-    #~ log.close()
-    return communities
-    
-
-
-
-def setup (coms, data_repo, model_root, 
-           save_bacth_files = False, run_name = 'run_init',
-           setup_intertie = True):
-    """
-        Set up a model run directory if it does not exist. This is for the first
-    time setup. Running it on a directory that exists is unsupported. 
-    pre:
-        coms: a list of communites
-        data_repo: path to the data repo
-        model_root: directory to set model up in
-        save_batch_files: save the files to run give batches, use full for 
-                          development or if running from python directly
-    """
-    try:
-        os.makedirs(os.path.join(model_root, 'setup', "raw_data"))
-    except OSError:
-        pass
-    try:
-        os.makedirs(os.path.join(model_root, 'setup', "input_data"))
-    except OSError:
-        pass
-    try:
-        os.makedirs(os.path.join(model_root, run_name, "input_data"))
-    except OSError:
-        pass
-    try:
-        os.makedirs(os.path.join(model_root, run_name, "config"))
-    except OSError:
-        pass
-    #~ try:
-        #~ os.makedirs(os.path.join(model_root, run_name, "results"))
-    #~ except OSError:
-        #~ pass
-    
-    model_batch = {}
-    for com_id in coms:
-        it_batch = {}
-        ids = preprocess(data_repo,os.path.join(model_root,
-                                                'setup',"input_data"),com_id)
-        if len(ids) == 1:
-            write_config(ids[0], os.path.join(model_root,run_name))
-            model_batch[ids[0]] = it_batch[ids[0]] = write_driver(ids[0],
-                                            os.path.join(model_root,run_name))
+        inputs:
+            comps_used: a dictionary of excuted components <dictionary>
+            community: community or 'name' <string>
+            tag: (optional) tag for results dir <string>
             
-            #~ shutil.copytree(os.path.join(model_root, 'setup',"input_data",
-                                         #~ ids[0].replace(" ", "_")),
-                                         #~ os.path.join(model_root, 
-                                            #~ run_name,"input_data",
-                                            #~ ids[0].replace(" ", "_")))
-            try:
-                os.makedirs(os.path.join(model_root,run_name,
-                                        "input_data",ids[0].replace(" ", "_")))
-            except OSError:
-                    pass
-
-            for fname in Preprocessor.MODEL_FILES.values():
-                try:
-                        
-                    shutil.copy(os.path.join(model_root, 'setup',
-                                "input_data",ids[0].replace(" ", "_"),fname),
-                                os.path.join(model_root,run_name,"input_data",
-                                             ids[0].replace(" ", "_"),fname))
-                except (OSError, IOError):
-                    pass
-            try:
-                shutil.copy(os.path.join(model_root, 'setup',"input_data",
-                    ids[0].replace(" ", "_") + "_preprocessor_diagnostis.csv"),
-                                         os.path.join(model_root,
-                                            run_name, "input_data"))
-            except IOError:
-                pass
+        outputs:
+            saves components as .csv files
+            
+        preconditions:
+            see invariants
+            
+        postconditions:
+            None
+        """
+        if tag != '':
+            tag = '_' + tag
+        directory = os.path.join(self.model_root, 'results' + tag,
+                                            community.replace(' ','_'),
+                                            "component_outputs/")
+        #~ print directory
+        try:
+            os.makedirs(os.path.join(directory))
+        except OSError:
+            pass
+            
+        for comp in comps_used:
+            comps_used[comp].save_csv_outputs(directory)
+            comps_used[comp].save_additional_output(directory)
+    
+    def save_forecast_output (self, fc, community, img_dir, 
+                                                    plot = False, tag = ''):
+        """
+        save the forecast output
+        
+        inputs:
+            fc: excuted forecast object <aaem.Forecast>
+            community: community or 'name' <string>
+            img_dir: directory to save plots <strings>
+            plot: (optional, default False)boolean to plot <bool>
+            tag: (optional) tag for results dir <string>
+            
+        outputs:
+            saves forecast as .csv files, and plots, if plot == True
+            
+        preconditions:
+            see invariants
+            
+        postconditions:
+            None
+        """
+        if tag != '':
+            tag = '_' + tag
+        directory = os.path.join(self.model_root, 'results' + tag,
+                                            community.replace(' ','_'))
+                                            
+        try:
+            os.makedirs(os.path.join(directory))
+        except OSError:
+            pass
+        fc.save_forecast(directory, img_dir, plot)
+    
+    def save_input_files (self, cd, community, tag = ''):
+        """ 
+        save the input files (confing yaml)
+        
+        inputs:
+            cd: excuted community data object <aaem.CommunityData>
+            community: community or 'name' <string>
+            tag: (optional) tag for results dir <string>
+            
+        outputs:
+            saves config used as a yaml file
+            
+        preconditions:
+            see invariants
+            
+        postconditions:
+            None
+        """
+        if tag != '':
+            tag = '_' + tag
+        directory = os.path.join(self.model_root, 'results' + tag,
+                                            community.replace(' ','_'))
+        try:
+            os.makedirs(os.path.join(directory))
+        except OSError:
+            pass
+        cd.save_model_inputs(os.path.join(directory,"config_used.yaml"))
+    
+    def save_diagnostics (self, diag, community, tag = ''):
+        """ 
+        save the diagnostic
+        
+        inputs:
+            diag: excuted diagnostics object <aaem.Diagnostics>
+            community: community or 'name' <string>
+            tag: (optional) tag for results dir <string>
+            
+        outputs:
+            saves diagnostic as .csv files
+            
+        preconditions:
+            see invariants
+            
+        postconditions:
+            None
+        """
+        if tag != '':
+            tag = '_' + tag
+        directory = os.path.join(self.model_root, 'results' + tag,
+                                            community.replace(' ','_'))
+        try:
+            os.makedirs(os.path.join(directory))
+        except OSError:
+            pass
+                                        
+        diag.save_messages(os.path.join(directory, 
+                    community.replace(" ","_") + "_runtime_diagnostics.csv"))
+                    
+    def store_results (self, name, comps_used, tag = '', overwrite = False):
+        """
+        store results in binary pickle file
+        
+        inputs:
+            name: community name or assigned 'name' <string>
+            comps_used: a dictionary of excuted components <dictionary>
+            tag: (optional) tag for results dir <string>
+            overwrite: (optional, default: False) if true overwrite the 
+                .pkl file <bool>
+            
+        outputs:
+            saves binary output
+            
+        preconditions:
+            see invariants
+            
+        postconditions:
+            None
+        """
+        if tag != '':
+            tag = '_' + tag
+        directory = os.path.join(self.model_root, 'results' + tag)
+        
+        picklename = os.path.join(directory,'binary_results.pkl')
+        if overwrite:
+            mode = 'rb'
         else:
-            ids = [ids[0] + "_intertie"] + ids
-            for id in ids: 
-                if not setup_intertie:
-                    if id.find("intertie") == -1:
-                        continue
-                        
-                write_config(id, os.path.join(model_root,run_name))
-                model_batch[id] = it_batch[id] = write_driver(id, 
-                                            os.path.join(model_root,run_name))
-
-                try:
-                    shutil.copy(os.path.join(model_root, 'setup',"input_data",
-                     ids[1].replace(" ", "_") + "_preprocessor_diagnostis.csv"),
-                                             os.path.join(model_root,
-                                                run_name, "input_data"))
-                except IOError:
-                    pass
-
-                
-                try:
-                    os.makedirs(os.path.join(model_root,run_name,
-                                        "input_data",id.replace(" ", "_")))
-                except OSError:
-                    pass
-
-                for fname in Preprocessor.MODEL_FILES.values():
-                    try:
-                        
-                        shutil.copy(os.path.join(model_root, 'setup',
-                                    "input_data",id.replace(" ", "_"),fname),
-                                os.path.join(model_root,run_name,"input_data",
-                                             id.replace(" ", "_"),fname))
-                    except (OSError, IOError):
-                        pass
-
-        if save_bacth_files:
-            fd = open(os.path.join(model_root,
-                                com_id.replace(" ", "_") + "_driver.yaml"), 'w')
-            text = yaml.dump(it_batch, default_flow_style=False) 
-            fd.write("#batch  driver for communities tied to " + com_id +"\n")
-            fd.write(text)
-            fd.close()
+            mode = 'ab'
             
-    if save_bacth_files:
-        fd = open(os.path.join(model_root,"model_driver.yaml"), 'w')
-        text = yaml.dump(model_batch, default_flow_style=False) 
-        fd.write("#batch  driver for all communities\n")
-        fd.write(text)
-        fd.close()
-    write_defaults(os.path.join(model_root, run_name))
+        with open(picklename, mode) as pkl:
+             pickle.dump([name, comps_used], pkl, pickle.HIGHEST_PROTOCOL)
+             
+    def load_results (self, tag = ''):
+        """
+            load a set of binary results from a piclkle file in the results 
+        directory
+        
+        inputs:
+            tag: (optional) tag for results dir <string>
+            
+        outputs:
+            returns results as a dictionart of communities
+            
+        preconditions:
+            see invariants
+            
+        postconditions:
+            None
+        """
+        if tag != '':
+            tag = '_' + tag
+        directory = os.path.join(self.model_root, 'results' + tag)
+        try:
+            os.makedirs(os.path.join(directory))
+        except OSError:
+            pass
+        results = {}
+        picklename = os.path.join(directory,'binary_results.pkl')
+        with open(picklename, 'rb') as pkl:
+            while True:
+                try:
+                    temp = pickle.load(pkl)
+                    key = temp[0]
+                    i = 0
+                    while key in results.keys():
+                        key = key.split(' #')[0] + ' #' + str(i)
+                        i += 1
+                    
+                    results[key] = temp[1]
+                except:
+                    break
+        return results
+        
+    def run (self, community, name = None, 
+                    i_dir = None, c_config = None, g_config = None,
+                    tag = '', img_dir = None, plot = False):
+        """
+        run the model for a community
+        
+        inputs:
+            community: the community <string>
+            name: (optional, default: community) the assinged name for 
+                the run <string>
+            i_dir: (optional, default: none) alternate path to inputs 
+                directory <string> 
+            c_config: (optional, default: none) alternate community config 
+                file <string>
+            g_config: (optional, default: none) alternat global confing 
+                file <string>
+            tag: (optional) tag for results dir <string>
+            img_dir: directory to save plots <strings>
+            plot: (optional, default False)boolean to plot <bool>
+            
+        outputs:
+            the model is run for a community/project/assigned 'name'
+            
+        preconditions:
+            see invariants
+            
+        postconditions:
+            None
+        """
+        if name is None:
+            name = community
+        
+        temp = tag
+        if img_dir is None:
+            if temp != '':
+                temp = '_' + tag
+            img_dir = os.path.join(self.model_root, 'results' + temp, 'plots')
+        
+        cd, fc, diag = self.setup_community(community, i_dir, 
+                                                        c_config, g_config)
+        comps_used = self.run_components(cd, fc, diag)
+        
+        self.save_components_output(comps_used, name, tag)
+        self.save_forecast_output(fc, name, img_dir, plot, tag)
+        self.save_input_files(cd, name, tag )
+        self.save_diagnostics(diag, name, tag) 
+        
+        comps_used['community data'] = cd
+        comps_used['forecast'] = fc
+        self.store_results(name, comps_used, tag)
+        
+    def run_many (self, communities):
+        """
+        run a list of communites using default options
+        
+        inputs:
+            communities: a list of communities <list>
+        """
+        for c in communities:
+            self.run(c)
+            
+    def run_script(self):
+        """
+        TODO move code to run a script from cli
+        """
+        pass
+        
+            
+    def save_metadata (self, tag = ""):
+        """
+        save model metadata
+        
+        inputs:
+            tag: (optional) tag for results dir <string>
+            
+        outputs:
+            saves version_metadata.txt
+            
+        preconditions:
+            see invariants
+            
+        postconditions:
+            None
+        """
+        if tag != '':
+            tag = '_' + tag
+        directory = os.path.join(self.model_root, 'results' + tag)
+        
+        try:
+            os.makedirs(os.path.join(directory))
+        except OSError:
+            pass
+        
+        with open(os.path.join(directory, "version_metadata.txt"), 'w') as fd:
+             ts = datetime.strftime(datetime.now(), "%Y-%m-%d")
+             fd.write(("Code Version: " + __version__ + "\n" 
+                       "Code URL: " + __download_url__ + "\n" 
+                       "Date Run: " + ts + '\n' ))
+
+            
+    def save_summaries (self, tag = ''):
+        """
+            save the summaries for the communities in a results directories 
+        binary results file
+        
+        inputs:
+            tag: (optional) tag for results dir <string>
+            
+        outputs:
+            sumamry files are saved
+            
+        preconditions:
+            see invariants
+            
+        postconditions:
+            None
+        """
+        res = self.load_results(tag)
+        
+        if tag != '':
+            tag = '_' + tag
+        directory = os.path.join(self.model_root, 'results' + tag)
+        try:
+            os.makedirs(os.path.join(directory))
+        except OSError:
+            pass
+        summaries.village_log(res,directory)
+        summaries.building_log(res,directory)
+        summaries.fuel_oil_log(res,directory)
+        summaries.forecast_comparison_log(res,directory)
+        summaries.electric_price_summary(res,directory)
+        summaries.call_comp_summaries(res,directory)
+        
+        
     
-    try:
-        fd = open(os.path.join(model_root,'setup','raw_data',"VERSION"),'r')
-        data_ver = fd.read().replace("\n","")
-        fd.close()
-    except IOError:
-        data_ver = "unknown_version_created_"+ datetime.strftime(datetime.now(),
-                                                                "%Y%m%d")
-    
-    from aaem import __version__ as code_ver
-    fd = open(os.path.join(model_root, run_name, "version_metadata.txt"),'w')
-    fd.write(("Code Version: " + str(code_ver) + '\n'
-              "Data Repo Version: " + str(data_ver) + '\n'))
-    
-    
-    return model_batch
-    
-def write_defaults(root, my_defaults = None):
+
+
+class Setup (object):
     """
+    setup the structure needed to run the model
+    
+    class invariants:
+        self.model_root: is the model root path <string>
+        self.communities: list of communities to setup <string>
+        self.data_repo: path data repo <string>
+        self.tag: tag used a the directory to setup the model in 
+            model_root <string>
     """
-    #TODO use my defaults instead
-    def_file = open(os.path.join(root, "config", 
-                                    "test_defaults.yaml"), 'w')
-    def_file.write(yaml.dump(defaults.build_setup_defaults(comp_lib)))
-    def_file.close()
+    
+    def __init__ (self, model_root, communities, data_repo, tag = None):
+        """
+        initilizer 
+        
+        inputs:
+            model_root: model root path <string>
+            communities: list of communities to setup <string>
+            data_repo: path to data repo <sting>
+            tag: (optional) tag to use as self.tag setup sub directory,
+                if not provided self.tag will be m<version>_d<version> <string> 
+            
+        postconditions:
+            see invatiants
+        """
+        self.model_root = model_root
+        self.communities = communities
+        self.data_repo = data_repo
+        
+        self.tag = tag
+        if tag is None:
+            self.tag = self.make_version_tag()
                 
-def write_driver (com_id, root):
-    """
-    write a drive file
-    pre:
-        com_id: the community id
-        root: the model root
-    post:
-        the driver file is saved
-    """
-    driver_text = 'name: ' + com_id.replace(" ","_") + '\n'
-    driver_text +=  'overrides: ' + os.path.join(root, "config",
-                                                 com_id.replace(" ","_"),
-                                                 "community_data.yaml") + '\n'
-    driver_text += 'defaults: ' + os.path.join(root,"config",
-                                            "test_defaults.yaml") + '\n'
-    driver_text += 'data directory: ' + os.path.join(root,
-                                                "input_data",
-                                                com_id.replace(" ","_")) + '\n'
-    driver_text += 'output directory path: ' + os.path.join(root,
-                                                 "results") + '\n'
-    driver_text += 'output directory suffix: NONE # TIMESTAMP|NONE|<str>\n'
+                
+    def make_version_tag (self):
+        """
+        generate a version tag
+        
+        precondition:
+            see invariants
+            'VERSION' file must exist in repo
+            
+        outputs
+            returns tag
+        """
+        data_version_file = os.path.join(self.data_repo, 'VERSION')
+        with open(data_version_file, 'r') as fd:
+            ver = fd.read().replace("\n", "")
+            ver = 'm' +  __version__  + '_d' + ver
+        return ver
+        
+    def setup_directories (self):
+        """ 
+        setup the directories
+        
+        preconditions:
+            see invariats
+            
+        postconditions:
+            config and input_files are removed and then
+            config and input_files directories are created.
+        """
+        setup_path = os.path.join(self.model_root, self.tag)
     
-    driver_path = os.path.join(root,"config", com_id.replace(" ","_"),
-                       com_id.replace(" ", "_") + "_driver.yaml")
+        try:
+            shutil.rmtree(os.path.join(setup_path, "input_files"))
+        except OSError:
+            pass
+        try:
+            shutil.rmtree(os.path.join(setup_path, "config"))
+        except OSError:
+            pass
+        
+        os.makedirs(os.path.join(setup_path, "input_files"))
+        os.makedirs(os.path.join(setup_path, "config"))
+            
+    def setup_community_configs (self, coms = None):
+        """
+        set up the conigureation files
+        
+        inputs:
+            coms: (optional) alterante of communites to setup should be a 
+                subset of self.communities
+        
+        post conditions:
+            saves a configuration .yaml for each community/ projcet in coms or 
+        self.communities
+        """
+        config_path = os.path.join(self.model_root, self.tag, 'config')
+        if coms is None:
+            coms = self.communities
+        
+        for c in coms:
+            config = {'community':{'name': c,
+                                   'model financial': True,},
+                        }
+            comments = {'community':{'name': 'name of community/project',
+                                     'model financial': 'Model Finances?',},
+               
+                        }
+            north_slope = ["Barrow", "Nuiqsut"] 
+            if c.split('+')[0] in north_slope or c.split('_')[0] in north_slope:
+                config['community']['natural gas price'] = 3
+                config['community']['natural gas used'] = True
+                comments['community']['natural gas price'] = 'LNG price $/gal'
+                comments['community']['natural gas used'] = \
+                                                        'LNG used in community'
+            
+            config_file = os.path.join(config_path, 
+                                c.replace(' ','_') + '_config.yaml')
+            header = 'community data for ' + c 
+            write_config_file(config_file, config, comments, 
+                                            s_order = ['community',],
+                                            i_orders = {'community':['name',
+                                                        'model financial',
+                                                        'natural gas used',
+                                                        'natural gas price']},
+                                            header = header)
+            
+    def setup_community_list (self):
+        """
+        create the community list file from the repo
+        
+        preconditions:
+            see invariants, community_list.csv sould exist in data repo
+            
+        postcondition:
+            '__community_list.csv' saved in config directory
+        """
+        config_path = os.path.join(self.model_root, self.tag, 'config', 
+                                                    '__community_list.csv')
+        src_path = os.path.join(self.data_repo, 'community_list.csv')
+        shutil.copy(src_path, config_path)
+
+    def setup_global_config (self):
+        """
+        setup global config
+        
+        preconditions:
+            see invariants
+            
+        postcondition:
+            default '__global_config.yaml' saved in config directory
+        """
+        config_path = os.path.join(self.model_root, self.tag, 'config', 
+                                                    "__global_config.yaml")
+        with open(config_path, 'w') as def_file:
+            def_file.write(yaml.dump(defaults.build_setup_defaults(comp_lib),
+                                                default_flow_style = False))
+            
+    def setup_input_files (self):
+        """
+        setup the input files, preprocessing the data
+        
+        preconditions:
+            see invariants
+            
+        postconditons:
+            sets up input files, and metadata
+            
+        output:
+            returns the list of ids
+        """
+        input_path = os.path.join(self.model_root,self.tag,"input_files")
+        
+        ids = self.preprocess_input_files(input_path)
+        self.move_input_files_diagnostics(input_path)
+        self.write_input_files_metadata(input_path)
+        self.archive_input_files_raw_data (input_path)
+        return ids
+        
+    def preprocess_input_files (self, input_path):
+        """
+        preprocess input files
+        
+        inputs:
+            input_path: path to preprocess the data into <string>
+            
+        preconditions:
+            see invatiants
+            
+        outputs:
+            returns ids of preprocessed communities/projects including interies
+        """
+        all_ids = []
+        for c in self.communities:
+            it_batch = {}
+            ids = preprocess(self.data_repo, input_path, c, dev = True)
+            all_ids += ids
+            
+        return all_ids
+            
+    def move_input_files_diagnostics (self, input_path):
+        """
+        move the input file diagnostics to a '__diagnostic_files' sub directory
+        
+        inputs:
+            input_path: path to preprocess the data into <string>
+        
+        postconditions:
+            move the input file diagnostics
+        """
+        diag_path = os.path.join(input_path, '__diagnostic_files')
+        try:
+            os.makedirs(diag_path)
+        except OSError:
+            pass
+        for diagf in [f for f in os.listdir(input_path) if '.csv' in f] : 
+            os.rename(os.path.join(input_path,diagf),
+                        os.path.join(diag_path,diagf))
+          
+    def write_input_files_metadata (self, input_path):
+        """ 
+        write data metadata
+        
+        inputs:
+            input_path: path to inputs directory <string>
+            
+        outputs:
+            saves 'input_files_metadata.yaml' in "__metadata" subdirectory
+        """
+        data_version_file = os.path.join(self.data_repo, 'VERSION')
+        with open(data_version_file, 'r') as fd:
+            ver = fd.read().replace("\n", "")
+            
+        md_dir = os.path.join(input_path, "__metadata")
+        try:
+            os.makedirs(md_dir)
+        except OSError:
+            pass
+        m = 'w'
+        with open(os.path.join(md_dir, 'input_files_metadata.yaml'), m) as meta:
+            meta.write(yaml.dump({'upadted': datetime.strftime(datetime.now(),
+                                                        "%Y-%m-%d %H:%M:%S"),
+                                  'data version': ver},
+                                  default_flow_style = False))
+                                  
+    def archive_input_files_raw_data (self, input_path):
+        """
+        saves an archive of the raw data in the meta dat folder
+        
+        inputs:
+            input_path: path to inputs directory<string>
+            
+        outputs:
+            saves in "raw_data.zip" in "__metadata" subdirectory
+        """
+        data_version_file = os.path.join(self.data_repo, 'VERSION')
+        with open(data_version_file, 'r') as fd:
+            ver = fd.read().replace("\n", "")
+    
+        md_dir = os.path.join(input_path, "__metadata")
+        try:
+            os.makedirs(md_dir)
+        except OSError:
+            pass
+        z = zipfile.ZipFile(os.path.join(md_dir, "raw_data.zip"),"w")
+        for raw in [f for f in os.listdir(self.data_repo) if '.csv' in f]:
+            z.write(os.path.join(self.data_repo,raw), raw)
+        z.write(os.path.join(data_version_file), 'VERSION')
+
+        
+    def setup (self, force = False):
+        """
+        run the setup functionality
+        
+        inputs:
+            force: (optional) overwrirte existing files <boolean>
+            
+        outputs:
+            model structure is setup
+        """
+        setup_path = os.path.join(self.model_root, self.tag)
+        if os.path.exists(setup_path) and force == False:
+            return False
+            
+        self.setup_directories()
+        self.setup_global_config()
+        ids = self.setup_input_files()
+        self.setup_community_configs(ids)
+        self.setup_community_list()
+        return True
+        
+        
+def write_config_file(path, config, comments, s_order = None, i_orders = None, 
+                            indent = '  ' , header = ''):
+    """
+    write a config yaml file
+    
+    inputs:
+        path: filename to save file at <string>
+        config: dictionary of configs <dict>
+        comments: dictionary of comments <dict>
+        s_order: (optional) order of sections <list>
+        i_orders: (optional) order of items in sections <dict>
+        indent: (optional) indent spacing <sting>
+        header: (optional) header line <string>
+        
+    outputs:
+        saves config .yaml file at path
+    """
+    nl = '\n'
+    text = '# ' + header + nl
+    
+    if s_order is None:
+        s_order = config.keys()
+    
+    for section in s_order:
+        text += section + ':' + nl
+        
+        if i_orders is None:
+            current_i_order = config[section].keys()
+        else: 
+            current_i_order = i_orders[section]
+            
+        for item in current_i_order:
+            try:
+                text += indent + str(item) + ': ' +  str(config[section][item])
+            except KeyError:
+                continue
+            try:
+                text +=  ' # ' +  str(comments[section][item]) 
+            except KeyError:
+                pass
+            
+            text += nl
+        text += nl + nl        
+        
+    with open(path, 'w') as conf:
+        conf.write(text)
+    
+    
+def script_validator (script_file):
+    """
+        validate a script(very basic), will raise a standard error if a problem 
+    is found
+    
+    inputs:
+        script file: a script file
+    
+    outputs:
+        retuns a validated script to use to run the model
+    """
+    extns = ['yaml','yml']
+    with open(script_file, 'r') as sf:
+        script = yaml.load(sf)
+    
+    gcfg = script['global']['config']
+    if not os.path.isfile(gcfg) and \
+           not os.path.split(gcfg)[1].split('.')[1] in extns:
+        raise StandardError, "golbal config not a yaml file"
     
     try:
-        os.makedirs(os.path.join(root, "config", com_id.replace(" ","_")))
-    except OSError:
-        pass
-    driver_file = open(driver_path, 'w')
-    driver_file.write(driver_text)
-    driver_file.close()
-    return driver_path
+        img_dir = script['global']['image directory']
+    except KeyError:
+        script['global']['image directory'] = None
+        img_dir = None
     
-def write_config (com_id, root):
-    """
-    write community_data yaml for a community
-    pre:
-        com_id: the community id
-        root: the model root
-    post:
-        the community data file is saved
-    """
-    config_text = (
-"community:\n"
-"  name: " + com_id.replace(" intertie","") + " # community provided by user\n"
-"  model financial: True # The Financial portion of the model is disabled \n"
-)
-
-
-    #~ print config_text # no coms
-    if com_id in ["Barrow", "Nuiqsut"]:
-        config_text += (
-"  # added to ensure model for north slope \n"
-"  natural gas price: 3 # $cost/Mcf <float> (ex. .83)\n"
-"  natural gas used: True # is natural gas used in the community\n"
- 
-)
-    #~ print config_text
     try:
-        os.makedirs(os.path.join(root, "config", com_id.replace(" ","_")))
-    except OSError:
-        pass
-    config_file = open(os.path.join(root, "config", com_id.replace(" ","_"),
-                                                "community_data.yaml"), 'w')
-    config_file.write(config_text)
-    config_file.close()
+        plot = script['global']['plot']
+    except KeyError:
+        script['global']['plot'] = False
+        plot = False 
+        
+    try:
+        res_tag = script['global']['results tag']
+    except KeyError:
+        script['global']['results tag'] = ''
+        res_tag = '' 
     
-def run (batch_file, suffix = "TS", img_dir= None, dev = False):
-    """
-    run function
-    pre:
-        batch_file: a library formated {"comunity1, <path to driver file>",
-                                    "comunity2, <path to driver file>",...}
-                or a .yaml file that would create that when read.
-        suffix:
-            suffix for the results directory
-        dev: True if you want to see warnings
-    post:
-        model has been run
-    """
-    if not dev:
-        warnings.filterwarnings("ignore")
-    stuff = run_batch(batch_file, suffix,img_dir)
-    warnings.filterwarnings("default")
-    return stuff
+    errors = []
+    for com in script['communities']:
+        if not os.path.exists(com['input files']):
+            errors.append(com['community'] + ': input files is not a directory')
+        if not os.path.isfile(gcfg) and \
+                not os.path.split(gcfg)[1].split('.')[1] in extns:
+            errors.append(com['community'] + ': config not a yaml file')
+        try:    
+            com['name']
+        except KeyError:
+            com['name'] = None
+            
+        if com['name'] is None:
+            com['name'] = com['community']
+        
+    if len(errors) != 0:
+        errs = '\n'.join(errors)
+        raise StandardError, errs
+    
+    return script
+        
     
     
-    
-    
-    
-    
-    
-    
+
+
     
     
     

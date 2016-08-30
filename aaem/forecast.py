@@ -65,6 +65,17 @@ class Forecast (object):
             self.forecast_average_kW()
         
         self.cpi = self.cd.load_pp_csv("cpi.csv")
+        
+        last_cpi_year = self.cpi.index.tolist()[-1]
+        if self.end_year < last_cpi_year:
+            self.cpi = self.cpi[:self.end_year]
+        elif self.end_year > last_cpi_year:
+            self.diagnostics.add_note("Forecast",
+                    "extending cpi past avaiable data")
+            last_cpi = float(self.cpi.ix[last_cpi_year])
+            for i in range(last_cpi_year,self.end_year+1):
+                self.cpi.ix[i] = last_cpi
+
         #~ self.forecast_households()
         self.heat_demand_cols = []
         self.heating_fuel_cols = [] 
@@ -106,13 +117,23 @@ class Forecast (object):
         self.p_map = DataFrame(self.fc_specs["population"]\
                                             ["population_qualifier"])
         self.population = DataFrame(self.fc_specs["population"]["population"])
+        last_pop_year = self.population.index.tolist()[-1]
+        if self.end_year < last_pop_year:
+            self.population = self.population[:self.end_year]
+        elif self.end_year > last_pop_year:
+            self.diagnostics.add_note("Forecast",
+                    "extending popultation past avaiable data")
+            last_pop = int(round(self.population.ix[last_pop_year]))
+            for i in range(last_pop_year,self.end_year+1):
+                self.population.ix[i] = last_pop
+        
         if len(self.p_map[self.p_map == "M"] ) < 10:
             msg = "the data range is < 10 for input population "\
                   "check population.csv in the models data directory"
             self.diagnostics.add_warning("forecast", msg)
         
         
-    def forecast_consumption (self):
+    def forecast_consumption (self, consumption_sacler = 1.0):
         """
         pre:
             tbd.
@@ -194,6 +215,7 @@ class Forecast (object):
                                  'consumption': cons, 
                                  'res': r,
                                  'non res' : nr}).set_index('year')
+        consumption *= consumption_sacler
         consumption = consumption[["consumption", 'res', 'non res']]
         consumption.columns = ["consumption kWh", 
                                'residential kWh',
@@ -204,6 +226,17 @@ class Forecast (object):
                                  'consumption': cons, }).set_index('year')
         self.consumption.columns = ["consumption kWh"]
         self.consumption.index = self.consumption.index.values.astype(int)
+        
+        for year in range(min(2010,self.consumption.index[0]),
+                                    self.consumption.index[-1]):
+            try:
+                self.consumption.ix[year]
+            except KeyError:
+                self.consumption.ix[year] = np.nan
+                
+        self.consumption = self.consumption.sort()
+        #~ print self.consumption
+        
         self.start_year = int(self.yearly_res_kWh.T.keys()[-1])
         
     def forecast_generation (self):
@@ -497,7 +530,7 @@ class Forecast (object):
             return self.households.ix[start].T.values[0]
         return self.households.ix[start:end-1].T.values[0]
         
-    def save_forecast (self, path, png_path = None):
+    def save_forecast (self, path, png_path = None, do_plots = False):
         """
         save the forecast to a csv
         pre:
@@ -510,7 +543,8 @@ class Forecast (object):
         tag = self.cd.get_item("community", "name").replace(" ", "_") + "_"
         pathrt = os.path.join(path, tag)
         if png_path is None:
-            os.makedirs(os.path.join(path,"images"))
+            if do_plots:
+                os.makedirs(os.path.join(path,"images"))
             png_path = os.path.join(path, 'images',tag)
             epng_path = png_path
             hdpng_path = png_path
@@ -519,40 +553,44 @@ class Forecast (object):
         else:
             epng_path = os.path.join(png_path,'electric_forecast',tag)
             try:
-                os.makedirs(os.path.join(png_path,'electric_forecast'))
+                if do_plots:
+                    os.makedirs(os.path.join(png_path,'electric_forecast'))
             except OSError:
                 pass
             gpng_path = os.path.join(png_path,'generation_forecast',tag)
             try:
-                os.makedirs(os.path.join(png_path,'generation_forecast'))
+                if do_plots:
+                    os.makedirs(os.path.join(png_path,'generation_forecast'))
             except OSError:
                 pass
             hdpng_path = os.path.join(png_path,'heat_demand_forecast',tag)
             try:
-                os.makedirs(os.path.join(png_path,'heat_demand_forecast'))
+                if do_plots:
+                    os.makedirs(os.path.join(png_path,'heat_demand_forecast'))
             except OSError:
                 pass
             hfpng_path = os.path.join(png_path,'heating_fuel_forecast',tag)
             try:
-                os.makedirs(os.path.join(png_path,'heating_fuel_forecast'))
+                if do_plots:
+                    os.makedirs(os.path.join(png_path,'heating_fuel_forecast'))
             except OSError:
                 pass
         if self.cd.intertie != 'child' and \
             self.cd.get_item("community","model electricity"):
 
             #~ start = datetime.now() 
-            self.save_electric(pathrt, epng_path)
-            self.save_generation_forecast(pathrt, gpng_path)
+            self.save_electric(pathrt, epng_path, do_plots)
+            self.save_generation_forecast(pathrt, gpng_path, do_plots)
             #~ print "saving electric:" + str(datetime.now() - start)
         if self.cd.intertie != 'parent' and \
             self.cd.get_item("community","model heating fuel"):
      
             #~ start = datetime.now() 
-            self.save_heat_demand(pathrt, hdpng_path)
+            self.save_heat_demand(pathrt, hdpng_path, do_plots)
             #~ print "saving heat demand:" + str(datetime.now() - start)
             
             #~ start = datetime.now() 
-            self.save_heating_fuel(pathrt, hfpng_path)
+            self.save_heating_fuel(pathrt, hfpng_path, do_plots)
             #~ print "saving heating fuel:" + str( datetime.now() - start)
     
     def add_heat_demand_column (self, key, year_col, data_col):
@@ -609,7 +647,7 @@ class Forecast (object):
 
     
     
-    def save_electric (self, csv_path, png_path):
+    def save_electric (self, csv_path, png_path, do_plots):
         """ 
         save the electric forecast
         
@@ -622,7 +660,8 @@ class Forecast (object):
         """
         self.generate_electric_output_dataframe()
         self.save_electric_csv(csv_path)
-        self.save_electric_png(png_path)
+        if do_plots:
+            self.save_electric_png(png_path)
         
 
 
@@ -742,7 +781,7 @@ class Forecast (object):
         except ValueError:
             self.generation_forecast_dataframe = None
         
-    def save_generation_forecast (self, csv_path, png_path):
+    def save_generation_forecast (self, csv_path, png_path, do_plots):
         
         self.generate_generation_forecast_dataframe()
         
@@ -753,7 +792,8 @@ class Forecast (object):
                          "forecast is suspect not saving summary(csv and png)"))
         else:
             self.save_generation_forecast_csv(csv_path)
-            self.save_generation_forecast_png(png_path)
+            if do_plots:
+                self.save_generation_forecast_png(png_path)
         
     def save_generation_forecast_csv (self, path):
         """
@@ -859,11 +899,12 @@ class Forecast (object):
         self.heat_demand_dataframe = data[[data.columns[-1]] + data.columns[:-1].tolist()]
         del data
         
-    def save_heat_demand (self,csv_path, png_path):
+    def save_heat_demand (self,csv_path, png_path, do_plots):
         """ Function doc """
         self.generate_heat_demand_dataframe()
         self.save_heat_demand_csv(csv_path)
-        self.save_heat_demand_png(png_path)
+        if do_plots:
+            self.save_heat_demand_png(png_path)
     
     def save_heat_demand_csv (self, path):
         """
@@ -963,7 +1004,7 @@ class Forecast (object):
                         data[[data.columns[-1]] + data.columns[:-1].tolist()]
         del data
     
-    def save_heating_fuel(self, csv_path, png_path):
+    def save_heating_fuel(self, csv_path, png_path, do_plots):
         """ """
         #~ start = datetime.now() 
         self.generate_heating_fuel_dataframe()
@@ -972,7 +1013,8 @@ class Forecast (object):
         self.save_heating_fuel_csv(csv_path)
         #~ print "saving heating fuel *2:" + str( datetime.now() - start)
         #~ start = datetime.now() 
-        self.save_heating_fuel_png(png_path)
+        if do_plots:
+            self.save_heating_fuel_png(png_path)
         #~ print "saving heating fuel *3:" + str( datetime.now() - start)
     
     def save_heating_fuel_csv (self, path):

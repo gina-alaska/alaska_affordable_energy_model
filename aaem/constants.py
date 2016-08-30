@@ -16,3 +16,4 @@ mmbtu_to_kWh = 293.0
 
 # other
 hours_per_year = 8760
+feet_to_mi = 0.000189394
