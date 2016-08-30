@@ -474,6 +474,13 @@ class Driver (object):
         for c in communities:
             self.run(c)
             
+    def run_script(self):
+        """
+        TODO move code to run a script from cli
+        """
+        pass
+        
+            
     def save_metadata (self, tag = ""):
         """
         save model metadata
