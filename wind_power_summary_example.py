@@ -44,11 +44,11 @@ with open('Wind_Summary_Sishmaref_example.html', 'w') as html:
     html.write(template.render( costs= str(table1), 
                                 consumption = str(table2), 
                                 capital = wp.get_NPV_costs(), 
-                                savings =wp.get_NPV_benefits(), 
-                                capicity=wp.load_offset_proposed,
+                                savings = wp.get_NPV_benefits(), 
+                                capicity= wp.load_offset_proposed,
                                 kWh = wp.load_offset_proposed*8760,
-                                wind_class = wp.comp_specs['resource data']\
-                                                         ['Assumed Wind Class'],
+                                wind_class = int(wp.comp_specs['resource data']\
+                                                        ['Assumed Wind Class']),
                                 cap_factor = wp.comp_specs['resource data']\
                                                     ['assumed capacity factor'],
                                 wind = wp.comp_specs['resource data']\

@@ -1,7 +1,9 @@
-<html>
-  <head>
-      <title>{% block title %}{% endblock %}</title>
-    <!--Load the AJAX API-->
+{% extends "layout.html" %}
+
+
+{% block title %}{{ com }} - {{ type }} summary{% endblock %}
+
+{% block JS %}
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript">
 
@@ -21,13 +23,13 @@
         consumption = google.visualization.arrayToDataTable({{ consumption }})
         // Set chart options
         var costs_options = {'title':'Estimated Electricity Generation Fuel Costs',
-                       'width':800,
+                       'width':1000,
                        'height':600,
                        hAxis: {format: '####'},
                        };
 
         var consumption_options = {'title':'Disel Consumded for Generation Electricity',
-                       'width':800,
+                       'width':1000,
                        'height':600,
                        hAxis: {format: '####'},
                        };
@@ -44,27 +46,45 @@
     
       }
     </script>
-</head>
+{% endblock %}
 
 
-<body>
-    <H1>{{ com }} </H1>
+{% block page %}
     <H2> {{ type }} Summary</H2>
-    <div id="stats">
-        <p>Investments Needed: {{ capital }} </p>
-        <p>Net Lifetime Savings: {{ savings }}</p>
-        <p>Expected kWh/year: {{ kWh }}</p>
-        <p>Proposed Capacity(kW): {{ capicity }}</p>
+{% endblock %}
+
+{% block heading %}
+    <H1>{{ com }} </H1>
+  {{ super() }}
+{% endblock %}
+
+    
+{% block left %}
+    <div class="stats">
+        <h3>information:</h3>
+        <p>Investments Needed: {{ "${:,.0f}".format(capital) }}  </p>
+        <p>Net Lifetime Savings: {{ "${:,.0f}".format(savings) }}</p>
+        <p>Expected kWh/year: {{ "{:,.0f}".format(kWh) }}</p>
+        <p>Proposed Capacity(kW): {{ "{:,.0f}".format(capicity) }}</p>
         <p>Assumed Wind Class: {{ wind_class }}</p>
         <p>Assumed Capacity Factor: {{ cap_factor }}</p>
-        <p>Existing Wind: {{wind}}</p>
-        <p>Existing Solar: {{solar}}</p>
+        <p>Existing Wind: {{wind}} kW</p>
+        <p>Existing Solar: {{solar}} kW</p>
     </div>
-    <div id="costs_chart"></div>
-    <div id='costs_png'></div>
-    <div id="consumption_chart"></div>
-    <div id='consumption_png'></div>
-</body>
+{% endblock %}
+    
+{% block right %}
+    <div class = 'charts'>
+        <div class="costs">
+            <div id="costs_chart"></div>
+            <div id='costs_png'></div>
+        </div>
+        <div class="consumption">
+            <div id="consumption_chart"></div>
+            <div id='consumption_png'></div>
+        </div>
+    </div>
+{% endblock %}
 
 
-</html>
+
