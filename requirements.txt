@@ -5,3 +5,4 @@ pyyaml
 pycommand
 matplotlib
 Sphinx
+jinja2
