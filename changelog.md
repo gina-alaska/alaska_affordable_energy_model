@@ -1,9 +1,13 @@
 #Change Log
 
+## [0.19.1]
+### fixed
+- bug with run error message outputs
+
 ## [0.19.0]
 ### added
 - ability to run a group of communities/ modified communities from cli
-- add scalers for, Diesel Price, kWh consumption, and Capital Costs
+- add scalers for, Diesel Price, diesel price, and Capital Costs
 - ability to pass scalers to run command in cli
 - cli will not overwrite existing files unless -f (force flag) is provided
 - functionality to easily save a community data config file
@@ -14,6 +18,7 @@
 - completely rewrote driver internal functionality
 - updated all cli command messages
 - changed cli setup command structure
+- moved regional multipliers out of community data, into their own file
 
 ### removed
 - old component files
@@ -92,7 +97,7 @@
 
 ## [0.17.6]
 ### changes 
-- non residential buildings component: changes to calculation of pre retrofit kWh consumption
+- non residential buildings component: changes to calculation of pre retrofit diesel price
 
 ### adds
 - consumption summary

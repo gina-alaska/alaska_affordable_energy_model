@@ -66,7 +66,7 @@ class RunCommand(pycommand.CommandBase):
             try:
                 script  = driver.script_validator(base)
             except StandardError as e:
-                cli_lib.print_error_message('SCRIPT ERROR:\n' + e)
+                cli_lib.print_error_message('SCRIPT ERROR:\n' + str(e))
                 return 0
             
             ## check exitsing results
