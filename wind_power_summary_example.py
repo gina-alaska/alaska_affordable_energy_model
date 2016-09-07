@@ -37,7 +37,7 @@ cons_table['year'] = cons_table.index
 table2  = cons_table[['year','generation_diesel [kWh/year]']].\
                 astype(int).values.tolist()
 table2.insert(0,['year',
-                 'Base Case Diesel Consumpsumed',
+                 'Base Case Diesel Consumed',
                  'Wind Diesel Consumed'])
 
 with open('Wind_Summary_Sishmaref_example.html', 'w') as html:
@@ -58,5 +58,5 @@ with open('Wind_Summary_Sishmaref_example.html', 'w') as html:
                                 type = "Wind Power", 
                                 com = "Shismaref" ,
                                 charts = [{'name':'costs', 'data': table1, 'title': 'Estimated Electricity Generation Fuel Costs'},
-                                          {'name':'consumption', 'data': table2, 'title':'Disel Consumded for Generation Electricity'}] ))
+                                          {'name':'consumption', 'data': table2, 'title':'Diesel Consumed for Generation Electricity'}] ))
     
