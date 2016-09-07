@@ -40,23 +40,35 @@ table2.insert(0,['year',
                  'Base Case Diesel Consumed',
                  'Wind Diesel Consumed'])
 
+
+info = [{'words':'Investments Needed', 
+            'value': '${:,.0f}'.format(wp.get_NPV_costs())},
+        {'words':'Net Lifetime Savings', 
+            'value': '${:,.0f}'.format(wp.get_NPV_benefits())},
+        {'words':'Expected kWh/year', 
+            'value': '{:,.0f}'.format(wp.load_offset_proposed*8760)},
+        {'words':'Proposed Capacity(kW)', 
+            'value': '{:,.0f}'.format(wp.load_offset_proposed)},
+        {'words':'Assumed Wind Class', 
+            'value': int(wp.comp_specs['resource data']['Assumed Wind Class'])},
+        {'words':'Assumed Capacity Factor', 
+            'value': wp.comp_specs['resource data']['assumed capacity factor']},
+        {'words':'Existing Wind', 
+            'value': wp.comp_specs['resource data']['existing wind'],
+            'units': 'kW'},
+        {'words':'Existing Solar',
+            'value': wp.comp_specs['resource data']['existing solar'], 
+            'units' :'kW'},
+        ]
+
+charts = [{'name':'costs', 'data': table1, 
+            'title': 'Estimated Electricity Generation Fuel Costs'},
+          {'name':'consumption', 'data': table2, 
+            'title':'Diesel Consumed for Generation Electricity'}]
+    
+
 with open('Wind_Summary_Sishmaref_example.html', 'w') as html:
-    html.write(template.render( ##costs= str(table1), 
-                                #~ consumption = str(table2), 
-                                capital = wp.get_NPV_costs(), 
-                                savings = wp.get_NPV_benefits(), 
-                                capicity= wp.load_offset_proposed,
-                                kWh = wp.load_offset_proposed*8760,
-                                wind_class = int(wp.comp_specs['resource data']\
-                                                        ['Assumed Wind Class']),
-                                cap_factor = wp.comp_specs['resource data']\
-                                                    ['assumed capacity factor'],
-                                wind = wp.comp_specs['resource data']\
-                                                              ['existing wind'],
-                                solar = wp.comp_specs['resource data']\
-                                                             ['existing solar'],
+    html.write(template.render( info = info,
                                 type = "Wind Power", 
                                 com = "Shismaref" ,
-                                charts = [{'name':'costs', 'data': table1, 'title': 'Estimated Electricity Generation Fuel Costs'},
-                                          {'name':'consumption', 'data': table2, 'title':'Diesel Consumed for Generation Electricity'}] ))
-    
+                                charts = charts ))

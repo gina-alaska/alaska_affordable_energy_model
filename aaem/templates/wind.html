@@ -21,14 +21,11 @@
 {% block left %}
     <div class="stats">
         <h3>information:</h3>
-        <p>Investments Needed: {{ "${:,.0f}".format(capital) }}  </p>
-        <p>Net Lifetime Savings: {{ "${:,.0f}".format(savings) }}</p>
-        <p>Expected kWh/year: {{ "{:,.0f}".format(kWh) }}</p>
-        <p>Proposed Capacity(kW): {{ "{:,.0f}".format(capicity) }}</p>
-        <p>Assumed Wind Class: {{ wind_class }}</p>
-        <p>Assumed Capacity Factor: {{ cap_factor }}</p>
-        <p>Existing Wind: {{wind}} kW</p>
-        <p>Existing Solar: {{solar}} kW</p>
+        {% for item in info %}
+            <p>{{item.words}}: {{item.value}} {{item.units}}</p>
+        {% endfor %}
+
+        
     </div>
 {% endblock %}
     
