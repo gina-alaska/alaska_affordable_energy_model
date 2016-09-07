@@ -30,7 +30,7 @@ table1.insert(0,['year','Base Case Cost', 'Cost With Wind'])
 
 
 base_con = generation/eff 
-cons_table = concat([base_con,base_con+wp.electric_diesel_reduction],axis=1)
+cons_table = concat([base_con,base_con-wp.electric_diesel_reduction],axis=1)
 
 cons_table['year'] = cons_table.index
 

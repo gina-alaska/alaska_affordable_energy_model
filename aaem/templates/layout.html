@@ -6,8 +6,9 @@
       {% block JS %}{% endblock %}
     
     <style type="text/css">
-      h1 {color: gray;}
-      .titles{width: 100% }
+      h1.titles {color: gray; float:legt; width:15%}
+      .comps {color: gray; float:right; width:85%; }
+      .titles{width: 100%; float:left}
       .stats{font-size:10pt;}
       .left {float:left;width: 20% ;}
       .right {float:right;width: 80% ;}
@@ -17,9 +18,16 @@
   <body>
     <div class="content">
       <div class='titles'>
+        <H1 class='titles'>{{ com }} </H1> 
+<!--
+        <div class='comps'> <a href=Wind_Summary_Sishmaref_example.html> wind power</a> | <a href=Wind_Summary_Sishmaref_example.html> solar power</a></div>
+-->
+       
+<!--    
         {% block heading %}
           {% block page %}{% endblock %}
         {% endblock %}
+-->
       </div>
       <div class='left'>
         {% block left %}{% endblock %}

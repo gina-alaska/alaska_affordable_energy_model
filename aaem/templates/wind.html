@@ -7,20 +7,10 @@
     {% include 'plot.html' %}
 {% endblock %}
 
-
-{% block page %}
-    <H2> {{ type }} Summary</H2>
-{% endblock %}
-
-{% block heading %}
-    <H1>{{ com }} </H1>
-  {{ super() }}
-{% endblock %}
-
     
 {% block left %}
     <div class="stats">
-        <h3>information:</h3>
+        <H2> {{ type }} Summary</H2>
         {% for item in info %}
             <p>{{item.words}}: {{item.value}} {{item.units}}</p>
         {% endfor %}
