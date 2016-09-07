@@ -7,20 +7,21 @@
     
     <style type="text/css">
       h1 {color: gray;}
+      .titles{width: 100% }
       .stats{font-size:10pt;}
-      .left {float:left;}
-      .right {float:right;}
+      .left {float:left;width: 20% ;}
+      .right {float:right;width: 80% ;}
 
     </style>
   </head>
   <body>
     <div class="content">
+      <div class='titles'>
+        {% block heading %}
+          {% block page %}{% endblock %}
+        {% endblock %}
+      </div>
       <div class='left'>
-        <div class='titles'>
-          {% block heading %}
-            {% block page %}{% endblock %}
-          {% endblock %}
-        </div>
         {% block left %}{% endblock %}
       </div>
       <div class='right'>

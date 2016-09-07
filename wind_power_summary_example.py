@@ -41,8 +41,8 @@ table2.insert(0,['year',
                  'Wind Diesel Consumed'])
 
 with open('Wind_Summary_Sishmaref_example.html', 'w') as html:
-    html.write(template.render( costs= str(table1), 
-                                consumption = str(table2), 
+    html.write(template.render( ##costs= str(table1), 
+                                #~ consumption = str(table2), 
                                 capital = wp.get_NPV_costs(), 
                                 savings = wp.get_NPV_benefits(), 
                                 capicity= wp.load_offset_proposed,
@@ -56,5 +56,7 @@ with open('Wind_Summary_Sishmaref_example.html', 'w') as html:
                                 solar = wp.comp_specs['resource data']\
                                                              ['existing solar'],
                                 type = "Wind Power", 
-                                com = "Shismaref"  ))
+                                com = "Shismaref" ,
+                                charts = [{'name':'costs', 'data': table1, 'title': 'Estimated Electricity Generation Fuel Costs'},
+                                          {'name':'consumption', 'data': table2, 'title':'Disel Consumded for Generation Electricity'}] ))
     
