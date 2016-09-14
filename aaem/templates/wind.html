@@ -24,7 +24,12 @@
         {% for chart in charts %}
         <div class="{{chart.name}}">
             <div id="{{chart.name}}_chart"></div>
-            <div id='{{chart.name}}_png'></div><button type='button' id='{{ chart.name }}_button'>plot/table</button>
+            <div id='{{chart.name}}_png'></div>
+            <button type='button' id='{{ chart.name }}_button'>plot/table</button>
+<!--
+            <div id='{{chart.name}}_csv'></div>
+-->
+            <button type='button' onclick="location.href='csv/{{ com }}_{{ type.replace(' ','_') }}_{{ chart.name }}.csv'">csv</button>
         </div>
         {% endfor %}
     </div>

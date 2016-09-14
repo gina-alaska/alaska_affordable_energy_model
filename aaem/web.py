@@ -16,7 +16,7 @@ class WebSummary(object):
         
         self.directory = directory
         try:
-            os.makedirs(self.directory)
+            os.makedirs(os.path.join(self.directory,'csv'))
         except OSError:
             pass
             
@@ -91,11 +91,13 @@ class WebSummary(object):
             costs_table[name] = costs_table['Base Cost'] - net_benefit['savings']
             names.append(name)
         
-        print costs_table
+        #~ print costs_table
         #~ costs_table = costs_table.fillna('null')
         #~ print comp_no_project.start_year, net_benefit
 
-        
+        costs_table = costs_table[['year','Base Cost','Estimated Proposed Generation'] + names]
+        costs_table.columns = ['year','Base Case Cost', 'Cost With Wind'] + names
+        costs_table.to_csv(os.path.join(self.directory,'csv', community + "_" + "Wind_Power" + "_" + 'costs.csv'), index=False)
         #~ prop_cost = base_cost - net_benefit
         #~ prop_cost.name = 'Estimated Proposed Generation'
         #~ print prop_cost
@@ -106,8 +108,9 @@ class WebSummary(object):
         
             
         
-        table1 = costs_table[['year','Base Cost','Estimated Proposed Generation'] + names].\
+        table1 = costs_table.\
                         round().values.tolist()
+        print table1
         table1.insert(0,['year','Base Case Cost', 'Cost With Wind'] + names)
         
         
@@ -116,7 +119,7 @@ class WebSummary(object):
         base_con.name = 'Base Consumption'
         
         cons_table = DataFrame(base_con)
-        print cons_table
+        #~ print cons_table
         cons_table['year'] = cons_table.index
         
         reduction = DataFrame([range(comp_no_project.start_year,comp_no_project.actual_end_year+1)],['Year']).T
@@ -142,7 +145,12 @@ class WebSummary(object):
             names.append(name)
         
         
-        table2  = cons_table[['year','Base Consumption', 'Est. Diesel Consumed'] + names].\
+        cons_table = cons_table[['year','Base Consumption', 'Est. Diesel Consumed'] + names]
+        
+        cons_table.columns = ['year','Base Case Diesel Consumed','Wind Diesel Consumed']+names
+        cons_table.to_csv(os.path.join(self.directory,'csv', community + "_" + "Wind_Power" + "_" + 'consumption.csv'), index=False)
+        
+        table2  = cons_table.\
                         round().values.tolist()
         table2.insert(0,['year',
                          'Base Case Diesel Consumed',
@@ -182,4 +190,4 @@ class WebSummary(object):
                                         type = "Wind Power", 
                                         com = community ,
                                         charts = charts ))
-        
+

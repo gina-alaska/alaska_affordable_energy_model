@@ -35,7 +35,7 @@
             function drawPlot_{{ chart.name }}() {
                 var {{ chart.name }}_plot = new google.visualization.LineChart(document.getElementById('{{ chart.name }}_chart'));
                 {{ chart.name }}_plot.draw({{ chart.name }}, {{ chart.name }}_options);
-                document.getElementById('{{ chart.name }}_png').innerHTML = '<a href="' + {{ chart.name }}_plot.getImageURI() + '">Printable version</a>';
+                return {{ chart.name }}_plot
             }   
             
             // draw table
@@ -56,7 +56,10 @@
                 }
             }
             // initilize with plot
-            drawPlot_{{ chart.name }}()
+            var  {{ chart.name }}_plot = drawPlot_{{ chart.name }}()
+            
+            document.getElementById('{{ chart.name }}_png').outerHTML = '<button onclick="location.href=\'' + {{ chart.name }}_plot.getImageURI() + '\' ">Printable version</button>'
+
         {% endfor %}
     }
 </script>
