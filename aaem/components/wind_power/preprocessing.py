@@ -220,6 +220,7 @@ def preprocess_existing_projects (ppo):
             expected_years_to_operation = UNKNOWN
             
         p_data[p_name] = {'phase': phase,
+                    'name': str(cp['Project Name']),
                     'proposed capacity': proposed_capacity,
                     'proposed generation': proposed_generation,
                     'distance to resource': distance_to_resource,
