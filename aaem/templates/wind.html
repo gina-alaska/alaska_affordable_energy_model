@@ -11,10 +11,13 @@
 {% block left %}
     <div class="stats">
         <H2> {{ type }} Summary</H2>
-        {% for item in info %}
-            <p>{{item.words}}: {{item.value}} {{item.units}}</p>
+        
+        {% for project in info %}
+            <H3> {{ project.name }} </H3>
+            {% for item in project.info %}
+                <p>{{item.words}}: {{item.value}} {{item.units}}</p>
+            {% endfor %}
         {% endfor %}
-
         
     </div>
 {% endblock %}
@@ -24,12 +27,10 @@
         {% for chart in charts %}
         <div class="{{chart.name}}">
             <div id="{{chart.name}}_chart"></div>
+            
+            <button type='button' id='{{ chart.name }}_button'>Plot/Table</button>
             <div id='{{chart.name}}_png'></div>
-            <button type='button' id='{{ chart.name }}_button'>plot/table</button>
-<!--
-            <div id='{{chart.name}}_csv'></div>
--->
-            <button type='button' onclick="location.href='csv/{{ com }}_{{ type.replace(' ','_') }}_{{ chart.name }}.csv'">csv</button>
+            <button type='button' onclick="location.href='csv/{{ com }}_{{ type.replace(' ','_') }}_{{ chart.name }}.csv'">Table as csv</button>
         </div>
         {% endfor %}
     </div>

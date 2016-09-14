@@ -13,6 +13,7 @@
         var chart = 'chart'
         
         var year_fmat = new google.visualization.NumberFormat({pattern:'####'})
+        //~ var cur_fmat = new google.visualization.NumberFormat({prefix:'$'})
         // make each chart
         {% for chart in charts %}
             
@@ -22,12 +23,21 @@
             
             
             // plot options
+            dollar = {}
+            if ({{ chart.type }} == '$') {
+                dollar=  {format: '$#,###'}
+            }
+            
             var {{ chart.name }}_options = {'title': '{{ chart.title }}',
                                             'width':1000,
                                             'height':600,
                                             chartArea:{left:75,top:50,width:'75%',height:'85%'},
                                             hAxis: {format: '####'},
+                                            vAxis: dollar,
                                             };
+            
+                        
+            
             // plot state plot or table
             var {{ chart.name }}_state = plot;
         
@@ -58,7 +68,7 @@
             // initilize with plot
             var  {{ chart.name }}_plot = drawPlot_{{ chart.name }}()
             
-            document.getElementById('{{ chart.name }}_png').outerHTML = '<button onclick="location.href=\'' + {{ chart.name }}_plot.getImageURI() + '\' ">Printable version</button>'
+            document.getElementById('{{ chart.name }}_png').outerHTML = '<button onclick="location.href=\'' + {{ chart.name }}_plot.getImageURI() + '\' ">Printable Plot</button>'
 
         {% endfor %}
     }

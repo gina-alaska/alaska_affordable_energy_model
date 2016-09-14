@@ -110,8 +110,8 @@ class WebSummary(object):
         
         table1 = costs_table.\
                         round().values.tolist()
-        print table1
-        table1.insert(0,['year','Base Case Cost', 'Cost With Wind'] + names)
+        #~ print table1
+        table1.insert(0,['year','Base Case Cost', 'Modeled Wind'] + names)
         
         
         
@@ -154,8 +154,7 @@ class WebSummary(object):
                         round().values.tolist()
         table2.insert(0,['year',
                          'Base Case Diesel Consumed',
-                         'Wind Diesel Consumed']+names)
-        
+                         'Modeled Wind']+names)
         
         info = [{'words':'Investments Needed', 
                     'value': '${:,.0f}'.format(comp_no_project.get_NPV_costs())},
@@ -178,15 +177,47 @@ class WebSummary(object):
                     'value': comp_no_project.comp_specs['resource data']['existing solar'], 
                     'units' :'kW'},
                 ]
+                
+        info_for_projects = [{'name':'Modeled Wind Project','info':info}]
+        
+        for p in projects:
+            project = projects[p]
+            name = project.comp_specs['project details']['name']
+            info = [{'words':'Investments Needed', 
+                    'value': '${:,.0f}'.format(project.get_NPV_costs())},
+                {'words':'Net Lifetime Savings', 
+                    'value': '${:,.0f}'.format(project.get_NPV_benefits())},
+                {'words':'Expected kWh/year', 
+                    'value': '{:,.0f}'.format(project.load_offset_proposed*8760)},
+                {'words':'Proposed Capacity(kW)', 
+                    'value': '{:,.0f}'.format(project.load_offset_proposed)},
+                {'words':'Assumed Wind Class', 
+                    'value': int(float(project.comp_specs['resource data']\
+                                                    ['Assumed Wind Class']))},
+                {'words':'Assumed Capacity Factor', 
+                    'value': project.comp_specs['resource data']\
+                                                 ['assumed capacity factor']},
+                {'words':'Existing Wind', 
+                    'value': project.comp_specs['resource data']['existing wind'],
+                    'units': 'kW'},
+                {'words':'Existing Solar',
+                    'value': project.comp_specs['resource data']['existing solar'], 
+                    'units' :'kW'},
+                ]
+                
+            info_for_projects.append({'name':name,'info':info})
+                
         
         charts = [{'name':'costs', 'data': str(table1).replace('nan','null'), 
-                    'title': 'Estimated Electricity Generation Fuel Costs'},
+                    'title': 'Estimated Electricity Generation Fuel Costs per Year',
+                    'type': "'$'"},
                   {'name':'consumption', 'data': str(table2).replace('nan','null'), 
-                    'title':'Diesel Consumed for Generation Electricity'}]
+                    'title':'Diesel Consumed for Generation Electricity per Year',
+                    'type': "'other'"}]
             
         pth = os.path.join(self.directory, community +'_wind_summary.html')
         with open(pth, 'w') as html:
-            html.write(template.render( info = info,
+            html.write(template.render( info = info_for_projects,
                                         type = "Wind Power", 
                                         com = community ,
                                         charts = charts ))
