@@ -1,23 +1,12 @@
 {% extends "layout.html" %}
 
 
-{% block title %}{{ com }} - {{ type }} summary{% endblock %}
+{% block title %}{{ title }}{% endblock %}
 
 {% block JS %}
     {% include 'plot.html' %}
 {% endblock %}
 
-    
-{% block left %}
-    <div class="stats">
-        <H2> {{ type }} Summary</H2>
-        {% for item in info %}
-            <p>{{item.words}}: {{item.value}} {{item.units}}</p>
-        {% endfor %}
-
-        
-    </div>
-{% endblock %}
     
 {% block right %}
     <div class = 'charts'>

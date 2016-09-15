@@ -34,6 +34,8 @@ class DieselProjections (object):
         self.start_year = int(df.index[0])
         #~ try
         self.projected_prices = np.array(df.T.values[0]) * diesel_price_scaler
+        
+        self.scaler_used = diesel_price_scaler
         #~ print self.projected_prices
         #~ except KeyError:
             #~ self.projected_prices = np.array(df.mean()[3:].values,
