@@ -48,7 +48,7 @@ class WindPower(AnnualSavings):
         
         
     
-    def run (self, scalers = {'captial costs':1.0}):
+    def run (self, scalers = {'capital costs':1.0}):
         """
         run the forecast model
         
@@ -132,7 +132,8 @@ class WindPower(AnnualSavings):
                 
                 # AnnualSavings functions (don't need to write)
                 self.calc_annual_total_savings()
-                self.calc_annual_costs(self.cd['interest rate'])
+                self.calc_annual_costs(self.cd['interest rate'],
+                                            scalers['capital costs'])
                 self.calc_annual_net_benefit()
                 self.calc_npv(self.cd['discount rate'], self.cd["current year"])
                 #~ print self.benefit_cost_ratio
@@ -341,7 +342,7 @@ class WindPower(AnnualSavings):
     # Make this do stuff
     def calc_capital_costs (self):
         """
-        caclulate the progect captial costs
+        caclulate the progect capital costs
         """
         powerhouse_control_cost = 0
         if not self.cd['switchgear suatable for RE']:

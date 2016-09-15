@@ -181,7 +181,7 @@ class WaterWastewaterSystems (AnnualSavings):
                 self.baseline_fuel_Hoil_consumption * fuel_cost +\
                 self.baseline_fuel_biomass_consumption * wood_price
         
-    def run (self, scalers = {'captial costs':1.0}):
+    def run (self, scalers = {'capital costs':1.0}):
         """
         runs the model for the inputs section of the wastewater tab
         pre-conditions:
@@ -230,7 +230,8 @@ class WaterWastewaterSystems (AnnualSavings):
             self.calc_annual_heating_savings()
             self.calc_annual_total_savings()
             
-            self.calc_annual_costs(self.cd['interest rate'])
+            self.calc_annual_costs(self.cd['interest rate'],
+                                            scalers['capital costs'])
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
             self.calc_levelized_costs(0)

@@ -63,7 +63,7 @@ class Transmission (AnnualSavings):
         # WRITE this
         pass
         
-    def run (self, scalers = {'captial costs':1.0}):
+    def run (self, scalers = {'capital costs':1.0}):
         """
         run the forecast model
         
@@ -121,7 +121,8 @@ class Transmission (AnnualSavings):
             
             # AnnualSavings functions (don't need to write)
             self.calc_annual_total_savings()
-            self.calc_annual_costs(self.cd['interest rate'])
+            self.calc_annual_costs(self.cd['interest rate'],
+                                            scalers['capital costs'])
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
             #~ print self.benefit_cost_ratio
@@ -240,12 +241,12 @@ class Transmission (AnnualSavings):
     
     def calc_capital_costs (self):
         """ 
-        calculate the captial costs
+        calculate the capital costs
         
         pre:
             self.comp_specs set up
         post:
-            self.captial costs is the total cost of the project $
+            self.capital costs is the total cost of the project $
         """
         road_needed = 'road needed'
         if self.comp_specs['on road system']:

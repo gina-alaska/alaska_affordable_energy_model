@@ -86,7 +86,7 @@ class ASHPResidential (ashp_base.ASHPBase):
                         self.electric_heat_energy_savings.values.T[0]
         
         
-    def run (self, scalers = {'captial costs':1.0}):
+    def run (self, scalers = {'capital costs':1.0}):
         """
         run the forecast model
         
@@ -124,7 +124,8 @@ class ASHPResidential (ashp_base.ASHPBase):
             self.annual_heating_savings += self.electric_heat_energy_savings
             
             self.calc_annual_total_savings()
-            self.calc_annual_costs(self.cd['interest rate'])
+            self.calc_annual_costs(self.cd['interest rate'],
+                                            scalers['capital costs'])
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
         #~ print 'self.monthly_value_table'
@@ -142,7 +143,7 @@ class ASHPResidential (ashp_base.ASHPBase):
 
     def calc_capital_costs (self):
         """
-        calculate the captial costs
+        calculate the capital costs
         """
         heating_oil = ((self.pre_ashp_heating_oil_used/self.num_houses)*\
                         self.comp_specs["heating oil efficiency"]) / \

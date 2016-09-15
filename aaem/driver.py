@@ -25,7 +25,7 @@ except ImportError:
 
 
 default_scalers = {'diesel price': 1.0,
-                  'captial costs': 1.0,
+                  'capital costs': 1.0,
                   'kWh consumption': 1.0
                   }
 

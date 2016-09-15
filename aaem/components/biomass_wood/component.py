@@ -41,7 +41,7 @@ class BiomassCordwood (bmb.BiomassBase):
         ### ADD other intiatzation stuff
         
     
-    def run (self, scalers = {'captial costs':1.0}):
+    def run (self, scalers = {'capital costs':1.0}):
         """
         run the forecast model
         
@@ -99,7 +99,8 @@ class BiomassCordwood (bmb.BiomassBase):
             self.calc_annual_heating_savings()
             
             self.calc_annual_total_savings()
-            self.calc_annual_costs(self.cd['interest rate'])
+            self.calc_annual_costs(self.cd['interest rate'],
+                                            scalers['capital costs'])
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
             
@@ -130,7 +131,7 @@ class BiomassCordwood (bmb.BiomassBase):
 
     def calc_capital_costs (self):
         """
-        calculate the captial costs
+        calculate the capital costs
         """
         self.capital_costs = self.number_boilers * \
                              self.comp_specs["boiler assumed output"] *\
