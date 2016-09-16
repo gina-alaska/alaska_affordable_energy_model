@@ -4,7 +4,7 @@ from pandas import concat, DataFrame
 import os
 
 from importlib import import_module
-
+from aaem.components import comp_lib
 
 class WebSummary(object):
     """ Class doc """
@@ -32,13 +32,24 @@ class WebSummary(object):
                     l.append(comp)
             except AttributeError:
                 pass
+            
         return l
         
     def generate_web_summaries (self, com):
         """
         """
         #~ comps = self.get_viable_components(com)
-        self.get_web_summary('wind_power')(self, com)
+        
+        for comp in comp_lib:
+            try:
+                self.get_web_summary(comp_lib[comp])(self, com)
+            except AttributeError as e:
+                print e
+                pass
+            except KeyError:
+                pass
+            except ValueError:
+                pass
         
     def get_web_summary(self, component):
         """
@@ -55,4 +66,8 @@ class WebSummary(object):
         return self.imported_summaries[component].generate_web_summary
     
 
-
+    def generate_all (self):
+        """ Function doc """
+        keys = sorted([k for k in self.results.keys() if k.find('+') == -1])
+        for com in keys:
+            self.generate_web_summaries(com)

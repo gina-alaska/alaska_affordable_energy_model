@@ -107,3 +107,144 @@ def component_summary (coms, res_dir):
     #~ fd.close()
     data.to_csv(f_name, mode='w')
     
+def generate_web_summary (web_object, community):
+    """
+    """
+    ## get the template
+    template = web_object.env.get_template('component.html')
+    
+    ## get the component (the modelded one)
+  
+    comp_no_project = web_object.results[community]['solar power']
+    start_year = comp_no_project.start_year
+    end_year = comp_no_project.actual_end_year
+    
+    ## get forecast stuff (consumption, generation, etc)
+    fc = comp_no_project.forecast
+    generation = fc.generation_by_type['generation_diesel [kWh/year]'].\
+                                        ix[start_year:end_year]
+    
+    ## get the diesel prices
+    diesel_price = web_object.results[community]['community data'].\
+                            get_item('community','diesel prices').\
+                            get_projected_prices(start_year, end_year+1)
+           
+    ## get diesel generator efficiency
+    eff = comp_no_project.cd['diesel generation efficiency']
+    
+    ## get generation fuel costs per year (modeled)
+    base_cost = generation/eff * diesel_price
+    base_cost.name = 'Base Cost'
+    costs_table = DataFrame(base_cost)
+
+    ### find savings
+    net_benefit = DataFrame([range(comp_no_project.start_year,
+                                   comp_no_project.actual_end_year+1),
+                             comp_no_project.get_net_beneft()\
+                                   [:comp_no_project.actual_project_life].\
+                                   tolist()],
+                             ['Year', 'savings']).T.set_index('Year')
+    net_benefit.index = net_benefit.index.astype(int)
+    
+    ## add post cost to table
+    costs_table['Estimated Proposed Generation'] = \
+                    costs_table['Base Cost'] - net_benefit['savings']
+    costs_table['year'] = costs_table.index
+    
+
+
+    ## format table
+    costs_table = costs_table[['year','Base Cost', 
+                                    'Estimated Proposed Generation']]
+    costs_table.columns = ['year','Current Cost', 'Cost With Solar']
+    costs_table.to_csv(os.path.join(web_object.directory,'csv',
+                        community + "_" + "Solar_Power" + "_" + 'costs.csv'),
+                        index=False)
+    ## make list from of table
+    table1 = costs_table.\
+                    round().values.tolist()
+    table1.insert(0,['year','Current Projection', 'Modeled Solar'])
+    
+    
+    ## get generation fule used (modeled)
+    base_con = generation/eff 
+    base_con.name = 'Base Consumption'
+    cons_table = DataFrame(base_con)
+    cons_table['year'] = cons_table.index
+    
+    ## find reduction 
+    reduction = DataFrame([range(comp_no_project.start_year,
+                            comp_no_project.actual_end_year+1)],['Year']).T
+    reduction['savings'] = comp_no_project.generation_fuel_used\
+                                        [:comp_no_project.actual_project_life]
+    reduction = reduction.set_index('Year')
+    reduction.index = reduction.index.astype(int)
+    
+    ## add savings
+    cons_table['Est. Diesel Consumed'] = \
+                cons_table['Base Consumption'] - reduction['savings']
+    
+    
+    ## format table
+    cons_table = cons_table[['year','Base Consumption', 'Est. Diesel Consumed']]
+    
+    cons_table.columns = ['year','Current Projection Diesel Consumed',
+                                        'Solar Diesel Consumed']
+    ## save to csv
+    cons_table.to_csv(os.path.join(web_object.directory,'csv', 
+                community + "_" + "Solar_Power" + "_" + 'consumption.csv'),
+                index=False)
+    
+    ## make list form
+    table2  = cons_table.\
+                    round().values.tolist()
+    table2.insert(0,['year', 'Current Projection',
+                      'Modeled Solar'])
+    
+    
+    ## info for modled
+    info = [
+        {'words':'Benefit Cost Ratio', 
+            'value': '{:,.3f}'.format(comp_no_project.get_BC_ratio())},
+        {'words':'Investments Needed', 
+            'value': '${:,.0f}'.format(comp_no_project.get_NPV_costs())},
+        {'words':'Net Lifetime Savings', 
+            'value': '${:,.0f}'.format(comp_no_project.get_NPV_benefits())},
+        {'words':'Proposed Capacity(kW)', 
+            'value': 
+                '{:,.0f}'.format(comp_no_project.proposed_load)},
+        {'words':'Output per 10kW Solar PV', 
+            'value': comp_no_project.comp_specs['data']\
+                                         ['Output per 10kW Solar PV']},
+        {'words':'Existing Wind', 
+            'value': 
+               comp_no_project.comp_specs['data']['Wind Capacity'],
+            'units': 'kW'},
+        {'words':'Existing Solar',
+            'value': 
+              comp_no_project.comp_specs['data']['Installed Capacity'], 
+            'units' :'kW'},
+            ]
+         
+    ## info table (list to send to template)
+    info_for_projects = [{'name':'Modeled Wind Project','info':info}]
+            
+    
+    ## create list of charts
+    charts = [
+        {'name':'costs', 'data': str(table1).replace('nan','null'), 
+         'title': 'Estimated Electricity Generation Fuel Costs per Year',
+         'type': "'$'"},
+        {'name':'consumption', 'data': str(table2).replace('nan','null'), 
+         'title':'Diesel Consumed for Generation Electricity per Year',
+         'type': "'other'"}
+            ]
+        
+    ## generate html
+    pth = os.path.join(web_object.directory, community +'_solar_summary.html')
+    with open(pth, 'w') as html:
+        html.write(template.render( info = info_for_projects,
+                                    type = "Solar Power", 
+                                    com = community ,
+                                    charts = charts ))
+    

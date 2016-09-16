@@ -145,7 +145,7 @@ def generate_web_summary (web_object, community):
     """
     """
     ## get the template
-    template = web_object.env.get_template('wind.html')
+    template = web_object.env.get_template('component.html')
     
     ## get the component (the modelded one)
   
@@ -159,8 +159,10 @@ def generate_web_summary (web_object, community):
     for i in [i for i in sorted(web_object.results.keys()) \
          if i.find(community) != -1 and i.find('wind') != -1]:
              
-        start_year = min(start_year, web_object.results[i]['wind power'].start_year)
-        end_year = max(end_year, web_object.results[i]['wind power'].actual_end_year)
+        start_year = min(start_year, 
+                        web_object.results[i]['wind power'].start_year)
+        end_year = max(end_year, 
+                        web_object.results[i]['wind power'].actual_end_year)
         projects[i] = web_object.results[i]['wind power']
              
 
@@ -226,7 +228,7 @@ def generate_web_summary (web_object, community):
     ## make list from of table
     table1 = costs_table.\
                     round().values.tolist()
-    table1.insert(0,['year','Base Case Cost', 'Modeled Wind'] + names)
+    table1.insert(0,['year','Current Projection', 'Modeled Wind'] + names)
     
     
     ## get generation fule used (modeled)
@@ -277,12 +279,14 @@ def generate_web_summary (web_object, community):
     ## make list form
     table2  = cons_table.\
                     round().values.tolist()
-    table2.insert(0,['year', 'Base Case Diesel Consumed',
+    table2.insert(0,['year', 'Current Projection',
                       'Modeled Wind']+names)
     
     
     ## info for modled
     info = [
+        {'words':'Benefit Cost Ratio', 
+            'value': '{:,.3f}'.format(comp_no_project.get_BC_ratio())},
         {'words':'Investments Needed', 
             'value': '${:,.0f}'.format(comp_no_project.get_NPV_costs())},
         {'words':'Net Lifetime Savings', 
@@ -317,6 +321,8 @@ def generate_web_summary (web_object, community):
         project = projects[p]
         name = project.comp_specs['project details']['name']
         info = [
+            {'words':'Benefit Cost Ratio', 
+                'value': '{:,.3f}'.format(project.get_BC_ratio())},
             {'words':'Investments Needed', 
                 'value': '${:,.0f}'.format(project.get_NPV_costs())},
             {'words':'Net Lifetime Savings', 

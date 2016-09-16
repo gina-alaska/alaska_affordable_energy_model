@@ -2,12 +2,14 @@
 <html>
   <head>
       <title>{% block title %}{% endblock %}</title>
-      
+<!--
+      <script type="text/javascript" src="./com_list.js"></script>
+-->
       {% block JS %}{% endblock %}
     
     <style type="text/css">
       h1.titles {color: gray; float:legt; width:15%}
-      .comps {color: gray; float:right; width:85%; }
+      .comps {color: gray; width:85%; padding-top:60px}
       .titles{width: 100%; float:left}
       .stats{font-size:10pt;}
       .left {float:left;width: 20% ;}
@@ -15,13 +17,14 @@
 
     </style>
   </head>
-  <body>
+  <body >
     <div class="content">
-      <div class='titles'>
-        <H1 class='titles'>{{ com }} </H1> 
 <!--
-        <div class='comps'> <a href=Wind_Summary_Sishmaref_example.html> wind power</a> | <a href=Wind_Summary_Sishmaref_example.html> solar power</a></div>
+      <div id='com_list'></div>
 -->
+      <div class='titles'>
+        <H1 class='titles'>{{ com.replace('_', ' ') }} </H1> 
+        <div class='comps'> <a href='{{com}}_wind_summary.html'> wind power</a> | <a href='{{com}}_solar_summary.html'> solar power</a></div>
        
 <!--    
         {% block heading %}
