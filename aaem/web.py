@@ -28,6 +28,8 @@ class WebSummary(object):
         l = []
         for comp in self.results[com]:
             try:
+                if self.results[com][comp].get_BC_ratio() == 'N/A':
+                    continue
                 if self.results[com][comp].get_BC_ratio() >= cutoff:
                     l.append(comp)
             except AttributeError:
@@ -39,7 +41,7 @@ class WebSummary(object):
         """
         """
         #~ comps = self.get_viable_components(com)
-        
+        self.gennerate_community_summary(com)
         for comp in comp_lib:
             try:
                 self.get_web_summary(comp_lib[comp])(self, com)
@@ -71,3 +73,36 @@ class WebSummary(object):
         keys = sorted([k for k in self.results.keys() if k.find('+') == -1])
         for com in keys:
             self.generate_web_summaries(com)
+            
+    def gennerate_community_summary(self, community):
+        """ Function doc """
+        template = self.env.get_template('summary.html')
+        pth = os.path.join(self.directory, community + '.html')
+        
+        comps = []
+        for i in [i for i in sorted(self.results.keys()) \
+                            if i.find(community) != -1 ]:
+            for c in self.get_viable_components(i):
+                if i.find('hydro') != -1 and c == 'Hydropower':
+                    comp = self.results[i]['Hydropower']
+                    ratio = comp.get_BC_ratio()
+                    name = comp.comp_specs['project details']['name']
+                elif i.find('wind') != -1 and c == 'wind power':
+                    comp = self.results[i]['wind power']
+                    ratio = comp.get_BC_ratio()
+                    name = comp.comp_specs['project details']['name']
+                elif i.find('heat_recovery') != -1 and c == 'heat recovery':
+                    comp = self.results[i]['heat recovery']
+                    ratio = comp.get_BC_ratio()
+                    name = comp.comp_specs['project details']['name']
+                else:
+                    comp = self.results[i][c]
+                    ratio = comp.get_BC_ratio()
+                    name = i + ' Modled'
+                comps.append({'com':name,'comp':c, 'r': '{:,.3f}'.format(ratio)})
+            
+        
+        
+        
+        with open(pth, 'w') as html:
+            html.write(template.render( info = comps , com = community))
