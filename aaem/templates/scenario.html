@@ -4,9 +4,12 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block JS %}
-    {% include 'plot.html' %}
+    {% include 'scatter.html' %}
 {% endblock %}
 
+{% block left %}
+    <H2> {{ title }} </H2>
+{% endblock %}
     
 {% block right %}
     <div class = 'charts'>
