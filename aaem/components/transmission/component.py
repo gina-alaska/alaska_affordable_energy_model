@@ -139,8 +139,8 @@ class Transmission (AnnualSavings):
         a kWh value
             self.average_load is the average load for the firest year in kW
         """
-        self.generation = self.forecast.generation_by_type['generation diesel']\
-                                                            [self.start_year]
+        #~ self.generation = self.forecast.generation_by_type['generation diesel']\
+                                                            #~ [self.start_year]
         self.average_load = \
                 self.forecast.yearly_average_diesel_load.ix[self.start_year]
         

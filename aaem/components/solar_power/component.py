@@ -114,8 +114,8 @@ class SolarPower (AnnualSavings):
     def calc_average_load (self):
         """ """
         #~ self.generation = self.forecast.get_generation(self.start_year)
-        self.generation = self.forecast.generation_by_type['generation diesel']\
-                                                            [self.start_year]
+        #~ self.generation = self.forecast.generation_by_type['generation diesel']\
+                                                            #~ [self.start_year]
         self.average_load = \
                 self.forecast.yearly_average_diesel_load.ix[self.start_year]
         #~ print self.average_load
