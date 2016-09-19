@@ -1,7 +1,7 @@
 """
 run_command.py
 
-    A commad for the cli to run the model
+    A command for the cli to run the model
 """
 import pycommand
 from default_cases import __DEV_COMS_RUN__ as __DEV_COMS__ 
