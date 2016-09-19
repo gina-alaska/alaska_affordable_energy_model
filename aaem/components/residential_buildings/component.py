@@ -38,8 +38,8 @@ class ResidentialBuildings(AnnualSavings):
 
         if self.cd["model electricity"]:
             self.elec_prices = community_data.electricity_price
-        self.comp_specs = community_data.get_section('residential buildings')
-        self.component_name = 'residential buildings'
+        self.comp_specs = community_data.get_section(COMPONENT_NAME)
+        self.component_name = COMPONENT_NAME
         self.forecast = forecast
         self.refit_cost_rate = self.comp_specs['average refit cost'] * \
                 community_data.get_item('community','construction multiplier')
@@ -705,8 +705,8 @@ class ResidentialBuildings(AnnualSavings):
         df = df[df.columns[-2:].tolist() + df.columns[:-2].tolist()]
 
         fname = os.path.join(directory,
-                                   self.cd['name'] + '_' +\
-                                   self.component_name + "_output.csv")
+                               self.cd['name'] + '_' +\
+                               self.component_name.lower() + "_output.csv")
         fname = fname.replace(" ","_")
         # save to end of project(actual lifetime)
         df.ix[:self.actual_end_year].to_csv(fname, index_label="year")

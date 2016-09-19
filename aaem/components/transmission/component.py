@@ -13,6 +13,7 @@ from aaem.forecast import Forecast
 from aaem.diagnostics import diagnostics
 import aaem.constants as constants
 from config import COMPONENT_NAME, UNKNOWN
+from aaem.diesel_prices import DieselProjections
 
 class Transmission (AnnualSavings):
     """

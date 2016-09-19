@@ -28,7 +28,6 @@ class WindPower(AnnualSavings):
         post:
             the model can be run
         """
-        
         self.diagnostics = diag
         if self.diagnostics == None:
             self.diagnostics = diagnostics()
@@ -496,7 +495,7 @@ class WindPower(AnnualSavings):
               "Wind: Net Benefit ($/year)"]
         fname = os.path.join(directory,
                              self.cd['name'] + '_' + \
-                             self.component_name + "_output.csv")
+                             self.component_name.lower() + "_output.csv")
         fname = fname.replace(" ","_")
         
         df[ol].ix[:self.actual_end_year].to_csv(fname, index_label="Year")

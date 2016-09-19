@@ -3,7 +3,7 @@ config.py
 
     Transmission Line config info for community data yaml file
 """
-COMPONENT_NAME = "transmission"
+COMPONENT_NAME = "Transmission and Interties"
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
 

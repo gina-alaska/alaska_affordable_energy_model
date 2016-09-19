@@ -3,7 +3,7 @@ config.py
 
     Wind Power config info for community data yaml file
 """
-COMPONENT_NAME = "wind power"
+COMPONENT_NAME = "Wind Power"
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
 

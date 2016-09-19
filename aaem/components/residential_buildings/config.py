@@ -3,7 +3,7 @@ config.py
 
     Residential Building Efficiency config info for community data yaml file
 """
-COMPONENT_NAME = "residential buildings"
+COMPONENT_NAME = "Residential Energy Efficiency"
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
 

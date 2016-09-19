@@ -6,7 +6,7 @@ config.py
 import aaem.components.ashp_base as ashp_base
 from copy import deepcopy
 
-COMPONENT_NAME = "ASHP non-residential"
+COMPONENT_NAME = "Non-Residential ASHP"
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
 
@@ -29,4 +29,4 @@ yaml_comments = deepcopy(ashp_base.yaml_comments)
 yaml_not_to_save = deepcopy(ashp_base.yaml_not_to_save)
 
 ## list of prerequisites for module
-prereq_comps = ['non-residential buildings']
+prereq_comps = ['Non-residential Energy Efficiency']

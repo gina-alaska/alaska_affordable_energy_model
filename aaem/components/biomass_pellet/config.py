@@ -6,7 +6,7 @@ config.py
 import aaem.components.biomass_base as bmb
 from copy import deepcopy
 
-COMPONENT_NAME = "biomass pellet"
+COMPONENT_NAME = "Biomass for Heat (Pellet)"
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
 

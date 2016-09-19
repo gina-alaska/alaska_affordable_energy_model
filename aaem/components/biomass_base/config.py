@@ -39,4 +39,4 @@ yaml_comments = {'enabled': '',
 yaml_not_to_save = []
 
 ## list of prerequisites for module
-prereq_comps = ["non-residential buildings",]
+prereq_comps = ["Non-residential Energy Efficiency",]

@@ -32,7 +32,7 @@ def component_summary (coms, res_dir):
         if c.find('+') != -1 or c.find("_intertie") != -1:
             continue
         try:
-            res = coms[c]['residential buildings']
+            res = coms[c][COMPONENT_NAME]
             out.append([c,
                 res.get_NPV_benefits(),res.get_NPV_costs(),
                 res.get_NPV_net_benefit(),res.get_BC_ratio(),
@@ -68,7 +68,8 @@ def component_summary (coms, res_dir):
            'Residential Efficiency Total Heating Fuels Saved (mmbtu/year)',
             ]
     data = DataFrame(out,columns = cols).set_index('community').round(2)
-    f_name = os.path.join(res_dir,'residential_summary.csv')
+    f_name = os.path.join(res_dir,
+                COMPONENT_NAME.lower().replace(' ','_') + '_summary.csv')
     #~ fd = open(f_name,'w')
     #~ fd.write("# residental building component summary by community\n")
     #~ fd.close()

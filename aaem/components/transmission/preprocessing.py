@@ -30,6 +30,7 @@ def preprocess (ppo):
 
     data = read_csv(os.path.join(ppo.data_dir,'transmission_distances.csv'),
                     comment = '#',index_col = 0)
+                    
     
     #~ try:
     data = ppo.get_communities_data(data)
@@ -43,7 +44,7 @@ def preprocess (ppo):
         try:
             np.isnan(nearest_comm)
             nearest_comm =  np.nan
-        except ValueError:
+        except TypeError:
             nearest_comm = nearest_comm.values[0]
             
         distance = float(data['Distance to Community'])

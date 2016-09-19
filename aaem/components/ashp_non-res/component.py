@@ -50,7 +50,7 @@ class ASHPNonResidential (ashp_base.ASHPBase):
         tag = self.cd['name'].split('+')
         if len(tag) > 1 and tag[1].split('_')[0] != 'ASHP_res':
             return 
-        non_res = comps['non-residential buildings']
+        non_res = comps['Non-residential Energy Efficiency']
     
         try:
             self.non_res_sqft = non_res.total_sqft_to_retrofit
@@ -204,15 +204,15 @@ class ASHPNonResidential (ashp_base.ASHPBase):
                 
         fname = os.path.join(directory,
                                    self.cd['name'] + '_' +\
-                                   self.component_name + "_output.csv")
+                                   self.component_name.lower() + "_output.csv")
         fname = fname.replace(" ","_")
         
         # save to end of project(actual lifetime)
         df[order].ix[:self.actual_end_year].to_csv(fname, index_label="Year")
         
         fname = os.path.join(directory,
-                                    self.cd['name'] + '_' +\
-                                    self.component_name + "_montly_table.csv")
+                            self.cd['name'] + '_' +\
+                            self.component_name.lower() + "_montly_table.csv")
         fname = fname.replace(" ","_")
         
         self.monthly_value_table.to_csv(fname)

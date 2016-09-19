@@ -47,14 +47,14 @@ class WaterWastewaterSystems (AnnualSavings):
             self.population_fc is the forecast population over the project life 
         time
         """
-        self.component_name = 'water wastewater'
+        self.component_name = COMPONENT_NAME
         
         self.diagnostics = diag
         if self.diagnostics == None:
             self.diagnostics = diagnostics()
         
         self.cd = community_data.get_section('community')
-        self.comp_specs = community_data.get_section('water wastewater')
+        self.comp_specs = community_data.get_section(COMPONENT_NAME)
         self.forecast = forecast
         
         self.set_project_life_details(self.comp_specs["start year"],

@@ -494,8 +494,10 @@ class AnnualSavings (object):
               self.component_name + ": Total Cost Savings ($/year)", 
               self.component_name + ": Net Benefit ($/year)"]
         fname = os.path.join(directory,
-                                   self.cd['name'] + '_' +\
-                                   self.component_name + "_output.csv")
+                               self.cd['name'] + '_' +\
+                               self.component_name.lower().replace(' ','_').\
+                               replace('&','and') +\
+                               "_output.csv")
         fname = fname.replace(" ","_")
         
         # save to end of project(actual lifetime)

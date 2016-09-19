@@ -63,7 +63,7 @@ class BiomassBase (AnnualSavings):
         
         if len(tag) > 1 and tag[1].split('_')[0] != 'biomass':
             return 
-        non_res = comps['non-residential buildings']
+        non_res = comps['Non-residential Energy Efficiency']
         self.get_non_res_values(non_res)
         
     def get_non_res_values (self, non_res):
@@ -77,8 +77,6 @@ class BiomassBase (AnnualSavings):
             self.non_res_sqft, and self.avg_gal_per_sqft
         are numbers
         """
-       
-    
         try:
             self.non_res_sqft = non_res.total_sqft_to_retrofit
             self.avg_gal_per_sqft = non_res.baseline_fuel_Hoil_consumption/ \
@@ -262,7 +260,8 @@ class BiomassBase (AnnualSavings):
                 
         fname = os.path.join(directory,
                                 self.cd['name'] + '_' +\
-                                self.component_name + "_output.csv")
+                                self.component_name.lower().replace('(','').\
+                                replace(')','') + "_output.csv")
         fname = fname.replace(" ","_")
     
         # save to end of project(actual lifetime)

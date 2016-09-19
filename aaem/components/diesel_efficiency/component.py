@@ -324,7 +324,7 @@ class DieselEfficiency(AnnualSavings):
               "Diesel Efficiency: Net Benefit ($/year)"]
         fname = os.path.join(directory,
                              self.cd['name'] + '_' + \
-                             self.component_name + "_output.csv")
+                             self.component_name.lower() + "_output.csv")
         fname = fname.replace(" ","_")
         
         df[ol].ix[:self.actual_end_year].to_csv(fname, index_label="Year")

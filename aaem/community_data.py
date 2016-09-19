@@ -130,9 +130,9 @@ class CommunityData (object):
         # no conditions at this time 
         pass
         
-        #~ st = self.get_item('water wastewater',"data").ix["assumption type used"]
+        #~ st = self.get_item('Water & Wastewater Efficiency',"data").ix["assumption type used"]
         #~ if st.values[0] == "UNKNOWN":
-            #~ self.set_item('water wastewater',"enabled",  False)
+            #~ self.set_item('Water & Wastewater Efficiency',"enabled",  False)
             #~ self.diagnostics.add_error("Community Data", 
                     #~ ("(Checking Inputs) Water Wastewater system type unknown."
                      #~ " Fixing by disabling Wastewater component at runtime"))
@@ -465,8 +465,8 @@ class CommunityData (object):
                         #~ self.get_item('residential buildings',
                                 #~ 'data')['value'].astype(float)
 
-        #~ if self.get_item('water wastewater', "data") in IMPORT_FLAGS:
-            #~ self.set_item('water wastewater', "data", 
+        #~ if self.get_item('Water & Wastewater Efficiency', "data") in IMPORT_FLAGS:
+            #~ self.set_item('Water & Wastewater Efficiency', "data", 
                           #~ self.load_pp_csv("wastewater_data.csv"))
 
         region = self.load_pp_csv("region.csv")
@@ -748,14 +748,16 @@ class CommunityData (object):
         
         
         
-        copy['residential buildings']['data'] = "IMPORT"
-        copy['non-residential buildings']['com building data'] = "IMPORT"
-        copy['non-residential buildings']["com building estimates"] =  "IMPORT"
+        copy['Residential Energy Efficiency']['data'] = "IMPORT"
+        copy['Non-residential Energy Efficiency']['com building data'] =\
+                                                                        "IMPORT"
+        copy['Non-residential Energy Efficiency']["com building estimates"] = \
+                                                                        "IMPORT"
 
         copy['community']["diesel prices"]="IMPORT"
         copy['forecast']["electricity"] = "IMPORT"
         copy['forecast']["population"] = "IMPORT"
-        copy['water wastewater']["data"] = "IMPORT"
+        copy['Water and Wastewater Efficiency']["data"] = "IMPORT"
         copy["community"]["electric non-fuel prices"] = "IMPORT"
         copy["community"]["generation numbers"] =  "IMPORT"
         copy["community"]["generation"] = "IMPORT"
@@ -781,7 +783,7 @@ class CommunityData (object):
          "# community(diesel prices) -> \n"
          "# forecast(electricity) -> yearly_electricity_summary.csv\n"
          "# forecast(population) -> population.csv\n"
-         "# water wastewater(data) -> wastewater_data.csv\n"
+         "# Water & Wastewater Efficiency(data) -> wastewater_data.csv\n"
          "# community(electric non-fuel prices) -> prices.csv\n"
          "# community(generation numbers) -> yearly_electricity_summary.csv\n"
          "# community(generation) -> yearly_electricity_summary.csv\n")

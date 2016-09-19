@@ -6,7 +6,7 @@ config.py
 import aaem.components.biomass_base as bmb
 from copy import deepcopy
 
-COMPONENT_NAME = "biomass cordwood"
+COMPONENT_NAME = "Biomass for Heat (Cordwood)"
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
 

@@ -3,7 +3,7 @@ config.py
 
     Heat Recovery config info for community data yaml file
 """
-COMPONENT_NAME = "heat recovery"
+COMPONENT_NAME = "Heat Recovery"
 PROJECT_TYPE = 'heat_recovery'
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"

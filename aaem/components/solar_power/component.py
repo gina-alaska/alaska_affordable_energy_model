@@ -273,7 +273,7 @@ class SolarPower (AnnualSavings):
               "Solar: Net Benefit ($/year)"]
         fname = os.path.join(directory,
                                    self.cd['name'] + '_' +\
-                                   self.component_name + "_output.csv")
+                                   self.component_name.lower() + "_output.csv")
         fname = fname.replace(" ","_")
         
         

@@ -3,7 +3,7 @@ config.py
 
     config info for cd yaml file
 """
-COMPONENT_NAME = "diesel efficiency"
+COMPONENT_NAME = "Diesel Efficiency"
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
 

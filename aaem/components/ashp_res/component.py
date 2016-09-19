@@ -50,7 +50,7 @@ class ASHPResidential (ashp_base.ASHPBase):
         tag = self.cd['name'].split('+')
         if len(tag) > 1 and tag[1].split('_')[0] != 'ASHP_res':
             return 
-        res = comps['residential buildings']
+        res = comps['Residential Energy Efficiency']
         self.pre_ashp_heating_oil_used =  res.init_HF
         self.pre_ashp_heating_electricty_used = res.init_kWh
         self.num_houses = res.init_HH
@@ -232,14 +232,14 @@ class ASHPResidential (ashp_base.ASHPBase):
                 
         fname = os.path.join(directory,
                                    self.cd['name'] + '_' +\
-                                   self.component_name + "_output.csv")
+                                   self.component_name.lower() + "_output.csv")
         fname = fname.replace(" ","_")
         
         # save to end of project(actual lifetime)
         df[order].ix[:self.actual_end_year].to_csv(fname, index_label="Year")
         fname = os.path.join(directory,
-                                   self.cd['name']+'_'+\
-                                   self.component_name + "_montly_table.csv")
+                           self.cd['name']+'_'+\
+                           self.component_name.lower() + "_montly_table.csv")
         fname = fname.replace(" ","_")
         
         self.monthly_value_table.to_csv(fname)
