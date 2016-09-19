@@ -141,7 +141,8 @@ class Transmission (AnnualSavings):
         """
         self.generation = self.forecast.generation_by_type['generation diesel']\
                                                             [self.start_year]
-        self.average_load = self.generation / constants.hours_per_year
+        self.average_load = \
+                self.forecast.yearly_average_diesel_load.ix[self.start_year]
         
     def get_intertie_values (self):
         """

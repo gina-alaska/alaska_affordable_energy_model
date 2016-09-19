@@ -69,6 +69,8 @@ class Forecast (object):
                 pass
             self.forecast_average_kW()
         
+        self.calc_average_diesel_load()
+        
         self.cpi = self.cd.load_pp_csv("cpi.csv")
         
         last_cpi_year = self.cpi.index.tolist()[-1]
@@ -1109,6 +1111,15 @@ class Forecast (object):
         plot.create_legend(fig,.30)
         plot.save(fig,path)
         plot.clear(fig)
+        
+    def calc_average_diesel_load (self):
+        """
+        """
+        #~ self.average_diesel_load = 0
+        generation = self.generation_by_type['generation diesel']
+                                
+        self.yearly_average_diesel_load = generation / constants.hours_per_year
+        
 
 def test ():
     """ 

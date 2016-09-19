@@ -117,7 +117,8 @@ class DieselEfficiency(AnnualSavings):
         """
         self.generation = self.forecast.generation_by_type['generation diesel']\
                                 .ix[self.start_year:self.end_year-1].values
-        self.average_load = self.generation[0] / constants.hours_per_year
+        self.average_load = \
+                self.forecast.yearly_average_diesel_load.ix[self.start_year]
         #~ print 'self.average_load',self.average_load
  
 
