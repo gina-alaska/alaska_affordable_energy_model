@@ -1,5 +1,12 @@
 #Change Log
 
+## [0.19.2]
+### fixed
+- capital costs scaler is applied to all components
+
+### changed
+- moves averge load calculation from componets to forecast
+
 ## [0.19.1]
 ### fixed
 - bug with run error message outputs
