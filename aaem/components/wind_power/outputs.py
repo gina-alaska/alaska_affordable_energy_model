@@ -168,7 +168,11 @@ def generate_web_summary (web_object, community):
 
     ## get forecast stuff (consumption, generation, etc)
     fc = comp_no_project.forecast
-    generation = fc.generation_by_type['generation_diesel [kWh/year]'].\
+    try:
+        generation = fc.generation_by_type['generation_diesel [kWh/year]'].\
+                                        ix[start_year:end_year]
+    except KeyError:
+        generation = fc.generation_by_type['generation diesel'].\
                                         ix[start_year:end_year]
     
     ## get the diesel prices
@@ -284,6 +288,12 @@ def generate_web_summary (web_object, community):
     
     
     ## info for modled
+    try:
+        wind_class = int(float(comp_no_project.comp_specs['resource data']\
+                                            ['Assumed Wind Class']))
+    except ValueError:
+        wind_class = 0
+    
     info = [
         {'words':'Benefit Cost Ratio', 
             'value': '{:,.3f}'.format(comp_no_project.get_BC_ratio())},
@@ -297,9 +307,7 @@ def generate_web_summary (web_object, community):
         {'words':'Proposed Capacity(kW)', 
             'value': 
                 '{:,.0f}'.format(comp_no_project.load_offset_proposed)},
-        {'words':'Assumed Wind Class', 
-            'value': int(float(comp_no_project.comp_specs['resource data']\
-                                            ['Assumed Wind Class']))},
+        {'words':'Assumed Wind Class', 'value': wind_class},
         {'words':'Assumed Capacity Factor', 
             'value': comp_no_project.comp_specs['resource data']\
                                          ['assumed capacity factor']},
@@ -320,6 +328,12 @@ def generate_web_summary (web_object, community):
     for p in projects:
         project = projects[p]
         name = project.comp_specs['project details']['name']
+        
+        try:
+            wind_class = int(float(project.comp_specs['resource data']\
+                                                ['Assumed Wind Class']))
+        except ValueError:
+            wind_class = 0
         info = [
             {'words':'Benefit Cost Ratio', 
                 'value': '{:,.3f}'.format(project.get_BC_ratio())},
@@ -331,9 +345,7 @@ def generate_web_summary (web_object, community):
                 'value': '{:,.0f}'.format(project.load_offset_proposed*8760)},
             {'words':'Proposed Capacity(kW)', 
                 'value': '{:,.0f}'.format(project.load_offset_proposed)},
-            {'words':'Assumed Wind Class', 
-                'value': int(float(project.comp_specs['resource data']\
-                                                ['Assumed Wind Class']))},
+            {'words':'Assumed Wind Class', 'value': wind_class},
             {'words':'Assumed Capacity Factor', 
                 'value': project.comp_specs['resource data']\
                                              ['assumed capacity factor']},

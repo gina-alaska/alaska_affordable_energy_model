@@ -121,7 +121,11 @@ def generate_web_summary (web_object, community):
     
     ## get forecast stuff (consumption, generation, etc)
     fc = comp_no_project.forecast
-    generation = fc.generation_by_type['generation_diesel [kWh/year]'].\
+    try:
+        generation = fc.generation_by_type['generation_diesel [kWh/year]'].\
+                                        ix[start_year:end_year]
+    except KeyError:
+        generation = fc.generation_by_type['generation diesel'].\
                                         ix[start_year:end_year]
     
     ## get the diesel prices

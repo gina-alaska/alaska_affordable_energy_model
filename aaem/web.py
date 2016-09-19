@@ -6,6 +6,8 @@ import os
 from importlib import import_module
 from aaem.components import comp_lib
 
+#WHAT TO DO IF ALL PLOT DATA IS NANS?
+
 class WebSummary(object):
     """ Class doc """
     
@@ -40,18 +42,33 @@ class WebSummary(object):
     def generate_web_summaries (self, com):
         """
         """
+        print com
         #~ comps = self.get_viable_components(com)
         self.gennerate_community_summary(com)
         for comp in comp_lib:
             try:
                 self.get_web_summary(comp_lib[comp])(self, com)
-            except AttributeError as e:
-                print e
+            except (AttributeError) as e:
+                #~ print comp, e
+                template = self.env.get_template('no_results.html')
+                if comp == 'solar power':
+                    pth = os.path.join(self.directory, com +'_solar_summary.html')
+                    t = "Solar Power"
+                    print comp, e
+                elif comp == 'wind power':
+                    pth = os.path.join(self.directory, com +'_wind_summary.html')
+                    t = 'Wind Power'
+                    print comp, e
+                else:
+                    continue
+                with open(pth, 'w') as html:
+                    reason = self.results[com][comp].reason
+                    html.write(template.render( 
+                                    type = t, 
+                                    com = com ,
+                                    reason = reason ))
                 pass
-            except KeyError:
-                pass
-            except ValueError:
-                pass
+
         
     def get_web_summary(self, component):
         """
