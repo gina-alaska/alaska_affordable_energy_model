@@ -162,7 +162,7 @@ class RunCommand(pycommand.CommandBase):
                     item = i.split(":")
                     key = item[0].strip().strip('"\'')
                     try:
-                        print scalers
+                        #~ print scalers
                         scalers[key]
                     except KeyError:
                         msg = "SCALER ERROR: " + key + " is not a valid scaler"

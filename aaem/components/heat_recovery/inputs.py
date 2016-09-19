@@ -59,7 +59,7 @@ def load_project_details (data_dir):
                 'buildings': [],
                 'proposed gallons diesel offset': UNKNOWN,
                 'proposed Maximum btu/hr': UNKNOWN, 
-                'captial costs': UNKNOWN,
+                'capital costs': UNKNOWN,
                 'expected years to operation': yto
                 }
     

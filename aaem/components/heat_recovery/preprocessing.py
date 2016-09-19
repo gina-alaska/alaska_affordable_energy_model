@@ -131,7 +131,7 @@ def preprocess_existing_projects (ppo):
                           'buildings': buildings,
                           'proposed gallons diesel offset':diesel_offset,
                           'proposed Maximum btu/hr': max_btu_per_hr, 
-                          'captial costs':capex,
+                          'capital costs':capex,
                           'expected years to operation':
                                                 expected_years_to_operation
                         }
