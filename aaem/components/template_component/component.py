@@ -63,7 +63,7 @@ class ComponentName (AnnualSavings):
         # WRITE this
         pass
         
-    def run (self, scalers = {'captial costs':1.0}):
+    def run (self, scalers = {'capital costs':1.0}):
         """
         run the forecast model
         
@@ -103,7 +103,8 @@ class ComponentName (AnnualSavings):
             
             # AnnualSavings functions (don't need to write)
             self.calc_annual_total_savings()
-            self.calc_annual_costs(self.cd['interest rate'])
+            self.calc_annual_costs(self.cd['interest rate'],
+                                            scalers['capital costs'])
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
     

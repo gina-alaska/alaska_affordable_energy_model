@@ -221,7 +221,7 @@ class ASHPBase (AnnualSavings):
         self.calc_heating_oil_saved()
         self.calc_average_cop()
 
-    def run (self, scalers = {'captial costs':1.0}):
+    def run (self, scalers = {'capital costs':1.0}):
         """
         run the forecast model
         

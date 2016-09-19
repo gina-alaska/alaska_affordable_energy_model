@@ -62,7 +62,7 @@ class ResidentialBuildings(AnnualSavings):
         HH =self.comp_specs['data'].ix['total_occupied']
         self.init_HH = int(round(HH*(val / self.base_pop)))
         
-    def run (self, scalers = {'captial costs':1.0}):
+    def run (self, scalers = {'capital costs':1.0}):
         """ 
         
         run the forecast model
@@ -113,7 +113,8 @@ class ResidentialBuildings(AnnualSavings):
             self.calc_annual_heating_savings()
             self.calc_annual_total_savings()
             
-            self.calc_annual_costs(self.cd['interest rate'])
+            self.calc_annual_costs(self.cd['interest rate'],
+                                            scalers['capital costs'])
             self.calc_annual_net_benefit()
             
             self.calc_npv(self.cd['discount rate'], self.cd['current year'])

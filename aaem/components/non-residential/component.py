@@ -189,7 +189,7 @@ class CommunityBuildings (AnnualSavings):
         self.save_building_summay(os.path.join(path,"non_residential_buildings_summary.csv"))
         
     
-    def run (self, scalers = {'captial costs':1.0}):
+    def run (self, scalers = {'capital costs':1.0}):
         """
         run the forecast model
         
@@ -257,7 +257,8 @@ class CommunityBuildings (AnnualSavings):
             self.calc_annual_heating_savings()
             self.calc_annual_total_savings()
             
-            self.calc_annual_costs(self.cd['interest rate'])
+            self.calc_annual_costs(self.cd['interest rate'],
+                                            scalers['capital costs'])
             self.calc_annual_net_benefit()
             
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
@@ -705,7 +706,7 @@ class CommunityBuildings (AnnualSavings):
         #~ pre:
             #~ self.refit_cost_total is a dollar value
         #~ post:
-            #~ self.captial_costs is the refit cost
+            #~ self.capital_costs is the refit cost
         #~ """
         #~ self.capital_costs = self.refit_cost_total
     
