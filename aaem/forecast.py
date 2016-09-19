@@ -1116,7 +1116,13 @@ class Forecast (object):
         """
         """
         #~ self.average_diesel_load = 0
-        generation = self.generation_by_type['generation diesel']
+        try:
+            generation = self.generation_by_type['generation diesel']
+        except AttributeError:
+            self.diagnostics.add_error('Forecast', 
+                                        ('no generation diesel to caclulate'
+                                         ' yearly average load. setting to 0'))
+            generation = 0.0 
                                 
         self.yearly_average_diesel_load = generation / constants.hours_per_year
         
