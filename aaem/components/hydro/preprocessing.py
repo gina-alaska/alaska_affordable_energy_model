@@ -55,7 +55,10 @@ def preprocess_existing_projects (ppo):
 
         
         phase = cp['Phase Completed']
-        phase = phase[0].upper() + phase[1:]
+        try:
+            phase = phase[0].upper() + phase[1:]
+        except TypeError:
+            phase = 'Reconnaissance'
         proposed_capacity = float(cp['AAEM Capacity (kW)'])
         proposed_generation = float(cp['AAEM Generation (kWh)'])
         #~ distance_to_resource = float(cp['Distance'])
