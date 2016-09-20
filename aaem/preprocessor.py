@@ -122,7 +122,7 @@ class Preprocessor (object):
         self.residential_add_kWh_consumption_per_household()
         #~ print self.residential_data.ix['year']
         base_pop = np.float(self.population_data.ix\
-                        [int(self.residential_data.ix['year'])]["population"])
+                        [int(self.residential_data.ix['Year'])]["population"])
         self.buildings(base_pop)
         self.wastewater()
         self.generation_limits()
@@ -235,29 +235,25 @@ class Preprocessor (object):
         return  "# " + self.com_id + " residential data\n"+\
                 "# generated: " + str(datetime.now()).split('.')[0] +"\n" +\
                 "# Data Source: residential_data.csv"+\
-                "# energy_region: region used by model \n"+\
-                "# year: year of data  collected \n"+\
-                "# total_occupied: # houses occupied \n"+\
-                "# BEES_number: # of houses at BEES standard \n"+\
-                "# BEES_avg_area: average Sq. ft. of BEES home \n"+\
-                "# BEES_avg_EUI: BEES energy use intensity MMBtu/sq. ft.\n"+\
-                "# BEES_total_consumption: " +\
+                "# Energy Region: region used by model \n"+\
+                "# Year: year of data  collected \n"+\
+                "# Total Occupied: # houses occupied \n"+\
+                "# BEES Number: # of houses at BEES standard \n"+\
+                "# BEES Avg Area (SF): average Sq. ft. of BEES home \n"+\
+                "# BEES Avg EUI (MMBtu/sf): BEES energy use intensity MMBtu/sq. ft.\n"+\
+                "# BEES Total Consumption (MMBtu): " +\
                                 "   BEES home energy consumption MMBtu \n"+\
-                "# pre_number: # of houses pre-retrofit \n"+\
-                "# pre_avg_area: average Sq. ft. of pre-retrofit home \n"+\
-                "# pre_avg_EUI: " +\
+                "# Pre-Retrofit Number: # of houses pre-retrofit \n"+\
+                "# Pre-Retrofit Avg Area (SF): average Sq. ft. of pre-retrofit home \n"+\
+                "# Pre-Retrofit Avg EUI (MMBtu/sf): " +\
                           "pre-retrofit energy use intensity MMBtu/sq. ft.\n"+\
-                "# post_number: # of houses at post-retrofit \n"+\
-                "# post_avg_area: average Sq. ft. of post-retrofithome \n"+\
-                "# post_avg_EUI: post-retrofit energy use intensity "+\
+                "# Post-Retrofit Number: # of houses at post-retrofit \n"+\
+                "# Post-Retrofit Avg Area (SF): average Sq. ft. of post-retrofithome \n"+\
+                "# Post-Retrofit Avg. EUI Reduction: \n" +\
+                "# Post-Retrofit Avg EUI (MMBtu/sf): post-retrofit energy use intensity "+\
                          "MMBtu/sq. ft.\n"+\
-                "# post_total_consumption: "+\
+                "# Total Consumption (MMBtu): "+\
                             "post-retrofit home energy consumption MMBtu \n"+\
-                "# opportunity_non-Wx_HERP_BEES:  # of houses \n"+\
-                "# opportunity_potential_reduction: ???? \n"+\
-                "# opportunity_savings: "+\
-                            "potention savings in heating Fuel(gal)\n"+\
-                "# opportunity_total_percent_community_savings: ???\n"+\
                 "# Total; Utility Gas; LP; Electricity; Fuel Oil; "+\
                         "Coal; Wood; Solar; Other; No Fuel Used: " +\
                                         "% of heating fuel types\n"+\
@@ -540,7 +536,7 @@ class Preprocessor (object):
         data = read_csv(data_file, index_col=0, comment = "#").ix[self.com_id]
 
         df = concat([data,fuel])
-        del df.T["energy_region"]
+        del df.T["Energy Region"]
 
         out_file = os.path.join(self.out_dir, "residential_data.csv")
         fd = open(out_file,'w')
@@ -551,8 +547,8 @@ class Preprocessor (object):
         df.to_csv(out_file,mode="a")
         self.residential_data = df
         
-        self.init_households = int(df.ix["total_occupied"])
-        self.init_household_year = int(df.ix["year"])
+        self.init_households = int(df.ix["Total Occupied"])
+        self.init_household_year = int(df.ix["Year"])
         
         
     def residential_add_kWh_consumption_per_household(self):
@@ -598,7 +594,7 @@ class Preprocessor (object):
         premium_file = os.path.join(self.data_dir,"heating_fuel_premium.csv")
 
         region = read_csv(data_file, index_col=0,
-                                        comment='#').energy_region[self.com_id]
+                                        comment='#')['Energy Region'][self.com_id]
         premium = read_csv(premium_file, index_col=0,
                                             comment='#').premium[region]
 
