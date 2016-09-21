@@ -178,7 +178,8 @@ def preprocess_existing_projects (ppo):
         generation_capital_cost = cp['Generation Capital Cost']
         transmission_capital_cost = cp['Transmission CAPEX']
         operational_costs = cp['Operational Costs / year']
-        expected_years_to_operation = cp['Expected years to operation']
+        #~ expected_years_to_operation = cp['Expected years to operation']
+        expected_years_to_operation = UNKNOWN
         if phase == "0":
             continue
         if phase == "Reconnaissance" and np.isnan(proposed_capacity) and\
@@ -215,9 +216,9 @@ def preprocess_existing_projects (ppo):
         if np.isnan(operational_costs):
             operational_costs = UNKNOWN
             
-        expected_years_to_operation = float(expected_years_to_operation)
-        if np.isnan(expected_years_to_operation):
-            expected_years_to_operation = UNKNOWN
+        #~ expected_years_to_operation = float(expected_years_to_operation)
+        #~ if np.isnan(expected_years_to_operation):
+            #~ expected_years_to_operation = UNKNOWN
             
         p_data[p_name] = {'phase': phase,
                     'proposed capacity': proposed_capacity,
