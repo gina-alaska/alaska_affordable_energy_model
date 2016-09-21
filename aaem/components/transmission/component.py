@@ -13,6 +13,7 @@ from aaem.forecast import Forecast
 from aaem.diagnostics import diagnostics
 import aaem.constants as constants
 from config import COMPONENT_NAME, UNKNOWN
+from aaem.diesel_prices import DieselProjections
 
 class Transmission (AnnualSavings):
     """
@@ -86,7 +87,6 @@ class Transmission (AnnualSavings):
             self.reason = ("'model electricity' in the communtiy data"
                            " must be True to run this component")
             return 
-        
         if np.isnan(self.comp_specs['nearest community']\
                                     ['Distance to Community']):
             self.run = False

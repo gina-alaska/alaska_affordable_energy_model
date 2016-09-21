@@ -39,12 +39,9 @@ def preprocess (ppo):
     try:
         max_savings = float(data['Maximum savings ($/kWh)'])
         nearest_comm = data['Nearest Community with Lower Price Power']
-        try:
-            np.isnan(nearest_comm)
-            nearest_comm =  np.nan
-        except ValueError:
-            nearest_comm = nearest_comm.values[0]
-            
+        nearest_comm = str(nearest_comm.values[0])
+        if 'nan' == nearest_comm:
+            nearest_comm = ''
         distance = float(data['Distance to Community'])
     except TypeError:
         max_savings = np.nan
