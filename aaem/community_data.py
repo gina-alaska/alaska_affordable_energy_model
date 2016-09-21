@@ -436,12 +436,10 @@ class CommunityData (object):
                         data_dir = os.path.join(os.path.split(data_dir)[0], 
                                     os.path.split(data_dir)[1]+'+'+self.tag)
                     self.set_item(comp,k, lib[k](data_dir))
-        
-        #~ comp_name = 'residential_buildings'
-        #~ lib = import_module("aaem.components." + comp_name).yaml_import_lib
-        
-        #~ lib['data']()
-        #~ self.set_item('residential buildings','data', lib['data'](self.data_dir))
+                    
+             
+        if self.get_item('community','on road system') in IMPORT_FLAGS:
+            self.set_item('community','on road system', road_import(data_dir))
         
         
         
@@ -791,6 +789,18 @@ class CommunityData (object):
         del copy
         #~ self.model_inputs = copy
         #~ return comment + text
+        
+
+## import for road system data #moved from biomass pellet
+def road_import (data_dir):
+    """
+    import the road system boolean
+    """
+    data_file = os.path.join(data_dir, "road_system.csv")
+    data = read_csv(data_file, comment = '#', index_col=0, header=0)
+    data = data['value'].to_dict()
+    on_road = data["On Road/SE"].lower() == "yes"
+    return on_road
         
 def test(data, overrides, defaults):
     """ 

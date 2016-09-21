@@ -13,7 +13,6 @@ yaml = {'enabled': False,
         'start year': 'ABSOLUTE DEFAULT',
         'perfromance data': 'IMPORT',
         'data':'IMPORT',
-        'heating oil efficiency': .75,
         'o&m per year': 320
         }
 

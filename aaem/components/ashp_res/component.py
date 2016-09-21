@@ -65,7 +65,7 @@ class ASHPResidential (ashp_base.ASHPBase):
         """
         self.heat_energy_produced_per_year = \
                         self.pre_ashp_heating_oil_used * \
-                        self.comp_specs["heating oil efficiency"]*\
+                        self.cd["heating oil efficiency"]*\
                         (1/constants.mmbtu_to_gal_HF)
         #~ print self.heat_energy_produced_per_year
        
@@ -146,7 +146,7 @@ class ASHPResidential (ashp_base.ASHPBase):
         calculate the capital costs
         """
         heating_oil = ((self.pre_ashp_heating_oil_used/self.num_houses)*\
-                        self.comp_specs["heating oil efficiency"]) / \
+                        self.cd["heating oil efficiency"]) / \
                         constants.mmbtu_to_gal_HF *1e6/ \
                         constants.hours_per_year
         electric_heat = (self.pre_ashp_heating_electricty_used/self.num_houses)\

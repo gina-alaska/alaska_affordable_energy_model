@@ -37,11 +37,6 @@ yaml = {'enabled': False,
         'road needed for transmission line' : True,
         'est. transmission line cost': { True:500000, False:250000},
         'costs': 'IMPORT',
-        'percent excess energy': .15,
-        'percent excess energy capturable': .7,
-        'efficiency electric boiler': .99,
-        'efficiency heating oil boiler': .8,
-        'percent heat recovered': .15,
         'percent o&m': .01
         }
       

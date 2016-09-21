@@ -6,13 +6,12 @@ preprocessing.py
 import os.path
 from pandas import read_csv
 import numpy as np
-from aaem.components.biomass_pellet import preprocess_road_system
 
 ## List of raw data files required for wind power preproecssing 
 raw_data_files = [#"transmission_projects.csv",
                   'project_development_timeframes.csv',
                   'transmission_distances.csv',
-                  'road_system.csv']
+                  ]
 
 ## preprocessing functons 
 def preprocess_header (ppo):
@@ -67,7 +66,7 @@ def preprocess (ppo):
     ppo.MODEL_FILES['TRANSMISSION_DATA'] = "transmission_data.csv" # CHANGE THIS
     
 ## list of wind preprocessing functions
-preprocess_funcs = [preprocess, preprocess_road_system]
+preprocess_funcs = [preprocess]
 
 ## preprocess the existing projects
 ### This function is called differently from the other preprocessor functions,

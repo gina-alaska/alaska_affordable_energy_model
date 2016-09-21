@@ -92,18 +92,18 @@ class BiomassBase (AnnualSavings):
         as the heating fuel
         
         pre:
-            self.non_res_sqft and 'percent sqft assumed heat displacement' in
+            self.non_res_sqft and ' assumed percent non-residential sqft heat displacement' in
         in comp_specs are numbers
         """
         self.heat_displaced_sqft = self.non_res_sqft * \
-            self.comp_specs['percent sqft assumed heat displacement']
+            self.cd['assumed percent non-residential sqft heat displacement']
         
     def calc_energy_output (self):
         """
         the net and monthly energy calculated
         
         pre:
-            self.avg_gal_per_sqft, self.comp_specs['heating oil efficiency'],
+            self.avg_gal_per_sqft, self.cd['heating oil efficiency'],
         and self.comp_specs['data']['Peak Month % of total'] 
         post:
             the net and monthly energy calculated
@@ -111,7 +111,7 @@ class BiomassBase (AnnualSavings):
         self.average_net_energy_output = self.avg_gal_per_sqft * \
                                     ((constants.mmbtu_to_gal_HF ** -1) * 1E6 /\
                                     constants.hours_per_year) * \
-                                    self.comp_specs['heating oil efficiency']
+                                    self.cd['heating oil efficiency']
         self.peak_monthly_energy_output = self.average_net_energy_output * 12 *\
                                 self.comp_specs['data']['Peak Month % of total']
         

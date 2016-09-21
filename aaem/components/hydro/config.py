@@ -12,11 +12,7 @@ yaml = {'enabled': False,
         "project details": IMPORT,
         'lifetime': 'ABSOLUTE DEFAULT',
         'start year': 'ABSOLUTE DEFAULT',
-        'percent excess energy': .15,
-        'percent excess energy capturable': .7,
-        'efficiency electric boiler': .99,
-        'efficiency heating oil boiler': .8,
-        'percent heat recovered': .15,
+
         'percent o&m': .01
         }
 

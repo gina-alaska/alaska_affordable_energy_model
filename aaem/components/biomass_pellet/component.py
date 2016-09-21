@@ -56,7 +56,7 @@ class BiomassPellet (bmb.BiomassBase):
             self.reason = ("Not a biomass pellet project")
             return 
         
-        if not self.comp_specs["on road system"]:
+        if not self.cd["on road system"]:
             self.diagnostics.add_warning(self.component_name, 
                                     "not on road system")
             self.max_boiler_output = 0

@@ -19,7 +19,7 @@ yaml = {'enabled': False,
         
         'lifetime': 'ABSOLUTE DEFAULT',
         'start year': 'ABSOLUTE DEFAULT',
-        'percent heat recovery': .10,
+        
         'heating conversion efficiency': .75,
         
         'o&m per year': 500

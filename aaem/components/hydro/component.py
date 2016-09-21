@@ -170,7 +170,7 @@ class Hydropower (AnnualSavings):
                                  self.gross_generation_proposed
             exess_energy = \
                 (self.gross_generation_proposed - tansmission_losses) * \
-                self.comp_specs['percent excess energy']
+                self.cd['percent excess energy']
             
             self.percent_excess_energy = exess_energy / \
                                          self.gross_generation_proposed   
@@ -202,15 +202,15 @@ class Hydropower (AnnualSavings):
         # %
        
         captured_percent = self.percent_excess_energy * \
-                    self.comp_specs['percent excess energy capturable']
+                    self.cd['percent excess energy capturable']
         
         #kWh/year
         captured_energy = captured_percent * self.gross_generation_proposed
         
         #~ conversion: gal <- kwh
-        conversion = self.comp_specs['efficiency electric boiler']/ \
+        conversion = self.cd['efficiency electric boiler']/ \
                      (1/constants.mmbtu_to_gal_HF)/ \
-                     self.comp_specs['efficiency heating oil boiler']/\
+                     self.cd['efficiency heating oil boiler']/\
                      (constants.mmbtu_to_kWh)
         self.captured_energy = captured_energy * conversion # gallons/year
         
@@ -229,7 +229,7 @@ class Hydropower (AnnualSavings):
             self.lost_heat_recovery  = 0
         else:
             self.lost_heat_recovery = self.generation_diesel_reduction * \
-                                self.comp_specs['percent heat recovered']
+                                self.cd['percent heat recovered']
         
         #~ print 'self.captured_energy', self.captured_energy
         #~ print 'self.lost_heat_recovery', self.lost_heat_recovery
