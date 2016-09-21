@@ -55,7 +55,12 @@ def preprocess_existing_projects (ppo):
 
         
         phase = cp['Phase Completed']
-        phase = phase[0].upper() + phase[1:]
+        try:
+            phase = phase[0].upper() + phase[1:]
+        except TypeError:
+            ppo.diagnostics.add_note('Hydropower Projects', 
+                                        'missing value assuming Reconnaissance')
+            phase = 'Reconnaissance'
         proposed_capacity = float(cp['AAEM Capacity (kW)'])
         proposed_generation = float(cp['AAEM Generation (kWh)'])
         #~ distance_to_resource = float(cp['Distance'])
@@ -63,6 +68,8 @@ def preprocess_existing_projects (ppo):
         transmission_capital_cost = float(cp['Transmission Cost (current)'])
         expected_years_to_operation = UNKNOWN
         if phase == "0":
+            ppo.diagnostics.add_note('Hydropower Projects', 
+                                            '"0" corrected to Reconnaissance')
             phase = "Reconnaissance"
             
 
