@@ -42,6 +42,22 @@ def save_config (filename, config, comments, s_order = None, i_orders = None,
             current_i_order = i_orders[section]
             
         for item in current_i_order:
+            if type(config[section][item]) is dict:
+                
+                text += indent + str(item) + ': '
+                try: 
+                    text +=  ' # ' +  str(comments[section][item]) 
+                except KeyError:
+                    pass
+                text += nl
+                for sub_item in config[section][item]:
+                    text += indent + indent
+                    text += str(sub_item) + ': '  +\
+                            str(config[section][item][sub_item])
+                   
+                    text += nl
+                continue
+            
             try:
                 text += indent + str(item) + ': ' +  str(config[section][item])
             except KeyError:
