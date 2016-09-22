@@ -22,7 +22,10 @@ def preprocess_header (ppo):
 def preprocess (ppo):
     """"""
     data = read_csv(os.path.join(ppo.data_dir,"solar_data.csv"),
-                        comment = '#',index_col = 0).ix[ppo.com_id]
+                        comment = '#',index_col = 0)#.ix[ppo.com_id]
+
+    data = ppo.get_communities_data(data).T
+
     try:
         existing = read_csv(os.path.join(ppo.data_dir,"solar_data_existing.csv"),
                         comment = '#',index_col = 0).ix[ppo.com_id]
@@ -42,7 +45,7 @@ def preprocess (ppo):
     except (IOError,KeyError):
         wind_cap = 0 
     
-    val =  data['Output per 10kW Solar PV']
+    val =  float(data.ix['Output per 10kW Solar PV'])
     #~ return
     out_file = os.path.join(ppo.out_dir,"solar_power_data.csv")
 

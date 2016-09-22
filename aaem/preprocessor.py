@@ -529,14 +529,21 @@ class Preprocessor (object):
         data_file = os.path.join(self.data_dir, "res_model_data.csv")
         fuel_file = os.path.join(self.data_dir, "res_fuel_source.csv")
 
-        fuel = read_csv(fuel_file, index_col=0, comment = "#").ix[self.com_id]
+        fuel_data = read_csv(fuel_file, index_col=0, comment = "#")
+        fuel = self.get_communities_data(fuel_data).T
+        
         fuel = fuel.ix[["Total", "Utility Gas", "LP", "Electricity", "Fuel Oil",
                         "Coal", "Wood", "Solar", "Other", "No fuel used"]]
 
+        
         data = read_csv(data_file, index_col=0, comment = "#").ix[self.com_id]
-
-        df = concat([data,fuel])
-        del df.T["Energy Region"]
+        
+        fuel.columns = [self.com_id]
+        
+        df = concat([DataFrame(data),fuel])
+        df = df.T
+        del df['energy_region']
+        df = df.T
 
         out_file = os.path.join(self.out_dir, "residential_data.csv")
         fd = open(out_file,'w')
@@ -544,7 +551,7 @@ class Preprocessor (object):
         fd.write("key,value\n")
         fd.close()
 
-        df.to_csv(out_file,mode="a")
+        df.to_csv(out_file,mode="a",header=False)
         self.residential_data = df
         
         self.init_households = int(df.ix["Total Occupied"])
@@ -684,9 +691,14 @@ class Preprocessor (object):
             return
 
         idx = con_data["Data Year"] == con_data["Data Year"].max()
-        res_nonPCE_price = \
+        
+        try:
+            res_nonPCE_price = \
                         float(con_data[idx]['Residential Thousand Dollars']) /\
                         float(con_data[idx]['Residential Megawatthours'])
+        except ZeroDivisionError:
+            self.diagnostics.add_note('prices eia', "0 sold")
+            res_nonPCE_price = 0
 
         elec_nonFuel_cost = float(con_data[idx]['Total Thousand Dollars']) /\
                            float(con_data[idx]['Total Megawatthours'])
@@ -1411,7 +1423,13 @@ class Preprocessor (object):
         """ Function doc """
         in_file = os.path.join(self.data_dir, "hdd.csv")
         hdd = read_csv(in_file, index_col=0,
-                       comment = "#", header=0).ix[self.com_id].values[0]
+                       comment = "#", header=0)#.ix[self.com_id].values[0]
+        
+        hdd = self.get_communities_data(hdd)
+        try:
+            hdd = hdd.values[0][0]
+        except IndexError:
+            return
         out_file = os.path.join(self.out_dir, "hdd.csv")
         fd = open(out_file,'w')
         fd.write(self.hdd_header())
@@ -1610,6 +1628,7 @@ class Preprocessor (object):
         data = read_csv(in_file, comment = '#')
         ids = data.ix[data.index[data.T[data.T==self.com_id].any()]]
         region = ids['Energy Region'].values[0]
+    
         ids = ids[ids.keys()[ids.keys()!='Energy Region']].set_index("Model ID")
         self.energy_region = region.replace(' Region','')
         #~ print ids
