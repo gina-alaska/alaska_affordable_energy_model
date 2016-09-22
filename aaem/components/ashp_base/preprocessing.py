@@ -20,9 +20,9 @@ def preprocess_header (ppo):
 def preprocess (ppo):
     """"""
     data = read_csv(os.path.join(ppo.data_dir,"ashp_data.csv"),
-                        comment = '#',index_col = 0).ix[ppo.com_id]
+                        comment = '#',index_col = 0)#.ix[ppo.com_id]
 
-        
+    data = ppo.get_communities_data(data).T
     out_file = os.path.join(ppo.out_dir,"ashp_data.csv")
 
     fd = open(out_file,'w')
