@@ -542,7 +542,7 @@ class Preprocessor (object):
         
         df = concat([DataFrame(data),fuel])
         df = df.T
-        del df['energy_region']
+        del df['Energy Region']
         df = df.T
 
         out_file = os.path.join(self.out_dir, "residential_data.csv")
