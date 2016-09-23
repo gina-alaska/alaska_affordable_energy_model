@@ -31,7 +31,7 @@ def load_wind_costs_table (data_dir):
     post:
         the wind cost values are returned as a pandas DataFrame
     """
-    data_file = os.path.join(data_dir, "wind_costs.csv")
+    data_file = os.path.join(data_dir, "wind_kw_costs.csv")
     data = read_csv(data_file, comment = '#', index_col=0, header=0)
     data.index =data.index.astype(str)
     return data

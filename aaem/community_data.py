@@ -45,9 +45,9 @@ class CommunityData (object):
                     com_num_buildings.csv,
                     cpi.csv,
                     diesel_fuel_prices.csv,
-                    hdd.csv,
+                    heating_degree_days.csv,
                     interties.csv,
-                    population.csv,
+                    population_projections.csv,
                     prices.csv,
                     region.csv,
                     residential.csv,
@@ -75,7 +75,7 @@ class CommunityData (object):
             data_dir = os.path.join(model_root, 'input_files', 
                                             community.replace(' ','_'))
             construction_multipliers = os.path.join(model_root, 'config',
-                                            '__construction_multipliers.yaml') 
+                                            '__regional_multipliers.yaml') 
         elif not alt_data_dir is None and not alt_community_conf is None and\
              not alt_global_conf is None and \
              not alt_construction_multipliers is None:
@@ -414,12 +414,12 @@ class CommunityData (object):
         ## load preprocessed files
         if self.get_item('forecast', "population") in IMPORT_FLAGS:
             self.set_item('forecast', "population", 
-                          self.load_pp_csv("population.csv"))
+                          self.load_pp_csv("population_projections.csv"))
     
         if self.get_item('community',"HDD") in IMPORT_FLAGS:
             try:
                 self.set_item('community',"HDD", 
-                          int(self.load_pp_csv("hdd.csv").values[0][0]))
+                          int(self.load_pp_csv("heating_degree_days.csv").values[0][0]))
             except IOError:
                 raise IOError, "Heating Degree Days summary not found"
         
@@ -567,7 +567,7 @@ class CommunityData (object):
             self.set_item("community", "pellet price",
                             np.float(prices.ix["Pellet"]))
         
-        limits = self.load_pp_csv("generation_limits.csv")
+        limits = self.load_pp_csv("renewable_generation_capacities.csv")
         if self.get_item('community', 'hydro generation limit') in IMPORT_FLAGS:
             try:
                 self.set_item('community','hydro generation limit',
@@ -584,7 +584,7 @@ class CommunityData (object):
                 self.set_item('community','wind generation limit',
                                 float(0))
                                 
-        diesel_data = self.load_pp_csv("diesel_data.csv")
+        diesel_data = self.load_pp_csv("diesel_powerhouse_data.csv")
         
         if self.get_item('community', 
                             'switchgear suatable for RE') in IMPORT_FLAGS:

@@ -12,7 +12,7 @@ from yaml import load
 def process_data_import(data_dir):
     """
     """
-    data_file = os.path.join(data_dir, "heat_recovery_data.csv")
+    data_file = os.path.join(data_dir, "heat_recovery_projects_potential.csv")
     data = read_csv(data_file, comment = '#', index_col=0, header=0)
     return data['value'].to_dict()
     

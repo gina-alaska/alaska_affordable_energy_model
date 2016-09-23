@@ -8,8 +8,8 @@ from pandas import read_csv
 import numpy as np
 
 ## List of raw data files required for wind power preproecssing 
-raw_data_files = ['solar_data.csv', 'solar_data_existing.csv',
-                    "wind_data_existing.csv"]
+raw_data_files = ['solar_resource_data.csv', 'solar_existing_systems.csv',
+                    "wind_existing_systems.csv"]
 
 ## preprocessing functons 
 def preprocess_header (ppo):
@@ -21,13 +21,13 @@ def preprocess_header (ppo):
 
 def preprocess (ppo):
     """"""
-    data = read_csv(os.path.join(ppo.data_dir,"solar_data.csv"),
+    data = read_csv(os.path.join(ppo.data_dir,"solar_resource_data.csv"),
                         comment = '#',index_col = 0)#.ix[ppo.com_id]
 
     data = ppo.get_communities_data(data).T
 
     try:
-        existing = read_csv(os.path.join(ppo.data_dir,"solar_data_existing.csv"),
+        existing = read_csv(os.path.join(ppo.data_dir,"solar_existing_systems.csv"),
                         comment = '#',index_col = 0).ix[ppo.com_id]
         existing = existing['Installed Capacity (kW)']
         if np.isnan(existing):
@@ -37,7 +37,7 @@ def preprocess (ppo):
     
     try:
         wind_cap = read_csv(os.path.join(ppo.data_dir,
-                                "wind_data_existing.csv"),
+                                "wind_existing_systems.csv"),
                             comment = '#',index_col = 0).ix[ppo.com_id]
         wind_cap = wind_cap['Rated Power (kW)']
         if np.isnan(wind_cap):

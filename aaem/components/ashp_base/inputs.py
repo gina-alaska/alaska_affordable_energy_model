@@ -10,7 +10,7 @@ from pandas import read_csv
 def process_data_import(data_dir):
     """
     """
-    data = read_csv(os.path.join(data_dir,'ashp_data.csv'),index_col=0,comment = '#')
+    data = read_csv(os.path.join(data_dir,'ashp_climate_data.csv'),index_col=0,comment = '#')
     return  data
     
 def import_perfromance_data (data_dir):

@@ -50,7 +50,7 @@ def preprocess_existing_projects (ppo):
     preprocess data related to existing projects
     
     pre:
-        ppo is a is a Preprocessor object. "wind_projects.csv" and 
+        ppo is a is a Preprocessor object. "wind_projects_potential.csv" and 
         'project_development_timeframes.csv' exist in the ppo.data_dir 
     post:
         data for existing projets is usable by model

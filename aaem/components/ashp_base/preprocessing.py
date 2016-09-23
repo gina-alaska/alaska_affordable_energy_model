@@ -8,7 +8,7 @@ from pandas import read_csv
 import shutil
 
 ## List of raw data files required for wind power preproecssing 
-raw_data_files = ['ashp_data.csv',"ashp_perfromance_data.csv"]
+raw_data_files = ['ashp_climate_data.csv',"ashp_perfromance_data.csv"]
 
 ## preprocessing functons 
 def preprocess_header (ppo):
@@ -19,11 +19,11 @@ def preprocess_header (ppo):
             
 def preprocess (ppo):
     """"""
-    data = read_csv(os.path.join(ppo.data_dir,"ashp_data.csv"),
+    data = read_csv(os.path.join(ppo.data_dir,"ashp_climate_data.csv"),
                         comment = '#',index_col = 0)#.ix[ppo.com_id]
 
     data = ppo.get_communities_data(data).T
-    out_file = os.path.join(ppo.out_dir,"ashp_data.csv")
+    out_file = os.path.join(ppo.out_dir,"ashp_climate_data.csv")
 
     fd = open(out_file,'w')
     fd.write(preprocess_header(ppo))
@@ -33,7 +33,7 @@ def preprocess (ppo):
     # create data and uncomment this
     data.to_csv(out_file, mode = 'a',header=False)
     
-    ppo.MODEL_FILES['ASHP_DATA'] = "ashp_data.csv" # change this
+    ppo.MODEL_FILES['ASHP_DATA'] = "ashp_climate_data.csv" # change this
     
     
     shutil.copy(os.path.join(ppo.data_dir,"ashp_perfromance_data.csv"),

@@ -11,14 +11,14 @@ from yaml import dump
 from config import UNKNOWN
 
 ## List of raw data files required for wind power preproecssing 
-raw_data_files = ['wind_class_assumptions.csv',
-                  'wind_costs.csv',
-                  "wind_data_existing.csv",
-                  "wind_data_potential.csv",
-                  "diesel_data.csv",
-                  'wind_data_interties.csv',
-                  "solar_data_existing.csv",
-                  "wind_projects.csv",
+raw_data_files = ['wind_class_cf_assumptions.csv',
+                  'wind_kw_costs.csv',
+                  "wind_existing_systems.csv",
+                  "wind_resource_data.csv",
+                  "diesel_powerhouse_data.csv",
+                  'wind_intertie_wind_classes.csv',
+                  "solar_existing_systems.csv",
+                  "wind_projects_potential.csv",
                   'project_development_timeframes.csv']
 
 ## wind preprocessing functons 
@@ -40,15 +40,15 @@ def wind_preprocess (ppo):
     Reprocesses the wind data
     
     pre:
-        ppo is a Preprocessor object. wind_class_assumptions, 
-    wind_data_existing.csv and wind_data_potential.csv file exist at 
+        ppo is a Preprocessor object. wind_class_cf_assumptions, 
+    wind_existing_systems.csv and wind_resource_data.csv file exist at 
     ppo.data_dir's location 
     
     post:
         preprocessed wind data is saved at ppo.out_dir as wind_power_data.csv
     """
     try:
-        existing = read_csv(os.path.join(ppo.data_dir,"wind_data_existing.csv"),
+        existing = read_csv(os.path.join(ppo.data_dir,"wind_existing_systems.csv"),
                         comment = '#',index_col = 0).ix[ppo.com_id]
         existing = existing['Rated Power (kW)']
     except KeyError:
@@ -56,7 +56,7 @@ def wind_preprocess (ppo):
     #~ #~ print existing
     try:
         potential = read_csv(os.path.join(ppo.data_dir,
-                                "wind_data_potential.csv"),
+                                "wind_resource_data.csv"),
                             comment = '#',index_col = 0).ix[ppo.com_id]
     except KeyError:
         potential = DataFrame(index = ['Wind Potential','Wind-Resource',
@@ -69,7 +69,7 @@ def wind_preprocess (ppo):
                                        
     try:
         intertie = read_csv(os.path.join(ppo.data_dir,
-                            "wind_data_interties.csv"),
+                            "wind_intertie_wind_classes.csv"),
                             comment = '#',
                             index_col = 0).ix[ppo.com_id+"_intertie"]
         intertie = int(intertie['Highest Wind Class on Intertie'])
@@ -86,12 +86,12 @@ def wind_preprocess (ppo):
         pass
     
     assumptions = read_csv(os.path.join(ppo.data_dir,
-                                "wind_class_assumptions.csv"),
+                                "wind_class_cf_assumptions.csv"),
                            comment = '#',index_col = 0)
                            
     try:
         solar_cap = read_csv(os.path.join(ppo.data_dir,
-                                "solar_data_existing.csv"),
+                                "solar_existing_systems.csv"),
                             comment = '#',index_col = 0).ix[ppo.com_id]
         solar_cap = solar_cap['Installed Capacity (kW)']
         if np.isnan(solar_cap):
@@ -127,14 +127,14 @@ def copy_wind_cost_table(ppo):
     copies wind cost table file to each community
     
     pre:
-        ppo is a Preprocessor object. wind_costs.csv exists at ppo.data_dir
+        ppo is a Preprocessor object. wind_kw_costs.csv exists at ppo.data_dir
     post:
-        wind_costs.csv is copied from ppo.data_dir to ppo.out_dir 
+        wind_kw_costs.csv is copied from ppo.data_dir to ppo.out_dir 
     """
     data_dir = ppo.data_dir
     out_dir = ppo.out_dir
-    shutil.copy(os.path.join(data_dir,"wind_costs.csv"), out_dir)
-    ppo.MODEL_FILES['WIND_COSTS'] = "wind_costs.csv"
+    shutil.copy(os.path.join(data_dir,"wind_kw_costs.csv"), out_dir)
+    ppo.MODEL_FILES['WIND_COSTS'] = "wind_kw_costs.csv"
 ## end wind preprocessing functions
 
 def preprocess_existing_projects (ppo):
@@ -142,7 +142,7 @@ def preprocess_existing_projects (ppo):
     preprocess data related to existing projects
     
     pre:
-        ppo is a is a Preprocessor object. "wind_projects.csv" and 
+        ppo is a is a Preprocessor object. "wind_projects_potential.csv" and 
         'project_development_timeframes.csv' exist in the ppo.data_dir 
     post:
         data for existing projets is usable by model
@@ -150,7 +150,7 @@ def preprocess_existing_projects (ppo):
     projects = []
     p_data = {}
     
-    project_data = read_csv(os.path.join(ppo.data_dir,"wind_projects.csv"),
+    project_data = read_csv(os.path.join(ppo.data_dir,"wind_projects_potential.csv"),
                            comment = '#',index_col = 0)
     
     project_data = DataFrame(ppo.get_communities_data(project_data))
