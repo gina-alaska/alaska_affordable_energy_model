@@ -99,7 +99,7 @@ class Preprocessor (object):
             pass
         self.load_ids()
         
-        self.interties()
+        interties = self.interties()
         self.prices()
 
         ### copy files that still need their own preprocessor function yet
@@ -1692,7 +1692,12 @@ def preprocess (data_dir, out_dir, com_id, dev = False):
             pp = [com_id] + [com_id + pro for pro in pp.projects]
     except AttributeError:
         try:
-            pp = [com_id] + [com_id + pro for pro in pp.projects]
+            it = read_csv(os.path.join(data_dir, 'interties.csv'), 
+                                                                index_col = 0)
+            if (it == com_id).any().any() == True:
+                pp = [com_id]
+            else:
+                pp = [com_id] + [com_id + pro for pro in pp.projects]
         except AttributeError:
             pp = [com_id]
     diag.save_messages(os.path.join(out_dir,
@@ -1706,9 +1711,11 @@ def preprocess (data_dir, out_dir, com_id, dev = False):
 def preprocess_no_intertie (data_dir, out_dir, com_id, diagnostics):
     """
     """
+    
     if os.path.exists(os.path.join(out_dir)):
         it = read_csv(os.path.join(data_dir, 'interties.csv'), index_col = 0)
         if (it == com_id).any().any() == True:
+    
             return False
 
         
@@ -1733,7 +1740,6 @@ def preprocess_no_intertie (data_dir, out_dir, com_id, diagnostics):
     DataFrame(copied_data,["copied"]).T.to_csv(f_path,mode='a')
     
     
-   
     return pp
 
 def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
@@ -1858,6 +1864,7 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
             projects.append(com+project)
             #~ shutil.copytree(os.path.join(out_dir,com.replace(" ","_")),os.path.join(out_dir,com.replace(" ","_")+project))
     
+        
     # for intertie
     #   generation = generation(parent) +
     #             (generation(child) - kWh_purchased(child)) for each child
@@ -1944,17 +1951,17 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
         fd.close()
     
 
-    out_dir = os.path.join(out_dir,com_ids[0].replace(" ","_") +'_intertie')
-    #~ print out_dir
+    it_dir = os.path.join(out_dir,com_ids[0].replace(" ","_") +'_intertie')
+    #~ print it_dir
     try:
-        os.makedirs(out_dir)
+        os.makedirs(it_dir)
     except OSError:
         pass
 
 
     diagnostics.add_note("Intertie (population)",
         "the intertie population is the sum of all populations on intertie")
-    out_file = os.path.join(out_dir, 'population.csv')
+    out_file = os.path.join(it_dir, 'population.csv')
     population.to_csv(out_file)
 
     diagnostics.add_note("Intertie(yearly_electricity_summary)",
@@ -1963,74 +1970,82 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
          "kWh_purchased(child)) for each child"))
     diagnostics.add_note("Intertie(yearly_electricity_summary)",
         "Line Loss is recalulated from new totals")
-    out_file = os.path.join(out_dir,'yearly_electricity_summary.csv')
+    out_file = os.path.join(it_dir,'yearly_electricity_summary.csv')
     electricity.to_csv(out_file)
-
-    
-
-    #~ diagnostics.add_note("Intertie(diesel_fuel_prices)", "from parent")
-    #~ shutil.copy(os.path.join(parent_dir,"diesel_fuel_prices.csv"), out_dir)
-    #~ diagnostics.add_note("Intertie(hdd)", "from parent")
-    #~ shutil.copy(os.path.join(parent_dir,"hdd.csv"), out_dir)
-    #~ diagnostics.add_note("Intertie(cpi)", "from parent (constant for state)")
-    #~ shutil.copy(os.path.join(parent_dir,"cpi.csv"), out_dir)
-    #~ diagnostics.add_note("Intertie(com_bulding_estimates)", "from parent")
-    #~ shutil.copy(os.path.join(parent_dir,"com_building_estimates.csv"), out_dir)
-    #~ diagnostics.add_note("Intertie(community_buildigns)", "from parent")
-    #~ shutil.copy(os.path.join(parent_dir,"community_buildings.csv"), out_dir)
-    #~ diagnostics.add_note("Intertie(com_num_buildings)", "from parent")
-    #~ shutil.copy(os.path.join(parent_dir,"com_num_buildings.csv"), out_dir)
-    #~ diagnostics.add_note("Intertie(interties)", "from parent")
-    #~ shutil.copy(os.path.join(parent_dir,"interties.csv"), out_dir)
-    #~ diagnostics.add_note("Intertie(prices)", "from parent")
-    #~ shutil.copy(os.path.join(parent_dir,"prices.csv"), out_dir)
-    #~ diagnostics.add_note("Intertie(region)", "from parent")
-    #~ shutil.copy(os.path.join(parent_dir,"region.csv"), out_dir)
-    #~ diagnostics.add_note("Intertie(residential_dat)", "from parent")
-    #~ shutil.copy(os.path.join(parent_dir,"residential_data.csv"), out_dir)
-    #~ diagnostics.add_note("Intertie(wastewater_data)", "from parent")
-    #~ shutil.copy(os.path.join(parent_dir,"wastewater_data.csv"), out_dir)
-    #~ shutil.copy(os.path.join(parent_dir,
-            #~ MODEL_FILES["PRICES_NONELECTRIC"]),out_dir)                  
-    #~ shutil.copy(os.path.join(parent_dir,
-            #~ MODEL_FILES["COPIES"]),out_dir) 
-    #~ shutil.copy(os.path.join(parent_dir,
-            #~ MODEL_FILES["GENERATION_LIMITS"]),out_dir)
-    #~ shutil.copy(os.path.join(parent_dir,
-            #~ MODEL_FILES["WIND_DATA"]),out_dir)  
             
     for f in Preprocessor.MODEL_FILES:
         if f in ["ELECTRICITY",]:
             continue
         shutil.copy(os.path.join(parent_dir,
-            Preprocessor.MODEL_FILES[f]),out_dir) 
+            Preprocessor.MODEL_FILES[f]),it_dir) 
          
     for project in  pp_data[0].projects:
-            #~ if out_dir[-1] in ['/','\\']:
-                #~ out_dir = out_dir[:-1]
-            #~ ##~ shutil.rmtree(out_dir+project)
-            projects.append(parent+'_intertie'+project)
-            #~ try:
-                #~ shutil.rmtree(out_dir+project)
-            #~ except OSError:
-                #~ pass
-            #~ shutil.copytree(out_dir,out_dir+project)
-    #~ print pp_data
-    
+        projects.append(parent+'_intertie'+project)
     
     #~ print total_building_count 
     building_inventory = concat(building_inventory) 
-    out_file = os.path.join(out_dir, "community_buildings.csv")
+    out_file = os.path.join(it_dir, "community_buildings.csv")
     fd = open(out_file,'w')
     fd.write(pp.buildings_inventory_header())
     fd.close()
     building_inventory.to_csv(out_file, mode="a", index=False)
     
-    out_file = os.path.join(out_dir, "com_num_buildings.csv")
+    out_file = os.path.join(it_dir, "com_num_buildings.csv")
     fd = open(out_file,'w')
     fd.write(pp.buildings_count_header())
     fd.write("key, value\n")
     fd.write("Buildings," + str(total_building_count ) +"\n")
     fd.close()
     
+    p2 = []
+    for project in projects:
+        if project.find('hydro') != -1 and project.find('intertie') != -1:
+            p2.append(project)
+        if project.find('wind') != -1 and project.find('intertie') != -1:
+            p2.append(project)
+        if project.find('heat_recovery') != -1 and \
+                project.find('intertie') == -1:
+            p2.append(project)
+            
+    projects = p2
+            
+    #~ print parent
+    import yaml
+    
+    projects = []
+    for tech in [ 'wind', 'hydro' ]:
+        #~ print tech
+        p_cfg = {}
+        
+        for com in com_ids:
+            f_path = os.path.join(out_dir,com.replace(" ","_"), 
+                                                tech + "_projects.yaml")
+                                                
+            if com != parent:
+                with open(f_path,'r') as fd:
+            
+                    text = yaml.load(fd)
+                    if not text is None:
+                        for c, idx in enumerate(text):
+                            p_cfg[tech+'+project_' + \
+                                        com.replace(' ','_').lower()\
+                                        + '_' + str(c)] = text[idx]
+        
+            with open(f_path,'w') as fd:
+                fd.write("")
+    
+        all_prj = None
+        with open(os.path.join(out_dir,parent.replace(" ","_") + '_intertie',
+                                        tech + "_projects.yaml"),'r') as fd:
+            all_prj = yaml.load(fd)
+            if all_prj is None:
+                all_prj = p_cfg
+            else:
+                all_prj.update(p_cfg)
+        with open(os.path.join(out_dir,parent.replace(" ","_") + '_intertie',
+                                        tech + "_projects.yaml"),'w') as fd:
+            fd.write(yaml.dump(all_prj,default_flow_style=False))
+        projects += [parent.replace(" ","_") + '_intertie+' +p for p in all_prj.keys()]
+    
+    #~ print projects
     return pp_data, projects
