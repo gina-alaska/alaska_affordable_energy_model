@@ -1677,7 +1677,12 @@ def preprocess (data_dir, out_dir, com_id, dev = False):
             pp = [com_id] + [com_id + pro for pro in pp.projects]
     except AttributeError:
         try:
-            pp = [com_id] + [com_id + pro for pro in pp.projects]
+            it = read_csv(os.path.join(data_dir, 'interties.csv'), 
+                                                                index_col = 0)
+            if (it == com_id).any().any() == True:
+                pp = [com_id]
+            else:
+                pp = [com_id] + [com_id + pro for pro in pp.projects]
         except AttributeError:
             pp = [com_id]
     diag.save_messages(os.path.join(out_dir,
@@ -1691,9 +1696,11 @@ def preprocess (data_dir, out_dir, com_id, dev = False):
 def preprocess_no_intertie (data_dir, out_dir, com_id, diagnostics):
     """
     """
+    
     if os.path.exists(os.path.join(out_dir)):
         it = read_csv(os.path.join(data_dir, 'interties.csv'), index_col = 0)
         if (it == com_id).any().any() == True:
+    
             return False
 
         
@@ -1718,7 +1725,6 @@ def preprocess_no_intertie (data_dir, out_dir, com_id, diagnostics):
     DataFrame(copied_data,["copied"]).T.to_csv(f_path,mode='a')
     
     
-   
     return pp
 
 def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
@@ -1988,13 +1994,43 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
             
     projects = p2
             
-    print parent
-    #~ for com in com_ids:
-    with open(os.path.join(out_dir,parent.replace(" ","_"),
-                                    "hydro_projects.yaml"),'w') as fd:
-        fd.write("")
-    with open(os.path.join(out_dir,parent.replace(" ","_"),
-                                    "wind_projects.yaml"),'w') as fd:
-        fd.write("")
+    #~ print parent
+    import yaml
     
+    projects = []
+    for tech in [ 'wind', 'hydro' ]:
+        #~ print tech
+        p_cfg = {}
+        
+        for com in com_ids:
+            f_path = os.path.join(out_dir,com.replace(" ","_"), 
+                                                tech + "_projects.yaml")
+                                                
+            if com != parent:
+                with open(f_path,'r') as fd:
+            
+                    text = yaml.load(fd)
+                    if not text is None:
+                        for c, idx in enumerate(text):
+                            p_cfg[tech+'+project_' + \
+                                        com.replace(' ','_').lower()\
+                                        + '_' + str(c)] = text[idx]
+        
+            with open(f_path,'w') as fd:
+                fd.write("")
+    
+        all_prj = None
+        with open(os.path.join(out_dir,parent.replace(" ","_") + '_intertie',
+                                        tech + "_projects.yaml"),'r') as fd:
+            all_prj = yaml.load(fd)
+            if all_prj is None:
+                all_prj = p_cfg
+            else:
+                all_prj.update(p_cfg)
+        with open(os.path.join(out_dir,parent.replace(" ","_") + '_intertie',
+                                        tech + "_projects.yaml"),'w') as fd:
+            fd.write(yaml.dump(all_prj,default_flow_style=False))
+        projects += [parent.replace(" ","_") + '_intertie+' +p for p in all_prj.keys()]
+    
+    #~ print projects
     return pp_data, projects
