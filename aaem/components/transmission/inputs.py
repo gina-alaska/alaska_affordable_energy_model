@@ -8,7 +8,7 @@ from pandas import read_csv
 from yaml import load
 from config import UNKNOWN
 
-from aaem.components.biomass_pellet import road_import 
+
 
 ## Functions for CommunityData IMPORT keys
 def process_data_import(data_dir):
@@ -87,4 +87,4 @@ def load_project_details (data_dir):
 ## library of keys and functions for CommunityData IMPORT Keys
 yaml_import_lib = {'project details': load_project_details,
                     'nearest community':process_data_import,
-                    'on road system': road_import }
+                  }

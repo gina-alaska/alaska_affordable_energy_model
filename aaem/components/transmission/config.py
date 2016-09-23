@@ -15,7 +15,6 @@ yaml = {'enabled': False,
         'transmission loss per mile': .001,
         'nearest community': IMPORT,
         'heat recovery o&m' : 1500,
-        'on road system': IMPORT,
         'est. intertie cost per mile': {'road needed': 500000, 
                                         'road not needed': 250000},
         'percent o&m':.05,
@@ -40,7 +39,7 @@ yaml_comments = {'enabled': '',
         'start year': 'start year <int>'}
         
 ## list of data keys not to save when writing the CommunityData output
-yaml_not_to_save = []
+yaml_not_to_save = ['nearest community']
     
 ## list of prerequisites for module
 prereq_comps = [] 

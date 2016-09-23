@@ -127,6 +127,7 @@ class Preprocessor (object):
         self.wastewater()
         self.generation_limits()
         self.diesel_data()
+        self.preprocess_road_system()
 
         for comp in comp_lib:
             try:
@@ -1640,6 +1641,49 @@ class Preprocessor (object):
             if type(i) != str and np.isnan(i):
                continue
             self.id_list.append(i)
+            
+    
+    ## the folowing functions were moved from the biomass pellet system
+    def preprocess_road_system_header(self):
+        """
+        pre: 
+            self is a preprocessor object
+        post:
+            returns the road header
+        """
+        return  "# " + self.com_id + " road system data\n"+ \
+                "# is community on road system or in south east \n" +\
+                self.comments_dataframe_divide
+    
+    def preprocess_road_system (self):
+        """
+        preprocess road_system data
+        pre: 
+            self is a preprocessor object
+        post:
+            saves "biomass_data.csv", and updates MODEL_FILES
+        """
+        data = read_csv(os.path.join(self.data_dir,"road_system.csv"),
+                            comment = '#',index_col = 0)
+                            
+        data = self.get_communities_data(data)
+        #~ print data.T
+        data = data.values[0][0]
+        
+                        
+        out_file = os.path.join(self.out_dir,"road_system.csv")
+        
+        fd = open(out_file,'w')
+        fd.write(self.preprocess_road_system_header())
+        fd.write("key,value\n")
+        fd.write("On Road/SE," + data + '\n')
+        #~ print "a"
+        fd.close()
+    
+        # create data and uncomment this
+        #~ data.to_csv(out_file, mode = 'a',header=False)
+        
+        self.MODEL_FILES['road_system'] = "road_system.csv" # change this
             
 
 def preprocess (data_dir, out_dir, com_id, dev = False):

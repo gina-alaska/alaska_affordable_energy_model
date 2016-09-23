@@ -34,6 +34,12 @@ class RefreshCommand(pycommand.CommandBase):
         """
         run the command
         """
+        if self.args and len(self.args) < 2:
+            msg = "REFRESH ERROR: please provide a path to the model and " +\
+                                  "a path to the aaem data repo"
+            cli_lib.print_error_message(msg, RefreshCommand.usagestr)
+            return 0
+        
         if self.args and os.path.exists(self.args[0]):
             model_root = os.path.abspath(self.args[0])
         else:

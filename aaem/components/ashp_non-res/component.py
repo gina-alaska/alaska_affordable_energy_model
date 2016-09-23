@@ -64,8 +64,8 @@ class ASHPNonResidential (ashp_base.ASHPBase):
     def calc_heat_energy_produced_per_year (self):
         """
         """
-        self.heat_displaced_sqft = self.non_res_sqft * self.comp_specs[ 'percent sqft assumed heat displacement']
-        average_net_btu_per_hr_pr_sf = self.avg_gal_per_sqft * self.comp_specs["heating oil efficiency"]*(1/constants.mmbtu_to_gal_HF)*1e6/ constants.hours_per_year
+        self.heat_displaced_sqft = self.non_res_sqft * self.cd[ 'assumed percent non-residential sqft heat displacement']
+        average_net_btu_per_hr_pr_sf = self.avg_gal_per_sqft * self.cd["heating oil efficiency"]*(1/constants.mmbtu_to_gal_HF)*1e6/ constants.hours_per_year
         self.heat_energy_produced_per_year = average_net_btu_per_hr_pr_sf * self.heat_displaced_sqft /1e6 * constants.hours_per_year
                         
         #~ print self.heat_energy_produced_per_year

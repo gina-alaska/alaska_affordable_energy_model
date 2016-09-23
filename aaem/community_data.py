@@ -14,12 +14,14 @@ import numpy as np
 ## fc - forecast
 ## com - non-residential buildings 
 from diesel_prices import DieselProjections
-from defaults import build_defaults
+from defaults import build_defaults, save_config
 from diagnostics import diagnostics
 #~ from preprocessor import MODEL_FILES
-from aaem.components import comp_lib
+from aaem.components import comp_lib, comp_order
 
 from importlib import import_module
+
+import aaem.config as config
 
 PATH = os.path.join
 class CommunityData (object):
@@ -95,7 +97,7 @@ class CommunityData (object):
             self.diagnostics = diagnostics()
             
         self.load_input(community_conf, global_conf)
-        self.data_dir = os.path.abspath(data_dir)
+        self.data_dir = data_dir
         self.get_csv_data()
         
         self.set_item("community","diesel prices",
@@ -436,12 +438,10 @@ class CommunityData (object):
                         data_dir = os.path.join(os.path.split(data_dir)[0], 
                                     os.path.split(data_dir)[1]+'+'+self.tag)
                     self.set_item(comp,k, lib[k](data_dir))
-        
-        #~ comp_name = 'residential_buildings'
-        #~ lib = import_module("aaem.components." + comp_name).yaml_import_lib
-        
-        #~ lib['data']()
-        #~ self.set_item('residential buildings','data', lib['data'](self.data_dir))
+                    
+             
+        if self.get_item('community','on road system') in IMPORT_FLAGS:
+            self.set_item('community','on road system', road_import(data_dir))
         
         
         
@@ -746,53 +746,56 @@ class CommunityData (object):
         #~ rel = os.path.relpath(os.path.dirname(fname),os.path.join("model",".."))
         #~ rt = os.path.join(rel,"input_data")
         
-        
-        
-        copy['Residential Energy Efficiency']['data'] = "IMPORT"
+        copy['Residential Energy Efficiency']['data'] = "--see input_data"
         copy['Non-residential Energy Efficiency']['com building data'] =\
-                                                                        "IMPORT"
+                                                                        "--see input_data"
         copy['Non-residential Energy Efficiency']["com building estimates"] = \
-                                                                        "IMPORT"
+                                                                        "--see input_data"
 
-        copy['community']["diesel prices"]="IMPORT"
-        copy['forecast']["electricity"] = "IMPORT"
-        copy['forecast']["population"] = "IMPORT"
-        copy['Water and Wastewater Efficiency']["data"] = "IMPORT"
-        copy["community"]["electric non-fuel prices"] = "IMPORT"
-        copy["community"]["generation numbers"] =  "IMPORT"
-        copy["community"]["generation"] = "IMPORT"
+        copy['community']["diesel prices"]="--see input_data"
+        copy['forecast']["electricity"] = "--see input_data"
+        copy['forecast']["population"] = "--see input_data"
+        copy['Water and Wastewater Efficiency']["data"] = "--see input_data"
+        copy["community"]["electric non-fuel prices"] = "--see input_data"
+        copy["community"]["generation numbers"] =  "--see input_data"
+        copy["community"]["generation"] = "--see input_data"
+        comment = "config used"
+
+        conf, orders, comments, defaults = \
+            config.get_config(config.non_component_config_sections)
         
         for comp in comp_lib:
-            c = comp_lib[comp]
+            #~ c = comp_lib[comp]
+            #~ print c,',' ,comp
+            cfg = import_module("aaem.components." + comp_lib[comp]+ '.config')
+            order = list(cfg.yaml_order) + \
+                    list(set(cfg.yaml_order) ^ set(cfg.yaml.keys()))
+            orders[comp] = order
+            comments[comp] = cfg.yaml_comments
             try:
-                lis= import_module("aaem.components." + c).yaml_not_to_save
+                #~ if type(cfg.yaml_not_to_save) is dict:
+                for item in cfg.yaml_not_to_save:
+                    copy[comp][item] = "--see input_data"
             except AttributeError:
-                continue
-            for item in lis:
-                copy[comp][item] =  "IMPORT"
-        
-        fd = open(fname, 'w')
-        text = yaml.dump(copy, default_flow_style=False) 
-        comment = \
-        ("# some of the items may reference files the input data directory\n"
-         "# residential buildings(data)-> residential_data.csv\n" 
-         "# non-residential buildings(com building data)"
-                                        " -> community_buildings.csv\n"
-         "# non-residential buildings(com building estimates)"
-                                     " -> com_building_estimates.csv\n"
-         "# community(diesel prices) -> \n"
-         "# forecast(electricity) -> yearly_electricity_summary.csv\n"
-         "# forecast(population) -> population.csv\n"
-         "# Water & Wastewater Efficiency(data) -> wastewater_data.csv\n"
-         "# community(electric non-fuel prices) -> prices.csv\n"
-         "# community(generation numbers) -> yearly_electricity_summary.csv\n"
-         "# community(generation) -> yearly_electricity_summary.csv\n")
-        fd.write(comment + text.replace("IMPORT","--see input_data"))
-        fd.close()
-
+                pass
+            
+        section_order = config.non_component_config_sections + comp_order
+        save_config(fname,copy, comments, section_order, orders, header=comment)
         del copy
         #~ self.model_inputs = copy
         #~ return comment + text
+        
+
+## import for road system data #moved from biomass pellet
+def road_import (data_dir):
+    """
+    import the road system boolean
+    """
+    data_file = os.path.join(data_dir, "road_system.csv")
+    data = read_csv(data_file, comment = '#', index_col=0, header=0)
+    data = data['value'].to_dict()
+    on_road = data["On Road/SE"].lower() == "yes"
+    return on_road
         
 def test(data, overrides, defaults):
     """ 

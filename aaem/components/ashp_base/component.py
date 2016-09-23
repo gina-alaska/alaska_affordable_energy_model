@@ -159,7 +159,7 @@ class ASHPBase (AnnualSavings):
         self.monthly_value_table["Heating Oil Consumed (gal)"][idx] = \
                 self.monthly_value_table['mmbtu/mon']*\
                 constants.mmbtu_to_gal_HF /\
-                self.comp_specs['heating oil efficiency']
+                self.cd['heating oil efficiency']
         
         pass
         
@@ -171,7 +171,7 @@ class ASHPBase (AnnualSavings):
         self.monthly_value_table["Heating Oil Saved (gal)"] = \
                 self.monthly_value_table['mmbtu/mon']*\
                 constants.mmbtu_to_gal_HF /\
-                self.comp_specs['heating oil efficiency'] - \
+                self.cd['heating oil efficiency'] - \
                 self.monthly_value_table["Heating Oil Consumed (gal)"]
     
     def calc_electric_consumption (self):

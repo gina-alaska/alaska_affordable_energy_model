@@ -87,7 +87,6 @@ class Transmission (AnnualSavings):
             self.reason = ("'model electricity' in the communtiy data"
                            " must be True to run this component")
             return 
-        
         if np.isnan(self.comp_specs['nearest community']\
                                     ['Distance to Community']):
             self.run = False
@@ -251,7 +250,7 @@ class Transmission (AnnualSavings):
             self.capital costs is the total cost of the project $
         """
         road_needed = 'road needed'
-        if self.comp_specs['on road system']:
+        if self.cd['on road system']:
             road_needed = 'road not needed'
         
         dist = self.comp_specs['nearest community']['Distance to Community']
