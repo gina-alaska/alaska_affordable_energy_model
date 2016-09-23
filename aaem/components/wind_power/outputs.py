@@ -29,7 +29,7 @@ def component_summary (coms, res_dir):
             continue
         try:
             # ??? NPV or year one
-            wind = coms[c]['wind power']
+            wind = coms[c][COMPONENT_NAME]
             
             start_yr = wind.comp_specs['start year']
             wind.get_diesel_prices()
@@ -135,7 +135,7 @@ def component_summary (coms, res_dir):
     
     data = DataFrame(out,columns = cols).set_index('Community')#.round(2)
     f_name = os.path.join(res_dir,
-                'wind_power_summary.csv')
+                COMPONENT_NAME.lower().replace(' ','_') + '_summary.csv')
     #~ fd = open(f_name,'w')
     #~ fd.write(("# wind summary\n"))
     #~ fd.close()

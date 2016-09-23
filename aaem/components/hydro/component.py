@@ -56,7 +56,7 @@ class Hydropower (AnnualSavings):
         # not used here
         pass
         
-    def run (self, scalers = {'captial costs':1.0}):
+    def run (self, scalers = {'capital costs':1.0}):
         """
         run the forecast model
         
@@ -115,7 +115,8 @@ class Hydropower (AnnualSavings):
             
             # AnnualSavings functions (don't need to write)
             self.calc_annual_total_savings()
-            self.calc_annual_costs(self.cd['interest rate'])
+            self.calc_annual_costs(self.cd['interest rate'],
+                                            scalers['capital costs'])
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
             
@@ -137,7 +138,8 @@ class Hydropower (AnnualSavings):
         """
         self.generation = self.forecast.generation_by_type['generation diesel']\
                                                             [self.start_year]
-        self.average_load = self.generation / constants.hours_per_year
+        self.average_load = \
+                self.forecast.yearly_average_diesel_load.ix[self.start_year]
         #~ print 'self.average_load',self.average_load
  
     def calc_generation_proposed (self):
@@ -168,7 +170,7 @@ class Hydropower (AnnualSavings):
                                  self.gross_generation_proposed
             exess_energy = \
                 (self.gross_generation_proposed - tansmission_losses) * \
-                self.comp_specs['percent excess energy']
+                self.cd['percent excess energy']
             
             self.percent_excess_energy = exess_energy / \
                                          self.gross_generation_proposed   
@@ -200,15 +202,15 @@ class Hydropower (AnnualSavings):
         # %
        
         captured_percent = self.percent_excess_energy * \
-                    self.comp_specs['percent excess energy capturable']
+                    self.cd['percent excess energy capturable']
         
         #kWh/year
         captured_energy = captured_percent * self.gross_generation_proposed
         
         #~ conversion: gal <- kwh
-        conversion = self.comp_specs['efficiency electric boiler']/ \
+        conversion = self.cd['efficiency electric boiler']/ \
                      (1/constants.mmbtu_to_gal_HF)/ \
-                     self.comp_specs['efficiency heating oil boiler']/\
+                     self.cd['efficiency heating oil boiler']/\
                      (constants.mmbtu_to_kWh)
         self.captured_energy = captured_energy * conversion # gallons/year
         
@@ -235,7 +237,7 @@ class Hydropower (AnnualSavings):
     # Make this do stuff
     def calc_capital_costs (self):
         """
-        calculate the captial costs
+        calculate the capital costs
         
         pre:
             the project details section of the hydro section is initlized
@@ -256,7 +258,7 @@ class Hydropower (AnnualSavings):
         """
         calculates the annual electric savings
         pre:
-            self.captial_costs should be caclulated
+            self.capital_costs should be caclulated
             self.comp_specs and self.cd should have all values nessary for 
         this component.
             self.diesel_prices should be intilized
@@ -368,7 +370,7 @@ class Hydropower (AnnualSavings):
 
         fname = os.path.join(directory,
                              self.cd['name'] + '_' + \
-                             self.component_name + "_output.csv")
+                             self.component_name.lower() + "_output.csv")
         fname = fname.replace(" ","_")
         
         df[ol].ix[:self.actual_end_year].to_csv(fname, index_label="Year")

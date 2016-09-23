@@ -3,7 +3,7 @@ config.py
 
     Heat Recovery config info for community data yaml file
 """
-COMPONENT_NAME = "heat recovery"
+COMPONENT_NAME = "Heat Recovery"
 PROJECT_TYPE = 'heat_recovery'
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
@@ -19,10 +19,11 @@ yaml = {'enabled': False,
         
         'lifetime': 'ABSOLUTE DEFAULT',
         'start year': 'ABSOLUTE DEFAULT',
-        'percent heat recovery': .10,
+        
         'heating conversion efficiency': .75,
         
-        'o&m per year': 500
+        'o&m per year': 500,
+        'percent heat recovered': .10,
         }
 
 ## default values for yaml key/Value pairs

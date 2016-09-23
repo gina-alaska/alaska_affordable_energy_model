@@ -37,12 +37,12 @@ def building_log(coms, res_dir):
         if c.find('+') != -1 or c.find("_intertie") != -1:
             continue
         try:
-            com = coms[c]['non-residential buildings']
+            com = coms[c]['Non-residential Energy Efficiency']
             
             
-            types = coms[c]['community data'].get_item('non-residential buildings',
+            types = coms[c]['community data'].get_item('Non-residential Energy Efficiency',
                                                 "com building estimates").index
-            estimates =coms[c]['community data'].get_item('non-residential buildings',
+            estimates =coms[c]['community data'].get_item('Non-residential Energy Efficiency',
                                                 "com building data").fillna(0)
             
             num  = 0
@@ -195,7 +195,7 @@ def village_log (coms, res_dir):
             consumption = int(coms[c]['forecast'].consumption.ix[start_year])
             population = int(coms[c]['forecast'].population.ix[start_year])
             try:
-                res = coms[c]['residential buildings']
+                res = coms[c]['Residential Energy Efficiency']
                 res_con = [res.baseline_HF_consumption[0], 
                                 res.baseline_kWh_consumption[0] / mmbtu_to_kWh]
                 res_cost = [res.baseline_HF_cost[0], res.baseline_kWh_cost[0]]
@@ -203,7 +203,7 @@ def village_log (coms, res_dir):
                 res_con = [np.nan, np.nan]
                 res_cost = [np.nan, np.nan]
             try:
-                com = coms[c]['non-residential buildings']
+                com = coms[c]['Non-residential Energy Efficiency']
                 com_con = [com.baseline_HF_consumption,
                             com.baseline_kWh_consumption / mmbtu_to_kWh]
                 com_cost = [com.baseline_HF_cost[0],com.baseline_kWh_cost[0]]
@@ -211,7 +211,7 @@ def village_log (coms, res_dir):
                 com_con = [np.nan, np.nan]
                 com_cost = [np.nan, np.nan]
             try:
-                ww = coms[c]['water wastewater']
+                ww = coms[c]['Water and Wastewater Efficiency']
                 ww_con = [ww.baseline_HF_consumption[0],
                           ww.baseline_kWh_consumption[0] / mmbtu_to_kWh ]
                 ww_cost = [ww.baseline_HF_cost[0],ww.baseline_kWh_cost[0]]
@@ -262,14 +262,14 @@ def fuel_oil_log (coms, res_dir):
                 it = 'parent'
                 
             if c.find("_intertie") == -1:
-                res = coms[c]['residential buildings']
-                com = coms[c]['non-residential buildings']
-                wat = coms[c]['water wastewater']
+                res = coms[c]['Residential Energy Efficiency']
+                com = coms[c]['Non-residential Energy Efficiency']
+                wat = coms[c]['Water and Wastewater Efficiency']
             else:
                 k = c.replace("_intertie","")
-                res = coms[k]['residential buildings']
-                com = coms[k]['non-residential buildings']
-                wat = coms[k]['water wastewater']
+                res = coms[k]['Residential Energy Efficiency']
+                com = coms[k]['Non-residential Energy Efficiency']
+                wat = coms[k]['Water and Wastewater Efficiency']
             
             eff = coms[c]['community data'].get_item("community",
                                             "diesel generation efficiency")
@@ -345,9 +345,9 @@ def forecast_comparison_log (coms, res_dir):
             except AttributeError:
                 it_list = [c]
             #~ print it_list
-            res = coms[c]['residential buildings']
-            com = coms[c]['non-residential buildings']
-            wat = coms[c]['water wastewater']
+            res = coms[c]['Residential Energy Efficiency']
+            com = coms[c]['Non-residential Energy Efficiency']
+            wat = coms[c]['Water and Wastewater Efficiency']
             fc = coms[c]['forecast']
             
             first_year = max([res.start_year,
@@ -361,10 +361,9 @@ def forecast_comparison_log (coms, res_dir):
             
             for ic in it_list:
                 try:
-                    ires = coms[ic]['residential buildings']
-                    icom = coms[ic]['model'].\
-                        comps_used['non-residential buildings']
-                    iwat = coms[ic]['water wastewater']
+                    ires = coms[ic]['Residential Energy Efficiency']
+                    icom = coms[ic]['Non-residential Energy Efficiency']
+                    iwat = coms[ic]['Water and Wastewater Efficiency']
                 except KeyError:
                     continue
                 res_kwh +=  ires.baseline_kWh_consumption[first_year - ires.start_year]
@@ -537,7 +536,7 @@ def consumption_summary (coms, res_dir):
             #~ print community, e
             continue
 
-    f_name = os.path.join(res_dir,'kWh_consumption_summary.csv')
+    f_name = os.path.join(res_dir,'kwh_consumption_summary.csv')
     cols = ['Community', 'region'] + [str(y) for y in range(2010,2041)]
     summary = DataFrame(consumption,
                      columns = cols).set_index('Community').fillna('N/a')

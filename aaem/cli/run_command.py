@@ -1,7 +1,7 @@
 """
 run_command.py
 
-    A commad for the cli to run the model
+    A command for the cli to run the model
 """
 import pycommand
 from default_cases import __DEV_COMS_RUN__ as __DEV_COMS__ 
@@ -66,7 +66,7 @@ class RunCommand(pycommand.CommandBase):
             try:
                 script  = driver.script_validator(base)
             except StandardError as e:
-                cli_lib.print_error_message('SCRIPT ERROR:\n' + e)
+                cli_lib.print_error_message('SCRIPT ERROR:\n' + str(e))
                 return 0
             
             ## check exitsing results
@@ -162,6 +162,7 @@ class RunCommand(pycommand.CommandBase):
                     item = i.split(":")
                     key = item[0].strip().strip('"\'')
                     try:
+                        #~ print scalers
                         scalers[key]
                     except KeyError:
                         msg = "SCALER ERROR: " + key + " is not a valid scaler"

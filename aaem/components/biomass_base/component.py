@@ -63,7 +63,7 @@ class BiomassBase (AnnualSavings):
         
         if len(tag) > 1 and tag[1].split('_')[0] != 'biomass':
             return 
-        non_res = comps['non-residential buildings']
+        non_res = comps['Non-residential Energy Efficiency']
         self.get_non_res_values(non_res)
         
     def get_non_res_values (self, non_res):
@@ -77,8 +77,6 @@ class BiomassBase (AnnualSavings):
             self.non_res_sqft, and self.avg_gal_per_sqft
         are numbers
         """
-       
-    
         try:
             self.non_res_sqft = non_res.total_sqft_to_retrofit
             self.avg_gal_per_sqft = non_res.baseline_fuel_Hoil_consumption/ \
@@ -92,18 +90,18 @@ class BiomassBase (AnnualSavings):
         as the heating fuel
         
         pre:
-            self.non_res_sqft and 'percent sqft assumed heat displacement' in
+            self.non_res_sqft and ' assumed percent non-residential sqft heat displacement' in
         in comp_specs are numbers
         """
         self.heat_displaced_sqft = self.non_res_sqft * \
-            self.comp_specs['percent sqft assumed heat displacement']
+            self.cd['assumed percent non-residential sqft heat displacement']
         
     def calc_energy_output (self):
         """
         the net and monthly energy calculated
         
         pre:
-            self.avg_gal_per_sqft, self.comp_specs['heating oil efficiency'],
+            self.avg_gal_per_sqft, self.cd['heating oil efficiency'],
         and self.comp_specs['data']['Peak Month % of total'] 
         post:
             the net and monthly energy calculated
@@ -111,7 +109,7 @@ class BiomassBase (AnnualSavings):
         self.average_net_energy_output = self.avg_gal_per_sqft * \
                                     ((constants.mmbtu_to_gal_HF ** -1) * 1E6 /\
                                     constants.hours_per_year) * \
-                                    self.comp_specs['heating oil efficiency']
+                                    self.cd['heating oil efficiency']
         self.peak_monthly_energy_output = self.average_net_energy_output * 12 *\
                                 self.comp_specs['data']['Peak Month % of total']
         
@@ -162,7 +160,7 @@ class BiomassBase (AnnualSavings):
         #~ print 'self.displaced_heating_oil_price'
         #~ print self.displaced_heating_oil_price
     
-    def run (self, scalers = {'captial costs':1.0}):
+    def run (self, scalers = {'capital costs':1.0}):
         """
         run the forecast model
         
@@ -177,7 +175,7 @@ class BiomassBase (AnnualSavings):
         # Make this do stuff
     def calc_capital_costs (self):
         """
-        caclulate the captial costs
+        caclulate the capital costs
         """
         pass
         
@@ -262,7 +260,8 @@ class BiomassBase (AnnualSavings):
                 
         fname = os.path.join(directory,
                                 self.cd['name'] + '_' +\
-                                self.component_name + "_output.csv")
+                                self.component_name.lower().replace('(','').\
+                                replace(')','') + "_output.csv")
         fname = fname.replace(" ","_")
     
         # save to end of project(actual lifetime)

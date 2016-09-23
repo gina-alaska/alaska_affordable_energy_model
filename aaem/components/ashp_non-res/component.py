@@ -50,7 +50,7 @@ class ASHPNonResidential (ashp_base.ASHPBase):
         tag = self.cd['name'].split('+')
         if len(tag) > 1 and tag[1].split('_')[0] != 'ASHP_res':
             return 
-        non_res = comps['non-residential buildings']
+        non_res = comps['Non-residential Energy Efficiency']
     
         try:
             self.non_res_sqft = non_res.total_sqft_to_retrofit
@@ -64,13 +64,13 @@ class ASHPNonResidential (ashp_base.ASHPBase):
     def calc_heat_energy_produced_per_year (self):
         """
         """
-        self.heat_displaced_sqft = self.non_res_sqft * self.comp_specs[ 'percent sqft assumed heat displacement']
-        average_net_btu_per_hr_pr_sf = self.avg_gal_per_sqft * self.comp_specs["heating oil efficiency"]*(1/constants.mmbtu_to_gal_HF)*1e6/ constants.hours_per_year
+        self.heat_displaced_sqft = self.non_res_sqft * self.cd[ 'assumed percent non-residential sqft heat displacement']
+        average_net_btu_per_hr_pr_sf = self.avg_gal_per_sqft * self.cd["heating oil efficiency"]*(1/constants.mmbtu_to_gal_HF)*1e6/ constants.hours_per_year
         self.heat_energy_produced_per_year = average_net_btu_per_hr_pr_sf * self.heat_displaced_sqft /1e6 * constants.hours_per_year
                         
         #~ print self.heat_energy_produced_per_year
         
-    def run (self, scalers = {'captial costs':1.0}):
+    def run (self, scalers = {'capital costs':1.0}):
         """
         run the forecast model
         
@@ -104,7 +104,7 @@ class ASHPNonResidential (ashp_base.ASHPBase):
             
             self.calc_annual_total_savings()
             self.calc_annual_costs(self.cd['interest rate'],
-                                            scalers['captial costs'])
+                                            scalers['capital costs'])
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
         #~ print 'self.monthly_value_table'
@@ -123,7 +123,7 @@ class ASHPNonResidential (ashp_base.ASHPBase):
 
     def calc_capital_costs (self):
         """
-        calculate the captial costs
+        calculate the capital costs
         """
         min_tem = float(self.comp_specs['data']\
                                 .ix['Minimum Temp'].astype(float))
@@ -204,15 +204,15 @@ class ASHPNonResidential (ashp_base.ASHPBase):
                 
         fname = os.path.join(directory,
                                    self.cd['name'] + '_' +\
-                                   self.component_name + "_output.csv")
+                                   self.component_name.lower() + "_output.csv")
         fname = fname.replace(" ","_")
         
         # save to end of project(actual lifetime)
         df[order].ix[:self.actual_end_year].to_csv(fname, index_label="Year")
         
         fname = os.path.join(directory,
-                                    self.cd['name'] + '_' +\
-                                    self.component_name + "_montly_table.csv")
+                            self.cd['name'] + '_' +\
+                            self.component_name.lower() + "_montly_table.csv")
         fname = fname.replace(" ","_")
         
         self.monthly_value_table.to_csv(fname)

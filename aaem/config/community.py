@@ -5,77 +5,126 @@ section_name = 'community'
 items = {
     'name': 'ABSOLUTE DEFAULT NAME',
     'region': 'IMPORT',
-    'construction multiplier': 'IMPORT',
     'current year': 'ABSOLUTE DEFAULT',
+    
     'model financial': True,
     'model electricity': True,
     'model heating fuel': True,
     'natural gas used': False,
+
     'interest rate': .05, 
     'discount rate': .03,
+    
+    'construction multiplier': 'IMPORT',
+    
+    'HDD': 'IMPORT',
+    
     'heating fuel premium': 'IMPORT',
     'diesel generation efficiency': 'IMPORT',
+    'default diesel generator efficiency': 12,
+    
     'diesel generator o&m cost' : 0.02,
+    'heating oil efficiency': .75,
+    
     'generation': 'IMPORT',
-    'consumption kWh': 'ABSOLUTE DEFAULT',
     'consumption HF': 'IMPORT',
+    
+    
     'line losses': 'IMPORT',
     'max line losses': .4,
     'default line losses': .1,
-    'default diesel generator efficiency': 12,
+
     'res non-PCE elec cost': 'IMPORT',
     'elec non-fuel cost': 'IMPORT',
-    'HDD': 'IMPORT',
+    
     'diesel prices': 'IMPORT',
     'electric non-fuel prices': 'IMPORT',
     'propane price': 'IMPORT',
     'cordwood price': 'IMPORT',
     'pellet price': 'IMPORT',
     'natural gas price': 0,
+   
     'hydro generation limit': 'IMPORT' ,
     'wind generation limit': 'IMPORT' ,
+    
     'wind generation precent': .2,
+    
     'generation numbers': 'IMPORT',
     'switchgear suatable for RE': 'IMPORT',
     'switchgear cost': 150000,
+    
     'heat recovery operational': 'IMPORT',
+    'assumed percent non-residential sqft heat displacement': .3,
+    
+    'percent excess energy': .15,
+    'percent excess energy capturable': .7,
+    'efficiency electric boiler': .99,
+    'efficiency heating oil boiler': .8,
+    
+    'on road system': 'IMPORT',
     }
     
-order = [   
+order = [      
     'name',
     'region',
-    'construction multiplier',
     'current year',
+    
     'model financial',
     'model electricity',
     'model heating fuel',
     'natural gas used',
-    'interest rate', 
+
+    'interest rate',
     'discount rate',
+    
+    'construction multiplier',
+    
+    'HDD',
+    
     'heating fuel premium',
     'diesel generation efficiency',
     'default diesel generator efficiency',
+    
+    'diesel generator o&m cost',
+    'heating oil efficiency',
+    
     'generation',
-    'consumption kWh',
     'consumption HF',
+    
+    
     'line losses',
     'max line losses',
     'default line losses',
+
     'res non-PCE elec cost',
     'elec non-fuel cost',
-    'HDD',
+    
     'diesel prices',
     'electric non-fuel prices',
     'propane price',
-    'biomass price',
+    'cordwood price',
+    'pellet price',
     'natural gas price',
+   
     'hydro generation limit',
     'wind generation limit',
+    
     'wind generation precent',
+    
     'generation numbers',
     'switchgear suatable for RE',
     'switchgear cost',
+    
     'heat recovery operational',
+    'assumed percent non-residential sqft heat displacement',
+    
+    'percent excess energy',
+    'percent excess energy capturable',
+    'efficiency electric boiler',
+    'efficiency heating oil boiler',
+    
+    'on road system',
+
     ]
     
 comments = {
@@ -103,7 +152,6 @@ comments = {
     'default diesel generator efficiency':
         'default diesel generation efficiency (kWh/gal) <float>',
     'generation': 'Generation (read from file)',
-    'consumption kWh': 'ABSOLUTE DEFAULT',
     'consumption HF': 'Heating Fuel consumption (read from file)',
     'line losses': 
         'Percent kWh lost in transmission (% as decimal) <float>',
@@ -137,6 +185,7 @@ comments = {
         'cost of switch gear ($) <float>',
     'heat recovery operational': 
         'Flag indcation if the heatrecovery is operational <bool>',
+    'heating oil efficiency': '% as decimal <float>',
         }
                 
 defaults = {

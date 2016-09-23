@@ -17,7 +17,7 @@ def process_data_import(data_dir):
     output:
         returns dictionay of data values
     """
-    data_file = os.path.join(data_dir, "diesel_data.csv")
+    data_file = os.path.join(data_dir, "diesel_powerhouse_data.csv")
     data = read_csv(data_file, comment = '#', index_col=0, header=0)
     return data['value'].to_dict()
     

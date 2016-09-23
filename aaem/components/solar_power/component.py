@@ -44,7 +44,7 @@ class SolarPower (AnnualSavings):
         ### ADD other intiatzation stuff
         
     
-    def run (self, scalers = {'captial costs':1.0}):
+    def run (self, scalers = {'capital costs':1.0}):
         """
         run the forecast model
         
@@ -99,7 +99,8 @@ class SolarPower (AnnualSavings):
             
             # AnnualSavings functions (don't need to write)
             self.calc_annual_total_savings()
-            self.calc_annual_costs(self.cd['interest rate'])
+            self.calc_annual_costs(self.cd['interest rate'],
+                                            scalers['capital costs'])
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
             
@@ -114,9 +115,10 @@ class SolarPower (AnnualSavings):
     def calc_average_load (self):
         """ """
         #~ self.generation = self.forecast.get_generation(self.start_year)
-        self.generation = self.forecast.generation_by_type['generation diesel']\
-                                                            [self.start_year]
-        self.average_load = self.generation / constants.hours_per_year
+        #~ self.generation = self.forecast.generation_by_type['generation diesel']\
+                                                            #~ [self.start_year]
+        self.average_load = \
+                self.forecast.yearly_average_diesel_load.ix[self.start_year]
         #~ print self.average_load
         
     def calc_proposed_generation (self):
@@ -271,7 +273,7 @@ class SolarPower (AnnualSavings):
               "Solar: Net Benefit ($/year)"]
         fname = os.path.join(directory,
                                    self.cd['name'] + '_' +\
-                                   self.component_name + "_output.csv")
+                                   self.component_name.lower() + "_output.csv")
         fname = fname.replace(" ","_")
         
         

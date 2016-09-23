@@ -1,34 +1,34 @@
 from importlib import import_module
 
 comp_lib = {
-    "residential buildings": "residential_buildings",
-    "non-residential buildings": "non-residential",
-    "water wastewater": "wastewater",
-    "wind power": "wind_power",
-    'solar power': "solar_power",
-    'biomass cordwood': "biomass_wood",
-    'biomass pellet': 'biomass_pellet',
-    'ASHP residential': 'ashp_res',
-    'ASHP non-residential': 'ashp_non-res',
+    "Residential Energy Efficiency": "residential_buildings",
+    "Non-residential Energy Efficiency": "non-residential",
+    "Water and Wastewater Efficiency": "wastewater",
+    "Wind Power": "wind_power",
+    'Solar Power': "solar_power",
+    'Biomass for Heat (Cordwood)': "biomass_wood",
+    'Biomass for Heat (Pellet)': 'biomass_pellet',
+    'Residential ASHP': 'ashp_res',
+    'Non-Residential ASHP': 'ashp_non-res',
     'Hydropower': 'hydro',
-    'transmission': 'transmission',
-    'heat recovery': 'heat_recovery',
-    'diesel efficiency': 'diesel_efficiency',
+    'Transmission and Interties': 'transmission',
+    'Heat Recovery': 'heat_recovery',
+    'Diesel Efficiency': 'diesel_efficiency',
         }
 
-comp_order = ["residential buildings",
-              "non-residential buildings",
-              "water wastewater",
-              "wind power",
-              'solar power',
-              'biomass cordwood',
-              'biomass pellet',
-              'ASHP residential',
-              'ASHP non-residential',
+comp_order = ["Residential Energy Efficiency",
+              "Non-residential Energy Efficiency",
+              "Water and Wastewater Efficiency",
+              "Wind Power",
+              'Solar Power',
+              'Biomass for Heat (Cordwood)',
+              'Biomass for Heat (Pellet)',
+              'Residential ASHP',
+              'Non-Residential ASHP',
               'Hydropower',
-              'transmission',
-              'heat recovery',
-              'diesel efficiency']
+              'Transmission and Interties',
+              'Heat Recovery',
+              'Diesel Efficiency']
 
 def get_raw_data_files():
     raw_data_files = []

@@ -266,6 +266,7 @@ def print_error_message (msg, use = None):
     """
     print 
     print msg
+    print 
     if not use is None:
         print use
-    print 
+        print 

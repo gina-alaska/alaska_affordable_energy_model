@@ -25,7 +25,7 @@ except ImportError:
 
 
 default_scalers = {'diesel price': 1.0,
-                  'captial costs': 1.0,
+                  'capital costs': 1.0,
                   'kWh consumption': 1.0
                   }
 
@@ -71,7 +71,7 @@ class Driver (object):
         self.global_config = os.path.join(model_root, 
                                             'config', '__global_config.yaml')
         self.constuction_multipliers  = os.path.join(model_root, 'config', 
-                                            '__construction_multipliers.yaml')
+                                            '__regional_multipliers.yaml')
         self.comp_lib = comp_lib
         self.comp_order = comp_order
         
@@ -719,8 +719,8 @@ class Setup (object):
             '__construction multipliers.yaml' saved in config directory
         """
         config_path = os.path.join(self.model_root, self.tag, 'config', 
-                                              '__construction_multipliers.yaml')
-        src_path = os.path.join(self.data_repo, 'construction_multipliers.yaml')
+                                              '__regional_multipliers.yaml')
+        src_path = os.path.join(self.data_repo, 'regional_multipliers.yaml')
         shutil.copy(src_path, config_path)
 
     def setup_global_config (self):

@@ -3,7 +3,7 @@ config.py
 
     Solar Power config info for community data yaml file
 """
-COMPONENT_NAME = "solar power"
+COMPONENT_NAME = "Solar Power"
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
 
@@ -51,7 +51,7 @@ yaml_comments = {'enabled': '<boolean>',
             ('yearly maintenance cost'
              ' as percent as decimal of total cost <float>'),
         'percent generation to offset': 
-            'pecent of the generation in kW to offset with solar power <float>',
+            'pecent of the generation in kW to offset with Solar Power <float>',
         'percent solar degradation': 
             ('the precent of the of solar panel'
              ' that carries over from the previous year'),

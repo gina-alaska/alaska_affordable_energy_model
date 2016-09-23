@@ -6,13 +6,12 @@ preprocessing.py
 import os.path
 from pandas import read_csv
 import numpy as np
-from aaem.components.biomass_pellet import preprocess_road_system
 
 ## List of raw data files required for wind power preproecssing 
 raw_data_files = [#"transmission_projects.csv",
                   'project_development_timeframes.csv',
                   'transmission_distances.csv',
-                  'road_system.csv']
+                  ]
 
 ## preprocessing functons 
 def preprocess_header (ppo):
@@ -30,6 +29,7 @@ def preprocess (ppo):
 
     data = read_csv(os.path.join(ppo.data_dir,'transmission_distances.csv'),
                     comment = '#',index_col = 0)
+                    
     
     #~ try:
     data = ppo.get_communities_data(data)
@@ -40,12 +40,9 @@ def preprocess (ppo):
     try:
         max_savings = float(data['Maximum savings ($/kWh)'])
         nearest_comm = data['Nearest Community with Lower Price Power']
-        try:
-            np.isnan(nearest_comm)
-            nearest_comm =  np.nan
-        except ValueError:
-            nearest_comm = nearest_comm.values[0]
-            
+        nearest_comm = str(nearest_comm.values[0])
+        if 'nan' == nearest_comm:
+            nearest_comm = ''
         distance = float(data['Distance to Community'])
     except TypeError:
         max_savings = np.nan
@@ -67,7 +64,7 @@ def preprocess (ppo):
     ppo.MODEL_FILES['TRANSMISSION_DATA'] = "transmission_data.csv" # CHANGE THIS
     
 ## list of wind preprocessing functions
-preprocess_funcs = [preprocess, preprocess_road_system]
+preprocess_funcs = [preprocess]
 
 ## preprocess the existing projects
 ### This function is called differently from the other preprocessor functions,
@@ -77,7 +74,7 @@ def preprocess_existing_projects (ppo):
     preprocess data related to existing projects
     
     pre:
-        ppo is a is a Preprocessor object. "wind_projects.csv" and 
+        ppo is a is a Preprocessor object. "wind_projects_potential.csv" and 
         'project_development_timeframes.csv' exist in the ppo.data_dir 
     post:
         data for existing projets is usable by model

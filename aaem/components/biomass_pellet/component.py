@@ -37,7 +37,7 @@ class BiomassPellet (bmb.BiomassBase):
         self.units = "tons"
         self.reason = "OK"
         
-    def run (self, scalers = {'captial costs':1.0}):
+    def run (self, scalers = {'capital costs':1.0}):
         """
         run the forecast model
         
@@ -56,7 +56,7 @@ class BiomassPellet (bmb.BiomassBase):
             self.reason = ("Not a biomass pellet project")
             return 
         
-        if not self.comp_specs["on road system"]:
+        if not self.cd["on road system"]:
             self.diagnostics.add_warning(self.component_name, 
                                     "not on road system")
             self.max_boiler_output = 0
@@ -94,7 +94,8 @@ class BiomassPellet (bmb.BiomassBase):
             self.calc_annual_heating_savings()
             
             self.calc_annual_total_savings()
-            self.calc_annual_costs(self.cd['interest rate'])
+            self.calc_annual_costs(self.cd['interest rate'],
+                                            scalers['capital costs'])
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
             
@@ -111,7 +112,7 @@ class BiomassPellet (bmb.BiomassBase):
 
     def calc_capital_costs (self):
         """
-        calculate the captial costs
+        calculate the capital costs
         """
         self.capital_costs = self.max_boiler_output * \
                                 self.comp_specs["cost per btu/hr"]

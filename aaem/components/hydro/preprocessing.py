@@ -10,7 +10,7 @@ from yaml import dump
 import shutil
 
 ## List of raw data files required for wind power preproecssing 
-raw_data_files = ["hydro_projects.csv",
+raw_data_files = ["hydro_project_potentials.csv",
                   'project_development_timeframes.csv']
 
 ## all preprocessing is for existing projects
@@ -22,7 +22,7 @@ def preprocess_existing_projects (ppo):
     preprocess data related to existing projects
     
     pre:
-        ppo is a is a Preprocessor object. "wind_projects.csv" and 
+        ppo is a is a Preprocessor object. "wind_projects_potential.csv" and 
         'project_development_timeframes.csv' exist in the ppo.data_dir 
     post:
         data for existing projets is usable by model
@@ -31,7 +31,7 @@ def preprocess_existing_projects (ppo):
     p_data = {}
     
     ## CHANGE THIS
-    project_data = read_csv(os.path.join(ppo.data_dir,"hydro_projects.csv"),
+    project_data = read_csv(os.path.join(ppo.data_dir,"hydro_projects_potential.csv"),
                            comment = '#',index_col = 0)
     
     try:
@@ -55,7 +55,12 @@ def preprocess_existing_projects (ppo):
 
         
         phase = cp['Phase Completed']
-        phase = phase[0].upper() + phase[1:]
+        try:
+            phase = phase[0].upper() + phase[1:]
+        except TypeError:
+            ppo.diagnostics.add_note('Hydropower Projects', 
+                                        'missing value assuming Reconnaissance')
+            phase = 'Reconnaissance'
         proposed_capacity = float(cp['AAEM Capacity (kW)'])
         proposed_generation = float(cp['AAEM Generation (kWh)'])
         #~ distance_to_resource = float(cp['Distance'])
@@ -63,6 +68,8 @@ def preprocess_existing_projects (ppo):
         transmission_capital_cost = float(cp['Transmission Cost (current)'])
         expected_years_to_operation = UNKNOWN
         if phase == "0":
+            ppo.diagnostics.add_note('Hydropower Projects', 
+                                            '"0" corrected to Reconnaissance')
             phase = "Reconnaissance"
             
 

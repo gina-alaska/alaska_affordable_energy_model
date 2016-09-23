@@ -33,7 +33,7 @@ def component_summary (coms, res_dir):
         if c.find('+') != -1 or c.find("_intertie") != -1:
             continue
         try:
-            www = coms[c]['water wastewater']
+            www = coms[c][COMPONENT_NAME]
             try:
                 oil_p, elec_p =  www.hoil_price[0], www.elec_price[0]
             except AttributeError:
@@ -77,7 +77,9 @@ def component_summary (coms, res_dir):
             'Water/Wastewater Efficiency Electricity Saved[kWh/year]']
             
     data = DataFrame(out,columns = cols).set_index('community').round(2)
-    f_name = os.path.join(res_dir,'water-wastewater_summary.csv')
+    f_name = os.path.join(res_dir,
+                    COMPONENT_NAME.lower().replace(' ','_').\
+                    replace('&','and') + '_summary.csv')
     #~ fd = open(f_name,'w')
     #~ fd.write("# non residental building component summary by community\n")
     #~ fd.close()

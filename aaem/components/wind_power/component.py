@@ -28,7 +28,6 @@ class WindPower(AnnualSavings):
         post:
             the model can be run
         """
-        
         self.diagnostics = diag
         if self.diagnostics == None:
             self.diagnostics = diagnostics()
@@ -48,7 +47,7 @@ class WindPower(AnnualSavings):
         
         
     
-    def run (self, scalers = {'captial costs':1.0}):
+    def run (self, scalers = {'capital costs':1.0}):
         """
         run the forecast model
         
@@ -132,7 +131,8 @@ class WindPower(AnnualSavings):
                 
                 # AnnualSavings functions (don't need to write)
                 self.calc_annual_total_savings()
-                self.calc_annual_costs(self.cd['interest rate'])
+                self.calc_annual_costs(self.cd['interest rate'],
+                                            scalers['capital costs'])
                 self.calc_annual_net_benefit()
                 self.calc_npv(self.cd['discount rate'], self.cd["current year"])
                 #~ print self.benefit_cost_ratio
@@ -162,7 +162,8 @@ class WindPower(AnnualSavings):
             self.average_load = None
         self.generation = self.forecast.generation_by_type['generation diesel']\
                                                             [self.start_year]
-        self.average_load = self.generation / constants.hours_per_year
+        self.average_load = \
+                self.forecast.yearly_average_diesel_load.ix[self.start_year]
         #~ print 'self.average_load',self.average_load
         
     def calc_generation_wind_proposed (self):
@@ -237,7 +238,7 @@ class WindPower(AnnualSavings):
         #~ print sorted(self.cd.keys())
         self.exess_energy = \
             (self.generation_wind_proposed - self.transmission_losses) * \
-            self.comp_specs['percent excess energy']
+            self.cd['percent excess energy']
         #~ print 'self.exess_energy',self.exess_energy
             
     def calc_net_generation_wind (self):
@@ -274,7 +275,7 @@ class WindPower(AnnualSavings):
         else:
             exess_percent = self.exess_energy / self.generation_wind_proposed
         exess_captured_percent = exess_percent * \
-                    self.comp_specs['percent excess energy capturable']
+                    self.cd['percent excess energy capturable']
         if self.comp_specs['secondary load']:
             net_exess_energy = exess_captured_percent * \
                                 self.generation_wind_proposed 
@@ -282,9 +283,9 @@ class WindPower(AnnualSavings):
             net_exess_energy = 0
        
         #~ conversion = 0.99/0.138/0.8/293 
-        conversion = self.comp_specs['efficiency electric boiler']/ \
+        conversion = self.cd['efficiency electric boiler']/ \
                      (1/constants.mmbtu_to_gal_HF)/ \
-                     self.comp_specs['efficiency heating oil boiler']/\
+                     self.cd['efficiency heating oil boiler']/\
                      (constants.mmbtu_to_kWh)
         self.diesel_equiv_captured = net_exess_energy * conversion
              
@@ -341,7 +342,7 @@ class WindPower(AnnualSavings):
     # Make this do stuff
     def calc_capital_costs (self):
         """
-        caclulate the progect captial costs
+        caclulate the progect capital costs
         """
         powerhouse_control_cost = 0
         if not self.cd['switchgear suatable for RE']:
@@ -494,7 +495,7 @@ class WindPower(AnnualSavings):
               "Wind: Net Benefit ($/year)"]
         fname = os.path.join(directory,
                              self.cd['name'] + '_' + \
-                             self.component_name + "_output.csv")
+                             self.component_name.lower() + "_output.csv")
         fname = fname.replace(" ","_")
         
         df[ol].ix[:self.actual_end_year].to_csv(fname, index_label="Year")

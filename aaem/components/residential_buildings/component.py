@@ -38,8 +38,8 @@ class ResidentialBuildings(AnnualSavings):
 
         if self.cd["model electricity"]:
             self.elec_prices = community_data.electricity_price
-        self.comp_specs = community_data.get_section('residential buildings')
-        self.component_name = 'residential buildings'
+        self.comp_specs = community_data.get_section(COMPONENT_NAME)
+        self.component_name = COMPONENT_NAME
         self.forecast = forecast
         self.refit_cost_rate = self.comp_specs['average refit cost'] * \
                 community_data.get_item('community','construction multiplier')
@@ -48,21 +48,21 @@ class ResidentialBuildings(AnnualSavings):
                         self.forecast.end_year - self.comp_specs["start year"])
                         
                      
-        yr = self.comp_specs['data'].ix['year']
+        yr = self.comp_specs['data'].ix['Year']
         self.base_pop = self.forecast.population.ix[yr].values[0][0]
         
         peps_per_house = float(self.base_pop) / \
-            self.comp_specs['data'].ix['total_occupied']
+            self.comp_specs['data'].ix['Total Occupied']
         households = np.round(self.forecast.population / np.float64(peps_per_house))
         households.columns = ["HH"] 
         self.households = households.ix[self.start_year:self.end_year-1].T.values[0]
         
         
         val = self.forecast.get_population(self.start_year)
-        HH =self.comp_specs['data'].ix['total_occupied']
+        HH =self.comp_specs['data'].ix['Total Occupied']
         self.init_HH = int(round(HH*(val / self.base_pop)))
         
-    def run (self, scalers = {'captial costs':1.0}):
+    def run (self, scalers = {'capital costs':1.0}):
         """ 
         
         run the forecast model
@@ -113,7 +113,8 @@ class ResidentialBuildings(AnnualSavings):
             self.calc_annual_heating_savings()
             self.calc_annual_total_savings()
             
-            self.calc_annual_costs(self.cd['interest rate'])
+            self.calc_annual_costs(self.cd['interest rate'],
+                                            scalers['capital costs'])
             self.calc_annual_net_benefit()
             
             self.calc_npv(self.cd['discount rate'], self.cd['current year'])
@@ -151,8 +152,8 @@ class ResidentialBuildings(AnnualSavings):
         #   500 average energy use, 12 months in a year. That's whrer the 6000.0
         # comes from.
         con_threshold = self.comp_specs['min kWh per household']
-        yr = int(self.comp_specs['data'].ix['year'])
-        #~ houses = int(self.comp_specs['data'].ix['total_occupied'])
+        yr = int(self.comp_specs['data'].ix['Year'])
+        #~ houses = int(self.comp_specs['data'].ix['Total Occupied'])
         #~ r_con = self.forecast.base_res_consumption
         avg_con = float(self.comp_specs['data'].ix['average kWh per house'])
         #~ self.avg_monthly_consumption = ave_con/12
@@ -178,7 +179,7 @@ class ResidentialBuildings(AnnualSavings):
             self.init_HH is an integer # of houses.
         """
         val = self.forecast.get_population(self.start_year)
-        HH =self.comp_specs['data'].ix['total_occupied']
+        HH =self.comp_specs['data'].ix['Total Occupied']
         pop = self.forecast.base_pop
                             
         self.init_HH = int(round(HH*(val / pop)))
@@ -188,8 +189,8 @@ class ResidentialBuildings(AnnualSavings):
         """
         rd = self.comp_specs['data'].T
         ## total consumption
-        total = rd["post_total_consumption"] + rd["BEES_total_consumption"] + \
-                rd["pre_avg_area"] * rd["pre_avg_EUI"] * self.opportunity_HH
+        total = rd["Total Consumption (MMBtu)"] + rd["BEES Total Consumption (MMBtu)"] + \
+                rd["Pre-Retrofit Avg Area (SF)"] * rd["Pre-Retrofit Avg EUI (MMBtu/sf)"] * self.opportunity_HH
         HH = self.init_HH
         
         percent_acconuted = 0
@@ -230,7 +231,7 @@ class ResidentialBuildings(AnnualSavings):
         """
         rd = self.comp_specs['data'].T
         ##  #HH
-        self.opportunity_HH = self.init_HH -rd["BEES_number"] -rd["post_number"]
+        self.opportunity_HH = self.init_HH -rd["BEES Number"] -rd["Post-Retrofit Number"]
         self.opportunity_HH = np.float64( self.opportunity_HH )
         #~ print self.opportunity_HH
         if self.opportunity_HH < 0:
@@ -245,9 +246,9 @@ class ResidentialBuildings(AnnualSavings):
         #~ self.percent_savings = np.float64( self.percent_savings)
         
         
-        area = np.float64(rd["pre_avg_area"])
-        EUI = np.float64(rd["pre_avg_EUI"])
-        avg_EUI_reduction = np.float64(rd["post_avg_EUI_reduction"])
+        area = np.float64(rd["Pre-Retrofit Avg Area (SF)"])
+        EUI = np.float64(rd["Pre-Retrofit Avg EUI (MMBtu/sf)"])
+        avg_EUI_reduction = np.float64(rd["Post-Retrofit Avg. EUI Reduction"])
         
         total = area * EUI
         
@@ -302,8 +303,8 @@ class ResidentialBuildings(AnnualSavings):
         self.fuel_oil_percent = rd["Fuel Oil"]
         HH = self.households
         #~ print HH
-        area = np.float64(rd["pre_avg_area"])
-        EUI = np.float64(rd["pre_avg_EUI"])
+        area = np.float64(rd["Pre-Retrofit Avg Area (SF)"])
+        EUI = np.float64(rd["Pre-Retrofit Avg EUI (MMBtu/sf)"])
         
         scaler = (HH - self.init_HH) * area * EUI
         
@@ -704,8 +705,8 @@ class ResidentialBuildings(AnnualSavings):
         df = df[df.columns[-2:].tolist() + df.columns[:-2].tolist()]
 
         fname = os.path.join(directory,
-                                   self.cd['name'] + '_' +\
-                                   self.component_name + "_output.csv")
+                               self.cd['name'] + '_' +\
+                               self.component_name.lower() + "_output.csv")
         fname = fname.replace(" ","_")
         # save to end of project(actual lifetime)
         df.ix[:self.actual_end_year].to_csv(fname, index_label="year")

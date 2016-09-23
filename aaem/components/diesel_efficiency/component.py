@@ -56,7 +56,7 @@ class DieselEfficiency(AnnualSavings):
                         self.forecast.end_year - self.comp_specs["start year"])
         
         
-    def run (self, scalers = {'captial costs':1.0}):
+    def run (self, scalers = {'capital costs':1.0}):
         """
         run the forecast model
 
@@ -98,7 +98,8 @@ class DieselEfficiency(AnnualSavings):
             
             # AnnualSavings functions (don't need to write)
             self.calc_annual_total_savings()
-            self.calc_annual_costs(self.cd['interest rate'])
+            self.calc_annual_costs(self.cd['interest rate'],
+                                            scalers['capital costs'])
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
             self.calc_levelized_costs(0)
@@ -117,7 +118,8 @@ class DieselEfficiency(AnnualSavings):
         """
         self.generation = self.forecast.generation_by_type['generation diesel']\
                                 .ix[self.start_year:self.end_year-1].values
-        self.average_load = self.generation[0] / constants.hours_per_year
+        self.average_load = \
+                self.forecast.yearly_average_diesel_load.ix[self.start_year]
         #~ print 'self.average_load',self.average_load
  
 
@@ -322,7 +324,7 @@ class DieselEfficiency(AnnualSavings):
               "Diesel Efficiency: Net Benefit ($/year)"]
         fname = os.path.join(directory,
                              self.cd['name'] + '_' + \
-                             self.component_name + "_output.csv")
+                             self.component_name.lower() + "_output.csv")
         fname = fname.replace(" ","_")
         
         df[ol].ix[:self.actual_end_year].to_csv(fname, index_label="Year")

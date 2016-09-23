@@ -3,7 +3,7 @@ config.py
 
     Non-Residential Building Efficiency config info for community data yaml file
 """
-COMPONENT_NAME = "<REPLACE>"
+COMPONENT_NAME = "Non-residential Energy Efficiency"
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
 

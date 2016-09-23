@@ -12,7 +12,7 @@ from yaml import dump
 from config import UNKNOWN
 
 ## List of raw data files required for wind power preproecssing 
-raw_data_files = ["heat_recovery_data.csv",
+raw_data_files = ["heat_recovery_projects_potential.csv",
                   'project_development_timeframes.csv']
 
 ## preprocessing functons 
@@ -27,9 +27,9 @@ def preprocess (ppo):
     
     """
     #CHANGE THIS
-    out_file = os.path.join(ppo.out_dir,"heat_recovery_data.csv")
+    out_file = os.path.join(ppo.out_dir,"heat_recovery_projects_potential.csv")
 
-    data = read_csv(os.path.join(ppo.data_dir,"heat_recovery_data.csv"), 
+    data = read_csv(os.path.join(ppo.data_dir,"heat_recovery_projects_potential.csv"), 
                                     comment = '#',index_col = 0)
                                     
     data = ppo.get_communities_data(data)
@@ -64,7 +64,7 @@ def preprocess (ppo):
     # create data and uncomment this
     data.to_csv(out_file, mode = 'a', header=False)
     
-    ppo.MODEL_FILES['HR_DATA'] = "heat_recovery_data.csv" # CHANGE THIS
+    ppo.MODEL_FILES['HR_DATA'] = "heat_recovery_projects_potential.csv" # CHANGE THIS
     
 ## list of wind preprocessing functions
 preprocess_funcs = [preprocess]
@@ -77,7 +77,7 @@ def preprocess_existing_projects (ppo):
     preprocess data related to existing projects
     
     pre:
-        ppo is a is a Preprocessor object. "wind_projects.csv" and 
+        ppo is a is a Preprocessor object. "wind_projects_potential.csv" and 
         'project_development_timeframes.csv' exist in the ppo.data_dir 
     post:
         data for existing projets is usable by model
@@ -93,7 +93,7 @@ def preprocess_existing_projects (ppo):
                  'Proposed Gallons of Diesel Offset',
                  'Proposed Maximum Btu/hr','Total CAPEX','Source']
     project_data = read_csv(os.path.join(ppo.data_dir,
-                                "heat_recovery_data.csv"),
+                                "heat_recovery_projects_potential.csv"),
                             comment = '#',index_col = 0)[proj_cols]
                             
     project_data = ppo.get_communities_data(project_data)
@@ -131,7 +131,7 @@ def preprocess_existing_projects (ppo):
                           'buildings': buildings,
                           'proposed gallons diesel offset':diesel_offset,
                           'proposed Maximum btu/hr': max_btu_per_hr, 
-                          'captial costs':capex,
+                          'capital costs':capex,
                           'expected years to operation':
                                                 expected_years_to_operation
                         }

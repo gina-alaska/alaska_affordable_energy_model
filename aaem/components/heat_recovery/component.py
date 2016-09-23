@@ -62,7 +62,7 @@ class HeatRecovery (AnnualSavings):
         # WRITE this
         pass
         
-    def run (self, scalers = {'captial costs':1.0}):
+    def run (self, scalers = {'capital costs':1.0}):
         """
         run the forecast model
         
@@ -108,7 +108,8 @@ class HeatRecovery (AnnualSavings):
             
             # AnnualSavings functions (don't need to write)
             self.calc_annual_total_savings()
-            self.calc_annual_costs(self.cd['interest rate'])
+            self.calc_annual_costs(self.cd['interest rate'],
+                                            scalers['capital costs'])
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
             
@@ -171,7 +172,7 @@ class HeatRecovery (AnnualSavings):
         
         # gallons 
         diesel_consumed = generation / gen_eff
-        hr_available = self.comp_specs['percent heat recovery'] * \
+        hr_available = self.comp_specs['percent heat recovered'] * \
                           diesel_consumed
         #notes
         #if b1 == 'Yes' and b2 == 'Yes':
@@ -205,8 +206,8 @@ class HeatRecovery (AnnualSavings):
     # Make this do stuff
     def calc_capital_costs (self):
         """ Function Doc"""
-        captial_costs = self.comp_specs["project details"]['captial costs']
-        if captial_costs == UNKNOWN:
+        capital_costs = self.comp_specs["project details"]['capital costs']
+        if capital_costs == UNKNOWN:
 
             install_cost = 50000 * \
                             self.comp_specs['estimate pipe distance']/1000.0
@@ -218,9 +219,9 @@ class HeatRecovery (AnnualSavings):
                             140000
             building_cost = self.comp_specs['estimate buildings to heat'] * \
                                 self.comp_specs['estimate cost/building']
-            captial_costs = install_cost + loop_cost +\
+            capital_costs = install_cost + loop_cost +\
                             overhead_cost + building_cost
-        self.capital_costs = captial_costs
+        self.capital_costs = capital_costs
         
     
     def calc_annual_electric_savings (self):

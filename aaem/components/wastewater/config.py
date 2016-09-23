@@ -3,7 +3,7 @@ config.py
 
     Water/Waste Water efficiency config info for community data yaml file
 """
-COMPONENT_NAME = 'water wastewater'
+COMPONENT_NAME = 'Water and Wastewater Efficiency'
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
 
@@ -48,7 +48,7 @@ yaml_comments = {
 ## list of prerequisites for module
 prereq_comps = []
 
-## List of raw data files required for wind power preproecssing 
+## List of raw data files required for  preproecssing 
 raw_data_files = []
 
 ## list of data keys not to save when writing the CommunityData output

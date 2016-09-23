@@ -131,6 +131,6 @@ def component_summary (coms, res_dir):
     
     data = DataFrame(out,columns = cols).set_index('Community')#.round(2)
     f_name = os.path.join(res_dir,
-                'hydropower_summary.csv')
+                COMPONENT_NAME.replace(" ","_").lower() + '_summary.csv')
 
     data.to_csv(f_name, mode='w')

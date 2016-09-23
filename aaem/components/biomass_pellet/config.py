@@ -6,7 +6,7 @@ config.py
 import aaem.components.biomass_base as bmb
 from copy import deepcopy
 
-COMPONENT_NAME = "biomass pellet"
+COMPONENT_NAME = "Biomass for Heat (Pellet)"
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
 
@@ -16,7 +16,6 @@ yaml["energy density"] = 17600000
 yaml["pellet efficiency"] = .8
 yaml["cost per btu/hr"] = .54
 yaml["default pellet price"] = 400
-yaml["on road system"] = "IMPORT"
 
 
 ## default values for yaml key/Value pairs

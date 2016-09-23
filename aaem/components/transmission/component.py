@@ -13,6 +13,7 @@ from aaem.forecast import Forecast
 from aaem.diagnostics import diagnostics
 import aaem.constants as constants
 from config import COMPONENT_NAME, UNKNOWN
+from aaem.diesel_prices import DieselProjections
 
 class Transmission (AnnualSavings):
     """
@@ -63,7 +64,7 @@ class Transmission (AnnualSavings):
         # WRITE this
         pass
         
-    def run (self, scalers = {'captial costs':1.0}):
+    def run (self, scalers = {'capital costs':1.0}):
         """
         run the forecast model
         
@@ -86,7 +87,6 @@ class Transmission (AnnualSavings):
             self.reason = ("'model electricity' in the communtiy data"
                            " must be True to run this component")
             return 
-        
         if np.isnan(self.comp_specs['nearest community']\
                                     ['Distance to Community']):
             self.run = False
@@ -121,7 +121,8 @@ class Transmission (AnnualSavings):
             
             # AnnualSavings functions (don't need to write)
             self.calc_annual_total_savings()
-            self.calc_annual_costs(self.cd['interest rate'])
+            self.calc_annual_costs(self.cd['interest rate'],
+                                            scalers['capital costs'])
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
             #~ print self.benefit_cost_ratio
@@ -139,9 +140,10 @@ class Transmission (AnnualSavings):
         a kWh value
             self.average_load is the average load for the firest year in kW
         """
-        self.generation = self.forecast.generation_by_type['generation diesel']\
-                                                            [self.start_year]
-        self.average_load = self.generation / constants.hours_per_year
+        #~ self.generation = self.forecast.generation_by_type['generation diesel']\
+                                                            #~ [self.start_year]
+        self.average_load = \
+                self.forecast.yearly_average_diesel_load.ix[self.start_year]
         
     def get_intertie_values (self):
         """
@@ -240,15 +242,15 @@ class Transmission (AnnualSavings):
     
     def calc_capital_costs (self):
         """ 
-        calculate the captial costs
+        calculate the capital costs
         
         pre:
             self.comp_specs set up
         post:
-            self.captial costs is the total cost of the project $
+            self.capital costs is the total cost of the project $
         """
         road_needed = 'road needed'
-        if self.comp_specs['on road system']:
+        if self.cd['on road system']:
             road_needed = 'road not needed'
         
         dist = self.comp_specs['nearest community']['Distance to Community']

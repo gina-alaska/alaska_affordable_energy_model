@@ -11,10 +11,8 @@ UNKNOWN = "UNKNOWN"
 yaml = {'enabled': False,
         'lifetime': 'ABSOLUTE DEFAULT',
         'start year': 'ABSOLUTE DEFAULT',
-        'heating oil efficiency': .75,
         'energy density': 'ABSOLUTE DEFAULT',
         'data': 'IMPORT',
-        'percent sqft assumed heat displacement': .3,
         }
 
 ## default values for yaml key/Value pairs
@@ -24,14 +22,13 @@ yaml_defaults = {'enabled': True,
         }
     
 ## order to save yaml
-yaml_order = ['enabled', 'lifetime', 'start year','heating oil efficiency',
+yaml_order = ['enabled', 'lifetime', 'start year',
                'energy density', 'data']
 
 ## comments for the yaml key/value pairs
 yaml_comments = {'enabled': '',
         'lifetime': 'number years <int>',
         'start year': 'start year <int>',
-        'heating oil efficiency': '% as decimal <float>',
         'energy density': 'BTU/fuel unit (specified in child) <float>',
         'data': 'biomass data'}
         
@@ -39,4 +36,4 @@ yaml_comments = {'enabled': '',
 yaml_not_to_save = []
 
 ## list of prerequisites for module
-prereq_comps = ["non-residential buildings",]
+prereq_comps = ["Non-residential Energy Efficiency",]

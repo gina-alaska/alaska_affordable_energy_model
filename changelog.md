@@ -1,9 +1,41 @@
 #Change Log
 
+## [0.20.0]
+### added
+- Hydropower: diagnostic messages in preprocess projects function 
+- Hydropower: default for missing project phase
+
+### changed
+- all configs are now sorted and commented saved
+- component names updated
+- residential efficiency: changed data keys
+- moved some common values in component configs to community section of config
+- intertie projects for electricity are now sorted to into the intertie 
+- electric projects are only run for interties/ not intetied communities
+- heating projects not run on interties
+- wind power: start date is calculated from phase
+
+### fixed
+- issues preventing Chenega Bay, and Paxson from running
+- issue where transmission was not getting data from other community
+- transmission summary is generated now
+
+
+## [0.19.2]
+### fixed
+- capital costs scaler is applied to all components
+
+### changed
+- moves averge load calculation from componets to forecast
+
+## [0.19.1]
+### fixed
+- bug with run error message outputs
+
 ## [0.19.0]
 ### added
 - ability to run a group of communities/ modified communities from cli
-- add scalers for, Diesel Price, kWh consumption, and Capital Costs
+- add scalers for, Diesel Price, diesel price, and Capital Costs
 - ability to pass scalers to run command in cli
 - cli will not overwrite existing files unless -f (force flag) is provided
 - functionality to easily save a community data config file
@@ -14,6 +46,7 @@
 - completely rewrote driver internal functionality
 - updated all cli command messages
 - changed cli setup command structure
+- moved regional multipliers out of community data, into their own file
 
 ### removed
 - old component files
@@ -92,7 +125,7 @@
 
 ## [0.17.6]
 ### changes 
-- non residential buildings component: changes to calculation of pre retrofit kWh consumption
+- non residential buildings component: changes to calculation of pre retrofit diesel price
 
 ### adds
 - consumption summary

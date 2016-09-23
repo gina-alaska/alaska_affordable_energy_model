@@ -20,7 +20,7 @@ raw_data_files = ['project_development_timeframes.csv']
     #~ preprocess data related to existing projects
     
     #~ pre:
-        #~ ppo is a is a Preprocessor object. "wind_projects.csv" and 
+        #~ ppo is a is a Preprocessor object. "wind_projects_potential.csv" and 
         #~ 'project_development_timeframes.csv' exist in the ppo.data_dir 
     #~ post:
         #~ data for existing projets is usable by model
@@ -41,7 +41,7 @@ raw_data_files = ['project_development_timeframes.csv']
     #~ for p_idx in range(len(project_data)):
        #~ pass
     
-    #~ with open(os.path.join(ppo.out_dir,"wind_projects.yaml"),'w') as fd:
+    #~ with open(os.path.join(ppo.out_dir,"wind_projects_potential.yaml"),'w') as fd:
         #~ if len(p_data) != 0:
             #~ fd.write(dump(p_data,default_flow_style=False))
         #~ else:

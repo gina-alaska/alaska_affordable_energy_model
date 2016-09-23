@@ -21,7 +21,7 @@ def component_summary (coms, res_dir):
         if it == 'child':
             continue
         try:
-            solar = coms[c]['solar power']
+            solar = coms[c]['Solar Power']
 
             start_yr = solar.comp_specs['start year']
             solar.get_diesel_prices()
@@ -101,7 +101,8 @@ def component_summary (coms, res_dir):
     
     data = DataFrame(out,columns = cols).set_index('Community')#.round(2)
     f_name = os.path.join(res_dir,
-                'solar_power_summary.csv')
+                COMPONENT_NAME.lower().replace(' ','_').\
+                    replace('&','and') + '_summary.csv')
     #~ fd = open(f_name,'w')
     #~ fd.write(("# solar summary\n"))
     #~ fd.close()

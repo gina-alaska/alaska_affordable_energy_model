@@ -50,7 +50,7 @@ class ASHPResidential (ashp_base.ASHPBase):
         tag = self.cd['name'].split('+')
         if len(tag) > 1 and tag[1].split('_')[0] != 'ASHP_res':
             return 
-        res = comps['residential buildings']
+        res = comps['Residential Energy Efficiency']
         self.pre_ashp_heating_oil_used =  res.init_HF
         self.pre_ashp_heating_electricty_used = res.init_kWh
         self.num_houses = res.init_HH
@@ -65,7 +65,7 @@ class ASHPResidential (ashp_base.ASHPBase):
         """
         self.heat_energy_produced_per_year = \
                         self.pre_ashp_heating_oil_used * \
-                        self.comp_specs["heating oil efficiency"]*\
+                        self.cd["heating oil efficiency"]*\
                         (1/constants.mmbtu_to_gal_HF)
         #~ print self.heat_energy_produced_per_year
        
@@ -86,7 +86,7 @@ class ASHPResidential (ashp_base.ASHPBase):
                         self.electric_heat_energy_savings.values.T[0]
         
         
-    def run (self, scalers = {'captial costs':1.0}):
+    def run (self, scalers = {'capital costs':1.0}):
         """
         run the forecast model
         
@@ -124,7 +124,8 @@ class ASHPResidential (ashp_base.ASHPBase):
             self.annual_heating_savings += self.electric_heat_energy_savings
             
             self.calc_annual_total_savings()
-            self.calc_annual_costs(self.cd['interest rate'])
+            self.calc_annual_costs(self.cd['interest rate'],
+                                            scalers['capital costs'])
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
         #~ print 'self.monthly_value_table'
@@ -142,10 +143,10 @@ class ASHPResidential (ashp_base.ASHPBase):
 
     def calc_capital_costs (self):
         """
-        calculate the captial costs
+        calculate the capital costs
         """
         heating_oil = ((self.pre_ashp_heating_oil_used/self.num_houses)*\
-                        self.comp_specs["heating oil efficiency"]) / \
+                        self.cd["heating oil efficiency"]) / \
                         constants.mmbtu_to_gal_HF *1e6/ \
                         constants.hours_per_year
         electric_heat = (self.pre_ashp_heating_electricty_used/self.num_houses)\
@@ -231,14 +232,14 @@ class ASHPResidential (ashp_base.ASHPBase):
                 
         fname = os.path.join(directory,
                                    self.cd['name'] + '_' +\
-                                   self.component_name + "_output.csv")
+                                   self.component_name.lower() + "_output.csv")
         fname = fname.replace(" ","_")
         
         # save to end of project(actual lifetime)
         df[order].ix[:self.actual_end_year].to_csv(fname, index_label="Year")
         fname = os.path.join(directory,
-                                   self.cd['name']+'_'+\
-                                   self.component_name + "_montly_table.csv")
+                           self.cd['name']+'_'+\
+                           self.component_name.lower() + "_montly_table.csv")
         fname = fname.replace(" ","_")
         
         self.monthly_value_table.to_csv(fname)

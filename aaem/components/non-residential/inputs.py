@@ -16,7 +16,7 @@ def load_building_data (data_dir):
     
 def load_num_buildings (data_dir):
     """ Function doc """
-    data_file = os.path.join(data_dir, "com_num_buildings.csv")
+    data_file = os.path.join(data_dir, "non-res_count.csv")
     
     data = read_csv(data_file, comment = '#', index_col=0, header=0)
     
@@ -24,7 +24,7 @@ def load_num_buildings (data_dir):
 
 def load_building_estimates (data_dir):
     """ Function doc """
-    data_file = os.path.join(data_dir, "com_building_estimates.csv")
+    data_file = os.path.join(data_dir, "non-res_consumption_estimates.csv")
     
     data = read_csv(data_file, comment = '#', index_col=0, header=0)
     

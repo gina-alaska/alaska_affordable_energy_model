@@ -3,7 +3,7 @@ config.py
 
     Wind Power config info for community data yaml file
 """
-COMPONENT_NAME = "wind power"
+COMPONENT_NAME = "Wind Power"
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
 
@@ -37,12 +37,8 @@ yaml = {'enabled': False,
         'road needed for transmission line' : True,
         'est. transmission line cost': { True:500000, False:250000},
         'costs': 'IMPORT',
-        'percent excess energy': .15,
-        'percent excess energy capturable': .7,
-        'efficiency electric boiler': .99,
-        'efficiency heating oil boiler': .8,
+        'percent o&m': .01,
         'percent heat recovered': .15,
-        'percent o&m': .01
         }
       
 ## default values for yaml key/Value pairs
@@ -68,6 +64,7 @@ yaml_comments = {'enabled': '',
         'distance to resource': 'miles defaults to 1 mile',
         'est. transmission line cost': 'cost/mile',
         'assumed capacity factor': "TODO read in preprocessor",
+        'percent heat recovered': '% as decimal <float>',
         }
         
 ## list of data keys not to save when writing the CommunityData output

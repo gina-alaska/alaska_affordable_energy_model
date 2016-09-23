@@ -39,11 +39,12 @@ class AnnualSavings (object):
         pre:
             rate should be an interest rate.
             self.project_life is the # of years project is active for
-            self.captial_costs is the total cost of the project
+            self.capital_costs is the total cost of the project
         post:
             self.annual_costs will be a numpy array of dollar values 
         indicating the cost of the project per year.
         """
+        #~ print self.component_name, cost_scaler
         self.capital_costs *= cost_scaler
         cost_per_year = -np.pmt(rate, self.actual_project_life, 
                                     self.capital_costs) 
@@ -242,7 +243,7 @@ class AnnualSavings (object):
         " self.project_life, of dollar values(numbers)"
     
     @abstractmethod
-    def run (self, scalers = {'captial costs':1.0}):
+    def run (self, scalers = {'capital costs':1.0}):
         """
         abstract function 
         should be implemented by child class to run component
@@ -493,8 +494,10 @@ class AnnualSavings (object):
               self.component_name + ": Total Cost Savings ($/year)", 
               self.component_name + ": Net Benefit ($/year)"]
         fname = os.path.join(directory,
-                                   self.cd['name'] + '_' +\
-                                   self.component_name + "_output.csv")
+                               self.cd['name'] + '_' +\
+                               self.component_name.lower().replace(' ','_').\
+                               replace('&','and') +\
+                               "_output.csv")
         fname = fname.replace(" ","_")
         
         # save to end of project(actual lifetime)

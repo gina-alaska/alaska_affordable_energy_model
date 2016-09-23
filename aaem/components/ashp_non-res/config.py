@@ -6,7 +6,7 @@ config.py
 import aaem.components.ashp_base as ashp_base
 from copy import deepcopy
 
-COMPONENT_NAME = "ASHP non-residential"
+COMPONENT_NAME = "Non-Residential ASHP"
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
 
@@ -14,7 +14,6 @@ UNKNOWN = "UNKNOWN"
 yaml = deepcopy(ashp_base.yaml)
 yaml[ "btu/hrs"] = 90000
 yaml[ "cost per btu/hrs" ] = 25000 
-yaml['percent sqft assumed heat displacement'] =.3
 
 ## default values for yaml key/Value pairs
 yaml_defaults = deepcopy(ashp_base.yaml_defaults)
@@ -29,4 +28,4 @@ yaml_comments = deepcopy(ashp_base.yaml_comments)
 yaml_not_to_save = deepcopy(ashp_base.yaml_not_to_save)
 
 ## list of prerequisites for module
-prereq_comps = ['non-residential buildings']
+prereq_comps = ['Non-residential Energy Efficiency']
