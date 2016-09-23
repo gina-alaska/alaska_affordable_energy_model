@@ -1,5 +1,26 @@
 #Change Log
 
+## [0.20.0]
+### added
+- Hydropower: diagnostic messages in preprocess projects function 
+- Hydropower: default for missing project phase
+
+### changed
+- all configs are now sorted and commented saved
+- component names updated
+- residential efficiency: changed data keys
+- moved some common values in component configs to community section of config
+- intertie projects for electricity are now sorted to into the intertie 
+- electric projects are only run for interties/ not intetied communities
+- heating projects not run on interties
+- wind power: start date is calculated from phase
+
+### fixed
+- issues preventing Chenega Bay, and Paxson from running
+- issue where transmission was not getting data from other community
+- transmission summary is generated now
+
+
 ## [0.19.2]
 ### fixed
 - capital costs scaler is applied to all components
