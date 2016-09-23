@@ -300,7 +300,7 @@ class WindPower(AnnualSavings):
         self.loss_heat_recovery = 0
         if hr_used:# == 'Yes': 
             self.loss_heat_recovery = self.electric_diesel_reduction * \
-            self.cd['percent heat recovered']
+            self.comp_specs['percent heat recovered']
         #~ print 'self.loss_heat_recovery',self.loss_heat_recovery
         
     def calc_reduction_diesel_used (self):

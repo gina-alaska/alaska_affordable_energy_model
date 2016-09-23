@@ -22,7 +22,8 @@ yaml = {'enabled': False,
         
         'heating conversion efficiency': .75,
         
-        'o&m per year': 500
+        'o&m per year': 500,
+        'percent heat recovered': .10,
         }
 
 ## default values for yaml key/Value pairs

@@ -229,7 +229,7 @@ class Hydropower (AnnualSavings):
             self.lost_heat_recovery  = 0
         else:
             self.lost_heat_recovery = self.generation_diesel_reduction * \
-                                self.cd['percent heat recovered']
+                                self.comp_specs['percent heat recovered']
         
         #~ print 'self.captured_energy', self.captured_energy
         #~ print 'self.lost_heat_recovery', self.lost_heat_recovery

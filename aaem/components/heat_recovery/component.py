@@ -172,7 +172,7 @@ class HeatRecovery (AnnualSavings):
         
         # gallons 
         diesel_consumed = generation / gen_eff
-        hr_available = self.cd['percent heat recovered'] * \
+        hr_available = self.comp_specs['percent heat recovered'] * \
                           diesel_consumed
         #notes
         #if b1 == 'Yes' and b2 == 'Yes':

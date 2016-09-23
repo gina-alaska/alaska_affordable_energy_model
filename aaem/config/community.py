@@ -54,7 +54,6 @@ items = {
     'switchgear cost': 150000,
     
     'heat recovery operational': 'IMPORT',
-    'percent heat recovered': .15,
     'assumed percent non-residential sqft heat displacement': .3,
     
     'percent excess energy': .15,
@@ -117,7 +116,6 @@ order = [
     'switchgear cost',
     
     'heat recovery operational',
-    'percent heat recovered',
     'assumed percent non-residential sqft heat displacement',
     
     'percent excess energy',
@@ -188,7 +186,6 @@ comments = {
     'heat recovery operational': 
         'Flag indcation if the heatrecovery is operational <bool>',
     'heating oil efficiency': '% as decimal <float>',
-    'percent heat recovered': '% as decimal <float>',
         }
                 
 defaults = {

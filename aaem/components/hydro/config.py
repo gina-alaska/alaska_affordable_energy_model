@@ -13,7 +13,8 @@ yaml = {'enabled': False,
         'lifetime': 'ABSOLUTE DEFAULT',
         'start year': 'ABSOLUTE DEFAULT',
 
-        'percent o&m': .01
+        'percent o&m': .01,
+        'percent heat recovered': .15,
         }
 
 ## default values for yaml key/Value pairs

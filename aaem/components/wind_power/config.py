@@ -37,7 +37,8 @@ yaml = {'enabled': False,
         'road needed for transmission line' : True,
         'est. transmission line cost': { True:500000, False:250000},
         'costs': 'IMPORT',
-        'percent o&m': .01
+        'percent o&m': .01,
+        'percent heat recovered': .15,
         }
       
 ## default values for yaml key/Value pairs
@@ -63,6 +64,7 @@ yaml_comments = {'enabled': '',
         'distance to resource': 'miles defaults to 1 mile',
         'est. transmission line cost': 'cost/mile',
         'assumed capacity factor': "TODO read in preprocessor",
+        'percent heat recovered': '% as decimal <float>',
         }
         
 ## list of data keys not to save when writing the CommunityData output
