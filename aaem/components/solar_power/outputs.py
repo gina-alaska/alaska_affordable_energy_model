@@ -21,7 +21,7 @@ def component_summary (coms, res_dir):
         if it == 'child':
             continue
         try:
-            solar = coms[c]['solar power']
+            solar = coms[c]['Solar Power']
 
             start_yr = solar.comp_specs['start year']
             solar.get_diesel_prices()
