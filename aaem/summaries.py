@@ -362,8 +362,7 @@ def forecast_comparison_log (coms, res_dir):
             for ic in it_list:
                 try:
                     ires = coms[ic]['Residential Energy Efficiency']
-                    icom = coms[ic]['model'].\
-                        comps_used['Non-residential Energy Efficiency']
+                    icom = coms[ic]['Non-residential Energy Efficiency']
                     iwat = coms[ic]['Water and Wastewater Efficiency']
                 except KeyError:
                     continue
