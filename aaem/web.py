@@ -11,11 +11,11 @@ from aaem.components import comp_lib
 class WebSummary(object):
     """ Class doc """
     
-    def __init__ (self, model_root, directory):
+    def __init__ (self, model_root, directory, tag = ''):
         """ Class initialiser """
         self.model_root = model_root
         model = driver.Driver(self.model_root)
-        self.results = model.load_results()
+        self.results = model.load_results(tag)
         
         self.directory = directory
         try:
@@ -46,6 +46,7 @@ class WebSummary(object):
         #~ comps = self.get_viable_components(com)
         self.gennerate_community_summary(com)
         for comp in comp_lib:
+            #~ print comp
             try:
                 self.get_web_summary(comp_lib[comp])(self, com)
             except (AttributeError) as e:
@@ -99,7 +100,9 @@ class WebSummary(object):
         comps = []
         for i in [i for i in sorted(self.results.keys()) \
                             if i.find(community) != -1 ]:
+            
             for c in self.get_viable_components(i):
+                #~ print i, c
                 if i.find('hydro') != -1 and c == 'Hydropower':
                     comp = self.results[i]['Hydropower']
                     ratio = comp.get_BC_ratio()
@@ -118,7 +121,7 @@ class WebSummary(object):
                     name = i + ' Modled'
                 comps.append({'com':name,'comp':c, 'r': '{:,.3f}'.format(ratio)})
             
-        
+        #~ print comps
         
         
         with open(pth, 'w') as html:

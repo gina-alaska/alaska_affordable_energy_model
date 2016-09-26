@@ -149,7 +149,7 @@ def generate_web_summary (web_object, community):
     
     ## get the component (the modelded one)
   
-    comp_no_project = web_object.results[community]['wind power']
+    comp_no_project = web_object.results[community]['Wind Power']
     start_year = comp_no_project.start_year
     end_year = comp_no_project.actual_end_year
     
@@ -160,20 +160,20 @@ def generate_web_summary (web_object, community):
          if i.find(community) != -1 and i.find('wind') != -1]:
              
         start_year = min(start_year, 
-                        web_object.results[i]['wind power'].start_year)
+                        web_object.results[i]['Wind Power'].start_year)
         end_year = max(end_year, 
-                        web_object.results[i]['wind power'].actual_end_year)
-        projects[i] = web_object.results[i]['wind power']
+                        web_object.results[i]['Wind Power'].actual_end_year)
+        projects[i] = web_object.results[i]['Wind Power']
              
 
     ## get forecast stuff (consumption, generation, etc)
     fc = comp_no_project.forecast
-    try:
-        generation = fc.generation_by_type['generation_diesel [kWh/year]'].\
+    #~ try:
+    generation = fc.generation_by_type['generation_diesel [kWh/year]'].\
                                         ix[start_year:end_year]
-    except KeyError:
-        generation = fc.generation_by_type['generation diesel'].\
-                                        ix[start_year:end_year]
+    #~ except KeyError:
+        #~ generation = fc.generation_by_type['generation diesel'].\
+                                        #~ ix[start_year:end_year]
     
     ## get the diesel prices
     diesel_price = web_object.results[community]['community data'].\
@@ -207,6 +207,7 @@ def generate_web_summary (web_object, community):
     names = []
     for p in projects:
         project = projects[p]
+        #~ print project.comp_specs['project details']
         name = project.comp_specs['project details']['name']
         if name == 'nan':
             name = p.replace('+', ' ').replace('_',' ')
@@ -256,7 +257,8 @@ def generate_web_summary (web_object, community):
     names = []
     for p in projects:
         project = projects[p]
-        name = project.comp_specs['project details']['name']
+        #~ print project.comp_specs['project details']
+        name = 'nan' #project.comp_specs['project details']['name']
         if name == 'nan':
             name = p.replace('+', ' ').replace('_',' ')
         reduction = DataFrame([range(project.start_year,
