@@ -756,7 +756,7 @@ class Forecast (object):
     def generate_generation_forecast_dataframe(self):
         """
         """
-        data = self.generation_by_type
+        data = copy.deepcopy(self.generation_by_type)
         g_map = copy.deepcopy(self.c_map)
         g_map.columns = ["generation_qualifier"]
         

@@ -49,16 +49,20 @@ class WebSummary(object):
             #~ print comp
             try:
                 self.get_web_summary(comp_lib[comp])(self, com)
-            except (AttributeError) as e:
+            except (AttributeError, StandardError) as e:
                 #~ print comp, e
                 template = self.env.get_template('no_results.html')
-                if comp == 'solar power':
+                if comp == 'Solar Power':
                     pth = os.path.join(self.directory, com +'_solar_summary.html')
                     t = "Solar Power"
                     print comp, e
-                elif comp == 'wind power':
+                elif comp == 'Wind Power':
                     pth = os.path.join(self.directory, com +'_wind_summary.html')
                     t = 'Wind Power'
+                    print comp, e
+                elif comp == 'Heat Recovery':
+                    pth = os.path.join(self.directory, com +'_heat_recovery_summary.html')
+                    t = 'Heat Recovery'
                     print comp, e
                 else:
                     continue
@@ -107,19 +111,19 @@ class WebSummary(object):
                     comp = self.results[i]['Hydropower']
                     ratio = comp.get_BC_ratio()
                     name = comp.comp_specs['project details']['name']
-                elif i.find('wind') != -1 and c == 'wind power':
-                    comp = self.results[i]['wind power']
+                elif i.find('wind') != -1 and c == 'Wind Power':
+                    comp = self.results[i]['Wind Power']
                     ratio = comp.get_BC_ratio()
                     name = comp.comp_specs['project details']['name']
-                elif i.find('heat_recovery') != -1 and c == 'heat recovery':
-                    comp = self.results[i]['heat recovery']
+                elif i.find('heat_recovery') != -1 and c == 'Heat Recovery':
+                    comp = self.results[i]['Heat Recovery']
                     ratio = comp.get_BC_ratio()
                     name = comp.comp_specs['project details']['name']
                 else:
                     comp = self.results[i][c]
                     ratio = comp.get_BC_ratio()
                     name = i + ' Modled'
-                comps.append({'com':name,'comp':c, 'r': '{:,.3f}'.format(ratio)})
+                comps.append({'com':name.decode('unicode_escape').encode('ascii','ignore'),'comp':c, 'r': '{:,.3f}'.format(ratio)})
             
         #~ print comps
         

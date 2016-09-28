@@ -169,7 +169,7 @@ def generate_web_summary (web_object, community):
     ## get forecast stuff (consumption, generation, etc)
     fc = comp_no_project.forecast
     #~ try:
-    generation = fc.generation_by_type['generation_diesel [kWh/year]'].\
+    generation = fc.generation_by_type['generation diesel'].\
                                         ix[start_year:end_year]
     #~ except KeyError:
         #~ generation = fc.generation_by_type['generation diesel'].\
@@ -191,7 +191,7 @@ def generate_web_summary (web_object, community):
     ### find savings
     net_benefit = DataFrame([range(comp_no_project.start_year,
                                    comp_no_project.actual_end_year+1),
-                             comp_no_project.get_net_beneft()\
+                             comp_no_project.get_net_benefit()\
                                    [:comp_no_project.actual_project_life].\
                                    tolist()],
                              ['Year', 'savings']).T.set_index('Year')
@@ -213,7 +213,7 @@ def generate_web_summary (web_object, community):
             name = p.replace('+', ' ').replace('_',' ')
         net_benefit = DataFrame([range(project.start_year,
                                        project.actual_end_year+1),
-                                 project.get_net_beneft()\
+                                 project.get_net_benefit()\
                                         [:project.actual_project_life].\
                                         tolist()],
                                  ['Year', 'savings']).T.set_index('Year')
@@ -290,41 +290,32 @@ def generate_web_summary (web_object, community):
     
     
     ## info for modled
-    try:
-        wind_class = int(float(comp_no_project.comp_specs['resource data']\
-                                            ['Assumed Wind Class']))
-    except ValueError:
-        wind_class = 0
+   
+        
     
-    info = [
-        {'words':'Benefit Cost Ratio', 
-            'value': '{:,.3f}'.format(comp_no_project.get_BC_ratio())},
-        {'words':'Investments Needed', 
-            'value': '${:,.0f}'.format(comp_no_project.get_NPV_costs())},
-        {'words':'Net Lifetime Savings', 
-            'value': '${:,.0f}'.format(comp_no_project.get_NPV_benefits())},
-        {'words':'Expected kWh/year', 
-            'value': 
-                '{:,.0f}'.format(comp_no_project.load_offset_proposed*8760)},
-        {'words':'Proposed Capacity(kW)', 
-            'value': 
-                '{:,.0f}'.format(comp_no_project.load_offset_proposed)},
-        {'words':'Assumed Wind Class', 'value': wind_class},
-        {'words':'Assumed Capacity Factor', 
-            'value': comp_no_project.comp_specs['resource data']\
-                                         ['assumed capacity factor']},
-        {'words':'Existing Wind', 
-            'value': 
-               comp_no_project.comp_specs['resource data']['existing wind'],
-            'units': 'kW'},
-        {'words':'Existing Solar',
-            'value': 
-              comp_no_project.comp_specs['resource data']['existing solar'], 
-            'units' :'kW'},
-            ]
+    current = [
+        {'words':'Average Community Load (kW)', 'value': 'TBD'},
+        {'words':'Average kWh/year', 'value': 'TBD'},
+        {'words':'Peak Load', 'value': 'TBD'},
+        {'words':'Existing nameplate wind capacity (kW)', 
+         'value': comp_no_project.comp_specs['resource data']['existing wind']},
+        {'words':'Existing wind generation (kWh/year)', 'value': 'TBD'},
+        {'words':'Existing nameplate solar capacity (kW)', 
+         'value': comp_no_project.comp_specs['resource data']['existing solar']},
+        {'words':'Existing solar generation (kWh/year)', 'value': 'TBD'},
+        {'words':'Existing nameplate hydro capacity (kW)', 
+         'value': 'TBD'},
+        {'words':'Existing hydro generation (kWh/year)', 'value': 'TBD'},
+        
+    
+    ]
+        
+    
+    info = create_project_details_list(comp_no_project)
          
     ## info table (list to send to template)
-    info_for_projects = [{'name':'Modeled Wind Project','info':info}]
+    info_for_projects = [{'name': 'Current System', 'info':current},
+                         {'name': 'Modeled Wind Project', 'info': info}]
     
     ## get info for projects (updates info_for_projects )
     for p in projects:
@@ -336,28 +327,7 @@ def generate_web_summary (web_object, community):
                                                 ['Assumed Wind Class']))
         except ValueError:
             wind_class = 0
-        info = [
-            {'words':'Benefit Cost Ratio', 
-                'value': '{:,.3f}'.format(project.get_BC_ratio())},
-            {'words':'Investments Needed', 
-                'value': '${:,.0f}'.format(project.get_NPV_costs())},
-            {'words':'Net Lifetime Savings', 
-                'value': '${:,.0f}'.format(project.get_NPV_benefits())},
-            {'words':'Expected kWh/year', 
-                'value': '{:,.0f}'.format(project.load_offset_proposed*8760)},
-            {'words':'Proposed Capacity(kW)', 
-                'value': '{:,.0f}'.format(project.load_offset_proposed)},
-            {'words':'Assumed Wind Class', 'value': wind_class},
-            {'words':'Assumed Capacity Factor', 
-                'value': project.comp_specs['resource data']\
-                                             ['assumed capacity factor']},
-            {'words':'Existing Wind', 
-                'value': project.comp_specs['resource data']['existing wind'],
-                'units': 'kW'},
-            {'words':'Existing Solar',
-                'value': project.comp_specs['resource data']['existing solar'], 
-                'units' :'kW'},
-            ]
+        info = create_project_details_list(project)
             
         info_for_projects.append({'name':name,'info':info})
             
@@ -379,3 +349,36 @@ def generate_web_summary (web_object, community):
                                     type = "Wind Power", 
                                     com = community ,
                                     charts = charts ))
+                                    
+                                    
+def create_project_details_list (project):
+    """
+    makes a projects details section for the html
+    """
+    try:
+        wind_class = int(float(project.comp_specs['resource data']\
+                                            ['Assumed Wind Class']))
+    except ValueError:
+        wind_class = 0
+    return [
+        {'words':'Captial Cost ($)', 
+            'value': '${:,.0f}'.format(project.get_NPV_costs())},
+        {'words':'Lifetime Savings ($)', 
+            'value': '${:,.0f}'.format(project.get_NPV_benefits())},
+        {'words':'Net Lifetime Savings ($)', 
+            'value': '${:,.0f}'.format(project.get_NPV_net_benefit())},
+        {'words':'Benefit Cost Ratio', 
+            'value': '{:,.3f}'.format(project.get_BC_ratio())},
+        {'words':'Proposed Nameplate Capacity(kW)', 
+            'value': '{:,.0f}'.format(project.load_offset_proposed)},
+        {'words':'Expected Yearly Generation (kWh/year)', 
+         'value': 
+                '{:,.0f}'.format(project.load_offset_proposed *\
+                                 constants.hours_per_year)},
+
+        {'words':'Estimated Wind Class', 'value': wind_class},
+        {'words':'Estimated Capacity Factor', 
+            'value': 
+                project.comp_specs['resource data']['assumed capacity factor']},
+        {'words':'Estimated Wind Penetration Level (%)', 'value': 'TBD'},
+            ]

@@ -18,12 +18,16 @@
   </head>
   <body >
     <div class="content">
+
 <!--
-      <div id='com_list'></div>
+      <div class='header'>
+        <H1>Alaska Affordable Energy Model {% block header %}{% endblock %}</H1>
+      </div>
 -->
+
       <div class='titles'>
         <H1 class='titles'>{{ com.replace('_', ' ') }} </H1> 
-        <div class='comps'> <a href='{{com}}.html'> Summary</a> | <a href='{{com}}_wind_summary.html'> wind power</a> | <a href='{{com}}_solar_summary.html'> solar power</a></div>
+        <div class='comps'> <a href='{{com}}.html'> Summary</a> | <a href='{{com}}_wind_summary.html'> wind power</a> | <a href='{{com}}_solar_summary.html'> solar power</a> | <a href='{{com}}_heat_recovery_summary.html'> heat recovery</a></div>
        
 <!--    
         {% block heading %}

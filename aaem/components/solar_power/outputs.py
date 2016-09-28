@@ -123,7 +123,7 @@ def generate_web_summary (web_object, community):
     ## get forecast stuff (consumption, generation, etc)
     fc = comp_no_project.forecast
     #~ try:
-    generation = fc.generation_by_type['generation_diesel [kWh/year]'].\
+    generation = fc.generation_by_type['generation diesel'].\
                                         ix[start_year:end_year]
     #~ except KeyError:
         #~ generation = fc.generation_by_type['generation diesel'].\
@@ -145,7 +145,7 @@ def generate_web_summary (web_object, community):
     ### find savings
     net_benefit = DataFrame([range(comp_no_project.start_year,
                                    comp_no_project.actual_end_year+1),
-                             comp_no_project.get_net_beneft()\
+                             comp_no_project.get_net_benefit()\
                                    [:comp_no_project.actual_project_life].\
                                    tolist()],
                              ['Year', 'savings']).T.set_index('Year')
@@ -207,32 +207,31 @@ def generate_web_summary (web_object, community):
                       'Modeled Solar'])
     
     
+    
+    current = [
+        {'words':'Average Community Load (kW)', 'value': 'TBD'},
+        {'words':'Average kWh/year', 'value': 'TBD'},
+        {'words':'Peak Load', 'value': 'TBD'},
+        {'words':'Existing nameplate wind capacity (kW)', 
+         'value': comp_no_project.comp_specs['data']['Wind Capacity']},
+        {'words':'Existing wind generation (kWh/year)', 'value': 'TBD'},
+        {'words':'Existing nameplate solar capacity (kW)', 
+         'value': comp_no_project.comp_specs['data']['Installed Capacity']},
+        {'words':'Existing solar generation (kWh/year)', 'value': 'TBD'},
+        {'words':'Existing nameplate hydro capacity (kW)', 
+         'value': 'TBD'},
+        {'words':'Existing hydro generation (kWh/year)', 'value': 'TBD'},
+        
+    
+    ]
+    
     ## info for modled
-    info = [
-        {'words':'Benefit Cost Ratio', 
-            'value': '{:,.3f}'.format(comp_no_project.get_BC_ratio())},
-        {'words':'Investments Needed', 
-            'value': '${:,.0f}'.format(comp_no_project.get_NPV_costs())},
-        {'words':'Net Lifetime Savings', 
-            'value': '${:,.0f}'.format(comp_no_project.get_NPV_benefits())},
-        {'words':'Proposed Capacity(kW)', 
-            'value': 
-                '{:,.0f}'.format(comp_no_project.proposed_load)},
-        {'words':'Output per 10kW Solar PV', 
-            'value': comp_no_project.comp_specs['data']\
-                                         ['Output per 10kW Solar PV']},
-        {'words':'Existing Wind', 
-            'value': 
-               comp_no_project.comp_specs['data']['Wind Capacity'],
-            'units': 'kW'},
-        {'words':'Existing Solar',
-            'value': 
-              comp_no_project.comp_specs['data']['Installed Capacity'], 
-            'units' :'kW'},
-            ]
+    info = create_project_details_list (comp_no_project)
+        
          
     ## info table (list to send to template)
-    info_for_projects = [{'name':'Modeled Wind Project','info':info}]
+    info_for_projects = [{'name': 'Current System', 'info':current},
+                            {'name':'Modeled Solar Project','info':info}]
             
     
     ## create list of charts
@@ -253,3 +252,30 @@ def generate_web_summary (web_object, community):
                                     com = community ,
                                     charts = charts ))
     
+
+
+def create_project_details_list (project):
+    """
+    makes a projects details section for the html
+    """
+   
+    return [
+        {'words':'Captial Cost ($)', 
+            'value': '${:,.0f}'.format(project.get_NPV_costs())},
+        {'words':'Lifetime Savings ($)', 
+            'value': '${:,.0f}'.format(project.get_NPV_benefits())},
+        {'words':'Net Lifetime Savings ($)', 
+            'value': '${:,.0f}'.format(project.get_NPV_net_benefit())},
+        {'words':'Benefit Cost Ratio', 
+            'value': '{:,.3f}'.format(project.get_BC_ratio())},
+        {'words':'Proposed Nameplate Capacity(kW)', 
+            'value': '{:,.0f}'.format(project.proposed_load)},
+        {'words':'Expected Yearly Generation (kWh/year)', 
+         'value': 
+                '{:,.0f}'.format(project.proposed_load *\
+                                 constants.hours_per_year)},
+
+        {'words':'Output per 10kW Solar PV', 
+            'value': project.comp_specs['data']\
+                                         ['Output per 10kW Solar PV']},
+            ]

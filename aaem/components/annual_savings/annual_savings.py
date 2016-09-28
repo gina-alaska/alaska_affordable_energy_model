@@ -361,7 +361,7 @@ class AnnualSavings (object):
         except:
             return self.get_nan_range()
     
-    def get_net_beneft (self): # ex: eff(res) G62-V62
+    def get_net_benefit (self): # ex: eff(res) G62-V62
         """ return net benefit array """
         try:
             return self.annual_net_benefit
@@ -466,7 +466,7 @@ class AnnualSavings (object):
                                             self.get_total_savings_costs(),
                 self.component_name + \
                     ": Net Benefit ($/year)": 
-                                            self.get_net_beneft(),
+                                            self.get_net_benefit(),
                        }, years)
 
         df["Community"] = self.cd['name']
