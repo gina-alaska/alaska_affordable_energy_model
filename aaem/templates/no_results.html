@@ -1,5 +1,13 @@
+{% extends "layout.html" %}
 
 
+{% block title %}{{ com }} - {{ type }} summary{% endblock %}
 
-{{ com}} - {{ type}}
-{{ reason }}
+{% block left %}
+    <div class="stats">
+        <H2> {{ type }} Summary</H2>
+        <p> Component Not Viable</p>
+        <p>Reason: {{ reason }}</p>
+    </div>
+    
+{% endblock %}
