@@ -8,6 +8,8 @@ import numpy as np
 from pandas import DataFrame
 from config import COMPONENT_NAME
 import aaem.constants as constants
+from aaem.components import comp_order
+
 
 ## component summary
 def component_summary (coms, res_dir):
@@ -21,7 +23,7 @@ def component_summary (coms, res_dir):
         if it == 'child':
             continue
         try:
-            solar = coms[c]['Solar Power']
+            solar = coms[c][COMPONENT_NAME]
 
             start_yr = solar.comp_specs['start year']
             solar.get_diesel_prices()
@@ -116,7 +118,7 @@ def generate_web_summary (web_object, community):
     
     ## get the component (the modelded one)
   
-    comp_no_project = web_object.results[community]['Solar Power']
+    comp_no_project = web_object.results[community][COMPONENT_NAME]
     start_year = comp_no_project.start_year
     end_year = comp_no_project.actual_end_year
     
@@ -163,7 +165,9 @@ def generate_web_summary (web_object, community):
                                     'Estimated Proposed Generation']]
     costs_table.columns = ['year','Current Cost', 'Cost With Solar']
     costs_table.to_csv(os.path.join(web_object.directory,'csv',
-                        community + "_" + "Solar_Power" + "_" + 'costs.csv'),
+                        community + "_" + \
+                        COMPONENT_NAME.replace(' ','_').lower() +\
+                        "_" + 'costs.csv'),
                         index=False)
     ## make list from of table
     table1 = costs_table.\
@@ -197,7 +201,8 @@ def generate_web_summary (web_object, community):
                                         'Solar Diesel Consumed']
     ## save to csv
     cons_table.to_csv(os.path.join(web_object.directory,'csv', 
-                community + "_" + "Solar_Power" + "_" + 'consumption.csv'),
+                community + "_" +  COMPONENT_NAME.replace(' ','_').lower() +\
+                "_" + 'consumption.csv'),
                 index=False)
     
     ## make list form
@@ -245,12 +250,15 @@ def generate_web_summary (web_object, community):
             ]
         
     ## generate html
-    pth = os.path.join(web_object.directory, community +'_solar_summary.html')
+    ## generate html
+    pth = os.path.join(web_object.directory, community + '_' +\
+                    COMPONENT_NAME.replace(' ','_').lower() + '.html')
     with open(pth, 'w') as html:
         html.write(template.render( info = info_for_projects,
-                                    type = "Solar Power", 
+                                    type = COMPONENT_NAME, 
                                     com = community ,
-                                    charts = charts ))
+                                    charts = charts,
+                                    summary_pages = ['Summary'] + comp_order ))
     
 
 

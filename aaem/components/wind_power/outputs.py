@@ -8,6 +8,7 @@ import numpy as np
 from pandas import DataFrame
 from config import COMPONENT_NAME
 import aaem.constants as constants
+from aaem.components import comp_order
 
 ## component summary
 def component_summary (coms, res_dir):
@@ -149,7 +150,7 @@ def generate_web_summary (web_object, community):
     
     ## get the component (the modelded one)
   
-    comp_no_project = web_object.results[community]['Wind Power']
+    comp_no_project = web_object.results[community][COMPONENT_NAME]
     start_year = comp_no_project.start_year
     end_year = comp_no_project.actual_end_year
     
@@ -160,10 +161,10 @@ def generate_web_summary (web_object, community):
          if i.find(community) != -1 and i.find('wind') != -1]:
              
         start_year = min(start_year, 
-                        web_object.results[i]['Wind Power'].start_year)
+                        web_object.results[i][COMPONENT_NAME].start_year)
         end_year = max(end_year, 
-                        web_object.results[i]['Wind Power'].actual_end_year)
-        projects[i] = web_object.results[i]['Wind Power']
+                        web_object.results[i][COMPONENT_NAME].actual_end_year)
+        projects[i] = web_object.results[i][COMPONENT_NAME]
              
 
     ## get forecast stuff (consumption, generation, etc)
@@ -228,7 +229,7 @@ def generate_web_summary (web_object, community):
     costs_table.columns = ['year','Base Case Cost', 
                                                 'Cost With Wind'] + names
     costs_table.to_csv(os.path.join(web_object.directory,'csv',
-                        community + "_" + "Wind_Power" + "_" + 'costs.csv'),
+                        community + "_" + COMPONENT_NAME.replace(' ','_').lower() + "_" + 'costs.csv'),
                         index=False)
     ## make list from of table
     table1 = costs_table.\
@@ -279,7 +280,7 @@ def generate_web_summary (web_object, community):
                                         'Wind Diesel Consumed']+names
     ## save to csv
     cons_table.to_csv(os.path.join(web_object.directory,'csv', 
-                community + "_" + "Wind_Power" + "_" + 'consumption.csv'),
+                community + "_" + COMPONENT_NAME.replace(' ','_').lower() + "_" + 'consumption.csv'),
                 index=False)
     
     ## make list form
@@ -343,12 +344,14 @@ def generate_web_summary (web_object, community):
             ]
         
     ## generate html
-    pth = os.path.join(web_object.directory, community +'_wind_summary.html')
+    pth = os.path.join(web_object.directory, community + '_' +\
+                    COMPONENT_NAME.replace(' ','_').lower() + '.html')
     with open(pth, 'w') as html:
         html.write(template.render( info = info_for_projects,
-                                    type = "Wind Power", 
+                                    type = COMPONENT_NAME, 
                                     com = community ,
-                                    charts = charts ))
+                                    charts = charts,
+                                    summary_pages = ['Summary'] + comp_order ))
                                     
                                     
 def create_project_details_list (project):

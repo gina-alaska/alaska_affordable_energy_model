@@ -8,6 +8,8 @@ import numpy as np
 from pandas import DataFrame
 from config import COMPONENT_NAME
 import aaem.constants as constants
+from aaem.components import comp_order
+
     
 ## component summary
 def component_summary (coms, res_dir):
@@ -258,7 +260,7 @@ def generate_web_summary (web_object, community):
                                         'Modled Heating Fuel Consumed'] + names
     ## save to csv
     cons_table.to_csv(os.path.join(web_object.directory,'csv', 
-                community + "_" + COMPONENT_NAME + "_" + 'consumption.csv'),
+                community + "_" + COMPONENT_NAME.replace(' ','_').lower() + "_" + 'consumption.csv'),
                 index=False)
     
     ## make list form
@@ -315,13 +317,14 @@ def generate_web_summary (web_object, community):
             ]
         
     ## generate html
-    pth = os.path.join(web_object.directory, community + '_' + \
-                    COMPONENT_NAME.replace(' ','_').lower() +'_summary.html')
+    pth = os.path.join(web_object.directory, community + '_' +\
+                    COMPONENT_NAME.replace(' ','_').lower() + '.html')
     with open(pth, 'w') as html:
         html.write(template.render( info = info_for_projects,
                                     type = COMPONENT_NAME, 
                                     com = community ,
-                                    charts = charts ))
+                                    charts = charts,
+                                    summary_pages = ['Summary'] + comp_order ))
                                     
                                     
 def create_project_details_list (project):

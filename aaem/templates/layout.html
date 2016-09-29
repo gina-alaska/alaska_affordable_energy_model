@@ -27,7 +27,13 @@
 
       <div class='titles'>
         <H1 class='titles'>{{ com.replace('_', ' ') }} </H1> 
-        <div class='comps'> <a href='{{com}}.html'> Summary</a> | <a href='{{com}}_wind_summary.html'> wind power</a> | <a href='{{com}}_solar_summary.html'> solar power</a> | <a href='{{com}}_heat_recovery_summary.html'> heat recovery</a></div>
+        <div class='comps'> 
+            {% for item in summary_pages %}<a href='{{com}}_{{item.lower().replace(' ', "_").replace(")", "").replace("(", "")}}.html'> {{item}}</a> | {% endfor %}
+                
+<!--
+            <a href='{{com}}.html'> Summary</a> | <a href='{{com}}_wind_summary.html'> wind power</a> | <a href='{{com}}_solar_summary.html'> solar power</a> | <a href='{{com}}_heat_recovery_summary.html'> heat recovery</a>
+-->
+        </div>
        
 <!--    
         {% block heading %}
