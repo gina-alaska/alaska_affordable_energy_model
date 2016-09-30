@@ -150,146 +150,58 @@ def generate_web_summary (web_object, community):
     
     ## get the component (the modelded one)
   
-    comp_no_project = web_object.results[community][COMPONENT_NAME]
-    start_year = comp_no_project.start_year
-    end_year = comp_no_project.actual_end_year
+    modeled = web_object.results[community][COMPONENT_NAME]
+    #~ start_year = modeled.start_year
+    #~ end_year = modeled.actual_end_year
     
     ## get the component (for projects)
     ## also figure out the needed start/end years
-    projects = {}
-    for i in [i for i in sorted(web_object.results.keys()) \
-         if i.find(community) != -1 and i.find('wind') != -1]:
-             
-        start_year = min(start_year, 
-                        web_object.results[i][COMPONENT_NAME].start_year)
-        end_year = max(end_year, 
-                        web_object.results[i][COMPONENT_NAME].actual_end_year)
-        projects[i] = web_object.results[i][COMPONENT_NAME]
-             
-
+    projects, s1, e1 = get_projects(web_object,community,COMPONENT_NAME,'wind')
+      
+    start_year, end_year = correct_dates(modeled.start_year, s1,
+                                         modeled.actual_end_year, e1)
+    
+    order = projects.keys()
+    projects['Modled ' + COMPONENT_NAME] = modeled
+    order = ['Modled ' + COMPONENT_NAME] + order
+    
+        
     ## get forecast stuff (consumption, generation, etc)
-    fc = comp_no_project.forecast
-    #~ try:
+    fc = modeled.forecast
+   
+    
     generation = fc.generation_by_type['generation diesel'].\
                                         ix[start_year:end_year]
-    #~ except KeyError:
-        #~ generation = fc.generation_by_type['generation diesel'].\
-                                        #~ ix[start_year:end_year]
     
     ## get the diesel prices
     diesel_price = web_object.results[community]['community data'].\
                             get_item('community','diesel prices').\
-                            get_projected_prices(start_year, end_year+1)
-           
+                            get_projected_prices(start_year, end_year+1)#values
+
     ## get diesel generator efficiency
-    eff = comp_no_project.cd['diesel generation efficiency']
+    eff = modeled.cd['diesel generation efficiency']
+    
+    
+    
     
     ## get generation fuel costs per year (modeled)
     base_cost = generation/eff * diesel_price
     base_cost.name = 'Base Cost'
-    costs_table = DataFrame(base_cost)
 
-    ### find savings
-    net_benefit = DataFrame([range(comp_no_project.start_year,
-                                   comp_no_project.actual_end_year+1),
-                             comp_no_project.get_net_benefit()\
-                                   [:comp_no_project.actual_project_life].\
-                                   tolist()],
-                             ['Year', 'savings']).T.set_index('Year')
-    net_benefit.index = net_benefit.index.astype(int)
     
-    ## add post cost to table
-    costs_table['Estimated Proposed Generation'] = \
-                    costs_table['Base Cost'] - net_benefit['savings']
-    costs_table['year'] = costs_table.index
+    table1 = make_costs_table(community, COMPONENT_NAME, projects, base_cost,
+                              web_object.directory)
     
-    
-    ## get generation fuel costs per year (projects)
-    names = []
-    for p in projects:
-        project = projects[p]
-        #~ print project.comp_specs['project details']
-        name = project.comp_specs['project details']['name']
-        if name == 'nan':
-            name = p.replace('+', ' ').replace('_',' ')
-        net_benefit = DataFrame([range(project.start_year,
-                                       project.actual_end_year+1),
-                                 project.get_net_benefit()\
-                                        [:project.actual_project_life].\
-                                        tolist()],
-                                 ['Year', 'savings']).T.set_index('Year')
-        net_benefit.index = net_benefit.index.astype(int)
-        costs_table[name] = \
-                costs_table['Base Cost'] - net_benefit['savings']
-        names.append(name)
-
-    ## format table
-    costs_table = costs_table[['year','Base Cost',
-                                'Estimated Proposed Generation'] + names]
-    costs_table.columns = ['year','Base Case Cost', 
-                                                'Cost With Wind'] + names
-    costs_table.to_csv(os.path.join(web_object.directory,'csv',
-                        community + "_" + COMPONENT_NAME.replace(' ','_').lower() + "_" + 'costs.csv'),
-                        index=False)
-    ## make list from of table
-    table1 = costs_table.\
-                    round().values.tolist()
-    table1.insert(0,['year','Current Projection', 'Modeled Wind'] + names)
     
     
     ## get generation fule used (modeled)
     base_con = generation/eff 
     base_con.name = 'Base Consumption'
-    cons_table = DataFrame(base_con)
-    cons_table['year'] = cons_table.index
     
-    ## find reduction 
-    reduction = DataFrame([range(comp_no_project.start_year,
-                            comp_no_project.actual_end_year+1)],['Year']).T
-    reduction['savings'] = comp_no_project.electric_diesel_reduction
-    reduction = reduction.set_index('Year')
-    reduction.index = reduction.index.astype(int)
-    
-    ## add savings
-    cons_table['Est. Diesel Consumed'] = \
-                cons_table['Base Consumption'] - reduction['savings']
-    
-    ## get generation fule used (projects)
-    names = []
-    for p in projects:
-        project = projects[p]
-        #~ print project.comp_specs['project details']
-        name = 'nan' #project.comp_specs['project details']['name']
-        if name == 'nan':
-            name = p.replace('+', ' ').replace('_',' ')
-        reduction = DataFrame([range(project.start_year,
-                                project.actual_end_year+1)],['Year']).T
-        reduction['savings'] = project.electric_diesel_reduction
-        reduction = reduction.set_index('Year')
-        reduction.index = reduction.index.astype(int)
-        cons_table[name] = \
-                    cons_table['Base Consumption'] - reduction['savings']
-        names.append(name)
-    
-    
-    ## format table
-    cons_table = cons_table[['year','Base Consumption', 
-                                'Est. Diesel Consumed'] + names]
-    
-    cons_table.columns = ['year','Base Case Diesel Consumed',
-                                        'Wind Diesel Consumed']+names
-    ## save to csv
-    cons_table.to_csv(os.path.join(web_object.directory,'csv', 
-                community + "_" + COMPONENT_NAME.replace(' ','_').lower() + "_" + 'consumption.csv'),
-                index=False)
-    
-    ## make list form
-    table2  = cons_table.\
-                    round().values.tolist()
-    table2.insert(0,['year', 'Current Projection',
-                      'Modeled Wind']+names)
-    
-    
+    table2 = make_consumption_table(community, COMPONENT_NAME, 
+                                    projects, base_con,
+                                    web_object.directory,
+                                    'electric_diesel_reduction')
     ## info for modled
    
         
@@ -299,10 +211,10 @@ def generate_web_summary (web_object, community):
         {'words':'Average kWh/year', 'value': 'TBD'},
         {'words':'Peak Load', 'value': 'TBD'},
         {'words':'Existing nameplate wind capacity (kW)', 
-         'value': comp_no_project.comp_specs['resource data']['existing wind']},
+         'value': modeled.comp_specs['resource data']['existing wind']},
         {'words':'Existing wind generation (kWh/year)', 'value': 'TBD'},
         {'words':'Existing nameplate solar capacity (kW)', 
-         'value': comp_no_project.comp_specs['resource data']['existing solar']},
+         'value': modeled.comp_specs['resource data']['existing solar']},
         {'words':'Existing solar generation (kWh/year)', 'value': 'TBD'},
         {'words':'Existing nameplate hydro capacity (kW)', 
          'value': 'TBD'},
@@ -312,7 +224,7 @@ def generate_web_summary (web_object, community):
     ]
         
     
-    info = create_project_details_list(comp_no_project)
+    info = create_project_details_list(modeled)
          
     ## info table (list to send to template)
     info_for_projects = [{'name': 'Current System', 'info':current},
@@ -321,8 +233,12 @@ def generate_web_summary (web_object, community):
     ## get info for projects (updates info_for_projects )
     for p in projects:
         project = projects[p]
-        name = project.comp_specs['project details']['name']
-        
+        try:
+            name = project.comp_specs['project details']['name']
+        except KeyError:
+            name = 'nan'
+        if name == 'nan':
+            name = p.replace('+', ' ').replace('_',' ')
         try:
             wind_class = int(float(project.comp_specs['resource data']\
                                                 ['Assumed Wind Class']))
@@ -352,7 +268,127 @@ def generate_web_summary (web_object, community):
                                     com = community ,
                                     charts = charts,
                                     summary_pages = ['Summary'] + comp_order ))
-                                    
+ 
+ 
+def get_projects (web_object, community, comp, tag):
+    projects = {}
+    start_year = np.nan
+    end_year = np.nan
+    for i in [i for i in sorted(web_object.results.keys()) \
+         if i.find(community) != -1 and i.find(tag) != -1]:
+        
+        if np.isnan(start_year):
+            start_year = web_object.results[i][COMPONENT_NAME].start_year
+            
+        if np.isnan(end_year):
+            end_year = web_object.results[i][COMPONENT_NAME].actual_end_year
+             
+        start_year = min(start_year, 
+                        web_object.results[i][comp].start_year)
+        end_year = max(end_year, 
+                        web_object.results[i][comp].actual_end_year)
+        projects[i] = web_object.results[i][comp]
+    return projects, start_year, end_year
+    
+def make_costs_table (community, comp, projects, base_cost, directory):
+    """
+    make a table
+    
+    base_cost: dataframe with base cost for all years needed
+    """
+    costs_table = DataFrame(base_cost)
+    costs_table['year'] = costs_table.index
+    names = []
+    for p in projects:
+        project = projects[p]
+        ##print project.comp_specs['project details']
+        try:
+            name = project.comp_specs['project details']['name']
+        except KeyError:
+            name = 'nan'
+        if name == 'nan':
+            name = p.replace('+', ' ').replace('_',' ')
+        net_benefit = DataFrame([range(project.start_year,
+                                       project.actual_end_year+1),
+                                 project.get_net_benefit()\
+                                        [:project.actual_project_life].\
+                                        tolist()],
+                                 ['Year', 'savings']).T.set_index('Year')
+        net_benefit.index = net_benefit.index.astype(int)
+        costs_table[name] = \
+                costs_table['Base Cost'] - net_benefit['savings']
+        names.append(name)
+    #~ print costs_table
+    ## format table
+    costs_table = costs_table[['year','Base Cost'] + names]
+    costs_table.columns = ['year','Base Case Cost'] + names
+    fname = community + "_" + comp.replace(' ','_').lower() + "_" + 'costs.csv'
+    costs_table.to_csv(os.path.join(directory,'csv', fname),
+                        index=False)
+    #~ ## make list from of table
+    plotting_table = costs_table.\
+                    round().values.tolist()
+    plotting_table.insert(0,['year','Current Projection'] + names)
+    return plotting_table
+    
+def make_consumption_table (community, comp, projects, base_con, directory, savings_attribute):
+    """
+    """
+    cons_table = DataFrame(base_con)
+    cons_table['year'] = cons_table.index
+    names = []
+    for p in projects:
+        project = projects[p]
+        ##print project.comp_specs['project details']
+        try:
+            name = project.comp_specs['project details']['name']
+        except KeyError:
+            name = 'nan'
+        if name == 'nan':
+            name = p.replace('+', ' ').replace('_',' ')
+        reduction = DataFrame([range(project.start_year,
+                                project.actual_end_year+1)],['Year']).T
+                                
+        s_c = "reduction['savings'] = project." + savings_attribute
+        try:
+            exec(s_c)
+        except ValueError:
+            s_c += '[:project.actual_project_life]'
+            exec(s_c)
+        reduction = reduction.set_index('Year')
+        reduction.index = reduction.index.astype(int)
+        cons_table[name] = \
+                    cons_table['Base Consumption'] - reduction['savings']
+        names.append(name)
+    ## format table
+    cons_table = cons_table[['year','Base Consumption'] + names]
+    cons_table.columns = ['year','Base Case Diesel Consumed'] + names
+    fname = community + "_" + comp.replace(' ','_').lower() + "_" + 'consumption.csv'
+    cons_table.to_csv(os.path.join(directory,'csv', fname),index=False)
+    #~ ## make list from of table
+    plotting_table = cons_table.round().values.tolist()
+    plotting_table.insert(0,['year','Current Projection'] + names)
+    return plotting_table
+
+def correct_dates (start, s1, end, e1):
+    """ Function doc """
+    if np.isnan(start) and  np.isnan(s1) and  np.isnan(end) and np.isnan(e1):
+        raise StandardError, "Bad start and end years"
+    if not np.isnan(s1) and np.isnan(start):
+        start_year = s1
+    elif not np.isnan(s1):
+        start_year = min(start, s1)
+    else:
+        start_year = start
+    if not np.isnan(e1) and np.isnan(end):
+        end_year = e1
+    elif not np.isnan(e1):
+        end_year = max(end, e1)
+    else:
+        end_year = end
+    #~ print start_year,end_year
+    return start_year, end_year
+
                                     
 def create_project_details_list (project):
     """

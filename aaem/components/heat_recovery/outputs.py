@@ -99,42 +99,34 @@ def generate_web_summary (web_object, community):
     
     ## get the component (the modelded one)
   
-    comp_no_project = web_object.results[community][COMPONENT_NAME]
+    modeled = web_object.results[community][COMPONENT_NAME]
     
-    if np.isnan(comp_no_project.get_net_benefit()).all():
-        start_year = np.nan
-        end_year = np.nan
-    else:
-        start_year = comp_no_project.start_year
-        end_year = comp_no_project.actual_end_year
+    
     
     ## get the component (for projects)
     ## also figure out the needed start/end years
     projects = {}
     #~ print community
-    for i in [i for i in sorted(web_object.results.keys()) \
-         if i.find(community.replace(' ','_')) != -1 and i.find('heat_recovery') != -1]:
-        print 'Found' ,community
-        
-        if np.isnan(start_year):
-            start_year = web_object.results[i][COMPONENT_NAME].start_year
-            
-        if np.isnan(end_year):
-            end_year = web_object.results[i][COMPONENT_NAME].actual_end_year
-            
-        start_year = min(start_year, 
-                        web_object.results[i][COMPONENT_NAME].start_year)
-        end_year = max(end_year, 
-                        web_object.results[i][COMPONENT_NAME].actual_end_year)
-        projects[i] = web_object.results[i][COMPONENT_NAME]
-             
-    ## do i need to do any thing
-    if np.isnan(comp_no_project.get_net_benefit()).all() and projects == {}:
+    
+    from aaem.components.wind_power import get_projects, correct_dates 
+    from aaem.components.wind_power import make_costs_table, make_consumption_table
+    projects, s1, e1 = get_projects(web_object,community,COMPONENT_NAME,'heat_recovery')
+    if np.isnan(modeled.get_net_benefit()).all() and projects == {}:
         raise StandardError, "no projects or modeling info" 
+    
+    sy = modeled.start_year
+    ey = modeled.actual_end_year
+    if np.isnan(modeled.get_net_benefit()).all() :
+        sy = np.nan
+        ey = np.nan
+
+    start_year, end_year = correct_dates (sy, s1, ey, e1)
+    if not np.isnan(modeled.get_net_benefit()).all():
+        projects['Modled ' + COMPONENT_NAME] = modeled
 
 
     ## get forecast stuff (consumption, generation, etc)
-    fc = comp_no_project.forecast
+    fc = modeled.forecast
 
     fuel_consumed = fc.heating_fuel_dataframe['heating_fuel_total_consumed [gallons/year]'].ix[start_year:end_year]
 
@@ -150,134 +142,24 @@ def generate_web_summary (web_object, community):
     ## get generation fuel costs per year (modeled)
     base_cost = fuel_consumed  * diesel_price
     base_cost.name = 'Base Cost'
-    costs_table = DataFrame(base_cost)
-
-    ### find savings    
-    net_benefit = DataFrame([range(comp_no_project.start_year,
-                                   comp_no_project.actual_end_year+1),
-                             comp_no_project.get_net_benefit()\
-                                   [:comp_no_project.actual_project_life].\
-                                   tolist()],
-                             ['Year', 'savings']).T.set_index('Year')
-    net_benefit.index = net_benefit.index.astype(int)
     
-    
-    ## add post cost to table
-    costs_table['Estimated Proposed Generation'] = \
-                    costs_table['Base Cost'] - net_benefit['savings']
-    costs_table['year'] = costs_table.index
-    
-    
-    ## get generation fuel costs per year (projects)
-    names = []
-    for p in projects:
-        project = projects[p]
-        #~ print project.comp_specs['project details']
-        name = project.comp_specs['project details']['name']
-        if name == 'nan':
-            name = p.replace('+', ' ').replace('_',' ')
-        net_benefit = DataFrame([range(project.start_year,
-                                       project.actual_end_year+1),
-                                 project.get_net_benefit()\
-                                        [:project.actual_project_life].\
-                                        tolist()],
-                                 ['Year', 'savings']).T.set_index('Year')
-        net_benefit.index = net_benefit.index.astype(int)
-        costs_table[name] = \
-                costs_table['Base Cost'] - net_benefit['savings']
-        names.append(name)
-
-    ## format table
-    if np.isnan(comp_no_project.get_net_benefit()).all():
-        costs_table = costs_table[['year','Base Cost'] + names]
-        costs_table.columns = ['year','Base Case Cost'] + names
-    else:
-        costs_table = costs_table[['year','Base Cost',
-                                'Estimated Proposed Generation'] + names]
-        costs_table.columns = ['year','Base Case Cost', 
-                                            'Cost With Heat Recovery'] + names
-                                                
-                                                
-    costs_table.to_csv(os.path.join(web_object.directory,'csv',
-                        community + "_" + COMPONENT_NAME.replace(' ','_').lower() + "_" + 'costs.csv'),
-                        index=False)
-    ## make list from of table
-    table1 = costs_table.\
-                    round().values.tolist()
-                    
-    if np.isnan(comp_no_project.get_net_benefit()).all():
-        table1.insert(0,['year','Current Projection'] + names)
-    else:
-        table1.insert(0,['year','Current Projection', 'Modeled Wind'] + names)
+    table1 = make_costs_table(community, COMPONENT_NAME, projects, base_cost,
+                              web_object.directory)
     
     
     #~ ## get generation fule used (modeled)
     base_con = fuel_consumed
     base_con.name = 'Base Consumption'
-    cons_table = DataFrame(base_con)
-    cons_table['year'] = cons_table.index
-    
-    ## find reduction 
-    reduction = DataFrame([range(comp_no_project.start_year,
-                            comp_no_project.actual_end_year+1)],['Year']).T
-    reduction['savings'] = comp_no_project.proposed_heat_recovery
-    reduction = reduction.set_index('Year')
-    reduction.index = reduction.index.astype(int)
-    
-    #~ ## add savings
-    cons_table['Est. Heating Fuel Consumed'] = \
-                cons_table['Base Consumption'] - reduction['savings']
-    
-    ## get generation fule used (projects)
-    names = []
-    for p in projects:
-        project = projects[p]
-        ##print project.comp_specs['project details']
-        name = 'nan' #project.comp_specs['project details']['name']
-        if name == 'nan':
-            name = p.replace('+', ' ').replace('_',' ')
-        reduction = DataFrame([range(project.start_year,
-                                project.actual_end_year+1)],['Year']).T
-        reduction['savings'] = project.proposed_heat_recovery
-        reduction = reduction.set_index('Year')
-        reduction.index = reduction.index.astype(int)
-        cons_table[name] = \
-                    cons_table['Base Consumption'] - reduction['savings']
-        names.append(name)
-    
-    
-    ## format table
-    if np.isnan(comp_no_project.get_net_benefit()).all():
-        cons_table = cons_table[['year','Base Consumption'] + names]
-    
-        cons_table.columns = ['year','Base Case Diesel Consumed'] + names
-        
-    else:
-        cons_table = cons_table[['year','Base Consumption', 
-                                'Est. Heating Fuel Consumed'] + names]
-    
-        cons_table.columns = ['year','Base Case Diesel Consumed',
-                                        'Modled Heating Fuel Consumed'] + names
-    ## save to csv
-    cons_table.to_csv(os.path.join(web_object.directory,'csv', 
-                community + "_" + COMPONENT_NAME.replace(' ','_').lower() + "_" + 'consumption.csv'),
-                index=False)
-    
-    ## make list form
-    table2  = cons_table.\
-                    round().values.tolist()
-                    
-    if np.isnan(comp_no_project.get_net_benefit()).all():
-        table2.insert(0,['year', 'Current Projection'] + names)
-    else:
-        table2.insert(0,['year', 'Current Projection',
-                      'Modeled Wind']+names)
+    table2 = make_consumption_table(community, COMPONENT_NAME, 
+                                    projects, base_con,
+                                    web_object.directory,
+                                    'proposed_heat_recovery')
     
     
     ## info for modled
    
         
-    ests = comp_no_project.comp_specs['estimate data']
+    ests = modeled.comp_specs['estimate data']
     current = [
         {'words':'Waste Heat Recovery Opperational', 'value': ests['Waste Heat Recovery Opperational']},
         {'words':'Add waste heat Avail', 'value': ests['Add waste heat Avail']},
@@ -286,13 +168,13 @@ def generate_web_summary (web_object, community):
     ]
         
     
-    info = create_project_details_list(comp_no_project)
+    info = create_project_details_list(modeled)
          
     ## info table (list to send to template)
     
     info_for_projects = [{'name': 'Current System', 'info':current}]
     
-    if not np.isnan(comp_no_project.get_net_benefit()).all():
+    if not np.isnan(modeled.get_net_benefit()).all():
         info_for_projects.append({'name': 
                                     'Modeled '+ COMPONENT_NAME + ' Project',
                                   'info': info})

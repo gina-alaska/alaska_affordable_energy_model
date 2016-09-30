@@ -16,7 +16,7 @@ class WebSummary(object):
         self.model_root = model_root
         model = driver.Driver(self.model_root)
         self.results = model.load_results(tag)
-        
+        print self.results
         self.directory = directory
         try:
             os.makedirs(os.path.join(self.directory,'csv'))
@@ -98,9 +98,10 @@ class WebSummary(object):
     def generate_all (self):
         """ Function doc """
         keys = sorted([k for k in self.results.keys() if k.find('+') == -1])
-        for com in keys:
+        for com in ["Stebbins","Adak","Brevig_Mission"]:#keys:
+            print com
             self.generate_web_summaries(com)
-            return
+            
             
     def gennerate_community_summary(self, community):
         """ Function doc """
