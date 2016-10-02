@@ -9,7 +9,7 @@ from pandas import DataFrame
 from config import COMPONENT_NAME
 import aaem.constants as constants
 from aaem.components import comp_order
-
+import aaem.web_lib as wl
     
 ## component summary
 def component_summary (coms, res_dir):
@@ -107,12 +107,10 @@ def generate_web_summary (web_object, community):
     ## also figure out the needed start/end years
     projects = {}
     #~ print community
-    
-    from aaem.components.wind_power import get_projects, correct_dates 
-    from aaem.components.wind_power import make_costs_table, make_consumption_table
-    projects, s1, e1 = get_projects(web_object,community,COMPONENT_NAME,'heat_recovery')
+    projects, s1, e1 = wl.get_projects(web_object, community, 
+                                       COMPONENT_NAME, 'heat_recovery')
     if np.isnan(modeled.get_net_benefit()).all() and projects == {}:
-        raise StandardError, "no projects or modeling info" 
+        raise RuntimeError, "no projects or modeling info" 
     
     sy = modeled.start_year
     ey = modeled.actual_end_year
@@ -120,7 +118,7 @@ def generate_web_summary (web_object, community):
         sy = np.nan
         ey = np.nan
 
-    start_year, end_year = correct_dates (sy, s1, ey, e1)
+    start_year, end_year = wl.correct_dates (sy, s1, ey, e1)
     if not np.isnan(modeled.get_net_benefit()).all():
         projects['Modled ' + COMPONENT_NAME] = modeled
 
@@ -128,7 +126,9 @@ def generate_web_summary (web_object, community):
     ## get forecast stuff (consumption, generation, etc)
     fc = modeled.forecast
 
-    fuel_consumed = fc.heating_fuel_dataframe['heating_fuel_total_consumed [gallons/year]'].ix[start_year:end_year]
+    fuel_consumed = \
+        fc.heating_fuel_dataframe['heating_fuel_total_consumed [gallons/year]']\
+        .ix[start_year:end_year]
 
     
     ## get the diesel prices
@@ -143,14 +143,14 @@ def generate_web_summary (web_object, community):
     base_cost = fuel_consumed  * diesel_price
     base_cost.name = 'Base Cost'
     
-    table1 = make_costs_table(community, COMPONENT_NAME, projects, base_cost,
+    table1 = wl.make_costs_table(community, COMPONENT_NAME, projects, base_cost,
                               web_object.directory)
     
     
     #~ ## get generation fule used (modeled)
     base_con = fuel_consumed
     base_con.name = 'Base Consumption'
-    table2 = make_consumption_table(community, COMPONENT_NAME, 
+    table2 = wl.make_consumption_table(community, COMPONENT_NAME, 
                                     projects, base_con,
                                     web_object.directory,
                                     'proposed_heat_recovery')
@@ -161,10 +161,13 @@ def generate_web_summary (web_object, community):
         
     ests = modeled.comp_specs['estimate data']
     current = [
-        {'words':'Waste Heat Recovery Opperational', 'value': ests['Waste Heat Recovery Opperational']},
+        {'words':'Waste Heat Recovery Opperational', 
+         'value': ests['Waste Heat Recovery Opperational']},
         {'words':'Add waste heat Avail', 'value': ests['Add waste heat Avail']},
-        {'words':'Est. current annual heating fuel gallons displaced', 'value': ests['Est. current annual heating fuel gallons displaced']},
-        {'words':'Est. potential annual heating fuel gallons displaced', 'value': ests['Est. potential annual heating fuel gallons displaced']},
+        {'words':'Est. current annual heating fuel gallons displaced', 
+         'value': ests['Est. current annual heating fuel gallons displaced']},
+        {'words':'Est. potential annual heating fuel gallons displaced', 
+         'value': ests['Est. potential annual heating fuel gallons displaced']},
     ]
         
     

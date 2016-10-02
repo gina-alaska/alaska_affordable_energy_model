@@ -9,6 +9,7 @@ from pandas import DataFrame
 from config import COMPONENT_NAME
 import aaem.constants as constants
 from aaem.components import comp_order
+import aaem.web_lib as wl
 
 
 ## component summary
@@ -144,39 +145,23 @@ def generate_web_summary (web_object, community):
     ## get generation fuel costs per year (modeled)
     base_cost = generation/eff * diesel_price
     base_cost.name = 'Base Cost'
-    from aaem.components.wind_power import make_costs_table, make_consumption_table
     
     
-    table1 = make_costs_table(community, COMPONENT_NAME, projects, base_cost,
+    table1 = wl.make_costs_table(community, COMPONENT_NAME, projects, base_cost,
                               web_object.directory)
     
     
     ## get generation fule used (modeled)
     base_con = generation/eff 
     base_con.name = 'Base Consumption'
-    table2 = make_consumption_table(community, COMPONENT_NAME, 
+    table2 = wl.make_consumption_table(community, COMPONENT_NAME, 
                                     projects, base_con,
                                     web_object.directory,
                                     'generation_fuel_used')
     
     
     
-    current = [
-        {'words':'Average Community Load (kW)', 'value': 'TBD'},
-        {'words':'Average kWh/year', 'value': 'TBD'},
-        {'words':'Peak Load', 'value': 'TBD'},
-        {'words':'Existing nameplate wind capacity (kW)', 
-         'value': modeled.comp_specs['data']['Wind Capacity']},
-        {'words':'Existing wind generation (kWh/year)', 'value': 'TBD'},
-        {'words':'Existing nameplate solar capacity (kW)', 
-         'value': modeled.comp_specs['data']['Installed Capacity']},
-        {'words':'Existing solar generation (kWh/year)', 'value': 'TBD'},
-        {'words':'Existing nameplate hydro capacity (kW)', 
-         'value': 'TBD'},
-        {'words':'Existing hydro generation (kWh/year)', 'value': 'TBD'},
-        
-    
-    ]
+    current = wl.create_electric_system_summary (web_object.results[community])
     
     ## info for modled
     info = create_project_details_list (modeled)

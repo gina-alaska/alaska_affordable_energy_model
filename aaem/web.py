@@ -51,7 +51,7 @@ class WebSummary(object):
             #~ print comp
             try:
                 self.get_web_summary(comp_lib[comp])(self, com)
-            except (AttributeError, StandardError) as e:
+            except (AttributeError, RuntimeError) as e:
                 print comp, e
                 template = self.env.get_template('no_results.html')
                 #~ if comp in ['Solar Power','Wind Power','Heat Recovery'] :
@@ -137,4 +137,8 @@ class WebSummary(object):
         
         with open(pth, 'w') as html:
             html.write(template.render( info = comps , com = community,
-                                        summary_pages = ['Summary'] + comp_order ))
+                                        summary_pages = ['Summary'] + comp_order))
+                                        
+                                        
+
+
