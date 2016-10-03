@@ -246,7 +246,7 @@ class BiomassBase (AnnualSavings):
                                             self.get_total_savings_costs(),
                 self.component_name + \
                     ": Net Benefit ($/year)": 
-                                            self.get_net_beneft(),
+                                            self.get_net_benefit(),
                        }, years)
 
         order = ["Community", 

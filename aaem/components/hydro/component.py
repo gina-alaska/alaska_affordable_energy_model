@@ -350,7 +350,7 @@ class Hydropower (AnnualSavings):
                                             self.get_capital_costs(),
                 "Hydro: Total Cost Savings ($/year)":
                                             self.get_total_savings_costs(),
-                "Hydro: Net Benefit ($/year)": self.get_net_beneft(),
+                "Hydro: Net Benefit ($/year)": self.get_net_benefit(),
                        }, years)
 
         df["Community"] = self.cd['name']

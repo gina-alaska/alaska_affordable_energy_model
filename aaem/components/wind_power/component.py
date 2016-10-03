@@ -475,7 +475,7 @@ class WindPower(AnnualSavings):
                                             self.get_capital_costs(),
                 "Wind: Total Cost Savings ($/year)":
                                             self.get_total_savings_costs(),
-                "Wind: Net Benefit ($/year)": self.get_net_beneft(),
+                "Wind: Net Benefit ($/year)": self.get_net_benefit(),
                        }, years)
 
         df["Community"] = self.cd['name']

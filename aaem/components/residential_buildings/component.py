@@ -649,7 +649,7 @@ class ResidentialBuildings(AnnualSavings):
         "Residential: Total Cost Savings ($/year)": 
                                     self.get_total_savings_costs(),
         "Residential: Net Benefit ($/year)":
-                                    self.get_net_beneft(),
+                                    self.get_net_benefit(),
             }, years)
 
         try:

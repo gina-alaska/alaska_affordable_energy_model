@@ -216,7 +216,7 @@ class ASHPResidential (ashp_base.ASHPBase):
                 "Residential ASHP: Displaced Heating Oil (gallons/year)": self.heating_oil_saved,
                 "Residential ASHP: Project Capital Cost ($/year)": self.get_capital_costs(),
                 "Residential ASHP: Total Cost Savings ($/year)": self.get_total_savings_costs(),
-                "Residential ASHP: Net Benefit ($/year)": self.get_net_beneft(),
+                "Residential ASHP: Net Benefit ($/year)": self.get_net_benefit(),
                        }, years)
 
         order = ["Community", 

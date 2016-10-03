@@ -257,7 +257,7 @@ class SolarPower (AnnualSavings):
                                         self.get_capital_costs(),
                 "Solar: Total Cost Savings ($/year)": 
                                         self.get_total_savings_costs(),
-                "Solar: Net Benefit ($/year)": self.get_net_beneft(),
+                "Solar: Net Benefit ($/year)": self.get_net_benefit(),
                        }, years)
 
         df["Community"] = self.cd['name']
