@@ -119,9 +119,11 @@ def generate_web_summary (web_object, community):
         ey = np.nan
 
     start_year, end_year = wl.correct_dates (sy, s1, ey, e1)
+    
+    order = projects.keys()
     if not np.isnan(modeled.get_net_benefit()).all():
         projects['Modled ' + COMPONENT_NAME] = modeled
-
+        order = ['Modled ' + COMPONENT_NAME] + order
 
     ## get forecast stuff (consumption, generation, etc)
     fc = modeled.forecast
@@ -183,7 +185,7 @@ def generate_web_summary (web_object, community):
                                   'info': info})
     
     ## get info for projects (updates info_for_projects )
-    for p in projects:
+    for p in order:
         project = projects[p]
         name = project.comp_specs['project details']['name']
         info = create_project_details_list(project)

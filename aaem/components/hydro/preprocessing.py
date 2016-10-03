@@ -74,9 +74,12 @@ def preprocess_existing_projects (ppo):
             
 
         projects.append(p_name)
-        
+        #actual name
+        a_name = str(cp['Project'])
+        if a_name.find(str(cp['Stream'])) == -1 and str(cp['Stream']) != 'nan':
+            a_name += ' -- ' + str(cp['Stream'])
             
-        p_data[p_name] = {'name': str(cp['Project']),
+        p_data[p_name] = {'name': a_name,
                     'phase': phase,
                     'proposed capacity': proposed_capacity,
                     'proposed generation': proposed_generation,
