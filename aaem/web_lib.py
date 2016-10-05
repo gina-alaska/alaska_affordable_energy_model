@@ -1,3 +1,7 @@
+"""
+common web functions
+
+"""
 import os.path
 import numpy as np
 from pandas import DataFrame
@@ -5,6 +9,21 @@ import aaem.constants as constants
 from aaem.components import comp_order
 
 def get_projects (web_object, community, comp, tag):
+    """
+    get a communities projects for a provided copoonent
+    
+    inputs:
+        web_opject: an aaem.web.WebSummary object
+        community: a community <string>
+        comp: name of component <string>
+        tag: tag used in results directory to indicate it is a project for the 
+            provided component
+            
+    outputs:
+        returns: projects, a dictioanry of communites projects for the 
+        component, start_year: eariliest start year in projects. end_year,
+        latest actual end year in projects
+    """
     projects = {}
     start_year = np.nan
     end_year = np.nan
@@ -28,7 +47,19 @@ def make_costs_table (community, comp, projects, base_cost, directory):
     """
     make a table
     
-    base_cost: dataframe with base cost for all years needed
+    inputs:
+        community: <string>
+        comp: componet name <string>
+        projects: dictioany of projects
+        base_cost: dataframe with base cost for all years needed as index
+                    Base Cost
+            2011    1200
+            ...
+            2015    1400
+        directory: directory where web outputs are beign saved
+    
+    outputs:    
+        returns plotting_table, a table that can be used to make a google chart
     """
     costs_table = DataFrame(base_cost)
     costs_table['year'] = costs_table.index
@@ -68,6 +99,23 @@ def make_costs_table (community, comp, projects, base_cost, directory):
 def make_consumption_table (community, comp, projects, base_con, 
                             directory, savings_attribute):
     """
+    make a table
+    
+    inputs:
+        community: <string>
+        comp: componet name <string>
+        projects: dictioany of projects
+        base_con: dataframe with base cost for all years needed as index
+                    Base Consumption
+            2011    1200
+            ...
+            2015    1400
+        directory: directory where web outputs are beign saved
+        savings_attribute: string representing the savings attribute/ function 
+            in the current component
+    
+    outputs:    
+        returns plotting_table, a table that can be used to make a google chart
     """
     cons_table = DataFrame(base_con)
     cons_table['year'] = cons_table.index
@@ -107,7 +155,19 @@ def make_consumption_table (community, comp, projects, base_con,
     return plotting_table
 
 def correct_dates (start, s1, end, e1):
-    """ Function doc """
+    """ 
+        takes start and end years from the modeled projcet and other prjects 
+    and finds the start and end year to use
+    
+    inputs:
+        start: modeled start year <int>
+        s1: pojects start year <int>
+        end: modeled end year <int>
+        e1: pojects end year <int>
+        
+    outputs: 
+        returns start_year, end_year
+    """
     if np.isnan(start) and  np.isnan(s1) and  np.isnan(end) and np.isnan(e1):
         raise StandardError, "Bad start and end years"
     if not np.isnan(s1) and np.isnan(start):
@@ -126,7 +186,14 @@ def correct_dates (start, s1, end, e1):
     return start_year, end_year
 
 def create_electric_system_summary (community_results):
+    """
+    creates a summary of the corrent electrical systems
     
+    inputs:
+        community_results the results for a given community
+        
+    returns a list of items to use with the html template
+    """
     fc = community_results['forecast']
     hydro = community_results['Hydropower']
     solar = community_results['Solar Power']
@@ -164,35 +231,3 @@ def create_electric_system_summary (community_results):
          'value': '{:,.0f}'.format(h_gen).replace('nan','0')},
     ]
     return current
-                                    
-def create_project_details_list (project):
-    """
-    makes a projects details section for the html
-    """
-    try:
-        wind_class = int(float(project.comp_specs['resource data']\
-                                            ['Assumed Wind Class']))
-    except ValueError:
-        wind_class = 0
-    return [
-        {'words':'Captial Cost ($)', 
-            'value': '${:,.0f}'.format(project.get_NPV_costs())},
-        {'words':'Lifetime Savings ($)', 
-            'value': '${:,.0f}'.format(project.get_NPV_benefits())},
-        {'words':'Net Lifetime Savings ($)', 
-            'value': '${:,.0f}'.format(project.get_NPV_net_benefit())},
-        {'words':'Benefit Cost Ratio', 
-            'value': '{:,.3f}'.format(project.get_BC_ratio())},
-        {'words':'Proposed Nameplate Capacity(kW)', 
-            'value': '{:,.0f}'.format(project.load_offset_proposed)},
-        {'words':'Expected Yearly Generation (kWh/year)', 
-         'value': 
-                '{:,.0f}'.format(project.load_offset_proposed *\
-                                 constants.hours_per_year)},
-
-        {'words':'Estimated Wind Class', 'value': wind_class},
-        {'words':'Estimated Capacity Factor', 
-            'value': 
-                project.comp_specs['resource data']['assumed capacity factor']},
-        {'words':'Estimated Wind Penetration Level (%)', 'value': 'TBD'},
-            ]

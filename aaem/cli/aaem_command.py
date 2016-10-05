@@ -9,6 +9,7 @@ from aaem.cli.help_command import HelpCommand
 from aaem.cli.list_command import ListCommand
 from aaem.cli.compare_command import CompareCommand
 from aaem.cli.refresh_command import RefreshCommand
+from aaem.cli.html_command import HtmlCommand
 
 from datetime import datetime
 
@@ -25,6 +26,7 @@ class AaemCommand(pycommand.CommandBase):
         '  list         List communites in a model run\n'
         '  compare      compare the results of 2 model runs\n'
         '  refresh      refresh the data in the model\n'
+        '  summaries         create web summaries\n'
     )
 
     commands = {
@@ -35,6 +37,7 @@ class AaemCommand(pycommand.CommandBase):
         'list': ListCommand,
         'compare': CompareCommand,
         'refresh': RefreshCommand,
+        'summaries': HtmlCommand,
         }
         
     optionList = (
