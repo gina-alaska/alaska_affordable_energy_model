@@ -3,7 +3,7 @@
 
 import aaem.web as web
 
-ws = web.WebSummary('model/m0.20.0_d0.20.0/', './web_2', 'web')
+ws = web.WebSummary('model/m0.20.0_d0.20.0/', './web', 'web')
 
 #~ ws.gennerate_community_summary( 'Adak' )
 

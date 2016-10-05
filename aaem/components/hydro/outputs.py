@@ -278,6 +278,6 @@ def create_project_details_list (project):
         {'words':'Total Capital Cost', 
             'value': '${:,.0f}'.format(cost)},
         {'words':'Estimated Hydro Penetration Level (%)', 
-            'value': '%{:,.2f}'.format(pen)},
+            'value': '{:,.2f}%'.format(pen)},
             ]
 

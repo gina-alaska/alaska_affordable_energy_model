@@ -16,12 +16,12 @@ class WebSummary(object):
         self.model_root = model_root
         model = driver.Driver(self.model_root)
         self.results = model.load_results(tag)
-        print self.results
+        #~ print self.results
         self.directory = directory
         try:
             os.makedirs(os.path.join(self.directory,'csv'))
         except OSError as e:
-            print e
+            #~ print e
             pass
         #~ print "fine"
         self.env = Environment(loader=PackageLoader('aaem','templates/'))
@@ -36,7 +36,7 @@ class WebSummary(object):
                 if self.results[com][comp].get_BC_ratio() >= cutoff:
                     l.append(comp)
             except AttributeError as e:
-                print e
+                #~ print e
                 pass
         
         return l
@@ -44,7 +44,7 @@ class WebSummary(object):
     def generate_web_summaries (self, com):
         """
         """
-        print com
+        #~ print com
         #~ comps = self.get_viable_components(com)
         self.gennerate_community_summary(com)
         for comp in comp_lib:
@@ -52,7 +52,7 @@ class WebSummary(object):
             try:
                 self.get_web_summary(comp_lib[comp])(self, com)
             except (AttributeError, RuntimeError) as e:
-                print comp, e
+                #~ print comp, e
                 template = self.env.get_template('no_results.html')
                 #~ if comp in ['Solar Power','Wind Power','Heat Recovery'] :
                 pth = os.path.join(self.directory, com + '_' + comp.replace(' ','_').replace('(','').replace(')','').lower() +'.html')
@@ -84,10 +84,10 @@ class WebSummary(object):
         try:
             return self.imported_summaries[component].generate_web_summary
         except AttributeError as e:
-            print e
+            #~ print e
             self.imported_summaries = {}
         except KeyError as e:
-            print e
+            #~ print e
             pass
             
         self.imported_summaries[component] = \
@@ -98,8 +98,8 @@ class WebSummary(object):
     def generate_all (self):
         """ Function doc """
         keys = sorted([k for k in self.results.keys() if k.find('+') == -1])
-        for com in ["Stebbins","Adak","Brevig_Mission"]:#keys:
-            print com
+        for com in keys:#["Stebbins","Adak","Brevig_Mission"]:
+            #~ print com
             self.generate_web_summaries(com)
             
             

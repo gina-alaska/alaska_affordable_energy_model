@@ -157,7 +157,7 @@ def generate_web_summary (web_object, community):
     table2 = wl.make_consumption_table(community, COMPONENT_NAME, 
                                     projects, base_con,
                                     web_object.directory,
-                                    'generation_fuel_used')
+                                    'get_fuel_total_saved()')
     
     
     
