@@ -187,7 +187,7 @@ class ASHPNonResidential (ashp_base.ASHPBase):
             "Non-residential ASHP: Total Cost Savings ($/year)": 
                                                 self.get_total_savings_costs(),
             "Non-residential ASHP: Net Benefit ($/year)": 
-                                                self.get_net_beneft(),
+                                                self.get_net_benefit(),
                        }, years)
 
         order = ["Community", 

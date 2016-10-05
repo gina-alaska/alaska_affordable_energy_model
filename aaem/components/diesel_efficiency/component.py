@@ -304,7 +304,7 @@ class DieselEfficiency(AnnualSavings):
                 "Diesel Efficiency: Total Cost Savings ($/year)":
                                             self.get_total_savings_costs(),
                 "Diesel Efficiency: Net Benefit ($/year)":
-                                                self.get_net_beneft(),
+                                                self.get_net_benefit(),
                        }, years)
 
         df["Community"] = self.cd['name']
