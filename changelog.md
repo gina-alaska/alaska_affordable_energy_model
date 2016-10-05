@@ -1,5 +1,18 @@
 #Change Log
 
+## [0.20.1]
+### added
+- name key to wind projects
+- cli summaries command to generate web summaries
+- code for generating web summaries, aaem/web.py, aaem/web_lib.py, and new function on components outputs.py
+
+### changed
+- value added as hydro projcet name now includes stream
+
+### fixed
+- typo in get_benefit function name
+
+
 ## [0.20.0]
 ### added
 - Hydropower: diagnostic messages in preprocess projects function 
