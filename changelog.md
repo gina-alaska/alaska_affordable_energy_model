@@ -1,5 +1,13 @@
 #Change Log
 
+## [0.20.3]
+### added
+- internal rate of return to components, included a column in component summaries
+- diesel price adder, as a possible 'scaler'
+
+### changed
+- source for wind capacity in preprocessor, it's consitently wind_existing_systems.csv now
+
 ## [0.20.2]
 ### fixed
 - pce preprocessing, replaces missing values with zeros
