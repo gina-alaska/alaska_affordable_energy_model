@@ -14,7 +14,7 @@ class DieselProjections (object):
     This class Projects diesel fuel prices
     """
 
-    def __init__ (self, data_dir, diesel_price_scaler = 1.0):
+    def __init__ (self, data_dir, diesel_price_scaler = 1.0, adder = 0):
         """
         create the projected values
         Pre:
@@ -33,7 +33,8 @@ class DieselProjections (object):
         # 3 is the first column that has a year as the name/index
         self.start_year = int(df.index[0])
         #~ try
-        self.projected_prices = np.array(df.T.values[0]) * diesel_price_scaler
+        #~ print diesel_price_scaler, adder
+        self.projected_prices = np.array(df.T.values[0]) * diesel_price_scaler + adder
         #~ print self.projected_prices
         #~ except KeyError:
             #~ self.projected_prices = np.array(df.mean()[3:].values,
