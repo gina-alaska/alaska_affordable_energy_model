@@ -45,7 +45,7 @@ def component_summary (coms, res_dir):
                       www.proposed_HF_consumption) * constants.mmbtu_to_gal_HF
             out.append([c,
                 www.get_NPV_benefits(),www.get_NPV_costs(),
-                www.get_NPV_net_benefit(),www.get_BC_ratio(),
+                www.get_NPV_net_benefit(),www.irr,www.get_BC_ratio(),
                 oil_p, elec_p ,
                 #~ www.num_buildings , www.refit_sqft_total,
                 www.break_even_cost,
@@ -65,6 +65,7 @@ def component_summary (coms, res_dir):
             'Water/Wastewater Efficiency NPV Benefit',
             'Water/Wastewater Efficiency NPV Cost',
             'Water/Wastewater Efficiency NPV Net Benefit',
+            'Water/Wastewater Internal Rate of Return',
             'Water/Wastewater Efficiency B/C Ratio',
             'Heating Oil Price - year 1',
             '$ per kWh - year 1',

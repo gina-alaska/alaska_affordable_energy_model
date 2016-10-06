@@ -68,6 +68,7 @@ def component_summary (coms, res_dir):
                  solar.get_NPV_benefits(),
                  solar.get_NPV_costs(),
                  solar.get_NPV_net_benefit(),
+                 solar.irr,
                  solar.get_BC_ratio(),
                  solar.reason
                 ]
@@ -98,6 +99,8 @@ def component_summary (coms, res_dir):
             'Solar NPV benefits [$]',
             'Solar NPV Costs [$]',
             'Solar NPV Net benefit [$]',
+            
+            'Solar Internal Rate of Return',
             'Solar Benefit Cost Ratio',
             'notes']
     

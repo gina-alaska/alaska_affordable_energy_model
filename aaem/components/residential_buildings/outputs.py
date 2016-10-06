@@ -37,7 +37,7 @@ def component_summary (coms, res_dir):
             res = coms[c][COMPONENT_NAME]
             out.append([c,
                 res.get_NPV_benefits(),res.get_NPV_costs(),
-                res.get_NPV_net_benefit(),res.get_BC_ratio(),
+                res.get_NPV_net_benefit(),res.irr,res.get_BC_ratio(),
                 res.hoil_price[0], res.init_HH, res.opportunity_HH,
                 res.break_even_cost, res.levelized_cost_of_energy,
                 res.baseline_fuel_Hoil_consumption[0]/constants.mmbtu_to_gal_HF,
@@ -57,6 +57,8 @@ def component_summary (coms, res_dir):
            'Residential Efficiency NPV Benefit',
            'Residential Efficiency NPV Cost', 
            'Residential Efficiency NPV Net Benefit',
+           
+           'Residential Internal Rate of Return',
            'Residential Efficiency B/C Ratio',
            'Heating Oil Price - year 1',
            'Occupied Houses', 

@@ -145,6 +145,7 @@ def component_summary (coms, res_dir):
                 it.get_NPV_benefits(),
                 it.get_NPV_costs(),
                 it.get_NPV_net_benefit(),
+                it.irr,
                 it.get_BC_ratio(),
                 it.reason
             ]
@@ -184,6 +185,7 @@ def component_summary (coms, res_dir):
             'Transmission NPV benefits [$]',
             'Transmission NPV Costs [$]',
             'Transmission NPV Net benefit [$]',
+            'Transmission Internal Rate of Return',
             'Transmission Benefit Cost Ratio',
             'notes'
             ]

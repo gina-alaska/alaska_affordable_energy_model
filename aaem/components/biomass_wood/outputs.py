@@ -60,6 +60,7 @@ def component_summary (coms, res_dir):
                  biomass.get_NPV_benefits(),
                  biomass.get_NPV_costs(),
                  biomass.get_NPV_net_benefit(),
+                 biomass.irr,
                  biomass.get_BC_ratio(),
                  biomass.reason
                 ]
@@ -83,6 +84,7 @@ def component_summary (coms, res_dir):
             'Bioimass Cordwood NPV benefits [$]',
             'Biomass Cordwood NPV Costs [$]',
             'Biomass Cordwood NPV Net benefit [$]',
+            'Biomass Cordwood Internal Rate of Return',
             'Biomass Cordwood Benefit Cost Ratio',
             'notes'
                 ]
