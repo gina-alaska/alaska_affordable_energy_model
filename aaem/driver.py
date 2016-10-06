@@ -227,6 +227,8 @@ class Driver (object):
             CompClass = self.get_component(self.comp_lib[comp])
             component = CompClass (cd, fc, diag, prereq)
             component.run(scalers)
+            ## faster to add this here than in each run func
+            component.calc_internal_rate_of_return()
             
             comps_used[comp] = component
         return comps_used

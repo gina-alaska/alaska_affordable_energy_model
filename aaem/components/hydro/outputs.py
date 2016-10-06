@@ -95,6 +95,7 @@ def component_summary (coms, res_dir):
                 hydro.get_NPV_benefits(),
                 hydro.get_NPV_costs(),
                 hydro.get_NPV_net_benefit(),
+                hydro.irr,
                 hydro.get_BC_ratio(),
                 hydro.reason
             ]
@@ -126,6 +127,7 @@ def component_summary (coms, res_dir):
             'Hydro NPV benefits [$]',
             'Hydro NPV Costs [$]',
             'Hydro NPV Net benefit [$]',
+            'Hydro Internal Rate of Return',
             'Hydro Benefit Cost Ratio',
             'notes'
             ]

@@ -100,6 +100,7 @@ def component_summary (coms, res_dir):
                 wind.get_NPV_benefits(),
                 wind.get_NPV_costs(),
                 wind.get_NPV_net_benefit(),
+                wind.irr,
                 wind.get_BC_ratio(),
                 wind.reason
             ]
@@ -130,6 +131,7 @@ def component_summary (coms, res_dir):
             'Wind NPV benefits [$]',
             'Wind NPV Costs [$]',
             'Wind NPV Net benefit [$]',
+            'Wind Internal Rate of Return',
             'Wind Benefit Cost Ratio',
             'notes'
             ]

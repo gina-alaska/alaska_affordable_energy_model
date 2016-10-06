@@ -39,7 +39,7 @@ def component_summary (coms, res_dir):
                       com.proposed_HF_consumption ) * constants.mmbtu_to_gal_HF
             out.append([c,
                 com.get_NPV_benefits(),com.get_NPV_costs(),
-                com.get_NPV_net_benefit(),com.get_BC_ratio(),
+                com.get_NPV_net_benefit(),com.irr,com.get_BC_ratio(),
                 com.hoil_price[0], com.elec_price[0], 
                 com.num_buildings , com.total_sqft_to_retrofit,
                 com.break_even_cost,
@@ -58,6 +58,8 @@ def component_summary (coms, res_dir):
             'Nonresidential Efficiency NPV Benefit',
             'Nonresidential Efficiency NPV Cost',
             'Nonresidential Efficiency NPV Net Benefit',
+            
+            'Nonresidential Internal Rate of Return',
             'Nonresidential Efficiency B/C Ratio',
             'Heating Oil Price - year 1',
             '$ per kWh - year 1',

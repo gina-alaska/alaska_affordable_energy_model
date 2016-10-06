@@ -95,6 +95,7 @@ def component_summary (coms, res_dir):
                  comp.get_NPV_benefits(),
                  comp.get_NPV_costs(),
                  comp.get_NPV_net_benefit(),
+                 comp.irr,
                  comp.get_BC_ratio(),
                  comp.reason
                 ]
@@ -118,6 +119,7 @@ def component_summary (coms, res_dir):
             'Diesel Efficiency NPV benefits [$]',
             'Diesel Efficiency NPV Costs [$]',
             'Diesel Efficiency NPV Net benefit [$]',
+            'Diesel Efficiency Internal Rate of Return',
             'Diesel Efficiency Benefit Cost Ratio',
             'notes'
             ]

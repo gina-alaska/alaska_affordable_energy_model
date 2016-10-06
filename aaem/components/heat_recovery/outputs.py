@@ -55,6 +55,7 @@ def component_summary (coms, res_dir):
                  comp.get_NPV_benefits(),
                  comp.get_NPV_costs(),
                  comp.get_NPV_net_benefit(),
+                 comp.irr,
                  comp.get_BC_ratio(),
                  comp.reason
                 ]
@@ -75,6 +76,7 @@ def component_summary (coms, res_dir):
             'Heat Recovery NPV benefits [$]',
             'Heat Recovery NPV Costs [$]',
             'Heat Recovery NPV Net benefit [$]',
+            'Heat Recovery Internal Rate of Return',
             'Heat Recovery Benefit Cost Ratio',
             'notes'
             ]

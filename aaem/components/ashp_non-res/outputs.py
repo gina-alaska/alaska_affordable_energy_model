@@ -75,6 +75,7 @@ def component_summary (coms, res_dir):
                  ashp.get_NPV_benefits(),
                  ashp.get_NPV_costs(),
                  ashp.get_NPV_net_benefit(),
+                 ashp.irr,
                  ashp.get_BC_ratio(),
                  intertie,
                  ashp.reason
@@ -101,6 +102,7 @@ def component_summary (coms, res_dir):
             'ASHP Non-Residential NPV benefits [$]',
             'ASHP Non-Residential NPV Costs [$]',
             'ASHP Non-Residential NPV Net benefit [$]',
+            'ASHP Non-Residential Internal Rate of Return',
             'ASHP Non-Residential Benefit Cost Ratio',
             'Intertie',
             'notes'

@@ -160,7 +160,18 @@ class AnnualSavings (object):
             self.levelized_cost_of_energy = \
                 self.calc_cost_of_energy(energy_produced, maintenance_costs)
         
-    
+    def calc_internal_rate_of_return (self):
+        """
+        calculate the interal rate of return
+        """
+        self.irr = 0
+        try:
+            l = [-self.capital_costs] +\
+                self.annual_total_savings[:self.actual_project_life].tolist()
+            self.irr = np.irr(l)
+        except (AttributeError, ValueError, np.linalg.linalg.LinAlgError):
+            pass
+            
     def set_project_life_details (self, start_year,project_life,fc_period = 25):
         """
         set the details for the project life time(
