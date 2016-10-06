@@ -1562,7 +1562,7 @@ class Preprocessor (object):
         #~ print data
         if len(data) == 0:
             hydro = 0
-            wind = 0
+            #~ wind = 0
         else:
             if len(data[data["Resource Type"] == 'Hydro']\
                     ['Average Annual Generation (kWh)']) != 0:
@@ -1571,12 +1571,20 @@ class Preprocessor (object):
             else:
                 hydro = 0
         
-            if len(data[data["Resource Type"] == 'Wind']\
-                    ['Average Annual Generation (kWh)']) != 0:
-                wind = float(data[data["Resource Type"] == 'Wind']\
-                    ['Average Annual Generation (kWh)'].sum())
-            else:
-                wind = 0
+            #~ if len(data[data["Resource Type"] == 'Wind']\
+                    #~ ['Average Annual Generation (kWh)']) != 0:
+                #~ wind = float(data[data["Resource Type"] == 'Wind']\
+                    #~ ['Average Annual Generation (kWh)'].sum())
+            #~ else:
+                #~ wind = 0
+           
+        in_file = os.path.join(self.data_dir, "wind_existing_systems.csv")
+        wind = read_csv(in_file, index_col=0)
+        wind = self.get_communities_data(wind)
+        try:
+            wind = int(wind['Rated Power (kW)'])
+        except TypeError:
+            wind = 0    
         out_file = os.path.join(self.out_dir, "renewable_generation_capacities.csv")
         fd = open(out_file,'w')
         fd.write(self.renewable_generation_capacities_header())
