@@ -1,5 +1,10 @@
 #Change Log
 
+## [0.20.2]
+### fixed
+- pce preprocessing, replaces missing values with zeros
+- community_data: corrects name of intertie file.
+
 ## [0.20.1]
 ### added
 - name key to wind projects

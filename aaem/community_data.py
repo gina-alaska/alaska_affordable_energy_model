@@ -46,7 +46,7 @@ class CommunityData (object):
                     cpi.csv,
                     diesel_fuel_prices.csv,
                     heating_degree_days.csv,
-                    interties.csv,
+                    current_interties.csv,
                     population_projections.csv,
                     prices.csv,
                     region.csv,
@@ -172,6 +172,7 @@ class CommunityData (object):
         #~ except AttributeError:
            #~ parent = None
         #~ print  
+        #~ print self.intertie
         if not self.intertie is None:
             #~ print "INTERTIED"
             name = self.parent
@@ -517,8 +518,11 @@ class CommunityData (object):
         try:
             # special loading case
             try:
-                intertie = read_csv(os.path.join(self.data_dir,"interties.csv"),
-                            comment = '#', index_col=0,names =['key','value'])
+                intertie = read_csv(os.path.join(self.data_dir,
+                                                 "current_interties.csv"),
+                                    comment = '#', 
+                                    index_col=0,
+                                    names =['key','value'])
                 self.parent = intertie.ix['parent'].values[0]
                 #~ print self.parent
                 intertie = intertie.T
@@ -527,8 +531,9 @@ class CommunityData (object):
                 com_list = intertie.T.values[0].tolist()[1:]
                 tied = intertie.ix['Plant Intertied'].values[0]
             except IndexError:
-                intertie = read_csv(os.path.join(self.data_dir,"interties.csv"),
-                            comment = '#', index_col=0).ix[0]
+                intertie = read_csv(os.path.join(self.data_dir,
+                                                 "current_interties.csv"),
+                                    comment = '#', index_col=0).ix[0]
                 self.parent = self.get_item('community','name')
                 #~ print intertie.index
                 tied = intertie.ix['Plant Intertied']
@@ -551,6 +556,7 @@ class CommunityData (object):
         except IOError:
             intertie = None
         self.intertie = intertie
+        #~ print 'self.intertie ', self.intertie 
         
         self.copies = self.load_pp_csv("copies.csv")
         

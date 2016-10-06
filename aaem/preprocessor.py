@@ -1142,6 +1142,9 @@ class Preprocessor (object):
             temp = data[data["year"] == year].sum()
             ## get year as int
             temp["year"] = int(year)
+            
+            temp = temp.fillna(0)
+            
             ## get gross generation
             #~ print temp[['diesel_kwh_generated',
                                         #~ "powerhouse_consumption_kwh",
@@ -1177,6 +1180,7 @@ class Preprocessor (object):
             if np.isreal(temp["kwh_purchased"]) and p_key is not None:
                 val = temp['kwh_purchased']
                 if p_key == "diesel":
+                    #~ print temp['generation diesel'] + val
                     temp['generation diesel'] = temp['generation diesel'] + val
                 else:
                     temp['generation ' + p_key] = val
@@ -1206,7 +1210,14 @@ class Preprocessor (object):
             ## other values
             temp['fuel used'] = temp['fuel_used_gal']
             temp['line loss'] = 1.0 - temp['consumption']/temp['net generation']
-            temp['efficiency'] = temp['generation diesel'] / temp['fuel_used_gal']
+            
+            try:
+                temp['efficiency'] = temp['generation diesel'] / \
+                                                        temp['fuel_used_gal']
+            except ZeroDivisionError:
+                temp['efficiency'] = np.nan
+            if np.isinf(temp['efficiency']):
+                temp['efficiency'] = np.nan
             
             sums.append(temp)
         ## pull out diesel & hydro
