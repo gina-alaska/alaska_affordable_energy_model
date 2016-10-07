@@ -748,7 +748,7 @@ class Preprocessor (object):
                                          "commercial_kwh_sold",
                                          "community_kwh_sold",
                                          "government_kwh_sold",
-                                         "unbilled_kwh"]].mean().sum())
+                                         "unbilled_kwh"]].sum().mean())
         if np.isnan(elec_fuel_cost):
             elec_fuel_cost = 0.0
             self.diagnostics.add_note("Electricity Prices PCE",
@@ -757,6 +757,7 @@ class Preprocessor (object):
         res_nonPCE_price = data[data["year"] == \
                                 last_year]["residential_rate"].mean()
         elec_nonFuel_cost = res_nonPCE_price - elec_fuel_cost
+        #~ print elec_nonFuel_cost, res_nonPCE_price, elec_fuel_cost
 
         self.diagnostics.add_note("Electricity Prices PCE",
                                 "calculated res non-PCE elec cost: " + \
