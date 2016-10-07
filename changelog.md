@@ -1,5 +1,10 @@
 #Change Log
 
+## [0.20.4]
+### changed
+- preprocessor: pce electric fuel cost calculation changed
+- residential eff: 20yr default lifetime
+
 ## [0.20.3]
 ### added
 - internal rate of return to components, included a column in component summaries
