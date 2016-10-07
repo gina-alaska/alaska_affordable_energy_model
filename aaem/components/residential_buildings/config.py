@@ -15,7 +15,7 @@ yaml = {'enabled': False,
         'data': 'IMPORT'}
         
 yaml_defaults = {'enabled': True,
-        'lifetime': 15,
+        'lifetime': 20,
         'start year': 2017,
         }
         
