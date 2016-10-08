@@ -624,11 +624,13 @@ class Preprocessor (object):
                 raise KeyError, "S. Naknek"
             self.electricity_process_pce()
             self.electricity_prices_pce()
+            self.elec_data_source = "PCE"
         except KeyError:
             try:
                 self.combined_com = False
                 self.electricity_process_eia()
                 self.electricity_prices_eia()
+                self.elec_data_source = "EIA"
                 # Valdez work around.
                 if self.com_id == "Valdez":
                     val = os.path.join(self.data_dir,
@@ -743,12 +745,26 @@ class Preprocessor (object):
             last_year -= 1
 
 
-        elec_fuel_cost = (data[data["year"] == last_year]['fuel_cost'].mean()\
-                     / data[data["year"] == last_year][["residential_kwh_sold",
+        #~ print data[data["year"] == last_year][["residential_kwh_sold",
+                                         #~ "commercial_kwh_sold",
+                                         #~ "community_kwh_sold",
+                                         #~ "government_kwh_sold",
+                                         #~ "unbilled_kwh"]].sum(axis =1 )
+        #~ print data[data["year"] == last_year]['fuel_cost']
+        elec_fuel_cost = (data[data["year"] == last_year]['fuel_cost']/data[data["year"] == last_year][["residential_kwh_sold",
                                          "commercial_kwh_sold",
                                          "community_kwh_sold",
                                          "government_kwh_sold",
-                                         "unbilled_kwh"]].sum().mean())
+                                         "unbilled_kwh"]].sum(axis = 1) ).mean()
+                                         
+        
+
+        #~ elec_fuel_cost = (data[data["year"] == last_year]['fuel_cost'].mean()\
+                     #~ / data[data["year"] == last_year][["residential_kwh_sold",
+                                         #~ "commercial_kwh_sold",
+                                         #~ "community_kwh_sold",
+                                         #~ "government_kwh_sold",
+                                         #~ "unbilled_kwh"]].mean(axis =1).sum())
         if np.isnan(elec_fuel_cost):
             elec_fuel_cost = 0.0
             self.diagnostics.add_note("Electricity Prices PCE",
@@ -1987,6 +2003,56 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
     electricity['line loss'] = 1.0 - \
                         electricity['consumption']/electricity['net generation']
 
+
+    if pp_data[0].elec_data_source == "PCE":
+        ### prices need to be updated for pce interies
+        pce = read_csv(os.path.join(data_dir,'power-cost-equalization-pce-data.csv'), index_col=1)
+        #~ print pce
+        price_ids = com_ids
+        #~ print com_ids
+        if 'Upper Kalskag' in com_ids:
+            price_ids = ['Kalskag','Lower Kalskag']
+        elif "Craig" in com_ids:
+            price_ids = com_ids + ["Craig, Klawock"] 
+          
+        #~ elif self.com_id == "Klukwan":
+            #~ price_ids = ["Klukwan","Chilkat Valley"] 
+        for c in com_ids:
+            try:
+                c_to_add = [s for s in pce.index if s.find(c) != -1][0]
+                price_ids = price_ids + [c_to_add]
+            except IndexError:
+                pass
+            #~ price_ids  += [c+',' in s for s in pce.index]
+        price_ids = sorted(set(price_ids ))
+        
+        #~ print price_ids 
+        pdata = pce.ix[price_ids][["year","month","residential_rate",
+                         "pce_rate","effective_rate","residential_kwh_sold",
+                                             "commercial_kwh_sold",
+                                             "community_kwh_sold",
+                                             "government_kwh_sold",
+                                             "unbilled_kwh", "fuel_cost"]]
+        ly = pdata[pdata['year'] == pdata['year'].max()]
+                                             
+        fc = ly[['fuel_cost','month']].groupby('month').sum()
+        
+        sales = ly[["residential_kwh_sold",
+                                             "commercial_kwh_sold",
+                                             "community_kwh_sold",
+                                             "government_kwh_sold",
+                                             "unbilled_kwh",'month']].groupby('month').sum().sum(axis=1)
+        elec_fuel_cost = (fc['fuel_cost']/ sales).mean()
+        #~ p_file = os.path.join(out_dir,'prices.csv')
+    
+        res_nonPCE_price = ly["residential_rate"].mean()
+        elec_nonFuel_cost = res_nonPCE_price - elec_fuel_cost
+        #~ print elec_nonFuel_cost, res_nonPCE_price, elec_fuel_cost
+        if np.isnan(elec_fuel_cost):
+            elec_fuel_cost = 0.0
+        
+        ### end prices update
+
     total_HH = 0 
     for idx in range(len(pp_data)):
         com = pp_data[idx].com_id
@@ -2060,6 +2126,16 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
     fd.write("key, value\n")
     fd.write("Buildings," + str(total_building_count ) +"\n")
     fd.close()
+    
+    if pp.elec_data_source == "PCE":
+        out_file = os.path.join(it_dir, "prices.csv")
+        fd = open(out_file,'w')
+        fd.write(pp.electricity_prices_header("PCE"))
+        fd.write("key,value \n")
+        fd.write("res non-PCE elec cost,"+ str(res_nonPCE_price) + "\n")
+        fd.write("elec non-fuel cost," + str(elec_nonFuel_cost) + "\n")
+        fd.close()
+    
     
     p2 = []
     for project in projects:

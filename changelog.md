@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.20.5]
+### changed
+- preprocessor: pce electric fuel cost calculation changed, added intertie correction
+
 ## [0.20.4]
 ### changed
 - preprocessor: pce electric fuel cost calculation changed
