@@ -68,7 +68,7 @@
             // initilize with plot
             var  {{ chart.name }}_plot = drawPlot_{{ chart.name }}()
             
-            document.getElementById('{{ chart.name }}_png').outerHTML = '<button onclick="location.href=\'' + {{ chart.name }}_plot.getImageURI() + '\' ">Printable Plot</button>'
+            document.getElementById('{{ chart.name }}_png').outerHTML = '<button class="btn btn-default" onclick="location.href=\'' + {{ chart.name }}_plot.getImageURI() + '\' ">Printable Plot</button>'
 
         {% endfor %}
     }

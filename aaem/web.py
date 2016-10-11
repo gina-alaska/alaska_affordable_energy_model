@@ -2,12 +2,13 @@ from jinja2 import Environment, PackageLoader
 import aaem.driver as driver
 from pandas import concat, DataFrame
 import os
+import shutil
 
 from importlib import import_module
 from aaem.components import comp_lib, comp_order
 
 #WHAT TO DO IF ALL PLOT DATA IS NANS?
-
+#~ import aaem
 class WebSummary(object):
     """ Class doc """
     
@@ -47,6 +48,9 @@ class WebSummary(object):
         #~ print com
         #~ comps = self.get_viable_components(com)
         self.gennerate_community_summary(com)
+        #~ self.get_web_summary(comp_lib['Biomass for Heat (Cordwood)'])(self, com)
+        #~ return 
+        
         for comp in comp_lib:
             #~ print comp
             try:
@@ -74,9 +78,19 @@ class WebSummary(object):
                                     type = comp, 
                                     com = com ,
                                     reason = reason,
-                                    summary_pages = ['Summary'] + comp_order ))
+                                    sections = self.get_summary_pages(),
+                                    communities = self.get_all_coms()))
                 pass
 
+    def copy_etc (self):
+        import aaem
+        pth = os.path.dirname(aaem.__file__)
+        shutil.copytree(os.path.join(pth,'templates','css'),os.path.join(self.directory,'css'))
+        shutil.copytree(os.path.join(pth,'templates','js'),os.path.join(self.directory,'js'))
+        shutil.copytree(os.path.join(pth,'templates','fonts'),os.path.join(self.directory,'fonts'))
+        shutil.copy(os.path.join(pth,'templates','summary.css'),self.directory)
+        
+        
         
     def get_web_summary(self, component):
         """
@@ -95,12 +109,38 @@ class WebSummary(object):
         return self.imported_summaries[component].generate_web_summary
     
 
+    def get_all_coms (self):
+        """ Function doc """
+        return sorted([k for k in self.results.keys() if k.find('+') == -1])
+    
+    def get_summary_pages (self):
+        return [{'name':'Summary', 'pages':['summary']}, 
+                {'name':'Efficiency Projects', 'pages':["Residential Energy Efficiency",
+                                                        "Non-residential Energy Efficiency",
+                                                        "Water and Wastewater Efficiency"]
+                },
+                {'name':'Electricity Projects', 'pages':["Wind Power",
+                                                         'Solar Power',
+                                                          'Hydropower',
+                                                         'Transmission and Interties',
+                                                         'Diesel Efficiency']
+                },
+                {'name':'Heating Projects', 'pages':['Biomass for Heat (Cordwood)',
+                                                     'Biomass for Heat (Pellet)',
+                                                      'Residential ASHP',
+                                                      'Non-Residential ASHP',
+                                                      'Heat Recovery']
+                }
+               ]
+
     def generate_all (self):
         """ Function doc """
         keys = sorted([k for k in self.results.keys() if k.find('+') == -1])
+        self.copy_etc()
         for com in keys:#["Stebbins","Adak","Brevig_Mission"]:
             #~ print com
             self.generate_web_summaries(com)
+            #~ return
             
             
     def gennerate_community_summary(self, community):
@@ -137,7 +177,8 @@ class WebSummary(object):
         
         with open(pth, 'w') as html:
             html.write(template.render( info = comps , com = community,
-                                        summary_pages = ['Summary'] + comp_order))
+                                        sections = self.get_summary_pages(),
+                                        communities = self.get_all_coms()))
                                         
                                         
 

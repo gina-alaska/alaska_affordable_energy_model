@@ -3,6 +3,15 @@
 
 {% block title %}{{ com }} - Summary{% endblock %}
 
+
+{% block additional_css %}
+  <link href="summary.css" rel="stylesheet">
+{% endblock %}
+
+{% block secondary_nav %}
+    {% include 'summary_nav.html' %}
+{% endblock %}
+
 {% block JS %}
 <!--
     {% include 'plot.html' %}
@@ -10,7 +19,7 @@
 {% endblock %}
 
     
-{% block left %}
+{% block full %}
     <div class="stats">
         <H2>Cost Effective Projects </H2>
         

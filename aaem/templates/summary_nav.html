@@ -1,0 +1,59 @@
+<!-- community summary navigation -->
+<ul class="nav nav-tabs nav-justified">
+  <li role="presentation" class="disabled">
+    <a href="#">
+      <h1 class="page-title">
+        {{ com.replace('_', ' ') }}<span class="hideoverflow"><small> {{ type }}</small></span>
+      </h1>
+    </a>
+  </li>
+  {% for section in sections %}
+  <li role="presentation" class="dropdown">
+    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+      {{ section.name }} <span class="caret"></span>
+    </a>
+    <ul class="dropdown-menu">
+      {% for page in section.pages %}
+      <li>
+        <a href="{{ com }}_{{ page.lower().replace(' ', "_").replace(")", "").replace("(", "") }}.html">
+          {{ page }} 
+        </a></li>
+      {% endfor %}
+    </ul>
+  </li>
+  {% endfor %}
+<!--
+  <li role="presentation" class="dropdown">
+    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+      Summary <span class="caret"></span>
+    </a>
+    <ul class="dropdown-menu">
+      <li><a href="link.html">stuff </a></li>
+    </ul>
+  </li>
+  <li role="presentation" class="dropdown">
+    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+      Efficiency Projects <span class="caret"></span>
+    </a>
+    <ul class="dropdown-menu">
+      <li><a href="link.html">stuff </a></li>
+    </ul>
+  </li>
+  <li role="presentation" class="dropdown">
+    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+      Electricity Projects <span class="caret"></span>
+    </a>
+    <ul class="dropdown-menu">
+      <li><a href="link.html">stuff </a></li>
+    </ul>
+  </li>
+  <li role="presentation" class="dropdown">
+    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+      Heating Projects <span class="caret"></span>
+    </a>
+    <ul class="dropdown-menu">
+      <li><a href="link.html">stuff </a></li>
+    </ul>
+  </li>
+-->
+</ul>

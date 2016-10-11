@@ -213,7 +213,10 @@ def generate_web_summary (web_object, community):
                                     type = COMPONENT_NAME, 
                                     com = community ,
                                     charts = charts,
-                                    summary_pages = ['Summary'] + comp_order ))
+                                    summary_pages = ['Summary'] + comp_order ,
+                                    sections = web_object.get_summary_pages(),
+                                    communities = web_object.get_all_coms()
+                                    ))
                                     
                                     
 def create_project_details_list (project):

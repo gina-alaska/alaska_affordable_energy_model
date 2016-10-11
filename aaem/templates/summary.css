@@ -1,0 +1,67 @@
+/*
+body {
+  min-height: 2000px;
+  padding-top: 70px;
+}
+*/
+
+.navbar-summary {
+
+  margin-bottom: 0px;
+
+}
+
+
+.dropdown-menu {
+    max-height: 500px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+
+.stats{
+  font-size:12pt;
+  padding-left: 20px;
+}
+
+
+.hideoverflow
+{
+    overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+}
+
+.hidy:after {
+    font-family: "Glyphicons Halflings";
+    content: "\e114";
+}
+
+/* Icon when the collapsible content is hidden */
+.hidy.collapsed:after {
+    content: "\e080";
+}
+
+.description {
+    padding-top:20px;
+    text-indent: 50px;
+    padding-right:20%;
+    font-size: 15pt;
+}
+
+
+h3 {
+  padding-left: 10px;
+  font-size:16pt;
+}
+
+h1.page-title {
+  color:black;
+  font-size:15pt;
+  margin-top:0px;
+  padding-bottom:1.5pt;
+  margin-bottom:0px;
+  margin-left:1%;
+
+}
+

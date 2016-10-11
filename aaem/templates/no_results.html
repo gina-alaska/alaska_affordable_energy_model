@@ -3,11 +3,26 @@
 
 {% block title %}{{ com }} - {{ type }} summary{% endblock %}
 
-{% block left %}
+{% block additional_css %}
+  <link href="summary.css" rel="stylesheet">
+{% endblock %}
+
+
+{% block secondary_nav %}
+    {% include 'summary_nav.html' %}
+{% endblock %}
+
+{% block full %}
+<!--
     <div class="stats">
+-->
+<!--
         <H2> {{ type }} Summary</H2>
+-->
         <p> Component Not Viable</p>
         <p>Reason: {{ reason }}</p>
+<!--
     </div>
+-->
     
 {% endblock %}

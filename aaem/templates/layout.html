@@ -1,53 +1,49 @@
 <!DOCTYPE html>
 <html>
   <head>
-      <title>{% block title %}{% endblock %}</title>
-<!--
-      <script type="text/javascript" src="./com_list.js"></script>
--->
-      {% block JS %}{% endblock %}
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; 
+                        any other head content must come *after* these tags -->
+    <title>{% block title %}{% endblock %}</title>
     
-    <style type="text/css">
-      h1.titles {color: gray; margin-top:5px;margin-bottom:5px}
-      .titles{width: 100%; float:left}
-      .stats{font-size:10pt;}
-      .left {float:left;width: 20% ;}
-      .right {float:right;width: 80% ;}
-      .description{margin-top:10px; font-size:20pt;}
-
-    </style>
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    
+    
+    {% block additional_css %}{% endblock %}
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    {% block JS %}{% endblock %}
   </head>
   <body >
     <div class="content">
+     {% include 'navbar.html' %}
+     {% block secondary_nav %}{% endblock %}
 
-<!--
-      <div class='header'>
-        <H1>Alaska Affordable Energy Model {% block header %}{% endblock %}</H1>
-      </div>
--->
 
-      <div class='titles'>
-        <H1 class='titles'>{{ com.replace('_', ' ') }} </H1> 
-        <div class='comps'> 
-            {% for item in summary_pages %}<a href='{{com}}_{{item.lower().replace(' ', "_").replace(")", "").replace("(", "")}}.html'> {{item}}</a> | {% endfor %}
-                
-<!--
-            <a href='{{com}}.html'> Summary</a> | <a href='{{com}}_wind_summary.html'> wind power</a> | <a href='{{com}}_solar_summary.html'> solar power</a> | <a href='{{com}}_heat_recovery_summary.html'> heat recovery</a>
--->
-        </div>
-       
-<!--    
-        {% block heading %}
-          {% block page %}{% endblock %}
-        {% endblock %}
--->
-      </div>
-      <div class='left'>
+    <div class="row">
+      <div class="col-sm-3 infobar">
         {% block left %}{% endblock %}
       </div>
-      <div class='right'>
+      <div class="col-sm-9">
         {% block right %}{% endblock %}
       </div>
     </div>
+    <div class="row">
+        <div class="col-sm-9">
+        {% block full %}{% endblock %}
+        </div>
+    </div>
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/bootstrap.min.js"></script>
   </body>
 </html>
