@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.20.6]
+### changed
+- updated summary layout
+
 ## [0.20.5]
 ### changed
 - preprocessor: pce electric fuel cost calculation changed, added intertie correction
@@ -522,7 +526,7 @@
 - added columns to non-residential_builing_summary.csv for each building types electric(mmbtu) and heaitng(mmbtu) consumtion
 
 ### added
-- summary comparing the forecasted (trend line vs. modled) electrictiy consumption numbers forecast_component_consumption_comparison_summary.csv
+- summary comparing the forecasted (trend line vs. modeled) electrictiy consumption numbers forecast_component_consumption_comparison_summary.csv
 
 
 ## [0.9.1]
