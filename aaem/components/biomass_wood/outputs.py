@@ -116,7 +116,7 @@ def generate_web_summary (web_object, community):
     end_year = modeled.actual_end_year
     
     ## for make table functions
-    projects = {'Modled ' + COMPONENT_NAME:  modeled}
+    projects = {'Modeled ' + COMPONENT_NAME:  modeled}
     
     ## get forecast stuff (consumption, generation, etc)
     fc = modeled.forecast
@@ -154,7 +154,7 @@ def generate_web_summary (web_object, community):
                                     web_object.directory,
                                     'heat_diesel_displaced')
     
-    ## info for modled
+    ## info for modeled
     info = create_project_details_list (modeled)
         
          
@@ -165,10 +165,10 @@ def generate_web_summary (web_object, community):
     ## create list of charts
     charts = [
         {'name':'costs', 'data': str(table1).replace('nan','null'), 
-         'title': 'Estimated Heating Fuel costs per year',
+         'title': 'Estimated Heating Fuel Costs',
          'type': "'$'"},
         {'name':'consumption', 'data': str(table2).replace('nan','null'), 
-         'title':'Heating Fuel Consumed gallons per year',
+         'title':'Heating Fuel Consumed',
          'type': "'other'"}
             ]
         
@@ -216,7 +216,7 @@ def create_project_details_list (project):
         BC = project.get_BC_ratio()
     
     return [
-        {'words':'Captial Cost ($)', 
+        {'words':'Capital Cost ($)', 
             'value': costs},
         {'words':'Lifetime Savings ($)', 
             'value': benefits},

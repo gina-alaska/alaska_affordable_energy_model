@@ -166,8 +166,8 @@ def generate_web_summary (web_object, community):
                                          modeled.actual_end_year, e1)
     
     order = projects.keys()
-    projects['Modled ' + COMPONENT_NAME] = modeled
-    order = ['Modled ' + COMPONENT_NAME] + order
+    projects['Modeled ' + COMPONENT_NAME] = modeled
+    order = ['Modeled ' + COMPONENT_NAME] + order
     
         
     ## get forecast stuff (consumption, generation, etc)
@@ -206,7 +206,7 @@ def generate_web_summary (web_object, community):
                                     projects, base_con,
                                     web_object.directory,
                                     'electric_diesel_reduction')
-    ## info for modled
+    ## info for modeled
    
         
     
@@ -240,7 +240,7 @@ def generate_web_summary (web_object, community):
          'title': 'Estimated Electricity Generation Fuel Costs per Year',
          'type': "'$'"},
         {'name':'consumption', 'data': str(table2).replace('nan','null'), 
-         'title':'Diesel Consumed for Generation Electricity per Year',
+         'title':'Diesel Consumed for Electricity Generation ',
          'type': "'other'"}
             ]
         
@@ -269,7 +269,7 @@ def create_project_details_list (project):
     except ValueError:
         wind_class = 0
     return [
-        {'words':'Captial Cost ($)', 
+        {'words':'Capital Cost ($)', 
             'value': '${:,.0f}'.format(project.get_NPV_costs())},
         {'words':'Lifetime Savings ($)', 
             'value': '${:,.0f}'.format(project.get_NPV_benefits())},

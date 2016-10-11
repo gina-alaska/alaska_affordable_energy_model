@@ -214,7 +214,7 @@ def create_electric_system_summary (community_results):
     current = [
         {'words':'Average Community Load (kW)(' + str(year) +')',
          'value': '{:,.0f}'.format(total_load)},
-        {'words':'Average kWh/year' + str(year) +')' , 
+        {'words':'Average kWh/year(' + str(year) +')' , 
          'value': '{:,.0f}'.format(float(total_gen))},
         {'words':'Peak Load', 'value': 'Unknown'},
         {'words':'Existing nameplate wind capacity (kW)', 

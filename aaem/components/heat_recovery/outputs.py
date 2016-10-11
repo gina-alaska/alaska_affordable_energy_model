@@ -124,8 +124,8 @@ def generate_web_summary (web_object, community):
     
     order = projects.keys()
     if not np.isnan(modeled.get_net_benefit()).all():
-        projects['Modled ' + COMPONENT_NAME] = modeled
-        order = ['Modled ' + COMPONENT_NAME] + order
+        projects['Modeled ' + COMPONENT_NAME] = modeled
+        order = ['Modeled ' + COMPONENT_NAME] + order
 
     ## get forecast stuff (consumption, generation, etc)
     fc = modeled.forecast
@@ -160,12 +160,12 @@ def generate_web_summary (web_object, community):
                                     'proposed_heat_recovery')
     
     
-    ## info for modled
+    ## info for modeled
    
         
     ests = modeled.comp_specs['estimate data']
     current = [
-        {'words':'Waste Heat Recovery Opperational', 
+        {'words':'Waste Heat Recovery Operational', 
          'value': ests['Waste Heat Recovery Opperational']},
         {'words':'Add waste heat Avail', 'value': ests['Add waste heat Avail']},
         {'words':'Est. current annual heating fuel gallons displaced', 
@@ -198,10 +198,10 @@ def generate_web_summary (web_object, community):
     ## create list of charts
     charts = [
         {'name':'costs', 'data': str(table1).replace('nan','null'), 
-         'title': 'Estimated Heating Fuel costs per year',
+         'title': 'Estimated Heating Fuel Costs',
          'type': "'$'"},
         {'name':'consumption', 'data': str(table2).replace('nan','null'), 
-         'title':'Heating Fuel Consumed gallons per year',
+         'title':'Heating Fuel Consumed',
          'type': "'other'"}
             ]
         
@@ -244,7 +244,7 @@ def create_project_details_list (project):
         BC = project.get_BC_ratio()
     
     return [
-        {'words':'Captial Cost ($)', 
+        {'words':'Capital Cost ($)', 
             'value': costs},
         {'words':'Lifetime Savings ($)', 
             'value': benefits},

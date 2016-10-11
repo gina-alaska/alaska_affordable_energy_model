@@ -26,18 +26,22 @@
             dollar = {}
             if ({{ chart.type }} == '$') {
                 dollar=  {format: '$#,###'}
+            } else {
+                dollar=  {title: 'gallons'}
             }
             
-            var {{ chart.name }}_options = {'title': '{{ chart.title }}',
+            
+            var {{ chart.name }}_options = {'title': '{{ com.replace("_"," ") }} {{ chart.title }}',
                                             'width':1000,
                                             'height':600,
                                             chartArea:{left:100,top:50,width:'70%',height:'85%'},
-                                            hAxis: {format: '####'},
+                                            hAxis: {format: '####',
+                                                    title: 'year'},
                                             vAxis: dollar,
                                             };
             
                         
-            
+          
             // plot state plot or table
             var {{ chart.name }}_state = plot;
         

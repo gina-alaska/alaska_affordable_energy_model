@@ -196,7 +196,7 @@ def generate_web_summary (web_object, community):
                                     projects, base_con,
                                     web_object.directory,
                                     'generation_diesel_reduction')
-    ## info for modled
+    ## info for modeled
    
         
     
@@ -230,7 +230,7 @@ def generate_web_summary (web_object, community):
          'title': 'Estimated Electricity Generation Fuel Costs per Year',
          'type': "'$'"},
         {'name':'consumption', 'data': str(table2).replace('nan','null'), 
-         'title':'Diesel Consumed for Generation Electricity per Year',
+         'title':'Diesel Consumed for Electricity Generation ',
          'type': "'other'"}
             ]
         
@@ -262,7 +262,7 @@ def create_project_details_list (project):
                                                 'generation').iloc[-1:])
     pen *= 100
     return [
-        {'words':'Captial Cost ($)', 
+        {'words':'Capital Cost ($)', 
             'value': '${:,.0f}'.format(project.get_NPV_costs())},
         {'words':'Lifetime Savings ($)', 
             'value': '${:,.0f}'.format(project.get_NPV_benefits())},

@@ -102,7 +102,7 @@ def generate_web_summary (web_object, community):
     end_year = modeled.actual_end_year
     
     ## for make table functions
-    projects = {'Modled ' + COMPONENT_NAME:  modeled}
+    projects = {'Modeled ' + COMPONENT_NAME:  modeled}
     
     ## get forecast stuff (consumption, generation, etc)
     fc = modeled.forecast
@@ -149,7 +149,7 @@ def generate_web_summary (web_object, community):
     
     
     current = [{}]
-    ## info for modled
+    ## info for modeled
     info = create_project_details_list (modeled)
         
          
@@ -161,13 +161,13 @@ def generate_web_summary (web_object, community):
     ## create list of charts
     charts = [
         {'name':'costs', 'data': str(table1).replace('nan','null'), 
-         'title': 'Estimated Heating Fuel + Electricity Costs per Year',
+         'title': 'Estimated Heating Fuel + Electricity Costs',
          'type': "'$'"},
         {'name':'E_consumption', 'data': str(table2).replace('nan','null'), 
-         'title':'Electricity Consumed  per Year',
+         'title':'Electricity Consumed',
          'type': "'other'"},
         {'name':'H_consumption', 'data': str(table3).replace('nan','null'), 
-         'title':'Heating Oil Consumed  per Year',
+         'title':'Heating Oil Consumed',
          'type': "'other'"}
             ]
         
@@ -196,7 +196,7 @@ def create_project_details_list (project):
     """
    
     return [
-        {'words':'Captial Cost ($)', 
+        {'words':'Capital Cost ($)', 
             'value': '${:,.0f}'.format(project.get_NPV_costs())},
         {'words':'Lifetime Savings ($)', 
             'value': '${:,.0f}'.format(project.get_NPV_benefits())},

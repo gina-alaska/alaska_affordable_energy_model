@@ -55,7 +55,7 @@ def preprocess (ppo):
     fd.write("Installed Capacity," + str(existing) + '\n')
     fd.write("Wind Capacity," + str(wind_cap) + '\n')
     fd.write('Output per 10kW Solar PV,' + str(val) + '\n')
-    #~ fd.write("HR Opperational,True\n")
+    #~ fd.write("HR Operational,True\n")
     fd.close()
 
     # create data and uncomment this

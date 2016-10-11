@@ -6,6 +6,7 @@ import shutil
 
 from importlib import import_module
 from aaem.components import comp_lib, comp_order
+from aaem import __file__
 
 #WHAT TO DO IF ALL PLOT DATA IS NANS?
 #~ import aaem
@@ -83,8 +84,8 @@ class WebSummary(object):
                 pass
 
     def copy_etc (self):
-        import aaem
-        pth = os.path.dirname(aaem.__file__)
+        
+        pth = os.path.dirname(__file__)
         shutil.copytree(os.path.join(pth,'templates','css'),os.path.join(self.directory,'css'))
         shutil.copytree(os.path.join(pth,'templates','js'),os.path.join(self.directory,'js'))
         shutil.copytree(os.path.join(pth,'templates','fonts'),os.path.join(self.directory,'fonts'))
@@ -169,7 +170,7 @@ class WebSummary(object):
                 else:
                     comp = self.results[i][c]
                     ratio = comp.get_BC_ratio()
-                    name = i + ' Modled'
+                    name = i + ' Modeled'
                 comps.append({'com':name.decode('unicode_escape').encode('ascii','ignore'),'comp':c, 'r': '{:,.3f}'.format(ratio)})
             
         #~ print comps
