@@ -619,6 +619,7 @@ class Preprocessor (object):
         """
         """
         self.combined_com = False
+        
         try:
             if self.com_id == "South Naknek":
                 raise KeyError, "S. Naknek"
@@ -672,6 +673,7 @@ class Preprocessor (object):
                                                       "Valdez sales data added")
             except KeyError as e:
                 #~ print e
+                self.elec_data_source = ""
                 self.diagnostics.add_error("Electricity",
                         "Generation and Sales for " + str(self.com_id) +\
                         " data not in PCE or EIA")
@@ -1770,7 +1772,8 @@ def preprocess (data_dir, out_dir, com_id, dev = False):
                 #~ print pp 
         else:
             pp = [com_id] + [com_id + pro for pro in pp.projects]
-    except AttributeError:
+    except AttributeError as e:
+        #~ print e
         try:
             it = read_csv(os.path.join(data_dir, 'current_interties.csv'), 
                                                                 index_col = 0)
@@ -1783,6 +1786,7 @@ def preprocess (data_dir, out_dir, com_id, dev = False):
     diag.save_messages(os.path.join(out_dir,
                        str(com_id.replace(" ","_")) +\
                             "_preprocessor_diagnostics.csv"))
+    #~ print pp
     return pp
 
 
@@ -2187,5 +2191,6 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
             fd.write(yaml.dump(all_prj,default_flow_style=False))
         projects += [parent.replace(" ","_") + '_intertie+' +p for p in all_prj.keys()]
     
+    #~ print projects
     #~ print projects
     return pp_data, projects
