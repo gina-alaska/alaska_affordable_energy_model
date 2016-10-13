@@ -1766,12 +1766,13 @@ def preprocess (data_dir, out_dir, com_id, dev = False):
                 pp = preprocess_intertie(data_dir, out_dir, ids, diag)
 
                 pp = [com_id + '_intertie'] + ids + pp[1]
+                #~ print 1
             else:
-                pp = ids
-                #~ pp = [com_id + '_intertie'] + ids 
-                #~ print pp 
+                #~ print 2
+                pp = [com_id] + [com_id + pro for pro in pp.projects]
         else:
             pp = [com_id] + [com_id + pro for pro in pp.projects]
+            #~ print 2.5
     except AttributeError as e:
         #~ print e
         try:
@@ -1779,10 +1780,13 @@ def preprocess (data_dir, out_dir, com_id, dev = False):
                                                                 index_col = 0)
             if (it == com_id).any().any() == True:
                 pp = [com_id]
+                #~ print 3
             else:
                 pp = [com_id] + [com_id + pro for pro in pp.projects]
+                #~ print 4
         except AttributeError:
             pp = [com_id]
+            #~ print 5
     diag.save_messages(os.path.join(out_dir,
                        str(com_id.replace(" ","_")) +\
                             "_preprocessor_diagnostics.csv"))
