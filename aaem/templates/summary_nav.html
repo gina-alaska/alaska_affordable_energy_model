@@ -1,59 +1,33 @@
 <!-- community summary navigation -->
-<ul class="nav nav-tabs nav-justified">
-  <li role="presentation" class="disabled">
-    <a href="#">
-      <h1 class="page-title">
-        {{ com.replace('_', ' ') }}<span class="hideoverflow"><small> {{ type }}</small></span>
-      </h1>
-    </a>
-  </li>
-  {% for section in sections %}
-  <li role="presentation" class="dropdown">
-    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-      {{ section.name }} <span class="caret"></span>
-    </a>
-    <ul class="dropdown-menu">
-      {% for page in section.pages %}
-      <li>
+<nav class="navbar navbar-default navbar-summary">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-summaries" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#"> <span class="page-title">{{ com.replace('_', ' ') }}<span class="page-subtitle"> {{ type }}</span></span></a>
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="navbar-summaries">
+      <ul class="nav navbar-nav navbar-right">
+        
+        {% for section in sections %}
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{ section.name }} <span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            {% for page in section.pages %}<li>
         <a href="{{ com }}_{{ page.lower().replace(' ', "_").replace(")", "").replace("(", "") }}.html">
           {{ page }} 
-        </a></li>
-      {% endfor %}
-    </ul>
-  </li>
-  {% endfor %}
-<!--
-  <li role="presentation" class="dropdown">
-    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-      Summary <span class="caret"></span>
-    </a>
-    <ul class="dropdown-menu">
-      <li><a href="link.html">stuff </a></li>
-    </ul>
-  </li>
-  <li role="presentation" class="dropdown">
-    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-      Efficiency Projects <span class="caret"></span>
-    </a>
-    <ul class="dropdown-menu">
-      <li><a href="link.html">stuff </a></li>
-    </ul>
-  </li>
-  <li role="presentation" class="dropdown">
-    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-      Electricity Projects <span class="caret"></span>
-    </a>
-    <ul class="dropdown-menu">
-      <li><a href="link.html">stuff </a></li>
-    </ul>
-  </li>
-  <li role="presentation" class="dropdown">
-    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-      Heating Projects <span class="caret"></span>
-    </a>
-    <ul class="dropdown-menu">
-      <li><a href="link.html">stuff </a></li>
-    </ul>
-  </li>
--->
-</ul>
+        </a></li>{% endfor %}
+          </ul>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</nav>

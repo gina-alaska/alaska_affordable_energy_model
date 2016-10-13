@@ -1,79 +1,73 @@
 
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script type="text/javascript">
-    // setup
-    google.charts.load('current', {'packages':['corechart','table']});
-    google.charts.setOnLoadCallback(drawCharts);
+  // setup
+  google.charts.load('current', {'packages':['corechart','table']});
+  google.charts.setOnLoadCallback(drawCharts);
+  // for the charts
+  function drawCharts() {
+    // set up vars (data/options) for each chart
+    var plot = 'plot'
+    var chart = 'chart'
+    var year_fmat = new google.visualization.NumberFormat({pattern:'####'})
+    //~ var cur_fmat = new google.visualization.NumberFormat({prefix:'$'})
+    
+    // make each chart
+    {% for chart in charts %}
+      // data
+      var {{ chart.name }} = google.visualization.arrayToDataTable({{ chart.data }})
+      year_fmat.format({{ chart.name }},0)
+      // plot options
+      dollar = {}
+      if ({{ chart.type }} == '$') {
+        dollar=  {format: '$#,###'}
+      } else {
+        dollar=  {title: 'gallons'}
+      }
+            
+      var {{ chart.name }}_options = {'title': '{{ com.replace("_"," ") }} {{ chart.title }}',
+                                      'width':1000,
+                                      'height':600,
+                                      chartArea:{left:100,
+                                                 top:50,
+                                                 width:'70%',
+                                                 height:'85%'},
+                                      hAxis: {format: '####',
+                                              title: 'year'},
+                                      vAxis: dollar,
+                                      };
+      // plot state plot or table
+      var {{ chart.name }}_state = plot;
+        
+      // draw plot 
+      function drawPlot_{{ chart.name }}() {
+        var {{ chart.name }}_plot = new google.visualization.LineChart(document.getElementById('{{ chart.name }}_chart'));
+        {{ chart.name }}_plot.draw({{ chart.name }}, {{ chart.name }}_options);
+        return {{ chart.name }}_plot
+      }   
+            
+      // draw table
+      function drawTable_{{ chart.name }}() {
+        var {{ chart.name }}_table = new google.visualization.Table(document.getElementById('{{ chart.name }}_chart'))
+        {{ chart.name }}_table.draw({{ chart.name }}, {'title': '{{ chart.title }}','width':1000, 'height':600,})
+      }
+            
+      // set up toggle
+      {{ chart.name }}_button = document.getElementById('{{ chart.name }}_button')
+      {{ chart.name }}_button.onclick = function() {
+        if ({{ chart.name }}_state == plot) {
+          drawTable_{{ chart.name }}();
+          {{ chart.name }}_state = chart;
+        } else {
+          drawPlot_{{ chart.name }}();
+          {{ chart.name }}_state = plot;
+        }
+      }
+      // initilize with plot
+      var  {{ chart.name }}_plot = drawPlot_{{ chart.name }}()
+      
+      document.getElementById('{{ chart.name }}_png').outerHTML = '<button class="btn btn-default" onclick="location.href=\'' + {{ chart.name }}_plot.getImageURI() + '\' ">Printable Plot</button>'
 
-    // for the charts
-    function drawCharts() {
-        
-        // set up vars (data/options) for each chart
-        var plot = 'plot'
-        var chart = 'chart'
-        
-        var year_fmat = new google.visualization.NumberFormat({pattern:'####'})
-        //~ var cur_fmat = new google.visualization.NumberFormat({prefix:'$'})
-        // make each chart
-        {% for chart in charts %}
-            
-            // data
-            var {{ chart.name }} = google.visualization.arrayToDataTable({{ chart.data }})
-            year_fmat.format({{ chart.name }},0)
-            
-            
-            // plot options
-            dollar = {}
-            if ({{ chart.type }} == '$') {
-                dollar=  {format: '$#,###'}
-            } else {
-                dollar=  {title: 'gallons'}
-            }
-            
-            
-            var {{ chart.name }}_options = {'title': '{{ com.replace("_"," ") }} {{ chart.title }}',
-                                            'width':1000,
-                                            'height':600,
-                                            chartArea:{left:100,top:50,width:'70%',height:'85%'},
-                                            hAxis: {format: '####',
-                                                    title: 'year'},
-                                            vAxis: dollar,
-                                            };
-            
-                        
-          
-            // plot state plot or table
-            var {{ chart.name }}_state = plot;
-        
-            // draw plot 
-            function drawPlot_{{ chart.name }}() {
-                var {{ chart.name }}_plot = new google.visualization.LineChart(document.getElementById('{{ chart.name }}_chart'));
-                {{ chart.name }}_plot.draw({{ chart.name }}, {{ chart.name }}_options);
-                return {{ chart.name }}_plot
-            }   
-            
-            // draw table
-            function drawTable_{{ chart.name }}() {
-                var {{ chart.name }}_table = new google.visualization.Table(document.getElementById('{{ chart.name }}_chart'))
-                {{ chart.name }}_table.draw({{ chart.name }}, {'title': '{{ chart.title }}','width':1000, 'height':600,})
-            }
-            
-            // set up toggle
-            {{ chart.name }}_button = document.getElementById('{{ chart.name }}_button')
-            {{ chart.name }}_button.onclick = function() {
-                if ({{ chart.name }}_state == plot) {
-                    drawTable_{{ chart.name }}();
-                    {{ chart.name }}_state = chart;
-                } else {
-                    drawPlot_{{ chart.name }}();
-                    {{ chart.name }}_state = plot;
-                }
-            }
-            // initilize with plot
-            var  {{ chart.name }}_plot = drawPlot_{{ chart.name }}()
-            
-            document.getElementById('{{ chart.name }}_png').outerHTML = '<button class="btn btn-default" onclick="location.href=\'' + {{ chart.name }}_plot.getImageURI() + '\' ">Printable Plot</button>'
-
-        {% endfor %}
-    }
+      {% endfor %}
+  }
 </script>

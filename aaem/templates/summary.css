@@ -5,9 +5,15 @@ body {
 }
 */
 
-.navbar-summary {
+.navbar-aaem {
 
   margin-bottom: 0px;
+
+}
+
+.navbar-summary {
+
+  background-color: white;
 
 }
 
@@ -55,13 +61,14 @@ h3 {
   font-size:16pt;
 }
 
-h1.page-title {
+.page-title {
   color:black;
   font-size:15pt;
-  margin-top:0px;
-  padding-bottom:1.5pt;
-  margin-bottom:0px;
-  margin-left:1%;
+
+}
+.page-subtitle {
+  color:gray;
+  font-size:12pt;
 
 }
 
