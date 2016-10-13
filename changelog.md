@@ -1,6 +1,10 @@
 #Change Log
 
 ## [0.20.6]
+### fixed
+- preprocessing of intertie projces bug caused by new price preprocessing from 0.20.2
+
+## [0.20.6]
 ### changed
 - updated summary layout
 
