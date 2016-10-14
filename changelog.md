@@ -1,8 +1,16 @@
 #Change Log
 
-## [0.20.6]
+## [0.20.8]
+### added
+- MIT License
+- wind power: logic for projects when proposed capacity is known but proposed generation is unkonwn
+
 ### fixed
-- preprocessing of intertie projces bug caused by new price preprocessing from 0.20.2
+- preprocessing of intertie projcets if plant is intertied but no communities are listed
+
+## [0.20.7]
+### fixed
+- preprocessing of intertie projcets bug caused by new price preprocessing from 0.20.2
 
 ## [0.20.6]
 ### changed

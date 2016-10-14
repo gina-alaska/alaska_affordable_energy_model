@@ -1732,6 +1732,10 @@ def preprocess (data_dir, out_dir, com_id, dev = False):
     pp = preprocess_no_intertie(data_dir,
                         os.path.join(out_dir,com_id.replace(" ","_")), com_id,
                                                                     diag)
+    if type(pp) is bool:
+        # return enpty list commuity is part of intertie an has been 
+        # preprocessed
+        return []
     try:
         if pp.it_ids["Plant Intertied"].lower() == "yes":
             #~ print "JADA"

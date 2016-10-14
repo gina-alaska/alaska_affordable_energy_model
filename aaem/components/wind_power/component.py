@@ -184,6 +184,13 @@ class WindPower(AnnualSavings):
                     self.comp_specs["project details"]['proposed capacity']
             self.generation_wind_proposed = \
                     self.comp_specs["project details"]['proposed generation']
+            
+            if self.generation_wind_proposed == UNKNOWN:
+                self.generation_wind_proposed = self.load_offset_proposed *\
+                                    float(self.comp_specs['resource data']\
+                                        ['assumed capacity factor'])*\
+                                    constants.hours_per_year
+            
             return
         
         self.load_offset_proposed = 0
@@ -226,6 +233,7 @@ class WindPower(AnnualSavings):
             self.generation_wind_proposed is a number (kWh/yr). 
             self.cd is a CommunityData object
         """
+        #~ print self.generation_wind_proposed, self.cd['line losses']
         self.transmission_losses = self.generation_wind_proposed * \
                                                         self.cd['line losses']
         #~ print 'self.transmission_losses',self.transmission_losses
