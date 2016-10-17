@@ -629,7 +629,8 @@ class Forecast (object):
     def generate_electric_output_dataframe (self):
         """
         """
-        kWh_con = self.consumption_to_save
+        from copy import deepcopy
+        kWh_con = deepcopy(self.consumption_to_save)
         kWh_con.columns = ["total_electricity_consumed [kWh/year]",
                            'residential_electricity_consumed [kWh/year]',
                            'non-residential_electricity_consumed [kWh/year]']

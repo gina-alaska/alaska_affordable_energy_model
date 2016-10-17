@@ -49,6 +49,7 @@ class WebSummary(object):
         #~ print com
         #~ comps = self.get_viable_components(com)
         self.gennerate_community_summary(com)
+        self.summary_1(com)
         #~ self.get_web_summary(comp_lib['Biomass for Heat (Cordwood)'])(self, com)
         #~ return 
         
@@ -181,6 +182,86 @@ class WebSummary(object):
                                         sections = self.get_summary_pages(),
                                         communities = self.get_all_coms()))
                                         
+                                        
+    def summary_1 (self, com):
+        """ Function doc """
+        template = self.env.get_template('component.html')
+        res = self.results[com]
+        population = res['community data'].get_item('forecast','population')
+        p1 = population
+        p1['year'] = p1.index
+        population_table = self.make_table(p1[['year','population']])
+        print com
+        
+        charts = [
+        {'name':'population', 'data': str(population_table).replace('nan','null'), 
+         'title': 'Population Forecast',
+         'type': "'other'"},
+            ]
+    
+        try:
+            consumption = res['forecast'].consumption_to_save
+            c1 = consumption
+            c1['year'] = c1.index
+            consumption_table = self.make_table(c1[['year',
+                            "consumption kWh", 
+                               'residential kWh',
+                               'non-residential kWh']])
+            charts.append({'name':'consumption', 'data': str(consumption_table).replace('nan','null'), 
+            'title':'Electricity consumed Consumed',
+            'type': "'other'"})
+        except AttributeError:
+            try:
+                consumption = res['forecast'].consumption
+                c1 = consumption
+                c1['year'] = c1.index
+                consumption_table = self.make_table(c1[['year',
+                                "consumption kWh" ]])
+                charts.append({'name':'consumption', 'data': str(consumption_table).replace('nan','null'), 
+                'title':'Electricity consumed Consumed',
+                'type': "'other'"})
+            except AttributeError:
+                pass
+            #~ self.consumption.columns = ["consumption kWh"]
+        
+
+            
+
+        pth = os.path.join(self.directory, com + '_' +\
+                    'summary_1'.replace(' ','_').replace('(','').replace(')','').lower() + '.html')
+        with open(pth, 'w') as html:
+            html.write(template.render( type = 'summary 1', 
+                                    com = com ,
+                                    charts = charts,
+                                    summary_pages = ['Summary'] + comp_order ,
+                                    sections = self.get_summary_pages(),
+                                    communities = self.get_all_coms()
+                                    ))
+                        
+        #~ print consumption_table
+        
+    def make_table (self, xs, ys = None):
+        """
+        make a table
+        
+        inputs:
+        outputs:    
+            returns plotting_table, a table that can be used to make a google chart
+        """
+        if type(xs) == DataFrame and len(xs.columns) > 1:
+            x_name = xs.columns[0]
+            y_name = list(xs.columns[1:])
+        else:
+            # todo:fix order
+            x_name = xs.keys()[0]
+            y_name = ys.keys()
+            xs.update(ys)
+            xs = DataFrame(xs)[[x_name]+y_name]
+            
+        plotting_table = xs.round().values.tolist()
+        plotting_table.insert(0,[x_name]+y_name)
+        return plotting_table 
+    
                                         
 
 
