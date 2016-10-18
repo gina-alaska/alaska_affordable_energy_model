@@ -1,12 +1,15 @@
 from jinja2 import Environment, PackageLoader
 import aaem.driver as driver
-from pandas import concat, DataFrame
+from pandas import concat, DataFrame, read_csv
 import os
 import shutil
 
 from importlib import import_module
 from aaem.components import comp_lib, comp_order
+from aaem.constants import hours_per_year
 from aaem import __file__
+
+import numpy as np
 
 #WHAT TO DO IF ALL PLOT DATA IS NANS?
 #~ import aaem
@@ -48,8 +51,12 @@ class WebSummary(object):
         """
         #~ print com
         #~ comps = self.get_viable_components(com)
+        os.mkdir(os.path.join(self.directory, com))
         self.gennerate_community_summary(com)
-        self.summary_1(com)
+        self.finances_demo_summary(com)
+        self.consumption_summary(com)
+        self.generation_summary(com)
+        self.projects_summary(com)
         #~ self.get_web_summary(comp_lib['Biomass for Heat (Cordwood)'])(self, com)
         #~ return 
         
@@ -61,7 +68,7 @@ class WebSummary(object):
                 #~ print comp, e
                 template = self.env.get_template('no_results.html')
                 #~ if comp in ['Solar Power','Wind Power','Heat Recovery'] :
-                pth = os.path.join(self.directory, com + '_' + comp.replace(' ','_').replace('(','').replace(')','').lower() +'.html')
+                pth = os.path.join(self.directory, com, comp.replace(' ','_').replace('(','').replace(')','').lower() +'.html')
                     #~ t = comp
                 #~ print comp, e
                 #~ elif comp == 'Wind Power':
@@ -116,7 +123,11 @@ class WebSummary(object):
         return sorted([k for k in self.results.keys() if k.find('+') == -1])
     
     def get_summary_pages (self):
-        return [{'name':'Summary', 'pages':['summary']}, 
+        return [{'name':'Summary', 'pages':['summary',
+                                            'Financial and Demographic',
+                                            'Consumption',
+                                            'Generation',
+                                            'Potential Projects']}, 
                 {'name':'Efficiency Projects', 'pages':["Residential Energy Efficiency",
                                                         "Non-residential Energy Efficiency",
                                                         "Water and Wastewater Efficiency"]
@@ -148,7 +159,7 @@ class WebSummary(object):
     def gennerate_community_summary(self, community):
         """ Function doc """
         template = self.env.get_template('summary.html')
-        pth = os.path.join(self.directory, community + '_summary.html')
+        pth = os.path.join(self.directory, community, 'summary.html')
         
         comps = []
         for i in [i for i in sorted(self.results.keys()) \
@@ -182,8 +193,7 @@ class WebSummary(object):
                                         sections = self.get_summary_pages(),
                                         communities = self.get_all_coms()))
                                         
-                                        
-    def summary_1 (self, com):
+    def finances_demo_summary (self, com):
         """ Function doc """
         template = self.env.get_template('component.html')
         res = self.results[com]
@@ -196,51 +206,275 @@ class WebSummary(object):
         charts = [
         {'name':'population', 'data': str(population_table).replace('nan','null'), 
          'title': 'Population Forecast',
-         'type': "'other'"},
+         'type': "'people'"},
             ]
-    
+        try: 
+            elec_price = res['community data'].get_item('community','electric non-fuel prices')
+            elec_price ['year'] = elec_price.index
+            ep_table = self.make_table(elec_price[['year','price']], sigfig = 2)
+            charts.append({'name':'e_price', 'data': str(ep_table).replace('nan','null'), 
+                        'title':'Electricity Price ($/kWh)',
+                        'type': "'currency'"})
+        except TypeError: 
+            pass
+
+
+        diesel = res['community data'].get_item('community','diesel prices')
+        diesel = DataFrame(diesel.projected_prices, columns = ['Diesel Price ($/gal)'],index=range(diesel.start_year,diesel.start_year+len(diesel.projected_prices)))
+        diesel['year'] = diesel.index
+        #~ print diesel
+        diesel['Heating Fuel ($/gal)'] = diesel['Diesel Price ($/gal)'] + res['community data'].get_item('community','heating fuel premium')
+        d_table = self.make_table(diesel[['year','Diesel Price ($/gal)','Heating Fuel ($/gal)']], sigfig = 2)
+        charts.append({'name':'d_price', 'data': str(d_table).replace('nan','null'), 
+                        'title':'Fuel Price ($/kWh)',
+                        'type': "'currency'"})  
+                        
+        
         try:
-            consumption = res['forecast'].consumption_to_save
+            costs = DataFrame(res['Residential Energy Efficiency'].baseline_kWh_cost,
+                              index=range(res['Residential Energy Efficiency'].start_year,
+                                    res['Residential Energy Efficiency'].start_year+\
+                                    len(res['Residential Energy Efficiency'].baseline_kWh_cost)),
+                                     columns = ['Residential Electricity'])
+            
+            costs['year']=costs.index
+            #~ print costs
+            costs = costs[['year','Residential Electricity']]
+            
+            costs['Non-residential Electricity'] = res['Non-residential Energy Efficiency'].baseline_kWh_cost
+            costs['Water/Wastewater Electricity'] = res['Water and Wastewater Efficiency'].baseline_kWh_cost
+            
+            
+            costs['Residential Heating Fuel'] = res['Residential Energy Efficiency'].baseline_HF_cost
+            costs['Non-residential Heating Fuel'] = res['Non-residential Energy Efficiency'].baseline_HF_cost
+            costs['Water/Wastewater Heating Fuel'] = res['Water and Wastewater Efficiency'].baseline_HF_cost
+            
+            costs = costs[['year'] + list(costs.columns)[1:][::-1]]
+            
+            costs_table = self.make_table(costs, sigfig = 2)
+            charts.append({'name':'costs', 'data': str(costs_table).replace('nan','null'), 
+                            'title':'Costs by Sector',
+                            'type': "'percent'",
+                            'stacked': True})  
+        except AttributeError:
+            pass
+        
+        pth = os.path.join(self.directory, com,
+                    'Financial and Demographic'.replace(' ','_').replace('(','').replace(')','').lower() + '.html')
+        with open(pth, 'w') as html:
+            html.write(template.render( type = 'Financial and Demographic', 
+                                com = com ,
+                                charts = charts,
+                                summary_pages = ['Summary'] + comp_order ,
+                                sections = self.get_summary_pages(),
+                                communities = self.get_all_coms()
+                                ))
+                                
+    def consumption_summary (self, com):
+        """ Function doc """
+        template = self.env.get_template('component.html')
+        res = self.results[com]
+        charts = []
+        try:
+            try:
+                consumption = res['forecast'].consumption_to_save
+                cols = ['year', "consumption kWh", 'residential kWh', 'non-residential kWh']
+                names = ['Year', 'Total', 'Residential' , 'Non-Residential']
+            except AttributeError:    
+                consumption = res['forecast'].consumption
+                cols = ['year', "consumption kWh"]
+                names = ['Year', 'Total']
             c1 = consumption
             c1['year'] = c1.index
-            consumption_table = self.make_table(c1[['year',
-                            "consumption kWh", 
-                               'residential kWh',
-                               'non-residential kWh']])
-            charts.append({'name':'consumption', 'data': str(consumption_table).replace('nan','null'), 
-            'title':'Electricity consumed Consumed',
-            'type': "'other'"})
-        except AttributeError:
-            try:
-                consumption = res['forecast'].consumption
-                c1 = consumption
-                c1['year'] = c1.index
-                consumption_table = self.make_table(c1[['year',
-                                "consumption kWh" ]])
-                charts.append({'name':'consumption', 'data': str(consumption_table).replace('nan','null'), 
-                'title':'Electricity consumed Consumed',
-                'type': "'other'"})
-            except AttributeError:
-                pass
-            #~ self.consumption.columns = ["consumption kWh"]
         
-
+            consumption_table = self.make_table(c1[cols], names = names)
+        
+            charts.append({'name':'consumption', 'data': str(consumption_table).replace('nan','null'), 
+                    'title':'Electricity consumed Consumed',
+                    'type': "'kWh'"})
+        except AttributeError: 
+            pass
             
-
-        pth = os.path.join(self.directory, com + '_' +\
-                    'summary_1'.replace(' ','_').replace('(','').replace(')','').lower() + '.html')
+        try:
+            diesel_consumption = DataFrame(res['Residential Energy Efficiency'].baseline_fuel_Hoil_consumption,
+                              index=range(res['Residential Energy Efficiency'].start_year,
+                                    res['Residential Energy Efficiency'].start_year+\
+                                    len(res['Residential Energy Efficiency'].baseline_fuel_Hoil_consumption)),
+                                     columns = ['Residential Heating Oil(gallons)'])
+            
+            diesel_consumption['year']=diesel_consumption.index
+            #~ print diesel_consumption
+            diesel_consumption = diesel_consumption[['year','Residential Heating Oil(gallons)']]
+            
+            diesel_consumption['Non-residential Heating Oil(gallons)'] = res['Non-residential Energy Efficiency'].baseline_fuel_Hoil_consumption
+            diesel_consumption['Water/Wastewater Heating Oil(gallons)'] = res['Water and Wastewater Efficiency'].baseline_fuel_Hoil_consumption
+            
+            eff = res['community data'].get_item("community",
+                                            "diesel generation efficiency")
+            if eff == 0:
+                eff = np.nan
+                
+            #~ print res['forecast'].generation_by_type["generation diesel"]
+            diesel_consumption['Utility Diesel(gallons)'] = res['forecast'].generation_by_type["generation diesel"] / eff
+            #~ diesel_consumption['Utility Diesel(gallons)']
+            
+            
+            diesel_consumption = diesel_consumption[['year'] + list(diesel_consumption.columns)[1:][::-1]]
+            
+            diesel_consumption_table = self.make_table(diesel_consumption, sigfig = 2)
+            charts.append({'name':'diesel_consumption', 'data': str(diesel_consumption_table).replace('nan','null'), 
+                            'title':'Energy Consumption',
+                            'type': "'percent'",
+                            'stacked': True})  
+        except AttributeError:
+            pass
+            
+        pth = os.path.join(self.directory, com,
+                    'Consumption'.replace(' ','_').replace('(','').replace(')','').lower() + '.html')
         with open(pth, 'w') as html:
-            html.write(template.render( type = 'summary 1', 
+            html.write(template.render( type = 'Consumption', 
                                     com = com ,
                                     charts = charts,
                                     summary_pages = ['Summary'] + comp_order ,
                                     sections = self.get_summary_pages(),
                                     communities = self.get_all_coms()
                                     ))
-                        
-        #~ print consumption_table
         
-    def make_table (self, xs, ys = None):
+    def generation_summary (self, com):
+        """ Function doc """
+        template = self.env.get_template('component.html')
+        res = self.results[com]
+        charts = []
+        try:
+            try:
+                generation = res['forecast'].generation_forecast_dataframe[['generation_diesel [kWh/year]',
+                                                                        'generation_hydro [kWh/year]',
+                                                                        'generation_natural_gas [kWh/year]',
+                                                                        'generation_wind [kWh/year]',
+                                                                        'generation_solar [kWh/year]',
+                                                                        'generation_biomass [kWh/year]']]
+            except AttributeError:
+                res['forecast'].generate_generation_forecast_dataframe()
+                generation = res['forecast'].generation_forecast_dataframe[['generation_diesel [kWh/year]',
+                                                                        'generation_hydro [kWh/year]',
+                                                                        'generation_natural_gas [kWh/year]',
+                                                                        'generation_wind [kWh/year]',
+                                                                        'generation_solar [kWh/year]',
+                                                                        'generation_biomass [kWh/year]']]
+        
+            generation['year']=generation.index
+            generation = generation[['year'] + list(generation.columns)[:-1][::-1]]
+            generation_table = self.make_table(generation, sigfig = 2)
+            charts.append({'name':'generation', 'data': 
+                           str(generation_table).replace('nan','null'), 
+                                'title':'generation',
+                                'type': "'gallons'",})  
+        except AttributeError:
+            pass
+        
+        #~ hh = DataFrame(costs['year'])
+        #~ hh['households']=res['Residential Energy Efficiency'].households
+        #~ print hh
+        #~ hh_table = self.make_table(hh)
+        #~ charts.append({'name':'hh', 'data': str(hh_table).replace('nan','null'), 
+                            #~ 'title':'housholds',
+                            #~ 'type': "'households'"}) 
+            
+            
+        try:
+            try:
+                avg_load = res['forecast'].consumption_to_save
+            except AttributeError:    
+                avg_load = res['forecast'].consumption
+            
+            names = ['Year', 'Average Load']
+            avg_load = avg_load
+            avg_load['year'] = avg_load.index
+            
+            
+            avg_load['Average Load'] = avg_load["consumption kWh"]/hours_per_year
+        
+            avg_load_table = self.make_table(avg_load[['year', "Average Load"]], names = names)
+        
+            charts.append({'name':'avg_load', 'data': str(avg_load_table).replace('nan','null'), 
+                    'title':'Averag Load',
+                    'type': "'kW'"})
+        except AttributeError: 
+            pass
+        
+        #~ print os.path.join(self.model_root,'input_files', com, 'yearly_electricity_summary.csv')
+        
+        try:
+            yes = read_csv(os.path.join(self.model_root,'input_files', com, 'yearly_electricity_summary.csv'),comment='#')
+            #~ print yes.columns
+        except IOError: 
+            yes = None
+            
+        if not yes is None:
+            yes_years = yes[yes.columns[0]].values
+        
+        if not yes is None:
+            start = min(yes_years)
+        else:
+            start = res['community data'].get_item('community','current year')
+        
+        end = res['community data'].get_item('forecast','end year')
+        years = range(int(start),int(end))
+        
+        line_loss = DataFrame(years, columns = ['year'], index = years)
+        line_loss['line losses'] = res['community data'].get_item('community','line losses')
+        line_loss['diesel generation efficiency'] = res['community data'].get_item('community','diesel generation efficiency')
+         
+        if not yes is None:
+            line_loss['line losses'].ix[ range(int(min(yes_years)),int(max(yes_years)))] = np.nan
+            line_loss['line losses'].ix[ yes_years ] = yes['line loss'].values
+            line_loss['diesel generation efficiency'].ix[ range(int(min(yes_years)),int(max(yes_years))) ] = np.nan
+            line_loss['diesel generation efficiency'].ix[ yes_years ] = yes['efficiency'].values
+        #~ print line_losxs
+
+        line_loss = line_loss.replace([np.inf, -np.inf], np.nan)
+        line_loss_table = self.make_table(line_loss[['year', "line losses"]],sigfig = 2)
+        charts.append({'name':'line_loss', 'data': str(line_loss_table).replace('nan','null'), 
+                'title':'line losses',
+                'type': "'percent'"})
+
+        gen_eff_table = self.make_table(line_loss[['year', 'diesel generation efficiency']],sigfig = 2)
+        charts.append({'name':'gen_eff_loss', 'data': str(gen_eff_table).replace('nan','null'), 
+                'title':'Diesel Genneration Efficiency',
+                'type': "'gal/kWh'"})
+            
+
+        pth = os.path.join(self.directory, com,
+                    'Generation'.replace(' ','_').replace('(','').replace(')','').lower() + '.html')
+        with open(pth, 'w') as html:
+            html.write(template.render( type = 'Generation', 
+                                    com = com ,
+                                    charts = charts,
+                                    summary_pages = ['Summary'] + comp_order ,
+                                    sections = self.get_summary_pages(),
+                                    communities = self.get_all_coms()
+                                    ))
+        
+        
+    def projects_summary (self, com):
+        """ Function doc """
+        template = self.env.get_template('component.html')
+        res = self.results[com]
+        charts = []
+        pth = os.path.join(self.directory, com,
+                    'Potential Projects'.replace(' ','_').replace('(','').replace(')','').lower() + '.html')
+        with open(pth, 'w') as html:
+            html.write(template.render( type = 'Potential Projects', 
+                                    com = com ,
+                                    #~ charts = charts,
+                                    summary_pages = ['Summary'] + comp_order ,
+                                    sections = self.get_summary_pages(),
+                                    communities = self.get_all_coms()
+                                    ))
+                                        
+
+        
+    def make_table (self, xs, ys = None, names = None, sigfig=0):
         """
         make a table
         
@@ -256,10 +490,16 @@ class WebSummary(object):
             x_name = xs.keys()[0]
             y_name = ys.keys()
             xs.update(ys)
-            xs = DataFrame(xs)[[x_name]+y_name]
+            xs = DataFrame(xs)[[x_name] + y_name]
             
-        plotting_table = xs.round().values.tolist()
-        plotting_table.insert(0,[x_name]+y_name)
+        if names is None:
+            names = [x_name] + y_name
+        
+        header = []
+        for name in names:
+            header.append("{label: '"+name+"', type: 'number'}")
+        plotting_table = xs.round(sigfig).values.tolist()
+        plotting_table.insert(0,header)
         return plotting_table 
     
                                         

@@ -18,7 +18,7 @@
         {% for chart in charts %}
             
             // data
-            var {{ chart.name }} = google.visualization.arrayToDataTable({{ chart.data }})
+            var {{ chart.name }} = google.visualization.arrayToDataTable({{ chart.data.replace('"','') }})
             year_fmat.format({{ chart.name }},0)
             
             
@@ -26,8 +26,14 @@
             dollar = {}
             if ({{ chart.type }} == '$') {
                 dollar=  {format: '$#,###'}
-            } else {
+            } else if  ({{ chart.type }} == 'other'){
                 dollar=  {title: 'gallons'}
+            } else if ({{ chart.type }} ==  'currency'){
+                dollar=  {format: 'currency'}
+            } else if ({{ chart.type }} ==  'percent'){ 
+                dollar = {format: 'percent'}
+            } else {
+                dollar = {title: {{ chart.type }} }
             }
             
             
@@ -38,6 +44,7 @@
                                             hAxis: {format: '####',
                                                     title: 'year'},
                                             vAxis: dollar,
+                                            {% if chart.stacked %} isStacked: 'relative', {% endif %}
                                             };
             
                         
@@ -47,7 +54,12 @@
         
             // draw plot 
             function drawPlot_{{ chart.name }}() {
+                {% if not chart.stacked %}
                 var {{ chart.name }}_plot = new google.visualization.LineChart(document.getElementById('{{ chart.name }}_chart'));
+                {% else %}
+                var {{ chart.name }}_plot = new google.visualization.AreaChart(document.getElementById('{{ chart.name }}_chart'));
+                {% endif %}
+                
                 {{ chart.name }}_plot.draw({{ chart.name }}, {{ chart.name }}_options);
                 return {{ chart.name }}_plot
             }   

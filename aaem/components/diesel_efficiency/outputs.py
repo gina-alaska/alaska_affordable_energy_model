@@ -207,7 +207,7 @@ def generate_web_summary (web_object, community):
         
     ## generate html
     ## generate html
-    pth = os.path.join(web_object.directory, community + '_' +\
+    pth = os.path.join(web_object.directory, community,
                     COMPONENT_NAME.replace(' ','_').lower() + '.html')
     with open(pth, 'w') as html:
         html.write(template.render( info = info_for_projects,

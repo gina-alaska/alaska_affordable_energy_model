@@ -15,7 +15,7 @@
     <ul class="dropdown-menu">
       {% for page in section.pages %}
       <li>
-        <a href="{{ com }}_{{ page.lower().replace(' ', "_").replace(")", "").replace("(", "") }}.html">
+        <a href="../{{ com }}/{{ page.lower().replace(' ', "_").replace(")", "").replace("(", "") }}.html">
           {{ page }} 
         </a></li>
       {% endfor %}
