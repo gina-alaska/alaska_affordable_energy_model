@@ -88,7 +88,12 @@ def make_costs_table (community, comp, projects, base_cost, directory):
     costs_table = costs_table[['year','Base Cost'] + names]
     costs_table.columns = ['year','Base Case Cost'] + names
     fname = community + "_" + comp.replace(' ','_').lower() + "_" + 'costs.csv'
-    costs_table.to_csv(os.path.join(directory,'csv', fname),
+    
+    try:
+        os.makedirs(os.path.join(directory,community,'csv'))
+    except OSError:
+        pass
+    costs_table.to_csv(os.path.join(directory,community,'csv', fname),
                         index=False)
     #~ ## make list from of table
     plotting_table = costs_table.\
@@ -152,7 +157,11 @@ def make_consumption_table (community, comp, projects, base_con,
     cons_table.columns = ['year','Base Case Diesel Consumed'] + names
     fname = community + "_" + comp.replace(' ','_').lower() +\
             "_" + 'consumption.csv'
-    cons_table.to_csv(os.path.join(directory,'csv', fname),index=False)
+    try:
+        os.makedirs(os.path.join(directory,community,'csv'))
+    except OSError:
+        pass
+    cons_table.to_csv(os.path.join(directory,community,'csv', fname),index=False)
     #~ ## make list from of table
     plotting_table = cons_table.round().values.tolist()
     

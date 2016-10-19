@@ -24,7 +24,7 @@ class WebSummary(object):
         #~ print self.results
         self.directory = directory
         try:
-            os.makedirs(os.path.join(self.directory,'csv'))
+            os.makedirs(self.directory)
         except OSError as e:
             #~ print e
             pass
@@ -122,8 +122,7 @@ class WebSummary(object):
         return sorted([k for k in self.results.keys() if k.find('+') == -1])
     
     def get_summary_pages (self):
-        return [{'name':'Summary', 'pages':['summary',
-                                            'Financial and Demographic',
+        return [{'name':'Summary', 'pages':['Financial and Demographic',
                                             'Consumption',
                                             'Generation',
                                             'Potential Projects']}, 
