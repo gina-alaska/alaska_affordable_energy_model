@@ -1,0 +1,56 @@
+{% extends "layout.html" %}
+
+
+{% block title %}{{ com }} - {{ type }} summary{% endblock %}
+
+{% block additional_css %}
+  <link href="../summary.css" rel="stylesheet">
+{% endblock %}
+
+{% block JS %}
+    {% include 'plot.html' %}
+{% endblock %}
+
+{% block secondary_nav %}
+    {% include 'summary_nav.html' %}
+{% endblock %}
+
+ {% block header %} 
+
+    {{ super() }}
+ {% endblock %}
+
+    
+{% block full%}
+    <div class="stats">
+        <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Technology/Project</th>
+                <th>NPV Benefits</th>
+                <th>NPV Cost</th>
+                <th>NPV Net Benefit</th>
+                <th>Benefit Cost Ratio</th>
+                <th>Levelized Cost of Energy: Electricity</th>
+                <th>Levelized Cost of Energy: Heating Oil</th>
+                <th>Gallons fuel /saved per year</th>
+            </tr>
+      </thead>
+      <tbody>
+        {% for project in potential_projects %}
+        <tr {% if project.sucess %}class="success"{% endif %} >
+            <td><a href="{{ project.comp.lower().replace(' ', "_").replace(")", "").replace("(", "") }}.html">{{ project.name }} </a></td>
+            <td>{{ project.benefits }}</td>
+            <td>{{ project.costs }}</td>
+            <td>{{ project.net }}</td>
+            <td>{{ project.ratio }}</td>
+            <td>{{ project.lcoe_e }}</td>
+            <td>{{ project.lcoe_hf }}</td>
+            <td>{{ project.fuel_saved }}</td>
+        </tr>
+        {% endfor %}
+        <tbody>
+        </table>
+    </div>
+{% endblock %}
+    

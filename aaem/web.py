@@ -52,7 +52,6 @@ class WebSummary(object):
         #~ print com
         #~ comps = self.get_viable_components(com)
         os.mkdir(os.path.join(self.directory, com))
-        self.gennerate_community_summary(com)
         self.finances_demo_summary(com)
         self.consumption_summary(com)
         self.generation_summary(com)
@@ -154,56 +153,18 @@ class WebSummary(object):
             #~ print com
             self.generate_web_summaries(com)
             #~ return
-            
-            
-    def gennerate_community_summary(self, community):
-        """ Function doc """
-        template = self.env.get_template('summary.html')
-        pth = os.path.join(self.directory, community, 'summary.html')
-        
-        comps = []
-        for i in [i for i in sorted(self.results.keys()) \
-                            if i.find(community) != -1 ]:
-            
-            for c in self.get_viable_components(i):
-                #~ print i, c
-                if i.find('hydro') != -1 and c == 'Hydropower':
-                    comp = self.results[i]['Hydropower']
-                    ratio = comp.get_BC_ratio()
-                    name = comp.comp_specs['project details']['name']
-                elif i.find('wind') != -1 and c == 'Wind Power':
-                    comp = self.results[i]['Wind Power']
-                    ratio = comp.get_BC_ratio()
-                    name = comp.comp_specs['project details']['name']
-                elif i.find('heat_recovery') != -1 and c == 'Heat Recovery':
-                    comp = self.results[i]['Heat Recovery']
-                    ratio = comp.get_BC_ratio()
-                    name = comp.comp_specs['project details']['name']
-                else:
-                    comp = self.results[i][c]
-                    ratio = comp.get_BC_ratio()
-                    name = i + ' Modeled'
-                comps.append({'com':name.decode('unicode_escape').encode('ascii','ignore'),'comp':c, 'r': '{:,.3f}'.format(ratio)})
-            
-        #~ print comps
-        
-        
-        with open(pth, 'w') as html:
-            html.write(template.render( info = comps , com = community,
-                                        sections = self.get_summary_pages(),
-                                        communities = self.get_all_coms()))
                                         
     def finances_demo_summary (self, com):
         """ Function doc """
-        template = self.env.get_template('component.html')
+        template = self.env.get_template('demo.html')
         res = self.results[com]
         population = res['community data'].get_item('forecast','population')
         p1 = population
         p1['year'] = p1.index
         population_table = self.make_table(p1[['year','population']])
-        print com
+        #~ print com
         
-        charts = [
+        charts_right = [
         {'name':'population', 'data': str(population_table).replace('nan','null'), 
          'title': 'Population Forecast',
          'type': "'people'"},
@@ -212,22 +173,22 @@ class WebSummary(object):
             elec_price = res['community data'].get_item('community','electric non-fuel prices')
             elec_price ['year'] = elec_price.index
             ep_table = self.make_table(elec_price[['year','price']], sigfig = 2)
-            charts.append({'name':'e_price', 'data': str(ep_table).replace('nan','null'), 
+            charts_right.append({'name':'e_price', 'data': str(ep_table).replace('nan','null'), 
                         'title':'Electricity Price ($/kWh)',
-                        'type': "'currency'"})
+                        'type': "'currency'",})
         except TypeError: 
             pass
 
-
+        charts_left = []
         diesel = res['community data'].get_item('community','diesel prices')
         diesel = DataFrame(diesel.projected_prices, columns = ['Diesel Price ($/gal)'],index=range(diesel.start_year,diesel.start_year+len(diesel.projected_prices)))
         diesel['year'] = diesel.index
         #~ print diesel
         diesel['Heating Fuel ($/gal)'] = diesel['Diesel Price ($/gal)'] + res['community data'].get_item('community','heating fuel premium')
         d_table = self.make_table(diesel[['year','Diesel Price ($/gal)','Heating Fuel ($/gal)']], sigfig = 2)
-        charts.append({'name':'d_price', 'data': str(d_table).replace('nan','null'), 
+        charts_left.append({'name':'d_price', 'data': str(d_table).replace('nan','null'), 
                         'title':'Fuel Price ($/kWh)',
-                        'type': "'currency'"})  
+                        'type': "'currency'",})  
                         
         
         try:
@@ -252,10 +213,10 @@ class WebSummary(object):
             costs = costs[['year'] + list(costs.columns)[1:][::-1]]
             
             costs_table = self.make_table(costs, sigfig = 2)
-            charts.append({'name':'costs', 'data': str(costs_table).replace('nan','null'), 
+            charts_left.append({'name':'costs', 'data': str(costs_table).replace('nan','null'), 
                             'title':'Costs by Sector',
                             'type': "'percent'",
-                            'stacked': True})  
+                            'stacked': True,})  
         except AttributeError:
             pass
         
@@ -264,7 +225,9 @@ class WebSummary(object):
         with open(pth, 'w') as html:
             html.write(template.render( type = 'Financial and Demographic', 
                                 com = com ,
-                                charts = charts,
+                                #~ charts_right = charts_right,
+                                #~ charts_left = charts_left,
+                                charts = charts_right +charts_left,
                                 summary_pages = ['Summary'] + comp_order ,
                                 sections = self.get_summary_pages(),
                                 communities = self.get_all_coms()
@@ -458,18 +421,73 @@ class WebSummary(object):
         
     def projects_summary (self, com):
         """ Function doc """
-        template = self.env.get_template('component.html')
+        template = self.env.get_template('potential_projects.html')
         res = self.results[com]
-        charts = []
+
+
+       
+        cats = {}
+        
+        for i in [i for i in sorted(self.results.keys()) if i.find(com) != -1 ]:
+            comps = self.results[i]
+            if i.find('hydro') != -1:
+                comps = ['Hydropower']
+            elif i.find('wind') != -1:
+                comps = ['Wind Power']
+            elif i.find('heat_recovery') != -1:
+                comps =['Heat Recovery']
+            for comp in comps:  
+                if comp in ['forecast', 'community data']:
+                    continue
+                c = self.results[i][comp]
+                ratio = c.get_BC_ratio()
+                if 'N/A' == ratio:
+                    ratio = 0
+  
+                
+                try:
+                    name = c.comp_specs['project details']['name']
+                except (KeyError,TypeError):
+                    name = comp
+                    
+                #~ print name
+                if name == 'None':
+                    
+                    name = comp
+                
+                if not comp in cats.keys():
+                    cats[comp] = []
+                    
+                
+                cats[comp].append({'name':name.decode('unicode_escape').encode('ascii','ignore'),
+                              'sucess': True if ratio > 1.0 else False,
+                              'comp':comp,
+                              'benefits': '${:,.0f}'.format(0 if c.get_NPV_benefits() == 'N/A' else c.get_NPV_benefits()),
+                              'costs': '${:,.0f}'.format(0 if c.get_NPV_costs() == 'N/A' else c.get_NPV_costs()),
+                              'net': '${:,.0f}'.format(0 if c.get_NPV_net_benefit() == 'N/A' else c.get_NPV_net_benefit()),
+                              'ratio': '{:,.2f}'.format(ratio),
+                              'lcoe_e':0,
+                              'lcoe_hf':0,
+                              'fuel_saved':0 })
+         
+        projs =[]
+        for comp in ["Residential Energy Efficiency", "Non-residential Energy Efficiency",
+                     "Water and Wastewater Efficiency", "Wind Power", 'Solar Power',
+                    'Hydropower','Transmission and Interties','Diesel Efficiency',
+                    'Biomass for Heat (Cordwood)', 'Biomass for Heat (Pellet)',
+                    'Residential ASHP', 'Non-Residential ASHP', 'Heat Recovery']:
+            projs += cats[comp]
+        
+        
         pth = os.path.join(self.directory, com,
                     'Potential Projects'.replace(' ','_').replace('(','').replace(')','').lower() + '.html')
         with open(pth, 'w') as html:
             html.write(template.render( type = 'Potential Projects', 
                                     com = com ,
-                                    #~ charts = charts,
                                     summary_pages = ['Summary'] + comp_order ,
                                     sections = self.get_summary_pages(),
-                                    communities = self.get_all_coms()
+                                    communities = self.get_all_coms(),
+                                    potential_projects = projs
                                     ))
                                         
 

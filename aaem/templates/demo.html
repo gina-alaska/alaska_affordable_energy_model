@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+
+
+{% block title %}{{ com }} - {{ type }} summary{% endblock %}
+
+{% block additional_css %}
+  <link href="../summary.css" rel="stylesheet">
+{% endblock %}
+
+{% block JS %}
+    {% include 'plot.html' %}
+{% endblock %}
+
+{% block secondary_nav %}
+    {% include 'summary_nav.html' %}
+{% endblock %}
+
+ {% block header %} 
+
+    {{ super() }}
+ {% endblock %}
+
+    
+{% block left %}
+
+{% endblock %}
+    
+{% block right %}
+    <div class = 'charts'>
+        {% for chart in charts %}
+        <div class="{{chart.name}}">
+            <div id="{{chart.name}}_chart"></div>
+            
+            <button class="btn btn-default" type='button' id='{{ chart.name }}_button'>Plot/Table</button>
+            <div id='{{chart.name}}_png'></div>
+            <button class="btn btn-default" type='button' onclick="location.href='csv/{{ com }}_{{ type.replace(' ','_') }}_{{ chart.name }}.csv'">Table as csv</button>
+        </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+
