@@ -93,7 +93,11 @@ def make_costs_table (community, comp, projects, base_cost, directory):
     #~ ## make list from of table
     plotting_table = costs_table.\
                     round().values.tolist()
-    plotting_table.insert(0,['year','Current Projection'] + names)
+                    
+    header = []
+    for name in ['year','Current Projection'] + names:
+        header.append("{label: '"+name+"', type: 'number'}")
+    plotting_table.insert(0,header)
     return plotting_table
     
 def make_consumption_table (community, comp, projects, base_con, 
@@ -151,7 +155,11 @@ def make_consumption_table (community, comp, projects, base_con,
     cons_table.to_csv(os.path.join(directory,'csv', fname),index=False)
     #~ ## make list from of table
     plotting_table = cons_table.round().values.tolist()
-    plotting_table.insert(0,['year','Current Projection'] + names)
+    
+    header = []
+    for name in ['year','Current Projection'] + names:
+        header.append("{label: '"+name+"', type: 'number'}")
+    plotting_table.insert(0,header)
     return plotting_table
 
 def correct_dates (start, s1, end, e1):
