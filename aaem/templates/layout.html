@@ -23,28 +23,38 @@
     {% block JS %}{% endblock %}
   </head>
   <body >
-    <div class="content">
      {% include 'navbar.html' %}
      {% block secondary_nav %}{% endblock %}
 
-    <div class="row">
-        <div class="col-sm-10 col-sm-offset-1">
-        {% block full %}{% endblock %}
+    <div class="content">
+        <div class="row">
+            <div class="col-sm-10 col-sm-offset-1">
+            {% block full %}{% endblock %}
+            </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-3 infobar">
+            {% block left %}{% endblock %}
+          </div>
+          <div class="col-sm-9">
+            {% block right %}{% endblock %}
+          </div>
         </div>
     </div>
-    <div class="row">
-      <div class="col-sm-3 infobar">
-        {% block left %}{% endblock %}
+    
+    <footer class="footer">
+      <div class="container">
+        {% if metadata %}
+        <p class="text-muted"> Generated from Model Version {{metadata.version}} and Data Version {{metadata.data_version}} at {{metadata.date}}</p>
+        {% endif %}
       </div>
-      <div class="col-sm-9">
-        {% block right %}{% endblock %}
-      </div>
-    </div>
+    </footer>
 
     
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="../js/bootstrap.min.js"></script>
+
   </body>
 </html>

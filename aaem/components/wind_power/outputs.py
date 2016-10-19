@@ -6,10 +6,12 @@ outputs.py
 import os.path
 import numpy as np
 from pandas import DataFrame
-from config import COMPONENT_NAME
+from config import COMPONENT_NAME, DESCRIPTION
 import aaem.constants as constants
 from aaem.components import comp_order
 import aaem.web_lib as wl
+
+from datetime import datetime
 
 ## component summary
 def component_summary (coms, res_dir):
@@ -254,7 +256,9 @@ def generate_web_summary (web_object, community):
                                     charts = charts,
                                     summary_pages = ['Summary'] + comp_order ,
                                     sections = web_object.get_summary_pages(),
-                                    communities = web_object.get_all_coms()
+                                    communities = web_object.get_all_coms(),
+                                    description =  DESCRIPTION,
+                                    metadata = {"date": datetime.now(), "version": web_object.version, "data_version":web_object.data_version}
                                     ))
  
 

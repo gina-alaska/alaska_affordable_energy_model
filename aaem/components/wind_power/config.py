@@ -28,7 +28,7 @@ yaml = {'enabled': False,
         'start year': 'ABSOLUTE DEFAULT',
         
         'average load limit': 100.0,
-        'percent generation to offset': 1.00,
+        'percent generation to offset': 1.50,
         'resource data':'IMPORT',
          #'minimum wind class': 3,
         #~ 'generation capital cost': 'UNKNOWN', #  same as generation captial cost
@@ -38,7 +38,7 @@ yaml = {'enabled': False,
         'est. transmission line cost': { True:500000, False:250000},
         'costs': 'IMPORT',
         'percent o&m': .01,
-        'percent heat recovered': .15,
+        'percent heat recovered': .20,
         }
       
 ## default values for yaml key/Value pairs
@@ -72,3 +72,9 @@ yaml_not_to_save = ['costs']
 
 ## list of prerequisites for module
 prereq_comps = []
+
+
+
+DESCRIPTION = """
+   This component calculates the potential electricity generation from diesel that could be offset by installing new wind power infrastructure. 
+"""

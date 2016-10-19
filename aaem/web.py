@@ -7,7 +7,7 @@ import shutil
 from importlib import import_module
 from aaem.components import comp_lib, comp_order
 from aaem.constants import hours_per_year
-from aaem import __file__
+from aaem import __file__, __version__
 
 import numpy as np
 
@@ -22,6 +22,11 @@ class WebSummary(object):
         model = driver.Driver(self.model_root)
         self.results = model.load_results(tag)
         #~ print self.results
+        
+        
+        self.version = __version__
+        self.data_version = "0.20.2"
+        
         self.directory = directory
         try:
             os.makedirs(self.directory)
