@@ -1,5 +1,12 @@
 #Change Log
 
+## [0.20.9]
+### added
+- new summary pages
+
+### changed
+- seconday nav bar 
+
 ## [0.20.8]
 ### added
 - MIT License
