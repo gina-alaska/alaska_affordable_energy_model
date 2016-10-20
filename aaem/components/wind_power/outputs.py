@@ -240,10 +240,10 @@ def generate_web_summary (web_object, community):
     charts = [
         {'name':'costs', 'data': str(table1).replace('nan','null'), 
          'title': 'Estimated Electricity Generation Fuel Costs per Year',
-         'type': "'$'"},
+         'type': "'$'",'plot': True,},
         {'name':'consumption', 'data': str(table2).replace('nan','null'), 
          'title':'Diesel Consumed for Electricity Generation ',
-         'type': "'other'"}
+         'type': "'other'",'plot': True,}
             ]
         
     ## generate html
@@ -258,7 +258,7 @@ def generate_web_summary (web_object, community):
                                     sections = web_object.get_summary_pages(),
                                     communities = web_object.get_all_coms(),
                                     description =  DESCRIPTION,
-                                    metadata = {"date": datetime.now(), "version": web_object.version, "data_version":web_object.data_version}
+                                    metadata = web_object.metadata,
                                     ))
  
 

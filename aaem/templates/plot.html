@@ -16,7 +16,7 @@
         //~ var cur_fmat = new google.visualization.NumberFormat({prefix:'$'})
         // make each chart
         {% for chart in charts %}
-            
+            {% if chart.plot %}
             // data
             var {{ chart.name }} = google.visualization.arrayToDataTable({{ chart.data.replace('"','') }})
             year_fmat.format({{ chart.name }},0)
@@ -40,13 +40,15 @@
             height = 600
 
             var {{ chart.name }}_options = {'title': '{{ com.replace("_"," ") }} {{ chart.title }}',
-                                            'width':width,
                                             'height':height,
-                                            chartArea:{left:100,top:50,width:'70%',height:'85%'},
+                                            chartArea:{height:'85%', width:'100%', left:100, right:200},
                                             hAxis: {format: '####',
                                                     title: 'year'},
                                             vAxis: dollar,
                                             {% if chart.stacked %} isStacked: 'relative', {% endif %}
+                                            
+                                            annotations:{style:'line'},
+                                            
                                             };
             
                         
@@ -75,7 +77,7 @@
       // draw table
       function drawTable_{{ chart.name }}() {
         var {{ chart.name }}_table = new google.visualization.Table(document.getElementById('{{ chart.name }}_chart'))
-        {{ chart.name }}_table.draw({{ chart.name }}, {'title': '{{ chart.title }}','width':1000, 'height':600,})
+        {{ chart.name }}_table.draw({{ chart.name }}, {'title': '{{ chart.title }}','width':'100%', 'height':600,})
       }
             
       // set up toggle
@@ -93,7 +95,8 @@
       var  {{ chart.name }}_plot = drawPlot_{{ chart.name }}()
       
       document.getElementById('{{ chart.name }}_png').outerHTML = '<button class="btn btn-default" onclick="location.href=\'' + {{ chart.name }}_plot.getImageURI() + '\' ">Printable Plot</button>'
-
-      {% endfor %}
+        
+    {% endif %} 
+    {% endfor %}
   }
 </script>

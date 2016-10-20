@@ -8,6 +8,7 @@ from importlib import import_module
 from aaem.components import comp_lib, comp_order
 from aaem.constants import hours_per_year
 from aaem import __file__, __version__
+from datetime import datetime
 
 import numpy as np
 
@@ -18,6 +19,7 @@ class WebSummary(object):
     
     def __init__ (self, model_root, directory, tag = ''):
         """ Class initialiser """
+        self.max_year = 2040
         self.model_root = model_root
         model = driver.Driver(self.model_root)
         self.results = model.load_results(tag)
@@ -26,6 +28,9 @@ class WebSummary(object):
         
         self.version = __version__
         self.data_version = "0.20.2"
+        self.metadata = {"date": datetime.strftime(datetime.now(),'%Y-%m-%d'),
+                         "version": self.version, 
+                         "data_version": self.data_version}
         
         self.directory = directory
         try:
@@ -92,7 +97,8 @@ class WebSummary(object):
                                     com = com ,
                                     reason = reason,
                                     sections = self.get_summary_pages(),
-                                    communities = self.get_all_coms()))
+                                    communities = self.get_all_coms(),
+                                    metadata = self.metadata,))
                 pass
 
     def copy_etc (self):
@@ -165,21 +171,23 @@ class WebSummary(object):
         population = res['community data'].get_item('forecast','population')
         p1 = population
         p1['year'] = p1.index
-        population_table = self.make_table(p1[['year','population']])
+        population_table = self.make_plot_table(p1[['year','population']])
         #~ print com
         
         charts_right = [
         {'name':'population', 'data': str(population_table).replace('nan','null'), 
          'title': 'Population Forecast',
-         'type': "'people'"},
+         'type': "'people'",
+         'plot': True,},
             ]
         try: 
             elec_price = res['community data'].get_item('community','electric non-fuel prices')
             elec_price ['year'] = elec_price.index
-            ep_table = self.make_table(elec_price[['year','price']], sigfig = 2)
+            ep_table = self.make_plot_table(elec_price[['year','price']], names = ['year', 'electricity price ($/kWh)'], sigfig = 2)
             charts_right.append({'name':'e_price', 'data': str(ep_table).replace('nan','null'), 
                         'title':'Electricity Price ($/kWh)',
-                        'type': "'currency'",})
+                        'type': "'currency'",
+                        'plot': True,})
         except TypeError: 
             pass
 
@@ -189,10 +197,11 @@ class WebSummary(object):
         diesel['year'] = diesel.index
         #~ print diesel
         diesel['Heating Fuel ($/gal)'] = diesel['Diesel Price ($/gal)'] + res['community data'].get_item('community','heating fuel premium')
-        d_table = self.make_table(diesel[['year','Diesel Price ($/gal)','Heating Fuel ($/gal)']], sigfig = 2)
+        d_table = self.make_plot_table(diesel[['year','Diesel Price ($/gal)','Heating Fuel ($/gal)']], sigfig = 2)
         charts_left.append({'name':'d_price', 'data': str(d_table).replace('nan','null'), 
-                        'title':'Fuel Price ($/kWh)',
-                        'type': "'currency'",})  
+                        'title':'Fuel Price',
+                        'type': "'currency'",
+                        'plot': True,})  
                         
         
         try:
@@ -216,13 +225,21 @@ class WebSummary(object):
             
             costs = costs[['year'] + list(costs.columns)[1:][::-1]]
             
-            costs_table = self.make_table(costs, sigfig = 2)
+            costs_table = self.make_plot_table(costs, sigfig = 2)
             charts_left.append({'name':'costs', 'data': str(costs_table).replace('nan','null'), 
                             'title':'Costs by Sector',
                             'type': "'percent'",
-                            'stacked': True,})  
+                            'stacked': True,
+                            'plot': True,})  
+            
+            #~ charts_left.append({'name':'', 'data': costs_table, 
+                            #~ 'title':'Costs by Sector',
+                            #~ 'plot': False,})  
         except AttributeError:
             pass
+            
+        
+            
         
         pth = os.path.join(self.directory, com,
                     'Financial and Demographic'.replace(' ','_').replace('(','').replace(')','').lower() + '.html')
@@ -234,12 +251,13 @@ class WebSummary(object):
                                 charts = charts_right +charts_left,
                                 summary_pages = ['Summary'] + comp_order ,
                                 sections = self.get_summary_pages(),
-                                communities = self.get_all_coms()
+                                communities = self.get_all_coms(),
+                                metadata = self.metadata,
                                 ))
                                 
     def consumption_summary (self, com):
         """ Function doc """
-        template = self.env.get_template('component.html')
+        template = self.env.get_template('demo.html')
         res = self.results[com]
         charts = []
         try:
@@ -251,14 +269,28 @@ class WebSummary(object):
                 consumption = res['forecast'].consumption
                 cols = ['year', "consumption kWh"]
                 names = ['Year', 'Total']
+            
+            
+                
             c1 = consumption
             c1['year'] = c1.index
+            
+            
+            c_map = res['forecast'].c_map
+            annotation = c_map[c_map['consumption_qualifier']\
+                                                    == 'M'].index.max() + 1
+            c1['annotation'] = np.nan 
+            c1['annotation'][annotation] = 'start of forecast'
+            
+            names.insert(1,'annotation')
+            cols.insert(1,'annotation')
         
-            consumption_table = self.make_table(c1[cols], names = names)
-        
+            consumption_table = self.make_plot_table(c1[cols] , names = names)
+            #~ print consumption_table
             charts.append({'name':'consumption', 'data': str(consumption_table).replace('nan','null'), 
                     'title':'Electricity consumed Consumed',
-                    'type': "'kWh'"})
+                    'type': "'kWh'",
+                        'plot': True,})
         except AttributeError: 
             pass
             
@@ -288,11 +320,11 @@ class WebSummary(object):
             
             diesel_consumption = diesel_consumption[['year'] + list(diesel_consumption.columns)[1:][::-1]]
             
-            diesel_consumption_table = self.make_table(diesel_consumption, sigfig = 2)
+            diesel_consumption_table = self.make_plot_table(diesel_consumption, sigfig = 2)
             charts.append({'name':'diesel_consumption', 'data': str(diesel_consumption_table).replace('nan','null'), 
                             'title':'Energy Consumption',
                             'type': "'percent'",
-                            'stacked': True})  
+                            'stacked': True,'plot': True,})  
         except AttributeError:
             pass
             
@@ -304,12 +336,13 @@ class WebSummary(object):
                                     charts = charts,
                                     summary_pages = ['Summary'] + comp_order ,
                                     sections = self.get_summary_pages(),
-                                    communities = self.get_all_coms()
+                                    communities = self.get_all_coms(),
+                                    metadata = self.metadata,
                                     ))
         
     def generation_summary (self, com):
         """ Function doc """
-        template = self.env.get_template('component.html')
+        template = self.env.get_template('demo.html')
         res = self.results[com]
         charts = []
         try:
@@ -328,21 +361,32 @@ class WebSummary(object):
                                                                         'generation_wind [kWh/year]',
                                                                         'generation_solar [kWh/year]',
                                                                         'generation_biomass [kWh/year]']]
-        
+                                                                        
+              
+                                                                    
             generation['year']=generation.index
             generation = generation[['year'] + list(generation.columns)[:-1][::-1]]
-            generation_table = self.make_table(generation, sigfig = 2)
+            
+            c_map = res['forecast'].c_map
+            annotation = c_map[c_map['consumption_qualifier']\
+                                                    == 'M'].index.max() + 1
+            generation['annotation'] = np.nan 
+            generation['annotation'][annotation] = 'start of forecast'
+        
+            generation = generation[['year','annotation'] + list(generation.columns[1:-1])]
+            
+            generation_table = self.make_plot_table(generation, sigfig = 2)
             charts.append({'name':'generation', 'data': 
                            str(generation_table).replace('nan','null'), 
                                 'title':'generation',
-                                'type': "'gallons'",})  
+                                'type': "'gallons'",'plot': True,})  
         except AttributeError:
             pass
         
         #~ hh = DataFrame(costs['year'])
         #~ hh['households']=res['Residential Energy Efficiency'].households
         #~ print hh
-        #~ hh_table = self.make_table(hh)
+        #~ hh_table = self.make_plot_table(hh)
         #~ charts.append({'name':'hh', 'data': str(hh_table).replace('nan','null'), 
                             #~ 'title':'housholds',
                             #~ 'type': "'households'"}) 
@@ -354,18 +398,24 @@ class WebSummary(object):
             except AttributeError:    
                 avg_load = res['forecast'].consumption
             
-            names = ['Year', 'Average Load']
+            names = ['Year', 'annotation', 'Average Load']
             avg_load = avg_load
             avg_load['year'] = avg_load.index
+            
+            c_map = res['forecast'].c_map
+            annotation = c_map[c_map['consumption_qualifier']\
+                                                    == 'M'].index.max() + 1
+            avg_load['annotation'] = np.nan 
+            avg_load['annotation'][annotation] = 'start of forecast'
             
             
             avg_load['Average Load'] = avg_load["consumption kWh"]/hours_per_year
         
-            avg_load_table = self.make_table(avg_load[['year', "Average Load"]], names = names)
+            avg_load_table = self.make_plot_table(avg_load[['year', 'annotation', 'Average Load']], names = names)
         
             charts.append({'name':'avg_load', 'data': str(avg_load_table).replace('nan','null'), 
                     'title':'Averag Load',
-                    'type': "'kW'"})
+                    'type': "'kW'",'plot': True,})
         except AttributeError: 
             pass
         
@@ -399,16 +449,24 @@ class WebSummary(object):
             line_loss['diesel generation efficiency'].ix[ yes_years ] = yes['efficiency'].values
         #~ print line_losxs
 
+        
+        try:
+            line_loss['annotation'] = np.nan 
+            line_loss['annotation'][int(max(yes_years))] = 'start of forecast'
+        except:
+            line_loss['annotation'] = np.nan 
+            line_loss['annotation'][start] = 'start of forecast'
+
         line_loss = line_loss.replace([np.inf, -np.inf], np.nan)
-        line_loss_table = self.make_table(line_loss[['year', "line losses"]],sigfig = 2)
+        line_loss_table = self.make_plot_table(line_loss[['year', 'annotation', "line losses"]],sigfig = 2)
         charts.append({'name':'line_loss', 'data': str(line_loss_table).replace('nan','null'), 
                 'title':'line losses',
-                'type': "'percent'"})
+                'type': "'percent'",'plot': True,})
 
-        gen_eff_table = self.make_table(line_loss[['year', 'diesel generation efficiency']],sigfig = 2)
+        gen_eff_table = self.make_plot_table(line_loss[['year', 'annotation', 'diesel generation efficiency']],sigfig = 2)
         charts.append({'name':'gen_eff_loss', 'data': str(gen_eff_table).replace('nan','null'), 
                 'title':'Diesel Genneration Efficiency',
-                'type': "'gal/kWh'"})
+                'type': "'gal/kWh'",'plot': True,})
             
 
         pth = os.path.join(self.directory, com,
@@ -419,7 +477,8 @@ class WebSummary(object):
                                     charts = charts,
                                     summary_pages = ['Summary'] + comp_order ,
                                     sections = self.get_summary_pages(),
-                                    communities = self.get_all_coms()
+                                    communities = self.get_all_coms(),
+                                    metadata = self.metadata,
                                     ))
         
         
@@ -491,10 +550,61 @@ class WebSummary(object):
                                     summary_pages = ['Summary'] + comp_order ,
                                     sections = self.get_summary_pages(),
                                     communities = self.get_all_coms(),
-                                    potential_projects = projs
+                                    potential_projects = projs,
+                                    metadata = self.metadata,
                                     ))
                                         
 
+        
+        
+        
+    def make_plot_table (self, xs, ys = None, names = None, sigfig=0):
+        """
+        make a table
+        
+        inputs:
+        outputs:    
+            returns plotting_table, a table that can be used to make a google chart
+        """
+        if type(xs) == DataFrame and len(xs.columns) > 1:
+            x_name = xs.columns[0]
+            y_name = list(xs.columns[1:])
+        else:
+            # todo:fix order
+            x_name = xs.keys()[0]
+            y_name = ys.keys()
+            xs.update(ys)
+            xs = DataFrame(xs)[[x_name] + y_name]
+            
+        if names is None:
+            names = [x_name] + y_name
+        
+        header = []
+        years = None
+        anno = None
+        for name in names:
+            if name == 'annotation':
+                header.append("{type: 'string', role: 'annotation'}")
+                anno = name
+            else:
+                header.append("{label: '"+name+"', type: 'number'}")
+        
+        if not anno is None:
+            xs[anno+'_text'] = xs[anno] 
+            header.append("{type: 'string', role: 'annotationText'}")    
+        
+        for name in xs.columns:
+            if name.lower() == 'year':
+                years = name
+                xs[name] = xs[name].astype(int)
+            
+        if not years is None:
+            xs = xs[xs[years] <= self.max_year]
+            
+        plotting_table = xs.round(sigfig).values.tolist()
+        plotting_table.insert(0,header)
+        #~ print plotting_table
+        return plotting_table 
         
     def make_table (self, xs, ys = None, names = None, sigfig=0):
         """
@@ -518,8 +628,18 @@ class WebSummary(object):
             names = [x_name] + y_name
         
         header = []
+        years = None
         for name in names:
-            header.append("{label: '"+name+"', type: 'number'}")
+            header.append(name)
+            
+        for name in xs.columns:
+            if name.lower() == 'year':
+                years = name
+                xs[name] = xs[name].astype(int)
+            
+        if not years is None:
+            xs = xs[xs[years] <= self.max_year]
+            
         plotting_table = xs.round(sigfig).values.tolist()
         plotting_table.insert(0,header)
         return plotting_table 
