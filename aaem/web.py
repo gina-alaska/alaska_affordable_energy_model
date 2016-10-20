@@ -59,8 +59,6 @@ class WebSummary(object):
     def generate_web_summaries (self, com):
         """
         """
-        #~ print com
-        #~ comps = self.get_viable_components(com)
         os.mkdir(os.path.join(self.directory, com))
         self.finances_demo_summary(com)
         self.consumption_summary(com)
@@ -68,8 +66,21 @@ class WebSummary(object):
         self.projects_summary(com)
         #~ self.get_web_summary(comp_lib['Biomass for Heat (Cordwood)'])(self, com)
         #~ return 
+        components = set(comp_order)
         
-        for comp in comp_lib:
+        it = self.results[com]['community data'].intertie
+        if not it is None:
+            if it == 'parent':
+                components = set(["Wind Power", 'Solar Power',  'Hydropower',
+                              'Transmission and Interties','Diesel Efficiency'])
+            else:
+                components = set(comp_order) - set(["Wind Power", 'Solar Power',  'Hydropower',
+                              'Transmission and Interties','Diesel Efficiency'])
+        
+        
+        re_dirs = set(comp_order) - components
+        
+        for comp in components:
             #~ print comp
             try:
                 self.get_web_summary(comp_lib[comp])(self, com)
@@ -78,20 +89,11 @@ class WebSummary(object):
                 template = self.env.get_template('no_results.html')
                 #~ if comp in ['Solar Power','Wind Power','Heat Recovery'] :
                 pth = os.path.join(self.directory, com, comp.replace(' ','_').replace('(','').replace(')','').lower() +'.html')
-                    #~ t = comp
-                #~ print comp, e
-                #~ elif comp == 'Wind Power':
-                    #~ pth = os.path.join(self.directory, com +'_wind_summary.html')
-                    #~ t = 'Wind Power'
-                    #~ print comp, e
-                #~ elif comp == 'Heat Recovery':
-                    #~ pth = os.path.join(self.directory, com +'_heat_recovery_summary.html')
-                    #~ t = 'Heat Recovery'
-                    #~ print comp, e
-                #~ else:
-                    #~ continue
+
                 with open(pth, 'w') as html:
                     reason = self.results[com][comp].reason
+                    if reason.lower() == 'ok':
+                        reason = "The component has a bad motivater"
                     html.write(template.render( 
                                     type = comp, 
                                     com = com ,
@@ -99,7 +101,22 @@ class WebSummary(object):
                                     sections = self.get_summary_pages(),
                                     communities = self.get_all_coms(),
                                     metadata = self.metadata,))
-                pass
+                                    
+            template = self.env.get_template('no_results.html')
+            for comp in re_dirs:
+                
+                pth = os.path.join(self.directory, com, comp.replace(' ','_').replace('(','').replace(')','').lower() +'.html')
+
+                with open(pth, 'w') as html:
+                    reason = "REDIRECT " + "parent" if it == "child" else "child"
+                    
+                    html.write(template.render( 
+                                    type = comp, 
+                                    com = com ,
+                                    reason = reason,
+                                    sections = self.get_summary_pages(),
+                                    communities = self.get_all_coms(),
+                                    metadata = self.metadata,))
 
     def copy_etc (self):
         
@@ -160,8 +177,10 @@ class WebSummary(object):
         keys = sorted([k for k in self.results.keys() if k.find('+') == -1])
         self.copy_etc()
         for com in keys:#["Stebbins","Adak","Brevig_Mission"]:
-            #~ print com
+            print com
+            start = datetime.now()
             self.generate_web_summaries(com)
+            print datetime.now() - start
             #~ return
                                         
     def finances_demo_summary (self, com):
@@ -452,7 +471,7 @@ class WebSummary(object):
         
         try:
             line_loss['annotation'] = np.nan 
-            line_loss['annotation'][int(max(yes_years))] = 'start of forecast'
+            line_loss['annotation'][int(max(yes_years)) + 1] = 'start of forecast'
         except:
             line_loss['annotation'] = np.nan 
             line_loss['annotation'][start] = 'start of forecast'
@@ -487,7 +506,7 @@ class WebSummary(object):
         template = self.env.get_template('potential_projects.html')
         res = self.results[com]
 
-
+        
        
         cats = {}
         
@@ -499,9 +518,30 @@ class WebSummary(object):
                 comps = ['Wind Power']
             elif i.find('heat_recovery') != -1:
                 comps =['Heat Recovery']
+            
+            it = self.results[com]['community data'].intertie    
+            
             for comp in comps:  
                 if comp in ['forecast', 'community data']:
                     continue
+                  
+                it = self.results[com]['community data'].intertie
+                if not it is None:
+                    if it == 'parent' and not comp in ["Wind Power",
+                                                         'Solar Power',
+                                                          'Hydropower',
+                                                         'Transmission and Interties',
+                                                         'Diesel Efficiency']:
+                        continue
+                    if it == 'child' and comp in ["Wind Power",
+                                                         'Solar Power',
+                                                          'Hydropower',
+                                                         'Transmission and Interties',
+                                                         'Diesel Efficiency']:
+                        continue
+                        
+                                                             
+                    
                 c = self.results[i][comp]
                 ratio = c.get_BC_ratio()
                 if 'N/A' == ratio:
@@ -521,7 +561,26 @@ class WebSummary(object):
                 if not comp in cats.keys():
                     cats[comp] = []
                     
-                
+                lcoe_e = 0
+                lcoe_hf = 0
+                try:
+                    try:
+                        lcoe_e = c.levelized_cost_of_energy['kWh']
+                        lcoe_hf = c.levelized_cost_of_energy['MMBtu']
+                    except:
+                        if comp in ["Wind Power",'Solar Power','Hydropower',
+                                    'Transmission and Interties','Diesel Efficiency']:
+                            lcoe_e = c.levelized_cost_of_energy
+                        else:
+                            lcoe_hf = c.levelized_cost_of_energy
+                except AttributeError:
+                    pass
+                    
+                fs = 0
+                try:
+                    fs = c.get_fuel_total_saved()[0]
+                except:
+                    pass
                 cats[comp].append({'name':name.decode('unicode_escape').encode('ascii','ignore'),
                               'sucess': True if ratio > 1.0 else False,
                               'comp':comp,
@@ -529,9 +588,9 @@ class WebSummary(object):
                               'costs': '${:,.0f}'.format(0 if c.get_NPV_costs() == 'N/A' else c.get_NPV_costs()),
                               'net': '${:,.0f}'.format(0 if c.get_NPV_net_benefit() == 'N/A' else c.get_NPV_net_benefit()),
                               'ratio': '{:,.2f}'.format(ratio),
-                              'lcoe_e':0,
-                              'lcoe_hf':0,
-                              'fuel_saved':0 })
+                              'lcoe_e':lcoe_e,
+                              'lcoe_hf':lcoe_hf,
+                              'fuel_saved':fs})
          
         projs =[]
         for comp in ["Residential Energy Efficiency", "Non-residential Energy Efficiency",
@@ -539,7 +598,10 @@ class WebSummary(object):
                     'Hydropower','Transmission and Interties','Diesel Efficiency',
                     'Biomass for Heat (Cordwood)', 'Biomass for Heat (Pellet)',
                     'Residential ASHP', 'Non-Residential ASHP', 'Heat Recovery']:
-            projs += cats[comp]
+            try:
+                projs += cats[comp]
+            except KeyError:
+                pass
         
         
         pth = os.path.join(self.directory, com,
