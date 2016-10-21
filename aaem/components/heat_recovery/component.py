@@ -130,7 +130,22 @@ class HeatRecovery (AnnualSavings):
  
     def calc_proposed_heat_recovery (self):
         """
-        heat_recovery(gal diesel) = generation diesel (gal diesel) * .05 / .75
+        calculate the proposed heat recovery 
+        
+        if Project details exist:
+            proposed_heat_recovery = projects 'proposed gallons diesel offset'
+            
+        hr_available = %hr * diesel_for_generation
+        potential_hr = 'Est. potential annual heating fuel gallons displaced'
+        if hr_opp and waste_heat_available:
+            if potential_hr  unknown:
+                proposed_heat_recovery = (hr_available * .3) / 
+                                          'heating conversion efficiency'
+            else:
+                proposed_heat_recovery = potential_hr/
+                                         'heating conversion efficiency'
+        else:
+            proposed_heat_recovery = 0
         
         """
         p_gallons = self.comp_specs["project details"]\
@@ -143,20 +158,11 @@ class HeatRecovery (AnnualSavings):
             self.proposed_heat_recovery = p_gallons
             return
         # else:
-        b1 = self.comp_specs['estimate data']\
+        hr_opp = self.comp_specs['estimate data']\
                     ['Waste Heat Recovery Opperational']
-        b2 = self.comp_specs['estimate data']\
+        waste_heat_available = self.comp_specs['estimate data']\
                     ['Add waste heat Avail']
                     
-              
-        
-        #~ current_hr = self.comp_specs['estimate data']\
-                    #~ ['Est. current annual heating fuel gallons displaced'] 
-        #~ try:
-            #~ np.isnan(current_hr)
-        #~ except TypeError:
-            #~ current_hr = np.nan            
-        
         potential_hr = self.comp_specs['estimate data']\
                     ['Est. potential annual heating fuel gallons displaced']
         
@@ -164,7 +170,6 @@ class HeatRecovery (AnnualSavings):
             np.isnan(potential_hr)
         except TypeError:
             potential_hr = np.nan            
-        
         
         generation = self.forecast.generation_by_type['generation diesel']\
                                                             [self.start_year]
@@ -174,34 +179,19 @@ class HeatRecovery (AnnualSavings):
         diesel_consumed = generation / gen_eff
         hr_available = self.comp_specs['percent heat recovered'] * \
                           diesel_consumed
-        #notes
-        #if b1 == 'Yes' and b2 == 'Yes':
-        #   if hr_used is known and hr_proposed is not
-        #      hr_used, hr_proposed = .30 * hr_available
-        #   if hr_used is unknown and hr_proposed is unknown
-        #      hr_used= .70 * hr_available, hr_proposed = .30 * hr_available
-        #if b1 == 'Yes' and b2 == 'no':
-        #   if hr_used is known:
-        #       hr_used
-        #   else:
-        #       hr_used = hr_avaiavble
-        #if b1 == 'No' and b2 == 'No':
-        #   system needs to be installed        
-        if b1 == 'Yes' and b2 == 'Yes' and np.isnan(potential_hr):
+
+        if hr_opp == 'Yes' and waste_heat_available == 'Yes' and \
+           np.isnan(potential_hr):
             potential_hr = ((hr_available) * .30)
-        if b1 == 'Yes' and b2 == 'Yes':
+        if hr_opp == 'Yes' and waste_heat_available == 'Yes':
             pass #potential_hr 
-        elif b1 == 'Yes' and b2 == 'No':
+        elif hr_opp == 'Yes' and waste_heat_available == 'No':
             potential_hr = 0
         else:
             potential_hr = 0
             
-        
-
-        
         self.proposed_heat_recovery = potential_hr / \
                                 self.comp_specs['heating conversion efficiency']
-    
     
     # Make this do stuff
     def calc_capital_costs (self):
