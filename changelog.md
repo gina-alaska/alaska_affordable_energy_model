@@ -5,6 +5,9 @@
 - main summary csvs
 - collapsable panels on main summaries
 
+### changed 
+- clean up of heat recovery component code preformed
+
 ### fixed
 - proper data version is used in html
 
