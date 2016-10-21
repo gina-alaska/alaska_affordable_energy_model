@@ -63,7 +63,7 @@ class WebSummary(object):
     def generate_web_summaries (self, com):
         """
         """
-        os.mkdir(os.path.join(self.directory, com))
+        os.makedirs(os.path.join(self.directory, com, 'csv'))
         self.finances_demo_summary(com)
         self.consumption_summary(com)
         self.generation_summary(com)
@@ -194,7 +194,7 @@ class WebSummary(object):
         population = res['community data'].get_item('forecast','population')
         p1 = population
         p1['year'] = p1.index
-        population_table = self.make_plot_table(p1[['year','population']])
+        population_table = self.make_plot_table(p1[['year','population']] , community = com, fname = com+"_population.csv")
         #~ print com
         
         charts_right = [
@@ -206,8 +206,8 @@ class WebSummary(object):
         try: 
             elec_price = res['community data'].get_item('community','electric non-fuel prices')
             elec_price ['year'] = elec_price.index
-            ep_table = self.make_plot_table(elec_price[['year','price']], names = ['year', 'electricity price ($/kWh)'], sigfig = 2)
-            charts_right.append({'name':'e_price', 'data': str(ep_table).replace('nan','null'), 
+            ep_table = self.make_plot_table(elec_price[['year','price']], names = ['year', 'electricity price ($/kWh)'], sigfig = 2, community = com, fname = com+"_electricity_price.csv")
+            charts_right.append({'name':'electricity_price', 'data': str(ep_table).replace('nan','null'), 
                         'title':'Electricity Price ($/kWh)',
                         'type': "'currency'",
                         'plot': True,})
@@ -220,8 +220,8 @@ class WebSummary(object):
         diesel['year'] = diesel.index
         #~ print diesel
         diesel['Heating Fuel ($/gal)'] = diesel['Diesel Price ($/gal)'] + res['community data'].get_item('community','heating fuel premium')
-        d_table = self.make_plot_table(diesel[['year','Diesel Price ($/gal)','Heating Fuel ($/gal)']], sigfig = 2)
-        charts_left.append({'name':'d_price', 'data': str(d_table).replace('nan','null'), 
+        d_table = self.make_plot_table(diesel[['year','Diesel Price ($/gal)','Heating Fuel ($/gal)']], sigfig = 2, community = com, fname = com+"_diesel_price.csv")
+        charts_left.append({'name':'diesel_price', 'data': str(d_table).replace('nan','null'), 
                         'title':'Fuel Price',
                         'type': "'currency'",
                         'plot': True,})  
@@ -248,7 +248,7 @@ class WebSummary(object):
             
             costs = costs[['year'] + list(costs.columns)[1:][::-1]]
             
-            costs_table = self.make_plot_table(costs, sigfig = 2)
+            costs_table = self.make_plot_table(costs, sigfig = 2, community = com, fname = com+"_costs.csv")
             charts_left.append({'name':'costs', 'data': str(costs_table).replace('nan','null'), 
                             'title':'Costs by Sector',
                             'type': "'percent'",
@@ -308,7 +308,7 @@ class WebSummary(object):
             names.insert(1,'annotation')
             cols.insert(1,'annotation')
         
-            consumption_table = self.make_plot_table(c1[cols] , names = names)
+            consumption_table = self.make_plot_table(c1[cols] , names = names, community = com, fname = com+"_consumption.csv")
             #~ print consumption_table
             charts.append({'name':'consumption', 'data': str(consumption_table).replace('nan','null'), 
                     'title':'Electricity consumed Consumed',
@@ -343,7 +343,7 @@ class WebSummary(object):
             
             diesel_consumption = diesel_consumption[['year'] + list(diesel_consumption.columns)[1:][::-1]]
             
-            diesel_consumption_table = self.make_plot_table(diesel_consumption, sigfig = 2)
+            diesel_consumption_table = self.make_plot_table(diesel_consumption, sigfig = 2, community = com, fname = com+"_diesel_consumption.csv")
             charts.append({'name':'diesel_consumption', 'data': str(diesel_consumption_table).replace('nan','null'), 
                             'title':'Energy Consumption',
                             'type': "'percent'",
@@ -398,7 +398,7 @@ class WebSummary(object):
         
             generation = generation[['year','annotation'] + list(generation.columns[1:-1])]
             
-            generation_table = self.make_plot_table(generation, sigfig = 2)
+            generation_table = self.make_plot_table(generation, sigfig = 2, community = com, fname = com+"_generation.csv")
             charts.append({'name':'generation', 'data': 
                            str(generation_table).replace('nan','null'), 
                                 'title':'generation',
@@ -434,7 +434,7 @@ class WebSummary(object):
             
             avg_load['Average Load'] = avg_load["consumption kWh"]/hours_per_year
         
-            avg_load_table = self.make_plot_table(avg_load[['year', 'annotation', 'Average Load']], names = names)
+            avg_load_table = self.make_plot_table(avg_load[['year', 'annotation', 'Average Load']], names = names, community = com, fname = com+"_avg_load.csv")
         
             charts.append({'name':'avg_load', 'data': str(avg_load_table).replace('nan','null'), 
                     'title':'Averag Load',
@@ -481,13 +481,13 @@ class WebSummary(object):
             line_loss['annotation'][start] = 'start of forecast'
 
         line_loss = line_loss.replace([np.inf, -np.inf], np.nan)
-        line_loss_table = self.make_plot_table(line_loss[['year', 'annotation', "line losses"]],sigfig = 2)
+        line_loss_table = self.make_plot_table(line_loss[['year', 'annotation', "line losses"]],sigfig = 2, community = com, fname = com+"_line_loss.csv")
         charts.append({'name':'line_loss', 'data': str(line_loss_table).replace('nan','null'), 
                 'title':'line losses',
                 'type': "'percent'",'plot': True,})
 
-        gen_eff_table = self.make_plot_table(line_loss[['year', 'annotation', 'diesel generation efficiency']],sigfig = 2)
-        charts.append({'name':'gen_eff_loss', 'data': str(gen_eff_table).replace('nan','null'), 
+        gen_eff_table = self.make_plot_table(line_loss[['year', 'annotation', 'diesel generation efficiency']],sigfig = 2, community = com, fname = com+"_generation_efficiency.csv")
+        charts.append({'name':'generation_efficiency', 'data': str(gen_eff_table).replace('nan','null'), 
                 'title':'Diesel Genneration Efficiency',
                 'type': "'gal/kWh'",'plot': True,})
             
@@ -624,7 +624,8 @@ class WebSummary(object):
         
         
         
-    def make_plot_table (self, xs, ys = None, names = None, sigfig=0):
+    def make_plot_table (self, xs, ys = None, names = None, sigfig=0,
+                         community = None, fname = None):
         """
         make a table
         
@@ -668,11 +669,20 @@ class WebSummary(object):
             xs = xs[xs[years] <= self.max_year]
             
         plotting_table = xs.round(sigfig).values.tolist()
+        
+        
+        if not community is None and not fname is None:
+            cols = [c for c in \
+                    xs.columns if c.lower().find('annotation_text') == -1]
+            xs[cols].round(sigfig).to_csv(os.path.join(self.directory,
+                                             community,'csv', fname),
+                                index=False)
         plotting_table.insert(0,header)
         #~ print plotting_table
         return plotting_table 
         
-    def make_table (self, xs, ys = None, names = None, sigfig=0):
+    def make_table (self, xs, ys = None, names = None, sigfig=0,
+                    community = None, fname = None):
         """
         make a table
         
@@ -707,6 +717,14 @@ class WebSummary(object):
             xs = xs[xs[years] <= self.max_year]
             
         plotting_table = xs.round(sigfig).values.tolist()
+       
+        if not community is None and not fname is None:
+            cols = [c for c in \
+                    xs.columns if c.lower().find('annotation_text') == -1]
+            xs[cols].round(sigfig).to_csv(os.path.join(self.directory,
+                                             community,'csv', fname),
+                                index=False)
+        
         plotting_table.insert(0,header)
         return plotting_table 
     
