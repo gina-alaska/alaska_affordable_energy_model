@@ -61,7 +61,7 @@ class Preprocessor (object):
                "PRICES_NONELECTRIC": 'prices_non-electric_fixed.csv',
                "COPIES":'copies.csv',
                "GENERATION_LIMITS":'renewable_generation_capacities.csv',
-               #~ 'construction_multipliers': 'construction_multipliers.yaml'
+               #~ 'construction_multipliers': 'construction_multipliers.yaml',
                }
     
     

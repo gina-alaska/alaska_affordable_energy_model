@@ -11,6 +11,7 @@ from aaem import __file__, __version__
 from datetime import datetime
 
 import numpy as np
+import yaml
 
 #WHAT TO DO IF ALL PLOT DATA IS NANS?
 #~ import aaem
@@ -26,8 +27,11 @@ class WebSummary(object):
         #~ print self.results
         
         
+       
         self.version = __version__
-        self.data_version = "0.20.2"
+        with open(os.path.join(self.model_root,'input_files',
+                    '__metadata','input_files_metadata.yaml'), 'r') as md:
+            self.data_version = yaml.load(md)['data version']
         self.metadata = {"date": datetime.strftime(datetime.now(),'%Y-%m-%d'),
                          "version": self.version, 
                          "data_version": self.data_version}
