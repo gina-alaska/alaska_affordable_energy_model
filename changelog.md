@@ -1,13 +1,23 @@
 #Change Log
 
+## [INSERT]
+### added
+- main summary csvs
+- collapsable panels on main summaries
+
+### fixed
+- proper data version is used in html
+
 ## [0.20.10]
 ### added
 - footer
 - place holder pages for intertie rediects, needs to be updated with links to parents/childern 
+- annotations to summary plots
 
 ### changed
 - Html formating
 - chanded default wind config values
+- summary plots end in 2040
 
 ## [0.20.9]
 ### added
