@@ -1,5 +1,14 @@
 #Change Log
 
+## [0.20.10]
+### added
+- footer
+- place holder pages for intertie rediects, needs to be updated with links to parents/childern 
+
+### changed
+- Html formating
+- chanded default wind config values
+
 ## [0.20.9]
 ### added
 - new summary pages
