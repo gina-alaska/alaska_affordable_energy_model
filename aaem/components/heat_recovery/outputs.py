@@ -12,7 +12,21 @@ from aaem.components import comp_order
 import aaem.web_lib as wl
     
 ## component summary
-def component_summary (coms, res_dir):
+def component_summary (results, res_dir):
+    """ 
+    creats the regional and communites summary for the component 
+    
+    inputs:
+        results: results from the model
+        res_dir: location to save file
+    
+    outputs:
+        saves a summaries in res-dir
+    """
+    communities_summary (results, res_dir)
+    save_regional_summary(create_regional_summary (results), res_dir)
+    
+def communities_summary (coms, res_dir):
     """
     """
     out = []
@@ -89,7 +103,81 @@ def component_summary (coms, res_dir):
     #~ fd.close()
     data.to_csv(f_name, mode='w')
     
+def create_regional_summary (results):
+    """
+    create the regional summary for this component
     
+    inputs:
+        results: results from the model
+       
+    outputs:
+        returns summary as a data frame
+    """
+    regions = {}
+    for c in results:
+        c_region = results[c]['community data'].get_item('community','region')
+        comp = results[c]['Biomass for Heat (Cordwood)']
+        #~ print comp
+        bc_ratio = comp.get_BC_ratio()
+        bc_ratio = (not type(bc_ratio) is str) and (not np.isinf(bc_ratio))\
+                                              and (bc_ratio > 1)
+        #~ print bc_ratio ,comp.get_BC_ratio()
+        #~ return
+        capex = comp.get_NPV_costs().round(0) if bc_ratio else 0
+        net_benefit = comp.get_NPV_net_benefit().round(0) if bc_ratio else 0
+        displaced_hoil = comp.heat_diesel_displaced.round(0) if bc_ratio else 0
+        
+        
+        
+        if results[c]['community data'].intertie == 'parent' or \
+                                                            c.find('+') != -1:
+            continue
+        if c_region in regions.keys():
+            ## append entry
+            regions[c_region]['Number of communities in region'] +=1
+            k = 'Number of communities with cost effective projects'
+            regions[c_region][k] += 1 if bc_ratio else 0
+            k = 'Investment needed for cost-effective projects'
+            regions[c_region][k] += capex 
+            k = 'Net benefit of cost-effective projects'
+            regions[c_region][k] += net_benefit
+            k = 'Heating oil displaced by cost-effective projects'
+            regions[c_region][k] += displaced_hoil
+            
+        else:
+            ## set up "first" entry
+            regions[c_region] = {'Number of communities in region':1}
+            k = 'Number of communities with cost effective projects'
+            regions[c_region][k] = 1 if bc_ratio else 0
+            k = 'Investment needed for cost-effective projects'
+            regions[c_region][k] = capex 
+            k = 'Net benefit of cost-effective projects'
+            regions[c_region][k] = net_benefit
+            k = 'Heating oil displaced by cost-effective projects'
+            regions[c_region][k] = displaced_hoil
+            
+    summary = DataFrame(regions).T[['Number of communities in region',
+                        'Number of communities with cost effective projects',
+                        'Investment needed for cost-effective projects',
+                        'Net benefit of cost-effective projects',
+                        'Heating oil displaced by cost-effective projects']]
+    
+    summary.ix['All Regions'] = summary.sum()  
+    return summary
+    
+def save_regional_summary (summary, res_dir):
+    """ 
+    inputs:
+        summary: summary dataframe
+        res_dir: location to save file
+    
+    outputs:
+        save a regional summary in res-dir
+    """
+    f_name = os.path.join(res_dir, '__regional_' +
+                COMPONENT_NAME.lower().replace(' ','_').\
+                    replace('(','').replace(')','') + '_summary.csv')
+    summary.to_csv(f_name, mode='w', index_label='region')
     
 def generate_web_summary (web_object, community):
     """
