@@ -207,11 +207,18 @@ def create_regional_summary (results):
             k = 'Generation diesel displaced by cost-effective projects'
             regions[c_region][k] = displaced_fuel
             
-    summary = DataFrame(regions).T[['Number of communities/interties in region',
+    try:
+        summary = DataFrame(regions).T[['Number of communities/interties in region',
                         'Number of communities with cost effective projects',
                         'Investment needed for cost-effective projects',
                         'Net benefit of cost-effective projects',
                     'Generation diesel displaced by cost-effective projects']]
+    except KeyError:
+        summary = DataFrame(columns = ['Number of communities/interties in region',
+                        'Number of communities with cost effective projects',
+                        'Investment needed for cost-effective projects',
+                        'Net benefit of cost-effective projects',
+                    'Generation diesel displaced by cost-effective projects'])
     summary.ix['All Regions'] = summary.sum()                 
     #~ print summary
     return summary

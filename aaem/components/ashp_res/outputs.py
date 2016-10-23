@@ -155,6 +155,9 @@ def create_regional_summary (results):
         net_benefit = round(comp.get_NPV_net_benefit(),0)  if bc_ratio else 0
         displaced_hoil = round(comp.heating_oil_saved,0) if bc_ratio else 0
         
+        add_kW = round(comp.monthly_value_table['kWh consumed'].max()/\
+                                (24 * 31),0) if bc_ratio else 0
+        
         
         
         if results[c]['community data'].intertie == 'parent' or \
@@ -171,6 +174,8 @@ def create_regional_summary (results):
             regions[c_region][k] += net_benefit
             k = 'Heating oil displaced by cost-effective projects'
             regions[c_region][k] += displaced_hoil
+            k = 'Additional capacity needed (kW)'
+            regions[c_region][k] += add_kW
             
         else:
             ## set up "first" entry
@@ -183,12 +188,15 @@ def create_regional_summary (results):
             regions[c_region][k] = net_benefit
             k = 'Heating oil displaced by cost-effective projects'
             regions[c_region][k] = displaced_hoil
+            k = 'Additional capacity needed (kW)'
+            regions[c_region][k] = add_kW
             
     summary = DataFrame(regions).T[['Number of communities in region',
                         'Number of communities with cost effective projects',
                         'Investment needed for cost-effective projects',
                         'Net benefit of cost-effective projects',
-                        'Heating oil displaced by cost-effective projects']]
+                        'Heating oil displaced by cost-effective projects',
+                        'Additional capacity needed (kW)']]
     
     summary.ix['All Regions'] = summary.sum()  
     return summary
