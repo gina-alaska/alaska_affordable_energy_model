@@ -35,7 +35,7 @@
             {%if chart.plot %}
                 <div id="{{chart.name}}_chart"></div>
             
-            {% else %}
+            {% elif chart.table %}
                 <table class="table table-striped">
                 <thead>
                     <tr>{% for col in chart.data[0] %}<td> {{col}} </td> {% endfor %}</tr>
@@ -46,7 +46,8 @@
                     </tr>{% endfor %}
                 </tbody>
                 </table>
-                
+            {% else %}
+                <p>This plot/table could not be generateted. {{ chart.data }}</P>
             {% endif %}
             </div>
         </div>
