@@ -29,29 +29,29 @@
     <div class = 'charts'>
         {% for chart in charts %}
         <div class="panel panel-default">
-        <div class="panel-heading"> {{ chart.title }} <small class="hidy" data-toggle="collapse" data-target="#{{ chart.title.replace(' ','_').replace(')','').replace('(','').replace('#','').replace('$','').replace(',','').replace('/','').lower() }}"></small> </div>
-        <div id="{{ chart.title.replace(' ','_').replace(')','').replace('(','').replace('#','').replace(',','').replace('/','').replace('$','').lower() }}" class="panel-collapse collapse in">
-            <div class="panel-body center-block">
-                <div class="{{chart.name}}">
-                {%if chart.plot %}
-                    <div id="{{chart.name}}_chart"></div>
+            <div class="panel-heading"> {{ chart.title }} <small class="hidy" data-toggle="collapse" data-target="#{{ chart.title.replace(' ','_').replace(')','').replace('(','').replace('#','').replace('$','').replace(',','').replace('/','').lower() }}"></small> </div>
+                <div id="{{ chart.title.replace(' ','_').replace(')','').replace('(','').replace('#','').replace(',','').replace('/','').replace('$','').lower() }}" class="panel-collapse collapse in">
+                <div class="panel-body center-block">
+                    <div class="{{chart.name}}">
+                    {%if chart.plot %}
+                        <div id="{{chart.name}}_chart"></div>
                 
-                {% else %}
-                    <table class="table table-striped">
-                    <thead>
-                        <tr>{% for col in chart.data[0] %}<td> {{col}} </td> {% endfor %}</tr>
-                    </thead>
-                    <tbody>
-                        {% for row in chart.data[1:] %}<tr>
-                            {% for col in row %}<td> {{col}} </td> {% endfor %}
-                        </tr>{% endfor %}
-                    </tbody>
-                    </table>
-                    
-                {% endif %}
+                    {% elif chart.table %}
+                        <table class="table table-striped">
+                        <thead>
+                            <tr>{% for col in chart.data[0] %}<td> {{col}} </td> {% endfor %}</tr>
+                        </thead>
+                        <tbody>
+                            {% for row in chart.data[1:] %}<tr>
+                                {% for col in row %}<td> {{col}} </td> {% endfor %}
+                            </tr>{% endfor %}
+                        </tbody>
+                        </table>
+                    {% else %}
+                        <p>This plot/table could not be generateted. {{ chart.data }}</P>
+                    {% endif %}
+                    </div>
                 </div>
-
-        </div>
         <div class="panel-footer">
             {%if chart.plot %}
             <button class="btn btn-default" type='button' id='{{ chart.name }}_button'>Plot/Table</button>
