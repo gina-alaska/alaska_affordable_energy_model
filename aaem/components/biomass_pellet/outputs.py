@@ -127,16 +127,16 @@ def create_regional_summary (results):
     regions = {}
     for c in results:
         c_region = results[c]['community data'].get_item('community','region')
-        comp = results[c]['Biomass for Heat (Cordwood)']
+        comp = results[c][COMPONENT_NAME]
         #~ print comp
         bc_ratio = comp.get_BC_ratio()
         bc_ratio = (not type(bc_ratio) is str) and (not np.isinf(bc_ratio))\
                                               and (bc_ratio > 1)
         #~ print bc_ratio ,comp.get_BC_ratio()
         #~ return
-        capex = comp.get_NPV_costs().round(0) if bc_ratio else 0
-        net_benefit = comp.get_NPV_net_benefit().round(0) if bc_ratio else 0
-        displaced_hoil = comp.heat_diesel_displaced.round(0) if bc_ratio else 0
+        capex = round(comp.get_NPV_costs(),0)  if bc_ratio else 0
+        net_benefit = round(comp.get_NPV_net_benefit(),0)  if bc_ratio else 0
+        displaced_hoil = round(comp.heat_diesel_displaced,0)  if bc_ratio else 0
         
         
         
