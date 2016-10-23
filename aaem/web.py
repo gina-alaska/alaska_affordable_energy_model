@@ -180,12 +180,31 @@ class WebSummary(object):
         """ Function doc """
         keys = sorted([k for k in self.results.keys() if k.find('+') == -1])
         self.copy_etc()
+        from multiprocessing import Process, Lock, active_children, cpu_count
+        lock = Lock()
+
         for com in keys:#["Stebbins","Adak","Brevig_Mission"]:
-            print com
-            start = datetime.now()
-            self.generate_web_summaries(com)
-            print datetime.now() - start
-            #~ return
+            while len(active_children()) >= cpu_count():
+                continue
+            lock.acquire()
+            print com, "started"
+            lock.release()
+            Process(target=self.generate_com, args=(com, lock)).start()
+            
+        while len(active_children()) > 0:
+            continue
+    
+    def generate_com (self, com, l):
+        """ Function doc """
+        
+        
+        start = datetime.now()
+        self.generate_web_summaries(com)
+        
+        l.acquire()
+        print com, datetime.now() - start
+        l.release()
+    
                                         
     def finances_demo_summary (self, com):
         """ Function doc """
