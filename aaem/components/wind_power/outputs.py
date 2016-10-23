@@ -171,7 +171,7 @@ def create_regional_summary (results):
     outputs:
         returns summary as a data frame
     """
-    print "start"
+    #~ print "start"
     regions = {}
     for c in results:
         c_region = results[c]['community data'].get_item('community','region')
@@ -189,7 +189,7 @@ def create_regional_summary (results):
             round(comp.electric_diesel_reduction,0) if bc_ratio else 0
 
         if (results[c]['community data'].intertie == 'child' or c.find('+') != -1) and not c.find('wind') != -1:
-            print c
+            #~ print c
             continue
         if c_region in regions.keys():
             ## append entry
@@ -219,7 +219,7 @@ def create_regional_summary (results):
                         'Number of communities with cost effective projects',
                         'Investment needed for cost-effective projects',
                         'Net benefit of cost-effective projects',
-                        'Generation diesel displaced by cost-effective projects']]
+                    'Generation diesel displaced by cost-effective projects']]
     summary.ix['All Regions'] = summary.sum()                 
     #~ print summary
     return summary

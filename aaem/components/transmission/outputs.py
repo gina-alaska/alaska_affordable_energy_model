@@ -11,7 +11,22 @@ import aaem.constants as constants
 from aaem.components import comp_order
 import aaem.web_lib as wl
 
-def component_summary (coms, res_dir):
+## component summary
+def component_summary (results, res_dir):
+    """ 
+    creats the regional and communites summary for the component 
+    
+    inputs:
+        results: results from the model
+        res_dir: location to save file
+    
+    outputs:
+        saves a summaries in res-dir
+    """
+    communities_summary (results, res_dir)
+    save_regional_summary(create_regional_summary (results), res_dir)
+
+def communities_summary (coms, res_dir):
     """
     save the component summary
     
@@ -196,6 +211,83 @@ def component_summary (coms, res_dir):
                 COMPONENT_NAME.replace(" ","_").lower() + '_summary.csv')
 
     data.to_csv(f_name, mode='w')
+    
+def create_regional_summary (results):
+    """
+    create the regional summary for this component
+    
+    inputs:
+        results: results from the model
+       
+    outputs:
+        returns summary as a data frame
+    """
+    #~ print "start"
+    regions = {}
+    for c in results:
+        c_region = results[c]['community data'].get_item('community','region')
+        comp = results[c][COMPONENT_NAME]
+        #~ print comp
+        bc_ratio = comp.get_BC_ratio()
+        bc_ratio = (not type(bc_ratio) is str) and (not np.isinf(bc_ratio))\
+                                              and (bc_ratio > 1)
+        #~ print bc_ratio ,comp.get_BC_ratio()
+        #~ return
+        capex = round(comp.get_NPV_costs(),0)  if bc_ratio else 0
+        net_benefit = round(comp.get_NPV_net_benefit(),0)  if bc_ratio else 0
+       
+        displaced_fuel = \
+            round(comp.pre_intertie_generation_fuel_used[0] - comp.intertie_offset_generation_fuel_used[0] ,0) if bc_ratio else 0
+
+        if (results[c]['community data'].intertie == 'child' or c.find('+') != -1):
+            #~ print c
+            continue
+        if c_region in regions.keys():
+            ## append entry
+            regions[c_region]['Number of communities/interties in region'] +=1
+            k = 'Number of communities with cost effective projects'
+            regions[c_region][k] += 1 if bc_ratio else 0
+            k = 'Investment needed for cost-effective projects'
+            regions[c_region][k] += capex 
+            k = 'Net benefit of cost-effective projects'
+            regions[c_region][k] += net_benefit
+            k = 'Generation diesel displaced by cost-effective projects'
+            regions[c_region][k] += displaced_fuel
+            
+        else:
+            ## set up "first" entry
+            regions[c_region] = {'Number of communities/interties in region':1}
+            k = 'Number of communities with cost effective projects'
+            regions[c_region][k] = 1 if bc_ratio else 0
+            k = 'Investment needed for cost-effective projects'
+            regions[c_region][k] = capex 
+            k = 'Net benefit of cost-effective projects'
+            regions[c_region][k] = net_benefit
+            k = 'Generation diesel displaced by cost-effective projects'
+            regions[c_region][k] = displaced_fuel
+            
+    summary = DataFrame(regions).T[['Number of communities/interties in region',
+                        'Number of communities with cost effective projects',
+                        'Investment needed for cost-effective projects',
+                        'Net benefit of cost-effective projects',
+                    'Generation diesel displaced by cost-effective projects']]
+    summary.ix['All Regions'] = summary.sum()                 
+    #~ print summary
+    return summary
+    
+def save_regional_summary (summary, res_dir):
+    """ 
+    inputs:
+        summary: summary dataframe
+        res_dir: location to save file
+    
+    outputs:
+        save a regional summary in res-dir
+    """
+    f_name = os.path.join(res_dir, '__regional_' +
+                COMPONENT_NAME.lower().replace(' ','_').\
+                    replace('(','').replace(')','') + '_summary.csv')
+    summary.to_csv(f_name, mode='w', index_label='region')
     
 def generate_web_summary (web_object, community):
     """
