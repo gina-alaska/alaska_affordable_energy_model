@@ -38,12 +38,18 @@
                 
                     {% elif chart.table %}
                         <table class="table table-striped">
+<!--
                         <thead>
-                            <tr>{% for col in chart.data[0] %}<td> {{col}} </td> {% endfor %}</tr>
+                            <tr>{% for col in chart.data[0] %}                                   
+                             {% if chart.use_header %}<th> {{col}} </th> {% else %}<td> {{col}} </td>  {% endif %}
+                                {% endfor %}</tr>
                         </thead>
+-->
                         <tbody>
-                            {% for row in chart.data[1:] %}<tr>
-                                {% for col in row %}<td> {{col}} </td> {% endfor %}
+                            {% for row in chart.data %}<tr>
+                                {% for col in row[1:] %}
+                                    {% if row[0] %}<th> {{col}} </th> {% else %}<td> {{col}} </td>  {% endif %}
+                                {% endfor %}
                             </tr>{% endfor %}
                         </tbody>
                         </table>

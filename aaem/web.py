@@ -6,7 +6,7 @@ import shutil
 
 from importlib import import_module
 from aaem.components import comp_lib, comp_order
-from aaem.constants import hours_per_year
+from aaem.constants import *
 from aaem import __file__, __version__
 from datetime import datetime
 
@@ -302,6 +302,72 @@ class WebSummary(object):
         charts = []
         
         
+        
+        nr = res['Non-residential Energy Efficiency']
+        measurments = nr.buildings_df
+        estimates = nr.comp_specs["com building data"].fillna(0)
+        num = 0
+        
+        try:
+            try:
+                if 'Average' in set(estimates.ix['Average'].index):
+                    num = len(estimates.ix['Average'])
+                else:
+                    num = 1
+            except KeyError:
+                pass
+            
+            
+            total_sf = measurments['Square Feet'].sum()
+            count = measurments['count'].sum()
+            percent_sf =  total_sf/estimates['Square Feet'].sum()
+            percent_id = float(count)/\
+                          (count+num)
+                     
+            total = 0
+            building_types={}
+            for t in set(estimates.index):
+                #~ k = t
+                #~ if k == 'Average':
+                    #~ k = 'Unknown'
+                hf_used = (estimates['Fuel Oil'][t]/mmbtu_to_gal_HF + \
+                        estimates['Natural Gas'][t]/mmbtu_to_Mcf + \
+                        estimates['Propane'][t]/mmbtu_to_gal_LP + \
+                        estimates['HW District'][t]/mmbtu_to_gal_HF +\
+                        estimates['Biomass'][t]/mmbtu_to_cords).sum()
+                total += hf_used
+                building_types[t] = hf_used
+            #~ print building_types
+            
+                
+            
+            
+            table = [[False,'# Buildings',count+num],
+             [False,'Square Feet', '{:,.0f}'.format(estimates['Square Feet'].sum())],
+             [False,'% Buildings Identified', '{:,.2f}%'.format(percent_id*100)],
+             [False,'% Square Feet Measured','{:,.2f}%'.format(percent_sf*100)]]
+             
+             
+            for t in building_types:
+                n = t
+                if n == 'Average':
+                    n = 'Unknown'
+                n = '% Heating Fuel Consumption by ' + n + ' Type Buildings'
+                v = '{:,.2f}%'.format((building_types[t]/total)*100)
+                table.append([False,n,v])
+                             
+                          
+            
+            charts.append({'name':'non_residential_buildings', 
+                'data': table,
+                'title':'Non-residential Buildings',
+                'table': True,})
+        except (ZeroDivisionError):
+            charts.append({'name':'non_residential_buildings', 
+                'data': "No Building data avaialble." ,
+                'title':'Non-residential Buildings'})
+        
+        
         if hasattr(res['forecast'], 'consumption_to_save') or \
            hasattr(res['forecast'], 'consumption'):
             if hasattr(res['forecast'], 'consumption_to_save'):
@@ -409,7 +475,13 @@ class WebSummary(object):
         template = self.env.get_template('demo.html')
         res = self.results[com]
         charts = []
-        #~ try:
+        
+        
+        
+        
+        
+        
+        
         if hasattr(res['forecast'], 'generation_by_type'):
             if not hasattr(res['forecast'], 'generation_forecast_dataframe'):
                 res['forecast'].generate_generation_forecast_dataframe()
@@ -534,6 +606,120 @@ class WebSummary(object):
         charts.append({'name':'generation_efficiency', 'data': str(gen_eff_table).replace('nan','null'), 
                 'title':'Diesel Genneration Efficiency',
                 'type': "'gal/kWh'",'plot': True,})
+                
+                
+        eff = res['community data'].get_item('community',
+                                            'diesel generation efficiency')
+        ph_data = res['community data'].get_item('Diesel Efficiency', 'data')
+        try:
+            num_gens = int(float(ph_data['Total Number of generators']))
+        except ValueError:
+            num_gens = ph_data['Total Number of generators']
+        
+        try:
+            cap = int(float(ph_data['Total Capacity (in kW)']))
+        except ValueError:
+            cap = ph_data['Total Capacity (in kW)']
+        try:
+            largest = int(float(ph_data['Largest generator (in kW)']))
+        except ValueError:
+            largest = ph_data['Largest generator (in kW)']
+        
+        size = ph_data['Sizing']
+        
+        try:
+            ratio = float(cap)/ float(avg_load['Average Load'][avg_load['annotation'] == 'start of forecast']) 
+        except ValueError:
+            ratio = 0
+                         
+        hr_data = res['community data'].get_item('Heat Recovery', 
+                                                  'estimate data')
+        hr_opp = hr_data['Waste Heat Recovery Opperational']
+        hr_ava = hr_data['Est. current annual heating fuel gallons displaced']
+        if type(hr_ava) is str or np.isnan(hr_ava):
+            hr_ava = 0
+            
+        wind = res['community data'].get_item('Wind Power', 
+                                                  'resource data')
+                                                  
+        w_cap = wind['existing wind']
+        w_fac = wind['assumed capacity factor']
+        
+        
+            
+        solar = res['community data'].get_item('Solar Power', 
+                                                  'data')
+                                                  
+        s_cap = solar['Installed Capacity']
+        s_pv = solar['Output per 10kW Solar PV']
+        
+        
+        
+        try:
+            w_gen = float(res['community data'].get_item('community',
+                'generation numbers')['generation wind'].iloc[-1:])
+            s_gen = float(res['community data'].get_item('community',
+                'generation numbers')['generation solar'].iloc[-1:])
+            
+            if  np.isnan(w_gen):
+                w_gen = 0
+                
+            if  np.isnan(s_gen):
+                s_gen = 0
+        except TypeError:
+            w_gen = "unknown"
+            s_gen = "unknown"
+                                            
+        table = [
+            [True, "Power House", ""],
+            [False, "Efficiency", '{:,.2f}'.format(eff)],
+            [False, "Total Number of generators", num_gens],
+            [False, "Total Capacity (in kW)", cap], 
+            [False, "Largest generator (in kW)", largest],
+            [False, "Sizing", size],
+            [False, "Ratio of total capacity to average load", ratio],
+            [True, "Heat Recovery", ""],
+            [False, "Operational",  hr_opp],
+            [False, 
+                "Estimated number of gallons of heating oil displaced", hr_ava],
+            [True, "Wind Power", ""],
+            [False, "Current wind capacity (kW)",  w_cap],
+            [False, "Current wind generation (kWh/year)",  w_gen],
+            [False, "Current wind capacity factor",  w_fac],
+            [True, "Solar Power", ""],
+            [False, "Current solar capacity (kW)",  s_cap],
+            [False, "Current solar generation (kWh/year)",  s_gen],
+            [False, "Current Output per 10kW Solar PV", s_pv],
+            
+            ]
+
+            
+        charts.insert(0,{'name':'gen_summary', 'data':table, 
+                'title':'Generation Overview',
+                'table': True,})
+                
+        try:
+            if res['community data'].intertie_list[0] != "''":
+                table = [
+                    [True, "Community", "Parent/Child"],
+                    [False, res['community data'].parent, 'Parent']
+                    ]
+                
+                
+                for c in res['community data'].intertie_list:
+                    if c == "''":
+                        break
+                    table.append([False,c,'Child'])
+            
+                charts.insert(0,{'name':'it_l', 'data':table, 
+                    'title':'Intertied Communities',
+                    'table': True,})
+        except AttributeError:
+            pass
+        #~ else:
+            #~ charts.insert(0,{'name':'it_l', 'data':"Community not on intertie",
+                #~ 'title':'Intertied Communities'})
+        
             
 
         pth = os.path.join(self.directory, com,
