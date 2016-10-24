@@ -180,27 +180,30 @@ class WebSummary(object):
         """ Function doc """
         keys = sorted([k for k in self.results.keys() if k.find('+') == -1])
         self.copy_etc()
-        from multiprocessing import Process, Lock, active_children, cpu_count
-        lock = Lock()
-
-        for com in keys:#["Stebbins","Adak","Brevig_Mission"]:
-            while len(active_children()) >= cpu_count():
-                continue
-            lock.acquire()
-            print com, "started"
-            lock.release()
-            Process(target=self.generate_com, args=(com, lock)).start()
-            
-        while len(active_children()) > 0:
-            continue
+        try:
+            from multiprocessing import Process, Lock,active_children, cpu_count
+            lock = Lock()
     
-    def generate_com (self, com, l):
+            for com in keys:#["Stebbins","Adak","Brevig_Mission"]:
+                while len(active_children()) >= cpu_count():
+                    continue
+                lock.acquire()
+                print com, "started"
+                lock.release()
+                Process(target=self.generate_com_mc, args=(com, lock)).start()
+                
+            while len(active_children()) > 0:
+                continue
+        except ImportError:
+            for com in keys:#["Stebbins","Adak","Brevig_Mission"]:
+                start = datetime.now()
+                self.generate_web_summaries(com)
+                print com, datetime.now() - start
+    
+    def generate_com_mc (self, com):
         """ Function doc """
-        
-        
         start = datetime.now()
         self.generate_web_summaries(com)
-        
         l.acquire()
         print com, datetime.now() - start
         l.release()
