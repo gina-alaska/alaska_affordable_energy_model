@@ -217,7 +217,7 @@ def generate_web_summary (web_object, community):
     """
     """
     ## get the template
-    template = web_object.env.get_template('component.html')
+    template = web_object.component_html
     
     ## get the component (the modelded one)
   

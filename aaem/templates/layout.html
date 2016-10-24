@@ -9,7 +9,7 @@
     <title>{% block title %}{% endblock %}</title>
     
     <!-- Bootstrap -->
-    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="{% if not in_root %}../{% endif %}css/bootstrap.min.css" rel="stylesheet">
     
     
     {% block additional_css %}{% endblock %}
@@ -56,7 +56,7 @@
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="../js/bootstrap.min.js"></script>
+    <script src="{% if not in_root %}../{% endif %}js/bootstrap.min.js"></script>
 
   </body>
 </html>

@@ -44,6 +44,14 @@ class WebSummary(object):
             pass
         #~ print "fine"
         self.env = Environment(loader=PackageLoader('aaem','templates/'))
+        
+        self.component_html = self.env.get_template('component.html')
+        self.general_summaries_html = self.env.get_template('demo.html')
+        self.potential_projects_html = \
+                        self.env.get_template('potential_projects.html')
+        self.no_results_html = self.env.get_template('no_results.html')
+        self.index_html = self.env.get_template('index.html')
+        
 
     def get_viable_components (self, com, cutoff = 1):
         """ Function doc """
@@ -60,6 +68,7 @@ class WebSummary(object):
         
         return l
         
+        
     def generate_web_summaries (self, com):
         """
         """
@@ -68,8 +77,6 @@ class WebSummary(object):
         self.consumption_summary(com)
         self.generation_summary(com)
         self.projects_summary(com)
-        #~ self.get_web_summary(comp_lib['Biomass for Heat (Cordwood)'])(self, com)
-        #~ return 
         components = set(comp_order)
         
         it = self.results[com]['community data'].intertie
@@ -78,21 +85,28 @@ class WebSummary(object):
                 components = set(["Wind Power", 'Solar Power',  'Hydropower',
                               'Transmission and Interties','Diesel Efficiency'])
             else:
-                components = set(comp_order) - set(["Wind Power", 'Solar Power',  'Hydropower',
-                              'Transmission and Interties','Diesel Efficiency'])
+                components = set(comp_order) - set(["Wind Power", 'Solar Power', 
+                                                    'Hydropower',
+                                                'Transmission and Interties',
+                                                    'Diesel Efficiency'])
         
         
         re_dirs = set(comp_order) - components
         
+        ## generate the component pages
         for comp in components:
+            c_clean = comp.replace(' ','_').\
+                           replace('(','').replace(')','').lower()
             #~ print comp
             try:
+                ## try to run the components generate web summary function
                 self.get_web_summary(comp_lib[comp])(self, com)
             except (AttributeError, RuntimeError) as e:
+                ## if it cant be run 
                 #~ print comp, e
-                template = self.env.get_template('no_results.html')
+                template = self.no_results_html
                 #~ if comp in ['Solar Power','Wind Power','Heat Recovery'] :
-                pth = os.path.join(self.directory, com, comp.replace(' ','_').replace('(','').replace(')','').lower() +'.html')
+                pth = os.path.join(self.directory, com, c_clean +'.html')
 
                 with open(pth, 'w') as html:
                     reason = self.results[com][comp].reason
@@ -105,32 +119,43 @@ class WebSummary(object):
                                     sections = self.get_summary_pages(),
                                     communities = self.get_all_coms(),
                                     metadata = self.metadata,))
-                                    
-            template = self.env.get_template('no_results.html')
-            for comp in re_dirs:
-                
-                pth = os.path.join(self.directory, com, comp.replace(' ','_').replace('(','').replace(')','').lower() +'.html')
+                                   
+        ## geneate redirect pages for intertie related pages
+        template = self.no_results_html
+        for comp in re_dirs:
+            c_clean = comp.replace(' ','_').\
+                           replace('(','').replace(')','').lower()
+            pth = os.path.join(self.directory, com, c_clean +'.html')
 
-                with open(pth, 'w') as html:
-                    reason = "REDIRECT " + "parent" if it == "child" else "child"
-                    
-                    html.write(template.render( 
-                                    type = comp, 
-                                    com = com ,
-                                    reason = reason,
-                                    sections = self.get_summary_pages(),
-                                    communities = self.get_all_coms(),
-                                    metadata = self.metadata,))
+            with open(pth, 'w') as html:
+                
+                reason = "Redirect child"
+                if it == "child":
+                    reason = "REDIRECT parent" 
+                
+                html.write(template.render( 
+                                type = comp, 
+                                com = com ,
+                                reason = reason,
+                                sections = self.get_summary_pages(),
+                                communities = self.get_all_coms(),
+                                metadata = self.metadata,))
+
 
     def copy_etc (self):
-        
+        """
+        copy all of the css stuff
+        """
         pth = os.path.dirname(__file__)
-        shutil.copytree(os.path.join(pth,'templates','css'),os.path.join(self.directory,'css'))
-        shutil.copytree(os.path.join(pth,'templates','js'),os.path.join(self.directory,'js'))
-        shutil.copytree(os.path.join(pth,'templates','fonts'),os.path.join(self.directory,'fonts'))
+        shutil.copytree(os.path.join(pth,'templates','css'),
+                                        os.path.join(self.directory,'css'))
+        shutil.copytree(os.path.join(pth,'templates','js'),
+                                        os.path.join(self.directory,'js'))
+        shutil.copytree(os.path.join(pth,'templates','fonts'),
+                                        os.path.join(self.directory,'fonts'))
         shutil.copy(os.path.join(pth,'templates','summary.css'),self.directory)
-        
-        
+        shutil.copy(os.path.join(pth,'templates','footer.css'),self.directory)
+
         
     def get_web_summary(self, component):
         """
@@ -148,48 +173,72 @@ class WebSummary(object):
                     import_module("aaem.components." + component).outputs
         return self.imported_summaries[component].generate_web_summary
     
-
+    
     def get_all_coms (self):
         """ Function doc """
         return sorted([k for k in self.results.keys() if k.find('+') == -1])
     
+    
     def get_summary_pages (self):
+        """
+        get the summary pages for the secondary nav for the community summaries
+        """
         return [{'name':'Summary', 'pages':['Financial and Demographic',
                                             'Consumption',
                                             'Generation',
                                             'Potential Projects']}, 
-                {'name':'Efficiency Projects', 'pages':["Residential Energy Efficiency",
-                                                        "Non-residential Energy Efficiency",
-                                                        "Water and Wastewater Efficiency"]
+                {'name':'Efficiency Projects',
+                 'pages':["Residential Energy Efficiency",
+                          "Non-residential Energy Efficiency",
+                          "Water and Wastewater Efficiency"]
                 },
-                {'name':'Electricity Projects', 'pages':["Wind Power",
-                                                         'Solar Power',
-                                                          'Hydropower',
-                                                         'Transmission and Interties',
-                                                         'Diesel Efficiency']
+                {'name':'Electricity Projects', 
+                 'pages':["Wind Power",
+                         'Solar Power',
+                          'Hydropower',
+                         'Transmission and Interties',
+                         'Diesel Efficiency']
                 },
-                {'name':'Heating Projects', 'pages':['Biomass for Heat (Cordwood)',
-                                                     'Biomass for Heat (Pellet)',
-                                                      'Residential ASHP',
-                                                      'Non-Residential ASHP',
-                                                      'Heat Recovery']
+                {'name':'Heating Projects', 
+                 'pages':['Biomass for Heat (Cordwood)',
+                          'Biomass for Heat (Pellet)',
+                          'Residential ASHP',
+                          'Non-Residential ASHP',
+                          'Heat Recovery']
                 }
                ]
+
 
     def generate_all (self):
         """ Function doc """
         keys = sorted([k for k in self.results.keys() if k.find('+') == -1])
         self.copy_etc()
+        self.generate_index()
         for com in keys:#["Stebbins","Adak","Brevig_Mission"]:
             print com
             start = datetime.now()
             self.generate_web_summaries(com)
             print datetime.now() - start
-            #~ return
+            
+    def generate_index (self):
+        """ Function doc """
+        pth = os.path.join(self.directory, 'index.html')
+        regions = []
+        with open(pth, 'w') as html:
+            html.write(self.index_html.render( type = 'index', 
+                       #~ summary_pages = ['Summary'] + comp_order ,
+                       #~ com = 'index',
+                       sections = self.get_summary_pages(),
+                       communities = self.get_all_coms(),
+                       regions = regions,
+                       metadata = self.metadata,
+                       in_root = True,
+                                ))
+                                   
                                         
     def finances_demo_summary (self, com):
         """ Function doc """
-        template = self.env.get_template('demo.html')
+        template = self.general_summaries_html
         res = self.results[com]
         population = res['community data'].get_item('forecast','population')
         p1 = population
@@ -295,9 +344,10 @@ class WebSummary(object):
                                 metadata = self.metadata,
                                 ))
                                 
+                                
     def consumption_summary (self, com):
         """ Function doc """
-        template = self.env.get_template('demo.html')
+        template = self.general_summaries_html
         res = self.results[com]
         charts = []
         
@@ -404,9 +454,10 @@ class WebSummary(object):
                                     metadata = self.metadata,
                                     ))
         
+        
     def generation_summary (self, com):
         """ Function doc """
-        template = self.env.get_template('demo.html')
+        template = self.general_summaries_html
         res = self.results[com]
         charts = []
         #~ try:
@@ -551,10 +602,8 @@ class WebSummary(object):
         
     def projects_summary (self, com):
         """ Function doc """
-        template = self.env.get_template('potential_projects.html')
+        template = self.potential_projects_html
         res = self.results[com]
-
-        
        
         cats = {}
         
@@ -665,9 +714,6 @@ class WebSummary(object):
                                     ))
                                         
 
-        
-        
-        
     def make_plot_table (self, xs, ys = None, names = None, sigfig=0,
                          community = None, fname = None):
         """
@@ -675,7 +721,8 @@ class WebSummary(object):
         
         inputs:
         outputs:    
-            returns plotting_table, a table that can be used to make a google chart
+            returns plotting_table, a table that can be used to make a google 
+        chart
         """
         if type(xs) == DataFrame and len(xs.columns) > 1:
             x_name = xs.columns[0]
@@ -725,6 +772,7 @@ class WebSummary(object):
         #~ print plotting_table
         return plotting_table 
         
+    
     def make_table (self, xs, ys = None, names = None, sigfig=0,
                     community = None, fname = None):
         """
@@ -732,7 +780,8 @@ class WebSummary(object):
         
         inputs:
         outputs:    
-            returns plotting_table, a table that can be used to make a google chart
+            returns plotting_table, a table that can be used to make a google 
+        chart
         """
         if type(xs) == DataFrame and len(xs.columns) > 1:
             x_name = xs.columns[0]
