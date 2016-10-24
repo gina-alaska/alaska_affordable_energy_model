@@ -200,13 +200,13 @@ class WebSummary(object):
                 self.generate_web_summaries(com)
                 print com, datetime.now() - start
     
-    def generate_com_mc (self, com):
+    def generate_com_mc (self, com, lock):
         """ Function doc """
         start = datetime.now()
         self.generate_web_summaries(com)
-        l.acquire()
+        lock.acquire()
         print com, datetime.now() - start
-        l.release()
+        lock.release()
     
                                         
     def finances_demo_summary (self, com):
