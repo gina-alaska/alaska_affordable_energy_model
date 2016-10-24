@@ -155,6 +155,7 @@ class WebSummary(object):
                                         os.path.join(self.directory,'fonts'))
         shutil.copy(os.path.join(pth,'templates','summary.css'),self.directory)
         shutil.copy(os.path.join(pth,'templates','footer.css'),self.directory)
+        shutil.copy(os.path.join(pth,'templates','dropdown.css'),self.directory)
 
         
     def get_web_summary(self, component):
