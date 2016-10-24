@@ -1,13 +1,14 @@
 #Change Log
 
-## [INSERT]
+## [0.20.11]
 ### added
+- regional summaries
 - main summary csvs
-- collapsable panels on main summaries
+- collapsible panels on main summaries
 - messages for missing plots
 
 ### changed 
-- clean up of heat recovery component code preformed
+- clean-up of heat recovery component code preformed
 - some summary plots will plot available data 
 - some summary plots will appear as empty if data is missing
 
