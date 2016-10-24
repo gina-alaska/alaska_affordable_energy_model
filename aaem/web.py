@@ -588,64 +588,82 @@ class WebSummary(object):
                                                          'Diesel Efficiency']:
                         continue
                         
-                                                             
+                if not comp in cats.keys():
+                    cats[comp] = []
                     
                 c = self.results[i][comp]
                 ratio = c.get_BC_ratio()
+                
+                fs = 0
+                lcoe_e = 0
+                lcoe_hf = 0
+                if (not type(ratio) is str):
+                    fs = c.get_fuel_total_saved() 
+                    if type(fs) in [list, np.array, np.ndarray]:
+                        fs = fs[0]
+                        
+                    if type(c.levelized_cost_of_energy) is dict:
+                        lcoe_e = c.levelized_cost_of_energy['kWh']
+                        lcoe_hf = c.levelized_cost_of_energy['MMBtu']
+                    
+                    elif comp in ["Wind Power",'Solar Power','Hydropower',
+                                  'Transmission and Interties',
+                                  'Diesel Efficiency']:
+                        lcoe_e = c.levelized_cost_of_energy
+                    else:
+                        lcoe_hf = c.levelized_cost_of_energy
+                
+                
+                
+                net = c.get_NPV_net_benefit()
+                if net == 'N/A': 
+                    net = 0
+                
+                benefit = c.get_NPV_benefits()
+                if benefit == 'N/A': 
+                    benefit = 0
+                    
+                costs = c.get_NPV_costs()
+                if costs == 'N/A': 
+                    costs = 0
+                
                 if 'N/A' == ratio:
                     ratio = 0
   
                 
                 try:
                     name = c.comp_specs['project details']['name']
-                except (KeyError,TypeError):
+                except (KeyError, TypeError):
                     name = comp
-                    
-                #~ print name
                 if name == 'None':
-                    
                     name = comp
                 
-                if not comp in cats.keys():
-                    cats[comp] = []
-                    
-                lcoe_e = 0
-                lcoe_hf = 0
-                try:
-                    try:
-                        lcoe_e = c.levelized_cost_of_energy['kWh']
-                        lcoe_hf = c.levelized_cost_of_energy['MMBtu']
-                    except:
-                        if comp in ["Wind Power",'Solar Power','Hydropower',
-                                    'Transmission and Interties','Diesel Efficiency']:
-                            lcoe_e = c.levelized_cost_of_energy
-                        else:
-                            lcoe_hf = c.levelized_cost_of_energy
-                except AttributeError:
-                    pass
-                    
-                fs = 0
-                try:
-                    fs = c.get_fuel_total_saved()[0]
-                except:
-                    pass
-                cats[comp].append({'name':name.decode('unicode_escape').encode('ascii','ignore'),
+                name = name.decode('unicode_escape').encode('ascii','ignore')
+            
+            
+
+                cats[comp].append({'name': name,
                               'sucess': True if ratio > 1.0 else False,
                               'comp':comp,
-                              'benefits': '${:,.0f}'.format(0 if c.get_NPV_benefits() == 'N/A' else c.get_NPV_benefits()),
-                              'costs': '${:,.0f}'.format(0 if c.get_NPV_costs() == 'N/A' else c.get_NPV_costs()),
-                              'net': '${:,.0f}'.format(0 if c.get_NPV_net_benefit() == 'N/A' else c.get_NPV_net_benefit()),
+                              'benefits': '${:,.0f}'.format(benefit),
+                              'costs': '${:,.0f}'.format(costs),
+                              'net': '${:,.0f}'.format(net),
                               'ratio': '{:,.2f}'.format(ratio),
-                              'lcoe_e':lcoe_e,
-                              'lcoe_hf':lcoe_hf,
-                              'fuel_saved':fs})
+                              'lcoe_e':'${:,.2f}'.format(lcoe_e),
+                              'lcoe_hf':'${:,.2f}'.format(lcoe_hf),
+                              'fuel_saved': '{:,.0f}'.format(fs)})
          
         projs =[]
-        for comp in ["Residential Energy Efficiency", "Non-residential Energy Efficiency",
-                     "Water and Wastewater Efficiency", "Wind Power", 'Solar Power',
-                    'Hydropower','Transmission and Interties','Diesel Efficiency',
-                    'Biomass for Heat (Cordwood)', 'Biomass for Heat (Pellet)',
-                    'Residential ASHP', 'Non-Residential ASHP', 'Heat Recovery']:
+        for comp in ["Residential Energy Efficiency", # start eff
+                     "Non-residential Energy Efficiency",
+                     "Water and Wastewater Efficiency", 
+                        "Wind Power", 'Solar Power', # start elec
+                     'Hydropower','Transmission and Interties',
+                     'Diesel Efficiency',
+                        'Biomass for Heat (Cordwood)',  # start heat
+                    'Biomass for Heat (Pellet)',
+                    'Residential ASHP', 'Non-Residential ASHP', 
+                    'Heat Recovery']:
             try:
                 projs += cats[comp]
             except KeyError:
