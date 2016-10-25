@@ -12,6 +12,7 @@ from datetime import datetime
 
 import numpy as np
 import yaml
+from pickle import PicklingError
 
 #WHAT TO DO IF ALL PLOT DATA IS NANS?
 #~ import aaem
@@ -230,7 +231,7 @@ class WebSummary(object):
                 
             while len(active_children()) > 0:
                 continue
-        except ImportError, NotImplementedError:
+        except (ImportError, NotImplementedError, PicklingError):
             for com in keys:#["Stebbins","Adak","Brevig_Mission"]:
                 start = datetime.now()
                 self.generate_web_summaries(com)

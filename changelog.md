@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.20.13]
+### fixed
+- windows pickleing error
+
 ## [0.20.12]
 ### added 
 - html index page
