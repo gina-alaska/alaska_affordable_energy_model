@@ -1,5 +1,17 @@
 #Change Log
 
+## [0.20.12]
+### added 
+- html index page
+- multiprocessing support 
+- existing generation in html
+- interties table in html
+- non res consumtion table in html
+
+### fixed
+- values displayed in protenital projects table are formated 
+
+
 ## [0.20.11]
 ### added
 - regional summaries
