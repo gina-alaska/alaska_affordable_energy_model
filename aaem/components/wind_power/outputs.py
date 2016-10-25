@@ -363,6 +363,12 @@ def create_project_details_list (project):
                                             ['Assumed Wind Class']))
     except ValueError:
         wind_class = 0
+    
+    pen = project.generation_wind_proposed/\
+          float(project.forecast.cd.get_item('community',
+                                                'generation').iloc[-1:])
+    pen *= 100    
+    
     return [
         {'words':'Capital Cost ($)', 
             'value': '${:,.0f}'.format(project.get_NPV_costs())},
@@ -383,5 +389,6 @@ def create_project_details_list (project):
         {'words':'Estimated Capacity Factor', 
             'value': 
                 project.comp_specs['resource data']['assumed capacity factor']},
-        {'words':'Estimated Wind Penetration Level (%)', 'value': 'TBD'},
+        {'words':'Estimated Wind Penetration Level (%)', 
+            'value': '{:,.2f}%'.format(pen)},
             ]

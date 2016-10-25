@@ -303,6 +303,11 @@ def create_project_details_list (project):
     """
     makes a projects details section for the html
     """
+    pen = project.generation_proposed/\
+          float(project.forecast.cd.get_item('community',
+                                                'generation').iloc[-1:])
+    pen *= 100
+    pen = pen[0]
    
     return [
         {'words':'Capital Cost ($)', 
@@ -323,4 +328,6 @@ def create_project_details_list (project):
         {'words':'Output per 10kW Solar PV', 
             'value': project.comp_specs['data']\
                                          ['Output per 10kW Solar PV']},
+        {'words':'Estimated Solar Penetration Level (%)', 
+            'value': '{:,.2f}%'.format(pen)},
             ]
