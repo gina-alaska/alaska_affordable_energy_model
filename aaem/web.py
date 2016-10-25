@@ -215,14 +215,41 @@ class WebSummary(object):
         keys = sorted([k for k in self.results.keys() if k.find('+') == -1])
         self.copy_etc()
         self.generate_index()
-        for com in keys:#["Stebbins","Adak","Brevig_Mission"]:
-            print com
-            start = datetime.now()
-            self.generate_web_summaries(com)
-            print datetime.now() - start
-            
-    def generate_index (self):
+
+        try:
+            from multiprocessing import Process, Lock,active_children, cpu_count
+            lock = Lock()
+    
+            for com in keys:#["Stebbins","Adak","Brevig_Mission"]:
+                while len(active_children()) >= cpu_count():
+                    continue
+                lock.acquire()
+                print com, "started"
+                lock.release()
+                Process(target=self.generate_com_mc, args=(com, lock)).start()
+                
+            while len(active_children()) > 0:
+                continue
+        except ImportError, NotImplementedError:
+            for com in keys:#["Stebbins","Adak","Brevig_Mission"]:
+                start = datetime.now()
+                self.generate_web_summaries(com)
+                print com, datetime.now() - start
+    
+    
+    def generate_com_mc (self, com, lock):
         """ Function doc """
+        start = datetime.now()
+        self.generate_web_summaries(com)
+        lock.acquire()
+        print com, datetime.now() - start
+        lock.release()
+    
+
+    def generate_index (self):
+        """ 
+        generate index page
+        """
         pth = os.path.join(self.directory, 'index.html')
         regions = []
         with open(pth, 'w') as html:
@@ -235,7 +262,7 @@ class WebSummary(object):
                        metadata = self.metadata,
                        in_root = True,
                                 ))
-                                   
+                                     
                                         
     def finances_demo_summary (self, com):
         """ Function doc """
@@ -528,12 +555,6 @@ class WebSummary(object):
         res = self.results[com]
         charts = []
         
-        
-        
-        
-        
-        
-        
         if hasattr(res['forecast'], 'generation_by_type'):
             if not hasattr(res['forecast'], 'generation_forecast_dataframe'):
                 res['forecast'].generate_generation_forecast_dataframe()
@@ -681,7 +702,7 @@ class WebSummary(object):
         
         try:
             ratio = float(cap)/ float(avg_load['Average Load'][avg_load['annotation'] == 'start of forecast']) 
-        except ValueError:
+        except (ValueError, UnboundLocalError):
             ratio = 0
                          
         hr_data = res['community data'].get_item('Heat Recovery', 
