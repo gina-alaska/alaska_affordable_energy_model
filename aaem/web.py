@@ -728,21 +728,34 @@ class WebSummary(object):
         s_pv = solar['Output per 10kW Solar PV']
         
         
+        #~ hydro = res['community data'].get_item('community', 
+                                        
+        
         
         try:
             w_gen = float(res['community data'].get_item('community',
                 'generation numbers')['generation wind'].iloc[-1:])
             s_gen = float(res['community data'].get_item('community',
                 'generation numbers')['generation solar'].iloc[-1:])
+                
+            h_gen = float(res['community data'].get_item('community',
+                'generation numbers')['generation hydro'].iloc[-1:])
             
             if  np.isnan(w_gen):
                 w_gen = 0
                 
             if  np.isnan(s_gen):
                 s_gen = 0
+                
+            if  np.isnan(h_gen):
+                h_gen = 0
         except TypeError:
             w_gen = "unknown"
             s_gen = "unknown"
+            h_gen = "unknown"
+            
+            
+        
                                             
         table = [
             [True, "Power House", ""],
@@ -764,6 +777,9 @@ class WebSummary(object):
             [False, "Current solar capacity (kW)",  s_cap],
             [False, "Current solar generation (kWh/year)",  s_gen],
             [False, "Current Output per 10kW Solar PV", s_pv],
+            [True, "Hydropower", ""],
+            #~ [False, "Current hydro capacity (kW)",  h_cap],
+            [False, "Current hydro generation (kWh/year)",  h_gen],
             
             ]
 
