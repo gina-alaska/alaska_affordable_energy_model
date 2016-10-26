@@ -908,7 +908,7 @@ class WebSummary(object):
                               'net': '${:,.0f}'.format(net),
                               'ratio': '{:,.2f}'.format(ratio),
                               'lcoe_e':'${:,.2f}'.format(lcoe_e),
-                              'lcoe_hf':'${:,.2f}'.format(lcoe_hf),
+                        'lcoe_hf':'${:,.2f}'.format(lcoe_hf/mmbtu_to_gal_HF),
                               'fuel_saved': '{:,.0f}'.format(fs)})
          
         projs =[]
