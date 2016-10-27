@@ -1,5 +1,22 @@
 #Change Log
 
+## [0.21.0]
+### added
+- overview and goals html page
+- hydro to current generation table in html
+- existing hydro capacity added to cd and preprocessor
+- consumption html summary heating degree day table 
+- consumption html summary heating residential buildings table
+
+### changed 
+- LCOE heat is converted from mmbtu to gallons
+- efficiency project side bars have info for current system/ prices per unit
+
+### fixed 
+- hydro limit preprocessing 
+- existing hydro capacity in existing generation component html sidebar
+- wind and solar penetration levels in html
+
 ## [0.20.13]
 ### fixed
 - windows pickleing error
