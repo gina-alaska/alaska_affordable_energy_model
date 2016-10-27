@@ -242,8 +242,8 @@ def create_electric_system_summary (community_results):
          'value': solar.comp_specs['data']['Installed Capacity']},
         {'words':'Existing solar generation (kWh/year)(' + str(year) +')', 
          'value': '{:,.0f}'.format(s_gen).replace('nan','0')},
-        #~ {'words':'Existing nameplate hydro capacity (kW)', 
-         #~ 'value': fc.cd.get_item('community','hydro generation limit')},
+        {'words':'Existing nameplate hydro capacity (kW)', 
+         'value': fc.cd.get_item('community','hydro generation capacity')},
         {'words':'Existing hydro generation (kWh/year)(' + str(year) +')', 
          'value': '{:,.0f}'.format(h_gen).replace('nan','0')},
     ]

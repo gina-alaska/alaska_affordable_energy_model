@@ -728,7 +728,8 @@ class WebSummary(object):
         s_pv = solar['Output per 10kW Solar PV']
         
         
-        #~ hydro = res['community data'].get_item('community', 
+        h_cap = res['community data'].get_item('community',
+                                                'hydro generation capacity')
                                         
         
         
@@ -778,7 +779,7 @@ class WebSummary(object):
             [False, "Current solar generation (kWh/year)",  s_gen],
             [False, "Current Output per 10kW Solar PV", s_pv],
             [True, "Hydropower", ""],
-            #~ [False, "Current hydro capacity (kW)",  h_cap],
+            [False, "Current hydro capacity (kW)",  h_cap],
             [False, "Current hydro generation (kWh/year)",  h_gen],
             
             ]

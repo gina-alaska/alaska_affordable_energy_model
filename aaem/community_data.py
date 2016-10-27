@@ -583,6 +583,16 @@ class CommunityData (object):
                 self.set_item('community','hydro generation limit',
                                 float(0))
                                 
+        if self.get_item('community',
+                        'hydro generation capacity') in IMPORT_FLAGS:
+            try:
+                self.set_item('community','hydro generation capacity',
+                                float(limits.ix["hydro capacity"]))
+            except ValueError:
+                self.set_item('community','hydro generation capacity',
+                                float(0))
+        
+                                
         if self.get_item('community', 'wind generation limit') in IMPORT_FLAGS:
             try:
                 self.set_item('community','wind generation limit',

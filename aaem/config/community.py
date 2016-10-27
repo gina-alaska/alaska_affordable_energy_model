@@ -45,6 +45,7 @@ items = {
     'natural gas price': 0,
    
     'hydro generation limit': 'IMPORT' ,
+    'hydro generation capacity': 'IMPORT',
     'wind generation limit': 'IMPORT' ,
     
     'wind generation precent': .2,
