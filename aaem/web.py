@@ -74,6 +74,7 @@ class WebSummary(object):
         """
         """
         os.makedirs(os.path.join(self.directory, com, 'csv'))
+        self.overview(com)
         self.finances_demo_summary(com)
         self.consumption_summary(com)
         self.generation_summary(com)
@@ -185,7 +186,8 @@ class WebSummary(object):
         """
         get the summary pages for the secondary nav for the community summaries
         """
-        return [{'name':'Summary', 'pages':['Financial and Demographic',
+        return [{'name':'Summary', 'pages':['Overview',
+                                            'Financial and Demographic',
                                             'Consumption',
                                             'Generation',
                                             'Potential Projects']}, 
@@ -939,6 +941,97 @@ class WebSummary(object):
                                     potential_projects = projs,
                                     metadata = self.metadata,
                                     ))
+                                    
+    def overview (self, com):
+        """ Function doc """
+        template = self.general_summaries_html
+        res = self.results[com]
+        charts = []
+        
+        pop = res['community data'].get_item('forecast','population')\
+                                    .ix[2010]['population']
+        hh = res['Residential Energy Efficiency']\
+                            .comp_specs['data'].ix['Total Occupied']
+                            
+        try:
+            c_map = res['forecast'].c_map
+            year = c_map[c_map['consumption_qualifier'] == 'M'].index.max()
+        
+            gen = int(res['forecast'].generation.ix[year].values[0])
+            gen_year = year
+       
+            con = int(res['forecast'].consumption.ix[year].values[0])
+            con_year = year 
+        except AttributeError:
+            gen_year = ''
+            con_year = ''
+            gen = "unknown"
+            con = gen
+            
+        
+        table = [[ False, "Population 2010", int(pop)],
+                 [ False, "Households 2010", int(hh)],
+                 [ False, "Toatl Generation kWh " + str(gen_year), gen],
+                 [ False, "Total Consumption kWh " + str(con_year), con],
+                ]
+                 
+                 
+        
+        charts.insert(0,{'name':'overview', 'data':table, 
+                    'title': 'Community Overview',
+                    'table': True,})
+        
+        
+        
+        
+        
+        
+        try:
+            goals = read_csv(os.path.join(self.model_root,'input_files', 
+                                        '__goals_community.csv'),
+                            comment='#', index_col=0)
+        
+            goals = goals.ix[com.replace('_intertie','').\
+                                 replace('_',' ')].fillna('')
+        except IOError: 
+            goals = None
+           
+        if goals is None:
+            charts.append({'name':'goals', 
+                    'data':"Community Goals not avaialble", 
+                    'title':'Community Goals',
+                    })
+        else:
+            table = [[True,'Priority','Goal']]
+            p = 1
+            for g in goals['Priority 1':]:
+                if g == '':
+                    break
+                #~ print type(g)
+                table.append([False, p, g.decode('unicode_escape').\
+                                          encode('ascii','ignore')])
+                p += 1
+            
+            
+            charts.append({'name':'goals', 'data':table, 
+                    'title':'Community Goals',
+                    'table': True,})
+            
+        
+        
+        pth = os.path.join(self.directory, com,
+                    'Overview'.replace(' ','_').replace('(','').replace(')','').lower() + '.html')
+        with open(pth, 'w') as html:
+            html.write(template.render( type = 'Overview', 
+                                    com = com ,
+                                    charts = charts,
+                                    summary_pages = ['Summary'] + comp_order ,
+                                    sections = self.get_summary_pages(),
+                                    communities = self.get_all_coms(),
+                                    metadata = self.metadata,
+                                    ))
+            
+            
                                         
 
     def make_plot_table (self, xs, ys = None, names = None, sigfig=0,

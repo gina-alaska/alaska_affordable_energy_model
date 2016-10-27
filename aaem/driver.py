@@ -710,6 +710,26 @@ class Setup (object):
         src_path = os.path.join(self.data_repo, 'community_list.csv')
         shutil.copy(src_path, config_path)
         
+    def setup_goals (self):
+        """
+        create the community list file from the repo
+        
+        preconditions:
+            see invariants, community_list.csv sould exist in data repo
+            
+        postcondition:
+            '__community_list.csv' saved in config directory
+        """
+        config_path = os.path.join(self.model_root, self.tag, 'input_files', 
+                                                    '__goals_community.csv')
+        src_path = os.path.join(self.data_repo, 'goals_community.csv')
+        shutil.copy(src_path, config_path)
+        
+        config_path = os.path.join(self.model_root, self.tag, 'input_files', 
+                                                    '__goals_regional.csv')
+        src_path = os.path.join(self.data_repo, 'goals_regional.csv')
+        shutil.copy(src_path, config_path)
+        
     def setup_construction_multipliers (self):
         """
         create the construction multipliers file from the repo
@@ -874,6 +894,7 @@ class Setup (object):
         self.setup_community_configs(ids)
         self.setup_community_list()
         self.setup_construction_multipliers()
+        self.setup_goals()
         return True
         
         
