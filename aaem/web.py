@@ -957,10 +957,12 @@ class WebSummary(object):
             c_map = res['forecast'].c_map
             year = c_map[c_map['consumption_qualifier'] == 'M'].index.max()
         
-            gen = int(res['forecast'].generation.ix[year].values[0])
+            gen = '{:,.0f}'.format(res['forecast'].\
+                                        generation.ix[year].values[0])
             gen_year = year
        
-            con = int(res['forecast'].consumption.ix[year].values[0])
+            con = '{:,.0f}'.format(res['forecast'].\
+                                        consumption.ix[year].values[0])
             con_year = year 
         except AttributeError:
             gen_year = ''
