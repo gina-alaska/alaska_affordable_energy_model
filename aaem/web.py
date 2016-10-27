@@ -383,6 +383,39 @@ class WebSummary(object):
         charts = []
         
         
+        HDD = res['community data'].get_item('community','HDD')
+        charts.append({'name':'hdd', 
+                'data': [[False, 'Heating Degree Days per year', HDD]],
+                'title':'Heating Degree Days',
+                'table': True,})
+        
+        
+        r = res['Residential Energy Efficiency'] # res. eff. component
+        rd = r.comp_specs['data'].T # res. data
+        
+        table = [[ True, "", "Number Houses","Avg. Sqft.", "Avg. EUI" ],
+                 [ False, "BEES", 
+                            int(rd["BEES Number"]),
+                            int(rd['BEES Avg Area (SF)']),
+                            float(rd['BEES Avg EUI (MMBtu/sf)'])],
+                 [ False, "Post-Retrofit", 
+                            int(rd["Post-Retrofit Number"]),
+                            int(rd['Post-Retrofit Avg Area (SF)']),
+                            float(rd['Post-Retrofit Avg EUI (MMBtu/sf)'])],
+                 [ False, "Pre-Retrofit", 
+                            int(r.opportunity_HH),  
+                            int(rd['Pre-Retrofit Avg Area (SF)']), 
+                            float(rd['Pre-Retrofit Avg EUI (MMBtu/sf)'])],
+                ]
+        
+        charts.append({'name':'residential_buildings', 
+                'data': table,
+                'title':'Residential Buildings',
+                'table': True,})
+        
+        
+        
+        
         
         nr = res['Non-residential Energy Efficiency']
         measurments = nr.buildings_df
