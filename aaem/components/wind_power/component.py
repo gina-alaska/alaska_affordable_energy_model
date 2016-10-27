@@ -198,11 +198,10 @@ class WindPower(AnnualSavings):
         offset = self.average_load*\
                 self.comp_specs['percent generation to offset']
         #~ print self.forecast.generation_by_type['generation hydro'].sum()
-        hydro = \
-            self.forecast.generation_by_type['generation hydro'].fillna(0).sum()
-        if hydro > 0:
-            offset *= 2
-        #~ self.comp_specs['resource data']['existing wind'] = 0
+        #~ hydro = \
+            #~ self.forecast.generation_by_type['generation hydro'].fillna(0).sum()
+        #~ if hydro > 0:
+            #~ offset *= 2
         
         # existing very variable RE
         existing_RE = \
