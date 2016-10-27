@@ -241,14 +241,17 @@ def generate_web_summary (web_object, community):
     table3[0][-1]
     
     
+    buildings =  modeled.comp_specs['com building data']
+    sqft = buildings['Square Feet'].sum()
+    current = [{'words':"Esitmated Square Feet", 
+                'value':'{:,.0f}'.format(sqft)}]
     
-    current = [{}]
     ## info for modeled
     info = create_project_details_list (modeled)
         
          
     ## info table (list to send to template)
-    info_for_projects = [#{'name': 'Current System', 'info':current},
+    info_for_projects = [{'name': 'Current System', 'info':current},
                             {'name':'Modeled Efficiency Project','info':info}]
             
     
@@ -299,8 +302,8 @@ def create_project_details_list (project):
             'value': '${:,.0f}'.format(project.get_NPV_net_benefit())},
         {'words':'Benefit Cost Ratio', 
             'value': '{:,.3f}'.format(project.get_BC_ratio())},
-        #~ {'words':'Proposed Nameplate Capacity(kW)', 
-            #~ 'value': '{:,.0f}'.format(project.proposed_load)},
+        {'words':'Refit Cost Rate', 
+            'value': '${:,.2f}/sqft'.format(project.refit_cost_rate)},
         #~ {'words':'Expected Yearly Generation (kWh/year)', 
          #~ 'value': 
                 #~ '{:,.0f}'.format(project.proposed_load *\
