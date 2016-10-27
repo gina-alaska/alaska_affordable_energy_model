@@ -45,3 +45,8 @@ yaml_not_to_save = []
 
 ## list of prerequisites for module
 prereq_comps = []
+
+
+DESCRIPTION = """
+    This component calculates the potential Heating Oil that could be offset by installing a new Heat Recovery System
+"""

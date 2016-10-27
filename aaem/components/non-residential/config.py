@@ -50,3 +50,7 @@ yaml_not_to_save = []
 
 ## list of prerequisites for module
 prereq_comps = []
+
+DESCRIPTION = """
+    This component calculates the potential reduction in Electricty and Heating Oil by improving the efficieny of Non-residential buildings
+"""
