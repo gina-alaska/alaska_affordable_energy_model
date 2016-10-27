@@ -230,14 +230,22 @@ def generate_web_summary (web_object, community):
                                     web_object.directory,
                                     'savings_HF')
     #~ table3[0][-1]
-    
-    current = [{}]
+    year = modeled.comp_specs['data'].ix['Year']
+    current = [{'words':'Households '+ str(int(year)) ,
+                'value': int(modeled.comp_specs['data'].ix['Total Occupied'])},
+        {'words':'Estimated Total Households '+ str(int(modeled.start_year)),
+        'value': modeled.init_HH},
+        {'words':
+            'Estimated Households to be retofit '+ str(int(modeled.start_year)),
+        'value': int(modeled.opportunity_HH)},
+                ]
+                
     ## info for modeled
     info = create_project_details_list (modeled)
         
          
     ## info table (list to send to template)
-    info_for_projects = [#{'name': 'Current System', 'info':current},
+    info_for_projects = [{'name': 'Current System', 'info':current},
                             {'name':'Modeled Efficiency Project','info':info}]
             
     
@@ -288,8 +296,8 @@ def create_project_details_list (project):
             'value': '${:,.0f}'.format(project.get_NPV_net_benefit())},
         {'words':'Benefit Cost Ratio', 
             'value': '{:,.3f}'.format(project.get_BC_ratio())},
-        #~ {'words':'Proposed Nameplate Capacity(kW)', 
-            #~ 'value': '{:,.0f}'.format(project.proposed_load)},
+        {'words':'Estimated Cost to refit Household', 
+            'value': '${:,.2f}/home'.format(project.refit_cost_rate)},
         #~ {'words':'Expected Yearly Generation (kWh/year)', 
          #~ 'value': 
                 #~ '{:,.0f}'.format(project.proposed_load *\
