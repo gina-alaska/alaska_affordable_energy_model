@@ -5,6 +5,15 @@
 {% block additional_css %}
 <link href="footer.css" rel="stylesheet">
 <link href="dropdown.css" rel="stylesheet">
+
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.0.1/dist/leaflet.js"></script>
+<!-- END OF LIB INCLUDES -->
+<!-- Set some styling on the map to make sure it has a height -->
+<style media="screen">
+  #mapid { height: 500px; }
+</style>
 {% endblock %}
     
 {% block full %}
@@ -20,4 +29,9 @@
     <div class="panel-footer"></div>
 -->
 </div>
+
+<div id="mapid"></div>
+<script src="map.js" charset="utf-8"></script>
+
+
 {% endblock %}
