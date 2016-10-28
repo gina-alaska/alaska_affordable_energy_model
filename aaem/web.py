@@ -26,9 +26,20 @@ class WebSummary(object):
         model = driver.Driver(self.model_root)
         self.results = model.load_results(tag)
         #~ print self.results
-        
-        
-       
+        self.bad_data_msg = \
+            "This community is known to have missing/incomplete data"
+        self.bad_data_coms = []
+        try:
+            inputs = os.path.join(self.model_root, 'input_files')
+            for d in os.listdir(inputs):
+            
+                if os.path.isdir(os.path.join(inputs,d)) and d.find('__') == -1:
+                    
+                    if len(os.listdir(os.path.join(inputs,d))) < 29:
+                        self.bad_data_coms.append(d)       
+        except:
+            print "Could not analyze bad commuities"
+            pass
         self.version = __version__
         with open(os.path.join(self.model_root,'input_files',
                     '__metadata','input_files_metadata.yaml'), 'r') as md:
@@ -110,6 +121,10 @@ class WebSummary(object):
                 #~ if comp in ['Solar Power','Wind Power','Heat Recovery'] :
                 pth = os.path.join(self.directory, com, c_clean +'.html')
 
+
+                msg = None
+                if com in self.bad_data_coms:
+                    msg = self.bad_data_msg
                 with open(pth, 'w') as html:
                     reason = self.results[com][comp].reason
                     if reason.lower() == 'ok':
@@ -120,7 +135,8 @@ class WebSummary(object):
                                     reason = reason,
                                     sections = self.get_summary_pages(),
                                     communities = self.get_all_coms(),
-                                    metadata = self.metadata,))
+                                    metadata = self.metadata,
+                                    message = msg))
                                    
         ## geneate redirect pages for intertie related pages
         template = self.no_results_html
@@ -135,13 +151,19 @@ class WebSummary(object):
                 if it == "child":
                     reason = "REDIRECT parent" 
                 
+                msg = None
+                if com in self.bad_data_coms:
+                    msg = self.bad_data_msg
+    
+                
                 html.write(template.render( 
                                 type = comp, 
                                 com = com ,
                                 reason = reason,
                                 sections = self.get_summary_pages(),
                                 communities = self.get_all_coms(),
-                                metadata = self.metadata,))
+                                metadata = self.metadata,
+                                message = msg))
 
 
     def copy_etc (self):
@@ -360,7 +382,9 @@ class WebSummary(object):
                         #~ 'title':'Electricity Price ($/kWh)',
                         #~ 'type': "'currency'",})
 
-        
+        msg = None
+        if com in self.bad_data_coms:
+            msg = self.bad_data_msg
             
         
         pth = os.path.join(self.directory, com,
@@ -373,6 +397,7 @@ class WebSummary(object):
                                 sections = self.get_summary_pages(),
                                 communities = self.get_all_coms(),
                                 metadata = self.metadata,
+                                message = msg
                                 ))
                                 
                                 
@@ -571,6 +596,9 @@ class WebSummary(object):
         #~ except AttributeError:
             #~ pass
 
+        msg = None
+        if com in self.bad_data_coms:
+            msg = self.bad_data_msg
             
         pth = os.path.join(self.directory, com,
                     'Consumption'.replace(' ','_').replace('(','').replace(')','').lower() + '.html')
@@ -582,6 +610,7 @@ class WebSummary(object):
                                     sections = self.get_summary_pages(),
                                     communities = self.get_all_coms(),
                                     metadata = self.metadata,
+                                    message = msg
                                     ))
         
         
@@ -846,7 +875,9 @@ class WebSummary(object):
             #~ charts.insert(0,{'name':'it_l', 'data':"Community not on intertie",
                 #~ 'title':'Intertied Communities'})
         
-            
+        msg = None
+        if com in self.bad_data_coms:
+            msg = self.bad_data_msg
 
         pth = os.path.join(self.directory, com,
                     'Generation'.replace(' ','_').replace('(','').replace(')','').lower() + '.html')
@@ -858,6 +889,7 @@ class WebSummary(object):
                                     sections = self.get_summary_pages(),
                                     communities = self.get_all_coms(),
                                     metadata = self.metadata,
+                                    message = msg
                                     ))
         
         
@@ -980,8 +1012,13 @@ class WebSummary(object):
                 pass
         
         
+        msg = None
+        if com in self.bad_data_coms:
+            msg = self.bad_data_msg
+        
         pth = os.path.join(self.directory, com,
-                    'Potential Projects'.replace(' ','_').replace('(','').replace(')','').lower() + '.html')
+                    'Potential Projects'.replace(' ','_').replace('(','').
+                                            replace(')','').lower() + '.html')
         with open(pth, 'w') as html:
             html.write(template.render( type = 'Potential Projects', 
                                     com = com ,
@@ -990,6 +1027,7 @@ class WebSummary(object):
                                     communities = self.get_all_coms(),
                                     potential_projects = projs,
                                     metadata = self.metadata,
+                                    message = msg
                                     ))
                                     
     def overview (self, com):
@@ -1069,7 +1107,9 @@ class WebSummary(object):
                     'title':'Community Goals',
                     'table': True,})
             
-        
+        msg = None
+        if com in self.bad_data_coms:
+            msg = self.bad_data_msg
         
         pth = os.path.join(self.directory, com,
                     'Overview'.replace(' ','_').replace('(','').replace(')','').lower() + '.html')
@@ -1081,6 +1121,7 @@ class WebSummary(object):
                                     sections = self.get_summary_pages(),
                                     communities = self.get_all_coms(),
                                     metadata = self.metadata,
+                                    message = msg
                                     ))
             
             

@@ -338,6 +338,10 @@ def generate_web_summary (web_object, community):
             ]
         
     ## generate html
+    msg = None
+    if community in web_object.bad_data_coms:
+        msg = web_object.bad_data_msg
+    
     pth = os.path.join(web_object.directory, community,
                     COMPONENT_NAME.replace(' ','_').lower() + '.html')
     with open(pth, 'w') as html:
@@ -350,6 +354,7 @@ def generate_web_summary (web_object, community):
                                     communities = web_object.get_all_coms(),
                                     description =  DESCRIPTION,
                                     metadata = web_object.metadata,
+                                    message = msg
                                     ))
  
 
