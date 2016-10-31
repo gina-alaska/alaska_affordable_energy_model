@@ -272,7 +272,7 @@ layer = L.geoJson(geojson, {
   },
   onEachFeature: function(feature, layer) {
     if (feature.properties) {
-      layer.bindPopup("<div class=''>" + feature.properties.Community + "</div><div><a href='"+ feature.properties.Community.split(" ").join("_") +"/overview.html'>View Community Info</a></div>");
+      layer.bindPopup("<div class=''>" + feature.properties.Community + "</div><div><a href='"+ feature.properties.Community.replace(/ /g, "_") +"/overview.html'>View Community Info</a></div>");
     }
   }
 })
