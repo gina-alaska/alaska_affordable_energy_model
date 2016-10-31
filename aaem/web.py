@@ -63,6 +63,7 @@ class WebSummary(object):
                         self.env.get_template('potential_projects.html')
         self.no_results_html = self.env.get_template('no_results.html')
         self.index_html = self.env.get_template('index.html')
+        self.comp_redir_html = self.env.get_template('intertie_redir.html')
         
 
     def get_viable_components (self, com, cutoff = 1):
@@ -139,7 +140,7 @@ class WebSummary(object):
                                     message = msg))
                                    
         ## geneate redirect pages for intertie related pages
-        template = self.no_results_html
+        template = self.comp_redir_html
         for comp in re_dirs:
             c_clean = comp.replace(' ','_').\
                            replace('(','').replace(')','').lower()
@@ -147,9 +148,12 @@ class WebSummary(object):
 
             with open(pth, 'w') as html:
                 
-                reason = "Redirect child"
+                parent = True
+                intertie =  [i for i in self.results[com]['community data'].intertie_list if i != "''"]
                 if it == "child":
-                    reason = "REDIRECT parent" 
+                    parent = False
+                    intertie = [ self.results[com]['community data'].parent +"_intertie"]
+                    
                 
                 msg = None
                 if com in self.bad_data_coms:
@@ -159,11 +163,14 @@ class WebSummary(object):
                 html.write(template.render( 
                                 type = comp, 
                                 com = com ,
-                                reason = reason,
                                 sections = self.get_summary_pages(),
                                 communities = self.get_all_coms(),
                                 metadata = self.metadata,
-                                message = msg))
+                                message = msg
+                                parent = parent,
+                                intertie = intertie
+                                ))
+
 
 
     def copy_etc (self):
