@@ -189,6 +189,11 @@ class WebSummary(object):
         shutil.copy(os.path.join(pth,'templates','dropdown.css'),self.directory)
         shutil.copy(os.path.join(pth,'templates','map.js'),self.directory)
         
+        template = self.env.get_template('communities.js')
+        with open(os.path.join(self.directory,'communities.js'), 'w') as html:
+            html.write(template.render(communities = self.get_all_coms()))
+        
+        
     def get_web_summary(self, component):
         """
         """
@@ -208,7 +213,7 @@ class WebSummary(object):
     
     def get_all_coms (self):
         """ Function doc """
-        return sorted([k for k in self.results.keys() if k.find('+') == -1])
+        return sorted([k.replace("'",'') for k in self.results.keys() if k.find('+') == -1])
     
     
     def get_summary_pages (self):
@@ -252,7 +257,7 @@ class WebSummary(object):
             from multiprocessing import Process, Lock,active_children, cpu_count
             lock = Lock()
     
-            for com in keys:#["Stebbins","Adak","Brevig_Mission"]:
+            for com in keys: #["Stebbins","Adak","Brevig_Mission"]:
                 while len(active_children()) >= cpu_count():
                     continue
                 lock.acquire()
@@ -263,7 +268,7 @@ class WebSummary(object):
             while len(active_children()) > 0:
                 continue
         except (ImportError, NotImplementedError, PicklingError):
-            for com in keys:#["Stebbins","Adak","Brevig_Mission"]:
+            for com in keys: #["Stebbins","Adak","Brevig_Mission"]:
                 start = datetime.now()
                 self.generate_web_summaries(com)
                 print com, datetime.now() - start
