@@ -30,3 +30,7 @@ yaml_not_to_save = deepcopy(ashp_base.yaml_not_to_save)
 
 ## list of prerequisites for module
 prereq_comps = ['Residential Energy Efficiency']
+
+DESCRIPTION = """
+    This component calculates the potential Heating Oil that could be offset by installing new Air Source Heat Pumps for Residential buildings . 
+"""

@@ -6,7 +6,7 @@ outputs.py
 import os.path
 import numpy as np
 from pandas import DataFrame
-from config import COMPONENT_NAME
+from config import COMPONENT_NAME, DESCRIPTION
 import aaem.constants as constants
 
 ## component summary (WRITE THIS)

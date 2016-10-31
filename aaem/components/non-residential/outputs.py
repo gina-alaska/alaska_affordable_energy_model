@@ -6,7 +6,7 @@ outputs.py
 import os.path
 import numpy as np
 from pandas import DataFrame
-from config import COMPONENT_NAME
+from config import COMPONENT_NAME, DESCRIPTION
 import aaem.constants as constants
 import aaem.web_lib as wl
 from aaem.components import comp_order
@@ -284,6 +284,7 @@ def generate_web_summary (web_object, community):
                                     summary_pages = ['Summary'] + comp_order ,
                                     sections = web_object.get_summary_pages(),
                                     communities = web_object.get_all_coms(),
+                                    description =  DESCRIPTION,
                                     metadata = web_object.metadata,
                                     message = msg
                                     ))

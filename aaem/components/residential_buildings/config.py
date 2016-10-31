@@ -32,3 +32,7 @@ yaml_comments = {'enabled': '',
 
 ## list of prerequisites for module
 prereq_comps = []
+
+DESCRIPTION = """
+    This component calculates the potential reduction Heating Oil by improving the efficieny Residential buildings
+"""

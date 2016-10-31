@@ -63,3 +63,7 @@ yaml_not_to_save = ["data"]
 
 ## list of prerequisites for module
 prereq_comps = []
+
+DESCRIPTION = """
+    This component calculates the potential electricity generation from diesel that could be offset by installing new solar panel infrastructure. 
+"""
