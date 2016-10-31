@@ -278,7 +278,7 @@ def generate_web_summary (web_object, community):
                                     sections = web_object.get_summary_pages(),
                                     communities = web_object.get_all_coms(),
 
-                                    message = msg 
+                                    message = msg ,
                                     description =  DESCRIPTION,
                                     metadata = web_object.metadata, 
 

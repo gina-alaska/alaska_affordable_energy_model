@@ -1,5 +1,15 @@
 #Change Log
 
+## [0.21.1]
+### changed
+- wind power: removed hydro 2x multiplier for load offset proposed
+
+### added
+- html: component descriptions
+- html: messages about missing data
+- html: redirects for interties 
+- html: map
+
 ## [0.21.0]
 ### added
 - overview and goals html page

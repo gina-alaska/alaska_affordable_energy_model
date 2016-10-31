@@ -166,7 +166,7 @@ class WebSummary(object):
                                 sections = self.get_summary_pages(),
                                 communities = self.get_all_coms(),
                                 metadata = self.metadata,
-                                message = msg
+                                message = msg,
                                 parent = parent,
                                 intertie = intertie
                                 ))
