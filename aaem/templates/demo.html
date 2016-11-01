@@ -4,7 +4,9 @@
 {% block title %}{{ com }} - {{ type }} summary{% endblock %}
 
 {% block additional_css %}
-  <link href="../summary.css" rel="stylesheet">
+<link href="{% if not in_root %}../{% endif %}summary.css" rel="stylesheet"> 
+<link href="{% if not in_root %}../{% endif %}ooter.css" rel="stylesheet">
+<link href="{% if not in_root %}../{% endif %}dropdown.css" rel="stylesheet">
 {% endblock %}
 
 {% block JS %}
@@ -53,6 +55,12 @@
                             </tr>{% endfor %}
                         </tbody>
                         </table>
+                    {% elif chart.links_list %}
+                        <div class="list-group">
+                        {% for row in chart.data %}
+                            <a href="{{ row.url }}" class="list-group-item">{{ row.text }}</a>
+                        {% endfor %}
+                        </div>
                     {% else %}
                         <p>This plot/table could not be generateted. {{ chart.data }}</P>
                     {% endif %}

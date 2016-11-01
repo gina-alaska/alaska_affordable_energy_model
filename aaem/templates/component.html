@@ -2,7 +2,11 @@
 
 {% block title %}{{ com }} - {{ type }} summary{% endblock %}
 
-{% block additional_css %}<link href="../summary.css" rel="stylesheet"> {% endblock %}
+{% block additional_css %}
+<link href="../summary.css" rel="stylesheet"> 
+<link href="../footer.css" rel="stylesheet">
+<link href="../dropdown.css" rel="stylesheet">
+{% endblock %}
 
 
 {% block JS %}{% include 'plot.html' %} {% endblock %}

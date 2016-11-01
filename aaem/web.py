@@ -189,6 +189,11 @@ class WebSummary(object):
         shutil.copy(os.path.join(pth,'templates','dropdown.css'),self.directory)
         shutil.copy(os.path.join(pth,'templates','map.js'),self.directory)
         
+        template = self.env.get_template('navbar.js')
+        with open(os.path.join(self.directory,'navbar.js'), 'w') as html:
+            html.write(template.render(communities = self.get_all_coms(), regions=self.get_regions()))
+        
+        
     def get_web_summary(self, component):
         """
         """
@@ -208,7 +213,38 @@ class WebSummary(object):
     
     def get_all_coms (self):
         """ Function doc """
+        return sorted([k.replace("'",'') for k in self.get_coms()])
+        
+    def get_coms (self):
         return sorted([k for k in self.results.keys() if k.find('+') == -1])
+    
+    def get_regions (self):
+        try:
+            return self.regions 
+        except AttributeError:
+            pass
+            
+        
+        temp = {}
+        for com in self.get_coms():
+            reg = self.results[com]['community data']\
+                                            .get_item('community', 'region')
+            try:
+                temp[reg].append(com.replace("'",''))
+            except:
+                temp[reg] = [com.replace("'",'')]
+                
+        
+        regions = []
+        for k in sorted(temp.keys()):
+            regions.append({"region":k, "communities":temp[k], 
+                            "clean": k.replace(' ','_').replace('(','').\
+                                replace(')','').replace('/','_').lower()})
+        
+        
+        self.regions = regions
+        #~ print self.regions
+        return self.regions 
     
     
     def get_summary_pages (self):
@@ -247,12 +283,13 @@ class WebSummary(object):
         keys = sorted([k for k in self.results.keys() if k.find('+') == -1])
         self.copy_etc()
         self.generate_index()
+        self.generate_regional_summaries()
 
         try:
             from multiprocessing import Process, Lock,active_children, cpu_count
             lock = Lock()
     
-            for com in keys:#["Stebbins","Adak","Brevig_Mission"]:
+            for com in keys: #["Stebbins","Adak","Brevig_Mission"]:
                 while len(active_children()) >= cpu_count():
                     continue
                 lock.acquire()
@@ -263,7 +300,7 @@ class WebSummary(object):
             while len(active_children()) > 0:
                 continue
         except (ImportError, NotImplementedError, PicklingError):
-            for com in keys:#["Stebbins","Adak","Brevig_Mission"]:
+            for com in keys: #["Stebbins","Adak","Brevig_Mission"]:
                 start = datetime.now()
                 self.generate_web_summaries(com)
                 print com, datetime.now() - start
@@ -1277,7 +1314,74 @@ class WebSummary(object):
                                     metadata = self.metadata,
                                     message = msg
                                     ))
+                                    
+    def generate_regional_summaries (self):
+        """
+        """
+        template = self.general_summaries_html
+        regions = self.get_regions()
+        
+        for reg in regions:
+            charts = []
+            name = reg['region']
+            coms = reg['communities']
             
+            
+            table = []
+            for com in coms:
+                table.append({'url': com + "/overview.html", 
+                                            'text':com.replace('_',' ')})
+            charts.append({'name':'coms', 'data':table, 
+                        'title':'Communities in region',
+                        'links_list': True,})
+            
+        
+            try:
+                goals = read_csv(os.path.join(self.model_root,'input_files', 
+                                            '__goals_regional.csv'),
+                                comment='#', index_col=0)
+            
+                key = name
+                if key == 'Copper River/Chugach':
+                    key = 'Copper River'
+                elif key == 'Kodiak':
+                    key = 'Kodiak Region'
+                goals = goals.ix[key].fillna('')
+            except IOError: 
+                goals = None
+               
+            if goals is None:
+                charts.append({'name':'goals', 
+                        'data':"Regional Goals not avaialble", 
+                        'title':'Regional Goals',
+                        })
+            else:
+                table = [[True,'Priority','Goal']]
+                p = 1
+                for g in goals['Priority 1':]:
+                    if g == '':
+                        break
+                    #~ print type(g)
+                    table.append([False, p, g.decode('unicode_escape').\
+                                              encode('ascii','ignore')])
+                    p += 1
+                
+                
+                charts.append({'name':'goals', 'data':table, 
+                        'title':'Regional Goals',
+                        'table': True,})
+    
+            pth = os.path.join(self.directory,
+                        name.replace(' ','_').replace('(','').replace(')','').replace('/','_').lower() + '.html')
+            with open(pth, 'w') as html:
+                html.write(template.render( type = 'Region', 
+                                        com = name ,
+                                        charts = charts,
+                                        summary_pages = [],
+                                        sections = [],
+                                        metadata = self.metadata,
+                                        in_root=True
+                                        ))
             
                                         
 

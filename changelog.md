@@ -29,7 +29,7 @@
 
 ## [0.20.13]
 ### fixed
-- windows pickleing error
+- windows pickling error
 
 ## [0.20.12]
 ### added 

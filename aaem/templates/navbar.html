@@ -1,3 +1,4 @@
+
 <nav class="navbar navbar-default navbar-aaem ">
   <div class="container-fluid">
     <!-- Brand and toggle get grouped for better mobile display -->
@@ -14,22 +15,18 @@
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="navbar-aaem">
       <ul class="nav navbar-nav ">
-        {% if communities is defined %}
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Communities <span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            {% for com in communities %}<li><a href="{% if not in_root %}../{% endif %}{{ com }}/overview.html">{{ com.replace('_', ' ') }}</a></li>{% endfor %}
+          <ul class="dropdown-menu short-menu" id="community_drop" >
+
           </ul>
         </li>
-        {% endif %}
-        {% if regions is defined %}
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Regions <span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            {% for item in regions %}<li><a href="{% if not in_root %}../{% endif %}{{ item }}/potential_projects.html">{{ item.replace('_', ' ') }}</a></li>{% endfor %}
+          <ul class="dropdown-menu " id="region_drop">
+              
           </ul>
         </li>
-        {% endif %}
       </ul>
     </div>
   </div>
