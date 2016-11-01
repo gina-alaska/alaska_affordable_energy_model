@@ -1,5 +1,15 @@
 #Change Log
 
+## [0.21.2]
+### added 
+- html: regions to navbar
+- html: regional summaries
+- html: overview added intertie info
+
+### changed
+- html: overview updated info displayed
+- html: navbar lists are now javascript
+
 ## [0.21.1]
 ### changed
 - wind power: removed hydro 2x multiplier for load offset proposed
