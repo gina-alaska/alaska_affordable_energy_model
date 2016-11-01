@@ -189,9 +189,9 @@ class WebSummary(object):
         shutil.copy(os.path.join(pth,'templates','dropdown.css'),self.directory)
         shutil.copy(os.path.join(pth,'templates','map.js'),self.directory)
         
-        template = self.env.get_template('communities.js')
-        with open(os.path.join(self.directory,'communities.js'), 'w') as html:
-            html.write(template.render(communities = self.get_all_coms()))
+        template = self.env.get_template('navbar.js')
+        with open(os.path.join(self.directory,'navbar.js'), 'w') as html:
+            html.write(template.render(communities = self.get_all_coms(), regions=self.get_regions()))
         
         
     def get_web_summary(self, component):
@@ -213,7 +213,35 @@ class WebSummary(object):
     
     def get_all_coms (self):
         """ Function doc """
-        return sorted([k.replace("'",'') for k in self.results.keys() if k.find('+') == -1])
+        return sorted([k.replace("'",'') for k in self.get_coms()])
+        
+    def get_coms (self):
+        return sorted([k for k in self.results.keys() if k.find('+') == -1])
+    
+    def get_regions (self):
+        try:
+            return self.regions 
+        except AttributeError:
+            pass
+            
+        
+        temp = {}
+        for com in self.get_coms():
+            reg = self.results[com]['community data']\
+                                            .get_item('community', 'region')
+            try:
+                temp[reg].append(com.replace("'",''))
+            except:
+                temp[reg] = [com.replace("'",'')]
+                
+        
+        regions = []
+        for k in sorted(temp.keys()):
+            regions.append({"region":k, "communities":temp[k]})
+        
+        
+        self.regions = regions
+        return self.regions 
     
     
     def get_summary_pages (self):
