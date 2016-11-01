@@ -1065,11 +1065,144 @@ class WebSummary(object):
             gen = "unknown"
             con = gen
             
+        diesel = res['community data'].get_item('community','diesel prices')
+        fuel_year = diesel.start_year
+        diesel_c = diesel.projected_prices[0]
+        HF_c = diesel_c + res['community data'].get_item('community',
+                                                        'heating fuel premium')
         
-        table = [[ False, "Population 2010", int(pop)],
+        diesel_c = '${:,.2f}/gallon'.format(diesel_c)
+        HF_c = '${:,.2f}/gallon'.format(HF_c)
+        
+        elec_price = res['community data'].get_item('community',
+                                                'electric non-fuel prices')
+        if type( elec_price ) is str:
+            elec_c = "unknown"
+        else:
+            elec_c = '${:,.2f}/kWh'.format(float(elec_price.iloc[0]))
+           
+           
+        oil_year = res['Residential Energy Efficiency'].start_year
+        if hasattr(res['Residential Energy Efficiency'],
+                    'baseline_fuel_Hoil_consumption'):
+            res_gal = res['Residential Energy Efficiency'].\
+                                        baseline_fuel_Hoil_consumption[0]
+            res_gal = '{:,.0f} gallons'.format(res_gal)
+        else:
+            res_gal = "unknown"
+        
+        
+        if hasattr(res['Non-residential Energy Efficiency'], 
+                    'baseline_fuel_Hoil_consumption'):
+            nr_gal = res['Non-residential Energy Efficiency'].\
+                                    baseline_fuel_Hoil_consumption
+            
+        else:
+            nr_gal = 0
+        
+        if hasattr(res['Water and Wastewater Efficiency'], 
+                    'baseline_fuel_Hoil_consumption'):
+            nr_gal +=  res['Water and Wastewater Efficiency'].\
+                                        baseline_fuel_Hoil_consumption[0]
+        else:
+           nr_gal += 0
+           
+        if nr_gal != 0:
+            nr_gal = '{:,.0f} gallons'.format(nr_gal)
+        else:
+            nr_gal = "unknown"
+            
+        eff = res['community data'].get_item('community',
+                                                'diesel generation efficiency')
+        if hasattr(res['forecast'], 'generation_by_type'):
+            if eff == 0:
+                eff = np.nan
+            
+            utility = res['forecast'].\
+                    generation_by_type["generation diesel"].iloc[0]
+            utility /= eff
+            utility = '{:,.0f} gallons'.format(utility)
+        else:
+            utility = "unknown"  
+           
+        
+        if np.isnan(eff):
+            eff = 0;
+        
+        eff = '{:,.2f} gallons/kWh'.format(eff)
+        
+        ll = res['community data'].get_item('community','line losses')
+        try:
+            ll = '{:,.2f}%'.format(ll*100)
+        except:
+            ll = "unknown"
+        
+        g_year = ""
+        if hasattr(res['forecast'], 'generation_by_type'):
+            if not hasattr(res['forecast'], 'generation_forecast_dataframe'):
+                res['forecast'].generate_generation_forecast_dataframe()
+            c_map = res['forecast'].c_map
+            g_year = c_map[c_map['consumption_qualifier']\
+                                                    == 'M'].index.max()
+            
+            generation = res['forecast'].\
+                generation_forecast_dataframe[[
+                                'generation_diesel [kWh/year]',
+                                'generation_hydro [kWh/year]',
+                                'generation_natural_gas [kWh/year]',
+                                'generation_wind [kWh/year]',
+                                'generation_solar [kWh/year]',
+                                'generation_biomass [kWh/year]']].loc[g_year]
+                                                                
+            g_diesel = generation['generation_diesel [kWh/year]']
+            g_hydro = generation['generation_hydro [kWh/year]']
+            #~ g_ng = generation['generation_natural_gas [kWh/year]']
+            g_wind = generation['generation_wind [kWh/year]']
+            #~ g_solar = generation['generation_solar [kWh/year]']
+            #~ g_biomass = generation['generation_biomass [kWh/year]']
+            
+        else:
+            g_diesel = "unknown"
+            g_hydro = "unknown"
+            g_ng = "unknown"
+            g_wind = "unknown"
+            g_solar = "unknown"
+            g_biomass = "unknown"
+            
+        try:
+            al = int(con/hours_per_year)
+        except:
+            al = "unknown"
+        
+        table = [[ True, "Demographics", ""],
+                 [ False, "Population 2010", int(pop)],
                  [ False, "Households 2010", int(hh)],
-                 [ False, "Toatl Generation kWh " + str(gen_year), gen],
+                 [ True, "Financial", ""],
+                 [ False, "Diesel Fuel Cost " + str(fuel_year), diesel_c],
+                 [ False, "Heating Fuel Cost " + str(fuel_year), HF_c],
+                 [ False, "Electricity Cost " + str(fuel_year), elec_c],
+                 [ True, "Consumption", ""],
                  [ False, "Total Consumption kWh " + str(con_year), con],
+                 [ False, 
+                    "Estimated Residential Heaing Fuel " + str(oil_year),
+                    res_gal],
+                 [ False, 
+                    "Estimated Non-residential Heaing Fuel " + str(oil_year),
+                    nr_gal],
+                 [ False,
+                    "Estimated Utility Diesel " + str(oil_year),
+                    utility],
+                 [ True, "Generation", ""],
+                 [ False, "Total Generation kWh " + str(gen_year), gen],
+                 [ False, "Average Load kW " + str(gen_year), al],
+                 [ False, "Generation Diesel kWh " + str(g_year), g_diesel],
+                 [ False, "Generation Hydro kWh " + str(g_year), g_hydro],
+                 #~ [ False, "Generation Natural Gas kWh " + str(g_year), g_ng],
+                 [ False, "Generation Wind kWh " + str(g_year), g_wind],
+                 #~ [ False, "Generation Solar kWh " + str(g_year), g_solar],
+                #~ [ False, "Generation Biomass kWh " + str(g_year), g_biomass],
+                 [ False, "Diesel Generator Efficiency Estimated", eff],
+                 [ False, "Line Losses Estimated", ll],
                 ]
                  
                  
@@ -1113,6 +1246,20 @@ class WebSummary(object):
             charts.append({'name':'goals', 'data':table, 
                     'title':'Community Goals',
                     'table': True,})
+        
+        it = self.results[com]['community data'].intertie
+        if not it is None:
+            intertie =  [i for i in res['community data'].\
+                                                    intertie_list if i != "''"]
+            table = [[True, 'Community', 'Parent/Child'],
+                     [False, res['community data'].parent, 'Parent']]
+            for i in intertie:
+                table.append([False, i, 'Child'])
+                                                    
+            charts.append({'name':'interties', 'data':table, 
+                    'title':'Intertied Communities',
+                    'table': True,})
+
             
         msg = None
         if com in self.bad_data_coms:
