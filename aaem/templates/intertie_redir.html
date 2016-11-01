@@ -25,7 +25,7 @@
             {% endif %} 
             <div class="list-group">
                 {% for com in intertie %}
-                <a href="../{{com}}/{{ type.replace(' ','_').replace('(','').replace(')','').lower() }}.html" class="list-group-item">{{ com }}</a>
+                <a href="../{{com.replace(' ','_')}}/{{ type.replace(' ','_').replace('(','').replace(')','').lower() }}.html" class="list-group-item">{{ com }}</a>
                 {% endfor %}
             </div>
             
