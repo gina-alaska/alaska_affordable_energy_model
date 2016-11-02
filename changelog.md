@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.21.4]
+### fixed
+- html: missing plot bug, by removing unessary passing of communitys to templates
+
 ## [0.21.3]
 ### fixed
 - html: fixed "'" character in path names

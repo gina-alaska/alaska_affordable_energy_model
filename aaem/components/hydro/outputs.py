@@ -343,11 +343,11 @@ def generate_web_summary (web_object, community):
     with open(pth, 'w') as html:
         html.write(template.render( info = info_for_projects,
                                     type = COMPONENT_NAME, 
-                                    com = community ,
+                                    com = community.replace("'",'') ,
                                     charts = charts,
                                     summary_pages = ['Summary'] + comp_order ,
                                     sections = web_object.get_summary_pages(),
-                                    communities = web_object.get_all_coms(),
+                                    
                                     description =  DESCRIPTION,
                                     metadata = web_object.metadata,
                                     message = msg
