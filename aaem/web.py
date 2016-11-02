@@ -132,7 +132,7 @@ class WebSummary(object):
                         reason = "The component has a bad motivater"
                     html.write(template.render( 
                                     type = comp, 
-                                    com = com.replace("'",'') , ,
+                                    com = com.replace("'",'') ,
                                     reason = reason,
                                     sections = self.get_summary_pages(),
                                     communities = self.get_cleanded_coms(),
@@ -162,7 +162,7 @@ class WebSummary(object):
                 
                 html.write(template.render( 
                                 type = comp, 
-                                com = com.replace("'",'') , ,
+                                com = com.replace("'",'') ,
                                 sections = self.get_summary_pages(),
                                 communities = self.get_cleanded_coms(),
                                 metadata = self.metadata,
@@ -435,7 +435,7 @@ class WebSummary(object):
                     'Financial and Demographic'.replace(' ','_').replace('(','').replace(')','').lower() + '.html')
         with open(pth, 'w') as html:
             html.write(template.render( type = 'Financial and Demographic', 
-                                com = com.replace("'",'') , ,
+                                com = com.replace("'",'') ,
                                 charts = charts,
                                 summary_pages = ['Summary'] + comp_order ,
                                 sections = self.get_summary_pages(),
@@ -648,7 +648,7 @@ class WebSummary(object):
                     'Consumption'.replace(' ','_').replace('(','').replace(')','').lower() + '.html')
         with open(pth, 'w') as html:
             html.write(template.render( type = 'Consumption', 
-                                    com = com.replace("'",'') , ,
+                                    com = com.replace("'",'') ,
                                     charts = charts,
                                     summary_pages = ['Summary'] + comp_order ,
                                     sections = self.get_summary_pages(),
@@ -927,7 +927,7 @@ class WebSummary(object):
                     'Generation'.replace(' ','_').replace('(','').replace(')','').lower() + '.html')
         with open(pth, 'w') as html:
             html.write(template.render( type = 'Generation', 
-                                    com = com.replace("'",'') , ,
+                                    com = com.replace("'",'') ,
                                     charts = charts,
                                     summary_pages = ['Summary'] + comp_order ,
                                     sections = self.get_summary_pages(),
@@ -1065,7 +1065,7 @@ class WebSummary(object):
                                             replace(')','').lower() + '.html')
         with open(pth, 'w') as html:
             html.write(template.render( type = 'Potential Projects', 
-                                    com = com.replace("'",'') , ,
+                                    com = com.replace("'",'') ,
                                     summary_pages = ['Summary'] + comp_order ,
                                     sections = self.get_summary_pages(),
                                     communities = self.get_cleanded_coms(),
@@ -1306,7 +1306,7 @@ class WebSummary(object):
                     'Overview'.replace(' ','_').replace('(','').replace(')','').lower() + '.html')
         with open(pth, 'w') as html:
             html.write(template.render( type = 'Overview', 
-                                    com = com.replace("'",'') , ,
+                                    com = com.replace("'",'') ,
                                     charts = charts,
                                     summary_pages = ['Summary'] + comp_order ,
                                     sections = self.get_summary_pages(),
