@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.21.3]
+### fixed
+- html: fixed "'" character in path names
+
 ## [0.21.2]
 ### added 
 - html: regions to navbar
