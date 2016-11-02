@@ -3,6 +3,7 @@
 ## [0.21.4]
 ### fixed
 - html: missing plot bug, by removing unessary passing of communitys to templates
+- html: misspelled footer.css is fixed 
 
 ## [0.21.3]
 ### fixed
