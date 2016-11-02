@@ -90,10 +90,10 @@ def make_costs_table (community, comp, projects, base_cost, directory):
     fname = community + "_" + comp.replace(' ','_').lower() + "_" + 'costs.csv'
     
     try:
-        os.makedirs(os.path.join(directory,community,'csv'))
+        os.makedirs(os.path.join(directory,community.replace("'",""),'csv'))
     except OSError:
         pass
-    costs_table.to_csv(os.path.join(directory,community,'csv', fname),
+    costs_table.to_csv(os.path.join(directory,community.replace("'",""),'csv', fname),
                         index=False)
     #~ ## make list from of table
     plotting_table = costs_table.\
@@ -158,10 +158,10 @@ def make_consumption_table (community, comp, projects, base_con,
     fname = community + "_" + comp.replace(' ','_').lower() +\
             "_" + 'consumption.csv'
     try:
-        os.makedirs(os.path.join(directory,community,'csv'))
+        os.makedirs(os.path.join(directory,community.replace("'",""),'csv'))
     except OSError:
         pass
-    cons_table.to_csv(os.path.join(directory,community,'csv', fname),index=False)
+    cons_table.to_csv(os.path.join(directory,community.replace("'",""),'csv', fname),index=False)
     #~ ## make list from of table
     plotting_table = cons_table.round().values.tolist()
     

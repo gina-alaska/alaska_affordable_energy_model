@@ -286,7 +286,7 @@ def generate_web_summary (web_object, community):
         msg = web_object.bad_data_msg
     
     
-    pth = os.path.join(web_object.directory, community,
+    pth = os.path.join(web_object.directory, community.replace("'",''),
                     COMPONENT_NAME.replace(' ','_').lower() + '.html')
     with open(pth, 'w') as html:
         html.write(template.render( info = info_for_projects,

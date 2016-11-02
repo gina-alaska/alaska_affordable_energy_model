@@ -85,7 +85,7 @@ class WebSummary(object):
     def generate_web_summaries (self, com):
         """
         """
-        os.makedirs(os.path.join(self.directory, com, 'csv'))
+        os.makedirs(os.path.join(self.directory, com.replace("'",""), 'csv'))
         self.overview(com)
         self.finances_demo_summary(com)
         self.consumption_summary(com)
@@ -120,7 +120,7 @@ class WebSummary(object):
                 #~ print comp, e
                 template = self.no_results_html
                 #~ if comp in ['Solar Power','Wind Power','Heat Recovery'] :
-                pth = os.path.join(self.directory, com, c_clean +'.html')
+                pth = os.path.join(self.directory, com.replace("'",""), c_clean +'.html')
 
 
                 msg = None
@@ -135,7 +135,7 @@ class WebSummary(object):
                                     com = com ,
                                     reason = reason,
                                     sections = self.get_summary_pages(),
-                                    communities = self.get_all_coms(),
+                                    communities = self.get_cleanded_coms(),
                                     metadata = self.metadata,
                                     message = msg))
                                    
@@ -144,7 +144,7 @@ class WebSummary(object):
         for comp in re_dirs:
             c_clean = comp.replace(' ','_').\
                            replace('(','').replace(')','').lower()
-            pth = os.path.join(self.directory, com, c_clean +'.html')
+            pth = os.path.join(self.directory, com.replace("'",""), c_clean +'.html')
 
             with open(pth, 'w') as html:
                 
@@ -164,7 +164,7 @@ class WebSummary(object):
                                 type = comp, 
                                 com = com ,
                                 sections = self.get_summary_pages(),
-                                communities = self.get_all_coms(),
+                                communities = self.get_cleanded_coms(),
                                 metadata = self.metadata,
                                 message = msg,
                                 parent = parent,
@@ -191,7 +191,7 @@ class WebSummary(object):
         
         template = self.env.get_template('navbar.js')
         with open(os.path.join(self.directory,'navbar.js'), 'w') as html:
-            html.write(template.render(communities = self.get_all_coms(), regions=self.get_regions()))
+            html.write(template.render(communities = self.get_cleanded_coms(), regions=self.get_regions()))
         
         
     def get_web_summary(self, component):
@@ -211,7 +211,7 @@ class WebSummary(object):
         return self.imported_summaries[component].generate_web_summary
     
     
-    def get_all_coms (self):
+    def get_cleanded_coms (self):
         """ Function doc """
         return sorted([k.replace("'",'') for k in self.get_coms()])
         
@@ -326,7 +326,7 @@ class WebSummary(object):
                        #~ summary_pages = ['Summary'] + comp_order ,
                        #~ com = 'index',
                        sections = self.get_summary_pages(),
-                       communities = self.get_all_coms(),
+                       communities = self.get_cleanded_coms(),
                        regions = regions,
                        metadata = self.metadata,
                        in_root = True,
@@ -431,7 +431,7 @@ class WebSummary(object):
             msg = self.bad_data_msg
             
         
-        pth = os.path.join(self.directory, com,
+        pth = os.path.join(self.directory, com.replace("'",""),
                     'Financial and Demographic'.replace(' ','_').replace('(','').replace(')','').lower() + '.html')
         with open(pth, 'w') as html:
             html.write(template.render( type = 'Financial and Demographic', 
@@ -439,7 +439,7 @@ class WebSummary(object):
                                 charts = charts,
                                 summary_pages = ['Summary'] + comp_order ,
                                 sections = self.get_summary_pages(),
-                                communities = self.get_all_coms(),
+                                communities = self.get_cleanded_coms(),
                                 metadata = self.metadata,
                                 message = msg
                                 ))
@@ -644,7 +644,7 @@ class WebSummary(object):
         if com in self.bad_data_coms:
             msg = self.bad_data_msg
             
-        pth = os.path.join(self.directory, com,
+        pth = os.path.join(self.directory, com.replace("'",""),
                     'Consumption'.replace(' ','_').replace('(','').replace(')','').lower() + '.html')
         with open(pth, 'w') as html:
             html.write(template.render( type = 'Consumption', 
@@ -652,7 +652,7 @@ class WebSummary(object):
                                     charts = charts,
                                     summary_pages = ['Summary'] + comp_order ,
                                     sections = self.get_summary_pages(),
-                                    communities = self.get_all_coms(),
+                                    communities = self.get_cleanded_coms(),
                                     metadata = self.metadata,
                                     message = msg
                                     ))
@@ -923,7 +923,7 @@ class WebSummary(object):
         if com in self.bad_data_coms:
             msg = self.bad_data_msg
 
-        pth = os.path.join(self.directory, com,
+        pth = os.path.join(self.directory, com.replace("'",""),
                     'Generation'.replace(' ','_').replace('(','').replace(')','').lower() + '.html')
         with open(pth, 'w') as html:
             html.write(template.render( type = 'Generation', 
@@ -931,7 +931,7 @@ class WebSummary(object):
                                     charts = charts,
                                     summary_pages = ['Summary'] + comp_order ,
                                     sections = self.get_summary_pages(),
-                                    communities = self.get_all_coms(),
+                                    communities = self.get_cleanded_coms(),
                                     metadata = self.metadata,
                                     message = msg
                                     ))
@@ -1060,7 +1060,7 @@ class WebSummary(object):
         if com in self.bad_data_coms:
             msg = self.bad_data_msg
         
-        pth = os.path.join(self.directory, com,
+        pth = os.path.join(self.directory, com.replace("'",""),
                     'Potential Projects'.replace(' ','_').replace('(','').
                                             replace(')','').lower() + '.html')
         with open(pth, 'w') as html:
@@ -1068,7 +1068,7 @@ class WebSummary(object):
                                     com = com ,
                                     summary_pages = ['Summary'] + comp_order ,
                                     sections = self.get_summary_pages(),
-                                    communities = self.get_all_coms(),
+                                    communities = self.get_cleanded_coms(),
                                     potential_projects = projs,
                                     metadata = self.metadata,
                                     message = msg
@@ -1302,7 +1302,7 @@ class WebSummary(object):
         if com in self.bad_data_coms:
             msg = self.bad_data_msg
         
-        pth = os.path.join(self.directory, com,
+        pth = os.path.join(self.directory, com.replace("'",""),
                     'Overview'.replace(' ','_').replace('(','').replace(')','').lower() + '.html')
         with open(pth, 'w') as html:
             html.write(template.render( type = 'Overview', 
@@ -1310,7 +1310,7 @@ class WebSummary(object):
                                     charts = charts,
                                     summary_pages = ['Summary'] + comp_order ,
                                     sections = self.get_summary_pages(),
-                                    communities = self.get_all_coms(),
+                                    communities = self.get_cleanded_coms(),
                                     metadata = self.metadata,
                                     message = msg
                                     ))
@@ -1437,7 +1437,7 @@ class WebSummary(object):
             cols = [c for c in \
                     xs.columns if c.lower().find('annotation_text') == -1]
             xs[cols].round(sigfig).to_csv(os.path.join(self.directory,
-                                             community,'csv', fname),
+                                             community.replace("'",""),'csv', fname),
                                 index=False)
         plotting_table.insert(0,header)
         #~ print plotting_table

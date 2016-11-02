@@ -21,7 +21,7 @@
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{ section.name }} <span class="caret"></span></a>
           <ul class="dropdown-menu">
             {% for page in section.pages %}<li>
-        <a href="../{{ com }}/{{ page.lower().replace(' ', "_").replace(")", "").replace("(", "") }}.html">
+        <a href="../{{ com.replace('\'','') }}/{{ page.lower().replace(' ', "_").replace(")", "").replace("(", "") }}.html">
           {{ page }} 
         </a></li>{% endfor %}
           </ul>
