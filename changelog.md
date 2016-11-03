@@ -1,5 +1,15 @@
 #Change Log
 
+## [0.21.5]
+### changes
+- html: map communites are color coded by region
+- html: line loss and generator efficiency are the last known value if possible
+
+### fixes
+- html: various typos and names
+- html: map fixes url for communities with "'" character
+
+
 ## [0.21.4]
 ### fixed
 - html: missing plot bug, by removing unessary passing of communitys to templates
