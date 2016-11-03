@@ -55,5 +55,5 @@ raw_data_files = []
 yaml_not_to_save = []
 
 DESCRIPTION = """
-    This component calculates the potential reduction in Electricty and Heating Oil by improving the efficieny of the Water-Wastewater system
+    This component calculates the potential reduction in Electricty and Heating Oil by improving the efficiency of the Water-Wastewater system
 """

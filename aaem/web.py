@@ -27,7 +27,7 @@ class WebSummary(object):
         self.results = model.load_results(tag)
         #~ print self.results
         self.bad_data_msg = \
-            "This community is known to have missing/incomplete data"
+            "This community is known to have missing/incomplete data."
         self.bad_data_coms = []
         try:
             inputs = os.path.join(self.model_root, 'input_files')
@@ -129,7 +129,7 @@ class WebSummary(object):
                 with open(pth, 'w') as html:
                     reason = self.results[com][comp].reason
                     if reason.lower() == 'ok':
-                        reason = "The component has a bad motivater"
+                        reason = "The component has a bad motivator"
                     html.write(template.render( 
                                     type = comp, 
                                     com = com.replace("'",'') ,
@@ -696,7 +696,7 @@ class WebSummary(object):
                                 'type': "'kWh'",'plot': True,})  
         else:
             charts.append({'name':'generation',
-                            'data': "No generation data available",
+                            'data': "No generation data available.",
                                 'title':'generation',
                                 'type': "'kWh'",})
         
@@ -732,12 +732,12 @@ class WebSummary(object):
             avg_load_table = self.make_plot_table(avg_load[['year', 'annotation', 'Average Load']], names = names, community = com, fname = com+"_avg_load.csv")
         
             charts.append({'name':'avg_load', 'data': str(avg_load_table).replace('nan','null'), 
-                    'title':'Averag Load',
+                    'title':'Average Load',
                     'type': "'kW'",'plot': True,})
         else:
             charts.append({'name':'avg_load', 
-                    'data': "No Conumption available to calculate average load", 
-                    'title':'Averag Load',
+                    'data': "No Consumption available to calculate average load", 
+                    'title':'Average Load',
                     'type': "'kW'",})
         
         #~ print os.path.join(self.model_root,'input_files', com, 'yearly_electricity_summary.csv')
@@ -786,7 +786,7 @@ class WebSummary(object):
 
         gen_eff_table = self.make_plot_table(line_loss[['year', 'annotation', 'diesel generation efficiency']],sigfig = 2, community = com, fname = com+"_generation_efficiency.csv")
         charts.append({'name':'generation_efficiency', 'data': str(gen_eff_table).replace('nan','null'), 
-                'title':'Diesel Genneration Efficiency',
+                'title':'Diesel Generation Efficiency',
                 'type': "'gal/kWh'",'plot': True,})
                 
                 
@@ -1093,7 +1093,7 @@ class WebSummary(object):
                                         generation.ix[year].values[0])
             gen_year = year
        
-            con = '{:,.0f}'.format(res['forecast'].\
+            con = '{:,.0f} kWh'.format(res['forecast'].\
                                         consumption.ix[year].values[0])
             con_year = year 
         except AttributeError:
@@ -1208,10 +1208,10 @@ class WebSummary(object):
                                 'generation_solar [kWh/year]',
                                 'generation_biomass [kWh/year]']].loc[g_year]
                                                                 
-            g_diesel = generation['generation_diesel [kWh/year]']
-            g_hydro = generation['generation_hydro [kWh/year]']
+            g_diesel = '{:,.0f} kWh'.format(generation['generation_diesel [kWh/year]'])
+            g_hydro = '{:,.0f} kWh'.format(generation['generation_hydro [kWh/year]'])
             #~ g_ng = generation['generation_natural_gas [kWh/year]']
-            g_wind = generation['generation_wind [kWh/year]']
+            g_wind = '{:,.0f} kWh'.format(generation['generation_wind [kWh/year]'])
             #~ g_solar = generation['generation_solar [kWh/year]']
             #~ g_biomass = generation['generation_biomass [kWh/year]']
             
@@ -1236,12 +1236,12 @@ class WebSummary(object):
                  [ False, "Heating Fuel Cost " + str(fuel_year), HF_c],
                  [ False, "Electricity Cost " + str(fuel_year), elec_c],
                  [ True, "Consumption", ""],
-                 [ False, "Total Consumption kWh " + str(con_year), con],
+                 [ False, "Total Electricity consumption" + str(con_year), con],
                  [ False, 
-                    "Estimated Residential Heaing Fuel " + str(oil_year),
+                    "Estimated Residential Heating Fuel " + str(oil_year),
                     res_gal],
                  [ False, 
-                    "Estimated Non-residential Heaing Fuel " + str(oil_year),
+                    "Estimated Non-residential Heating Fuel " + str(oil_year),
                     nr_gal],
                  [ False,
                     "Estimated Utility Diesel " + str(oil_year),
@@ -1305,10 +1305,10 @@ class WebSummary(object):
         if not it is None:
             intertie =  [i for i in res['community data'].\
                                                     intertie_list if i != "''"]
-            table = [[True, 'Community', 'Parent/Child'],
-                     [False, res['community data'].parent, 'Parent']]
+            table = [[True, 'Community', 'Primary or Secondary Generator'],
+                     [False, res['community data'].parent, 'Primary']]
             for i in intertie:
-                table.append([False, i, 'Child'])
+                table.append([False, i, 'Secondary'])
                                                     
             charts.append({'name':'interties', 'data':table, 
                     'title':'Intertied Communities',

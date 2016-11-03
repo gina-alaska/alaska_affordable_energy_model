@@ -52,5 +52,5 @@ yaml_not_to_save = []
 prereq_comps = []
 
 DESCRIPTION = """
-    This component calculates the potential reduction in Electricty and Heating Oil by improving the efficieny of Non-residential buildings
+    This component calculates the potential reduction in Electricty and Heating Oil by improving the efficiency of Non-residential buildings
 """
