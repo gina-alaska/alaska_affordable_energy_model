@@ -1165,14 +1165,31 @@ class WebSummary(object):
         
         if np.isnan(eff):
             eff = 0;
-        
-        eff = '{:,.2f} gallons/kWh'.format(eff)
-        
-        ll = res['community data'].get_item('community','line losses')
+            
+            
         try:
-            ll = '{:,.2f}%'.format(ll*100)
-        except:
-            ll = "unknown"
+            yes = read_csv(os.path.join(self.model_root,'input_files', com, 'yearly_electricity_summary.csv'),comment='#')
+            #~ print yes.columns
+        except IOError: 
+            yes = None
+            
+        if not yes is None:
+            yes_years = yes[yes.columns[0]].values
+            leff_year = int(max(yes_years))
+            eff = '{:,.2f} kWh/gallons'.format(yes['efficiency'].values[-1])
+            ll = '{:,.2f}%'.format(yes['line loss'].values[-1]*100)
+        
+            
+            
+        else:
+            leff_year = ""
+            eff = '{:,.2f} kWh/gallons'.format(eff)
+            
+            ll = res['community data'].get_item('community','line losses')
+            try:
+                ll = '{:,.2f}%'.format(ll*100)
+            except:
+                ll = "unknown"
         
         g_year = ""
         if hasattr(res['forecast'], 'generation_by_type'):
@@ -1238,8 +1255,8 @@ class WebSummary(object):
                  [ False, "Generation Wind kWh " + str(g_year), g_wind],
                  #~ [ False, "Generation Solar kWh " + str(g_year), g_solar],
                 #~ [ False, "Generation Biomass kWh " + str(g_year), g_biomass],
-                 [ False, "Diesel Generator Efficiency Estimated", eff],
-                 [ False, "Line Losses Estimated", ll],
+                 [ False, "Diesel Generator Efficiency " + str(leff_year) , eff],
+                 [ False, "Line Losses Estimated " + str(leff_year), ll],
                 ]
                  
                  
