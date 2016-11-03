@@ -693,12 +693,12 @@ class WebSummary(object):
             charts.append({'name':'generation', 'data': 
                            str(generation_table).replace('nan','null'), 
                                 'title':'generation',
-                                'type': "'gallons'",'plot': True,})  
+                                'type': "'kWh'",'plot': True,})  
         else:
             charts.append({'name':'generation',
                             'data': "No generation data available",
                                 'title':'generation',
-                                'type': "'gallons'",})
+                                'type': "'kWh'",})
         
         #~ hh = DataFrame(costs['year'])
         #~ hh['households']=res['Residential Energy Efficiency'].households
