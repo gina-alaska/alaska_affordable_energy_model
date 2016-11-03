@@ -250,6 +250,17 @@ var geojson = {
 }
 
 
+var region_colors = {"Aleutians":'#505',
+                  "Bering Straits":'#55f',
+                  "Bristol Bay":'#5f5',
+                  "Copper River\/Chugach":'#5ff',
+                  "Kodiak Region": '#f55',
+                  "Lower Yukon-Kuskokwim":'#f5f',
+                  "North Slope":'#ff5',
+                  "Northwest Arctic":'#f00',
+                  "Southeast":'#00f',
+                  "Yukon-Koyukuk\/Upper Tanana":'#050' };
+
 var mymap = L.map('mapid').setView([64.5, -146.5], 3);
 
 L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
@@ -263,7 +274,7 @@ layer = L.geoJson(geojson, {
   pointToLayer: function (feature, latlng) {
     return L.circleMarker(latlng, {
       radius: 8,
-      fillColor: '#f55',
+      fillColor: region_colors[feature["properties"]["Energy Region"]],
       fillOpacity: 0.9,
       weight: 1,
       opacity: 1,
@@ -272,8 +283,16 @@ layer = L.geoJson(geojson, {
   },
   onEachFeature: function(feature, layer) {
     if (feature.properties) {
-      layer.bindPopup("<div class=''>" + feature.properties.Community + "</div><div><a href='"+ feature.properties.Community.replace(/ /g, "_") +"/overview.html'>View Community Info</a></div>");
+      layer.bindPopup("<div class=''>" + feature.properties.Community + "</div><div><a href='"+ feature.properties.Community.replace(/ /g, "_").replace('\'',"") +"/overview.html' target='_blank'>View Community Info</a></div>");
     }
   }
 })
 layer.addTo(mymap);
+
+
+
+// add list of region with color key
+for (r in region_colors){
+    
+    document.getElementById('colorkey').innerHTML += '<a href="'+r.replace(' ','_').replace('/','_') + '.html" class="list-group-item">' + r + ' <span class="label label-default" style="color:' + region_colors[r] + ';background-color:' + region_colors[r] + ';"> color </span> </li> ';
+}
