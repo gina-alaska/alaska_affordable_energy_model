@@ -86,7 +86,7 @@ def make_costs_table (community, comp, projects, base_cost, directory):
     #~ print costs_table
     ## format table
     costs_table = costs_table[['year','Base Cost'] + names]
-    costs_table.columns = ['year','Base Case Cost'] + names
+    costs_table.columns = ['year','Base case cost'] + [ n[0].upper() +n[1:].lower() for n in names] 
     fname = community + "_" + comp.replace(' ','_').lower() + "_" + 'costs.csv'
     
     try:
@@ -100,7 +100,7 @@ def make_costs_table (community, comp, projects, base_cost, directory):
                     round().values.tolist()
                     
     header = []
-    for name in ['year','Current Projection'] + names:
+    for name in ['year','Current projection'] + [ n[0].upper() +n[1:].lower() for n in names] :
         header.append("{label: '"+name+"', type: 'number'}")
     plotting_table.insert(0,header)
     return plotting_table
@@ -154,7 +154,7 @@ def make_consumption_table (community, comp, projects, base_con,
         names.append(name)
     ## format table
     cons_table = cons_table[['year','Base Consumption'] + names]
-    cons_table.columns = ['year','Base Case Diesel Consumed'] + names
+    cons_table.columns = ['year','Base case diesel consumed'] + [ n[0].upper() +n[1:].lower() for n in names] 
     fname = community + "_" + comp.replace(' ','_').lower() +\
             "_" + 'consumption.csv'
     try:
@@ -166,7 +166,7 @@ def make_consumption_table (community, comp, projects, base_con,
     plotting_table = cons_table.round().values.tolist()
     
     header = []
-    for name in ['year','Current Projection'] + names:
+    for name in ['year','Current projection'] + [ n[0].upper() +n[1:].lower() for n in names] :
         header.append("{label: '"+name+"', type: 'number'}")
     plotting_table.insert(0,header)
     return plotting_table
