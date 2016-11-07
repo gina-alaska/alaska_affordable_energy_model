@@ -1211,8 +1211,9 @@ class Preprocessor (object):
                                         "commercial_kwh_sold",
                                         "community_kwh_sold",
                                         "government_kwh_sold",
-                                        "unbilled_kwh"]].sum().sum()
-            temp['consumption residential'] = temp["residential_kwh_sold"].sum()
+                                        "unbilled_kwh"]].sum()
+
+            temp['consumption residential'] = temp["residential_kwh_sold"]
             temp['consumption non-residential'] = temp['consumption'] - \
                                                  temp['consumption residential']
             ## net generation
