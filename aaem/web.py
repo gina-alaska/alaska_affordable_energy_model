@@ -532,9 +532,9 @@ class WebSummary(object):
             
             
             table = [[False,'# Buildings',count+num],
-             [False,'Square Feet', '{:,.0f}'.format(estimates['Square Feet'].sum())],
-             [False,'% Buildings Identified', '{:,.2f}%'.format(percent_id*100)],
-             [False,'% Square Feet Measured','{:,.2f}%'.format(percent_sf*100)]]
+             [False,'Square feet', '{:,.0f}'.format(estimates['Square Feet'].sum())],
+             [False,'% Buildings identified', '{:,.2f}%'.format(percent_id*100)],
+             [False,'% Square feet measured','{:,.2f}%'.format(percent_sf*100)]]
              
              
             for t in building_types:
@@ -885,8 +885,8 @@ class WebSummary(object):
         table = [
             [True, "Power House", ""],
             [False, "Efficiency", '{:,.2f} kWh/gallon'.format(eff)],
-            [False, "Total Number of generators", num_gens],
-            [False, "Total Capacity (in kW)", cap], 
+            [False, "Total number of generators", num_gens],
+            [False, "Total capacity (in kW)", cap], 
             [False, "Largest generator (in kW)", largest],
             [False, "Sizing", size],
             [False, "Ratio of total capacity to average load", 
@@ -903,7 +903,7 @@ class WebSummary(object):
             [True, "Solar Power", ""],
             [False, "Current solar capacity (kW)",  '{:,.0f} kW'.format(s_cap)],
             [False, "Current solar generation (kWh/year)",  s_gen],
-            [False, "Current Output per 10kW Solar PV", '{:,.0f}'.format(s_pv)],
+            [False, "Current output per 10kW Solar PV", '{:,.0f}'.format(s_pv)],
             [True, "Hydropower", ""],
             [False, "Current hydro capacity (kW)",  '{:,.0f} kW'.format(h_cap)],
             [False, "Current hydro generation (kWh/year)",  h_gen],
@@ -1250,31 +1250,31 @@ class WebSummary(object):
                  [ False, "Population 2010", int(pop)],
                  [ False, "Households 2010", int(hh)],
                  [ True, "Financial", ""],
-                 [ False, "Diesel Fuel Cost " + str(fuel_year), diesel_c],
-                 [ False, "Heating Fuel Cost " + str(fuel_year), HF_c],
-                 [ False, "Electricity Cost " + str(fuel_year), elec_c],
+                 [ False, "Diesel fuel cost " + str(fuel_year), diesel_c],
+                 [ False, "Heating fuel cost " + str(fuel_year), HF_c],
+                 [ False, "Electricity cost " + str(fuel_year), elec_c],
                  [ True, "Consumption", ""],
-                 [ False, "Total Electricity consumption" + str(con_year), con],
+                 [ False, "Total electricity consumption " + str(con_year), con],
                  [ False, 
-                    "Estimated Residential Heating Fuel " + str(oil_year),
+                    "Estimated residential heating fuel " + str(oil_year),
                     res_gal],
                  [ False, 
-                    "Estimated Non-residential Heating Fuel " + str(oil_year),
+                    "Estimated non-residential heating fuel " + str(oil_year),
                     nr_gal],
                  [ False,
-                    "Estimated Utility Diesel " + str(oil_year),
+                    "Estimated utility diesel " + str(oil_year),
                     utility],
                  [ True, "Generation", ""],
-                 [ False, "Total Generation kWh " + str(gen_year), gen],
-                 [ False, "Average Load kW " + str(gen_year), al],
-                 [ False, "Generation Diesel kWh " + str(g_year), g_diesel],
-                 [ False, "Generation Hydro kWh " + str(g_year), g_hydro],
-                 #~ [ False, "Generation Natural Gas kWh " + str(g_year), g_ng],
-                 [ False, "Generation Wind kWh " + str(g_year), g_wind],
-                 #~ [ False, "Generation Solar kWh " + str(g_year), g_solar],
-                #~ [ False, "Generation Biomass kWh " + str(g_year), g_biomass],
-                 [ False, "Diesel Generator Efficiency " + str(leff_year) , eff],
-                 [ False, "Line Losses Estimated " + str(leff_year), ll],
+                 [ False, "Total generation kWh " + str(gen_year), gen],
+                 [ False, "Average load kW " + str(gen_year), al],
+                 [ False, "Generation diesel kWh " + str(g_year), g_diesel],
+                 [ False, "Generation hydro kWh " + str(g_year), g_hydro],
+                 #~ [ False, "Generation natural gas kWh " + str(g_year), g_ng],
+                 [ False, "Generation wind kWh " + str(g_year), g_wind],
+                 #~ [ False, "Generation solar kWh " + str(g_year), g_solar],
+                #~ [ False, "Generation biomass kWh " + str(g_year), g_biomass],
+                 [ False, "Diesel generator efficiency " + str(leff_year) , eff],
+                 [ False, "Line losses estimated " + str(leff_year), ll],
                 ]
                  
                  
@@ -1451,7 +1451,7 @@ class WebSummary(object):
                 header.append("{type: 'string', role: 'annotation'}")
                 anno = name
             else:
-                header.append("{label: '"+name+"', type: 'number'}")
+                header.append("{label: '"+name[0].upper() + name[1:].lower()+"', type: 'number'}")
         
         if not anno is None:
             xs[anno+'_text'] = xs[anno] 

@@ -39,7 +39,7 @@
             width = 1000
             height = 600
 
-            var {{ chart.name }}_options = {'title': '{{ com.replace("_"," ") }} {{ chart.title }}',
+            var {{ chart.name }}_options = {'title': '{{ com.replace("_"," ") }}: {{ chart.title[0].upper() }}{{ chart.title[1:].lower() }}',
                                             'height':height,
                                             chartArea:{height:'85%', width:'100%', left:100, right:200},
                                             hAxis: {format: '####',
