@@ -1,5 +1,10 @@
 #Change Log
 
+## [0.21.6]
+### changes
+- Html: formating for some numbers, titles, and labels
+- pandas libaray version is 0.19.1
+
 ## [0.21.5]
 ### changes
 - html: map communites are color coded by region
