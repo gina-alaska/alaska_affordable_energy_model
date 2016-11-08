@@ -454,7 +454,8 @@ class WebSummary(object):
         
         HDD = res['community data'].get_item('community','HDD')
         charts.append({'name':'hdd', 
-                'data': [[False, 'Heating Degree Days per year', HDD]],
+                'data': [[False, 'Heating Degree Days per year', 
+                                                '{:,.0f}'.format(HDD)]],
                 'title':'Heating Degree Days',
                 'table': True,})
         
@@ -464,17 +465,22 @@ class WebSummary(object):
         
         table = [[ True, "", "Number Houses","Avg. Sqft.", "Avg. EUI" ],
                  [ False, "BEES", 
-                            int(rd["BEES Number"]),
-                            int(rd['BEES Avg Area (SF)']),
-                            float(rd['BEES Avg EUI (MMBtu/sf)'])],
+                            '{:,.0f}'.format(float(rd["BEES Number"])),
+                            '{:,.0f}'.format(float(rd['BEES Avg Area (SF)'])),
+                            '{:,.4f}'.format(\
+                                float(rd['BEES Avg EUI (MMBtu/sf)']))],
                  [ False, "Post-Retrofit", 
-                            int(rd["Post-Retrofit Number"]),
-                            int(rd['Post-Retrofit Avg Area (SF)']),
-                            float(rd['Post-Retrofit Avg EUI (MMBtu/sf)'])],
+                            '{:,.0f}'.format(float(rd["Post-Retrofit Number"])),
+                            '{:,.0f}'.format(\
+                                float(rd['Post-Retrofit Avg Area (SF)'])),
+                            '{:,.4f}'.format(\
+                                float(rd['Post-Retrofit Avg EUI (MMBtu/sf)']))],
                  [ False, "Pre-Retrofit", 
-                            int(r.opportunity_HH),  
-                            int(rd['Pre-Retrofit Avg Area (SF)']), 
-                            float(rd['Pre-Retrofit Avg EUI (MMBtu/sf)'])],
+                            '{:,.0f}'.format(r.opportunity_HH),  
+                            '{:,.0f}'.format(float(\
+                                        rd['Pre-Retrofit Avg Area (SF)'])), 
+                            '{:,.4f}'.format(\
+                                float(rd['Pre-Retrofit Avg EUI (MMBtu/sf)']))],
                 ]
         
         charts.append({'name':'residential_buildings', 
@@ -799,18 +805,23 @@ class WebSummary(object):
             num_gens = ph_data['Total Number of generators']
         
         try:
-            cap = int(float(ph_data['Total Capacity (in kW)']))
+            cap = '{:,.0f} kW'.format(float(ph_data['Total Capacity (in kW)']))
+            c2 = float(ph_data['Total Capacity (in kW)'])
         except ValueError:
+            c2 = 0
             cap = ph_data['Total Capacity (in kW)']
         try:
-            largest = int(float(ph_data['Largest generator (in kW)']))
+            largest = '{:,.0f} kW'.format(\
+                                    float(ph_data['Largest generator (in kW)']))
         except ValueError:
             largest = ph_data['Largest generator (in kW)']
         
         size = ph_data['Sizing']
         
         try:
-            ratio = float(cap)/ float(avg_load['Average Load'][avg_load['annotation'] == 'start of forecast']) 
+            ratio = float(c2)/ \
+                        float(avg_load['Average Load']\
+                        [avg_load['annotation'] == 'start of forecast']) 
         except (ValueError, UnboundLocalError):
             ratio = 0
                          
@@ -824,20 +835,21 @@ class WebSummary(object):
         wind = res['community data'].get_item('Wind Power', 
                                                   'resource data')
                                                   
-        w_cap = wind['existing wind']
-        w_fac = wind['assumed capacity factor']
+        w_cap = float(wind['existing wind'])
+        
+        w_fac = float(wind['assumed capacity factor'])
         
         
             
         solar = res['community data'].get_item('Solar Power', 
                                                   'data')
                                                   
-        s_cap = solar['Installed Capacity']
+        s_cap = float(solar['Installed Capacity'])
         s_pv = solar['Output per 10kW Solar PV']
         
         
-        h_cap = res['community data'].get_item('community',
-                                                'hydro generation capacity')
+        h_cap = float(res['community data'].get_item('community',
+                                                'hydro generation capacity'))
                                         
         
         
@@ -858,6 +870,10 @@ class WebSummary(object):
                 
             if  np.isnan(h_gen):
                 h_gen = 0
+                
+            w_gen = '{:,.0f} kWh'.format(w_gen)
+            h_gen = '{:,.0f} kWh'.format(h_gen)
+            s_gen = '{:,.0f} kWh'.format(s_gen)
         except TypeError:
             w_gen = "unknown"
             s_gen = "unknown"
@@ -868,26 +884,28 @@ class WebSummary(object):
                                             
         table = [
             [True, "Power House", ""],
-            [False, "Efficiency", '{:,.2f}'.format(eff)],
+            [False, "Efficiency", '{:,.2f} kWh/gallon'.format(eff)],
             [False, "Total Number of generators", num_gens],
             [False, "Total Capacity (in kW)", cap], 
             [False, "Largest generator (in kW)", largest],
             [False, "Sizing", size],
-            [False, "Ratio of total capacity to average load", ratio],
+            [False, "Ratio of total capacity to average load", 
+                                                    '{:,.2f}'.format(ratio)],
             [True, "Heat Recovery", ""],
             [False, "Operational",  hr_opp],
             [False, 
-                "Estimated number of gallons of heating oil displaced", hr_ava],
+                "Estimated number of gallons of heating oil displaced", 
+                                            '{:,.0f} gallons'.format(hr_ava)],
             [True, "Wind Power", ""],
-            [False, "Current wind capacity (kW)",  w_cap],
-            [False, "Current wind generation (kWh/year)",  w_gen],
-            [False, "Current wind capacity factor",  w_fac],
+            [False, "Current wind capacity (kW)",  '{:,.0f} kW'.format(w_cap)],
+            [False, "Current wind generation (kWh/year)", w_gen],
+            [False, "Current wind capacity factor",  '{:,.2f}'.format(w_fac)],
             [True, "Solar Power", ""],
-            [False, "Current solar capacity (kW)",  s_cap],
+            [False, "Current solar capacity (kW)",  '{:,.0f} kW'.format(s_cap)],
             [False, "Current solar generation (kWh/year)",  s_gen],
-            [False, "Current Output per 10kW Solar PV", s_pv],
+            [False, "Current Output per 10kW Solar PV", '{:,.0f}'.format(s_pv)],
             [True, "Hydropower", ""],
-            [False, "Current hydro capacity (kW)",  h_cap],
+            [False, "Current hydro capacity (kW)",  '{:,.0f} kW'.format(h_cap)],
             [False, "Current hydro generation (kWh/year)",  h_gen],
             
             ]
