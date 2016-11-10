@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+
+
+{% block title %}{{ com }} - {{ type }} summary{% endblock %}
+
+{% block additional_css %}
+<link href="../summary.css" rel="stylesheet"> 
+<link href="../footer.css" rel="stylesheet">
+<link href="../dropdown.css" rel="stylesheet">
+{% endblock %}
+
+
+{% block secondary_nav %}
+    {% include 'summary_nav.html' %}
+{% endblock %}
+
+{% block full %}
+<div class="panel panel-default">
+    <div class="panel-heading"> Intertied - see {% if parent %} children {% else %} parent {% endif %}</div>
+        <div class="panel-body">
+            {% if parent %} 
+            <p>Projects that offset heating fuel are calculated at the community level. See each community more infromation. </p>
+            {% else %}
+            <P>Projects that offset generation are calculated on an inertie level. See the inertie more infromation.</P>
+            {% endif %} 
+            <div class="list-group">
+                {% for com in intertie %}
+                <a href="../{{com.replace(' ','_')}}/{{ type.replace(' ','_').replace('(','').replace(')','').lower() }}.html" class="list-group-item">{{ com }}</a>
+                {% endfor %}
+            </div>
+            
+        </div>
+    <div class="panel-footer"> </div>
+    </div>
+    
+{% endblock %}

@@ -1,5 +1,8 @@
 numpy
-scipy
 pandas
 ipython
 pyyaml
+pycommand
+matplotlib
+Sphinx
+jinja2

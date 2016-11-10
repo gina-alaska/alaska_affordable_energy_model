@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; 
+                        any other head content must come *after* these tags -->
+    <title>{% block title %}{% endblock %}</title>
+    
+    <!-- Bootstrap -->
+    <link href="{% if not in_root %}../{% endif %}css/bootstrap.min.css" rel="stylesheet">
+    
+    
+    {% block additional_css %}{% endblock %}
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    {% block JS %}{% endblock %}
+  </head>
+  <body >
+     {% include 'navbar.html' %}
+     {% block secondary_nav %}{% endblock %}
+
+    <div class="content">
+    {% block custom %}{% endblock %}
+        
+        {% if message is defined  and not message is none%}
+        <div class="row">
+            <div class="col-sm-10 col-sm-offset-1">
+                <div class="panel panel-default">
+                    <div class="panel-heading">Important message</div>
+                    <div class="panel-body center-block"> {{ message }}</div>
+                    <!--<div class="panel-footer"></div>-->
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        <div class="row">
+            <div class="col-sm-10 col-sm-offset-1">
+            {% block full %}{% endblock %}
+            </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-3 infobar">
+            {% block left %}{% endblock %}
+          </div>
+          <div class="col-sm-9">
+            {% block right %}{% endblock %}
+          </div>
+        </div>
+    </div>
+    
+    <footer class="footer">
+      <div class="container">
+        {% if metadata %}
+        <p class="text-muted"> Generated from Model Version {{metadata.version}} and Data Version {{metadata.data_version}} on {{metadata.date}}</p>
+        {% endif %}
+      </div>
+    </footer>
+
+    
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="{% if not in_root %}../{% endif %}js/bootstrap.min.js"></script>
+    <script src="{% if not in_root %}../{% endif %}navbar.js"></script>
+
+
+  </body>
+</html>

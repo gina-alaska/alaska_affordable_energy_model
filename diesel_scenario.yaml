@@ -1,0 +1,1601 @@
+global:
+  root: './model'
+  config: model/m0.19.0_d0.19.0/config/__global_config.yaml
+  construction multipliers: model/m0.19.0_d0.19.0/config/__construction_multipliers.yaml
+  image diretory: None
+  plot: False
+  results tag: 'diesel_price_scenario'
+  
+communities:
+  # ADAK
+  - community: Adak
+    name: Adak decrease 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Adak
+    config: model/m0.19.0_d0.19.0/config/Adak_config.yaml
+    scalers: 
+      diesel price: .5
+
+  - community: Adak
+    name: Adak decrease 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Adak
+    config: model/m0.19.0_d0.19.0/config/Adak_config.yaml
+    scalers: 
+      diesel price: .6
+
+  - community: Adak
+    name: Adak decrease 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Adak
+    config: model/m0.19.0_d0.19.0/config/Adak_config.yaml
+    scalers: 
+      diesel price: .7
+      
+  - community: Adak
+    name: Adak decrease 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Adak
+    config: model/m0.19.0_d0.19.0/config/Adak_config.yaml
+    scalers: 
+      diesel price: .8
+      
+  - community: Adak
+    name: Adak decrease 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Adak
+    config: model/m0.19.0_d0.19.0/config/Adak_config.yaml
+    scalers: 
+      diesel price: .9
+
+  - community: Adak
+    name: Adak increase 00%
+    input files: model/m0.19.0_d0.19.0/input_files/Adak
+    config: model/m0.19.0_d0.19.0/config/Adak_config.yaml
+    scalers: 
+      diesel price: 1
+
+
+  - community: Adak
+    name: Adak increase 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Adak
+    config: model/m0.19.0_d0.19.0/config/Adak_config.yaml
+    scalers: 
+      diesel price: 1.1
+      
+  - community: Adak
+    name: Adak increase 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Adak
+    config: model/m0.19.0_d0.19.0/config/Adak_config.yaml
+    scalers: 
+      diesel price: 1.2
+    
+  - community: Adak
+    name: Adak increase 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Adak
+    config: model/m0.19.0_d0.19.0/config/Adak_config.yaml
+    scalers: 
+      diesel price: 1.3
+      
+  - community: Adak
+    name: Adak increase 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Adak
+    config: model/m0.19.0_d0.19.0/config/Adak_config.yaml
+    scalers: 
+      diesel price: 1.4
+      
+  - community: Adak
+    name: Adak increase 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Adak
+    config: model/m0.19.0_d0.19.0/config/Adak_config.yaml
+    scalers: 
+      diesel price: 1.5
+      
+  # NOME
+  - community: Nome
+    name: Nome decrease 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Nome
+    config: model/m0.19.0_d0.19.0/config/Nome_config.yaml
+    scalers: 
+      diesel price: .5
+
+  - community: Nome
+    name: Nome decrease 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Nome
+    config: model/m0.19.0_d0.19.0/config/Nome_config.yaml
+    scalers: 
+      diesel price: .6
+
+  - community: Nome
+    name: Nome decrease 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Nome
+    config: model/m0.19.0_d0.19.0/config/Nome_config.yaml
+    scalers: 
+      diesel price: .7
+      
+  - community: Nome
+    name: Nome decrease 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Nome
+    config: model/m0.19.0_d0.19.0/config/Nome_config.yaml
+    scalers: 
+      diesel price: .8
+      
+  - community: Nome
+    name: Nome decrease 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Nome
+    config: model/m0.19.0_d0.19.0/config/Nome_config.yaml
+    scalers: 
+      diesel price: .9
+
+  - community: Nome
+    name: Nome increase 00%
+    input files: model/m0.19.0_d0.19.0/input_files/Nome
+    config: model/m0.19.0_d0.19.0/config/Nome_config.yaml
+    scalers: 
+      diesel price: 1
+
+
+  - community: Nome
+    name: Nome increase 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Nome
+    config: model/m0.19.0_d0.19.0/config/Nome_config.yaml
+    scalers: 
+      diesel price: 1.1
+      
+  - community: Nome
+    name: Nome increase 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Nome
+    config: model/m0.19.0_d0.19.0/config/Nome_config.yaml
+    scalers: 
+      diesel price: 1.2
+    
+  - community: Nome
+    name: Nome increase 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Nome
+    config: model/m0.19.0_d0.19.0/config/Nome_config.yaml
+    scalers: 
+      diesel price: 1.3
+      
+  - community: Nome
+    name: Nome increase 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Nome
+    config: model/m0.19.0_d0.19.0/config/Nome_config.yaml
+    scalers: 
+      diesel price: 1.4
+      
+  - community: Nome
+    name: Nome increase 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Nome
+    config: model/m0.19.0_d0.19.0/config/Nome_config.yaml
+    scalers: 
+      diesel price: 1.5
+      
+      
+  # NOME ----------------------------------------------------------------
+  - community: Bethel_intertie
+    name: Bethel_intertie decrease 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Bethel_intertie
+    config: model/m0.19.0_d0.19.0/config/Bethel_intertie_config.yaml
+    scalers: 
+      diesel price: .5
+
+  - community: Bethel_intertie
+    name: Bethel_intertie decrease 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Bethel_intertie
+    config: model/m0.19.0_d0.19.0/config/Bethel_intertie_config.yaml
+    scalers: 
+      diesel price: .6
+
+  - community: Bethel_intertie
+    name: Bethel_intertie decrease 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Bethel_intertie
+    config: model/m0.19.0_d0.19.0/config/Bethel_intertie_config.yaml
+    scalers: 
+      diesel price: .7
+      
+  - community: Bethel_intertie
+    name: Bethel_intertie decrease 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Bethel_intertie
+    config: model/m0.19.0_d0.19.0/config/Bethel_intertie_config.yaml
+    scalers: 
+      diesel price: .8
+      
+  - community: Bethel_intertie
+    name: Bethel_intertie decrease 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Bethel_intertie
+    config: model/m0.19.0_d0.19.0/config/Bethel_intertie_config.yaml
+    scalers: 
+      diesel price: .9
+
+  - community: Bethel_intertie
+    name: Bethel_intertie increase 00%
+    input files: model/m0.19.0_d0.19.0/input_files/Bethel_intertie
+    config: model/m0.19.0_d0.19.0/config/Bethel_intertie_config.yaml
+    scalers: 
+      diesel price: 1
+
+
+  - community: Bethel_intertie
+    name: Bethel_intertie increase 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Bethel_intertie
+    config: model/m0.19.0_d0.19.0/config/Bethel_intertie_config.yaml
+    scalers: 
+      diesel price: 1.1
+      
+  - community: Bethel_intertie
+    name: Bethel_intertie increase 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Bethel_intertie
+    config: model/m0.19.0_d0.19.0/config/Bethel_intertie_config.yaml
+    scalers: 
+      diesel price: 1.2
+    
+  - community: Bethel_intertie
+    name: Bethel_intertie increase 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Bethel_intertie
+    config: model/m0.19.0_d0.19.0/config/Bethel_intertie_config.yaml
+    scalers: 
+      diesel price: 1.3
+      
+  - community: Bethel_intertie
+    name: Bethel_intertie increase 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Bethel_intertie
+    config: model/m0.19.0_d0.19.0/config/Bethel_intertie_config.yaml
+    scalers: 
+      diesel price: 1.4
+      
+  - community: Bethel_intertie
+    name: Bethel_intertie increase 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Bethel_intertie
+    config: model/m0.19.0_d0.19.0/config/Bethel_intertie_config.yaml
+    scalers: 
+      diesel price: 1.5
+      
+      
+ # Oscarville ----------------------------------------------------------------
+  - community: Oscarville
+    name: Oscarville decrease 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Oscarville
+    config: model/m0.19.0_d0.19.0/config/Oscarville_config.yaml
+    scalers: 
+      diesel price: .5
+
+  - community: Oscarville
+    name: Oscarville decrease 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Oscarville
+    config: model/m0.19.0_d0.19.0/config/Oscarville_config.yaml
+    scalers: 
+      diesel price: .6
+
+  - community: Oscarville
+    name: Oscarville decrease 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Oscarville
+    config: model/m0.19.0_d0.19.0/config/Oscarville_config.yaml
+    scalers: 
+      diesel price: .7
+      
+  - community: Oscarville
+    name: Oscarville decrease 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Oscarville
+    config: model/m0.19.0_d0.19.0/config/Oscarville_config.yaml
+    scalers: 
+      diesel price: .8
+      
+  - community: Oscarville
+    name: Oscarville decrease 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Oscarville
+    config: model/m0.19.0_d0.19.0/config/Oscarville_config.yaml
+    scalers: 
+      diesel price: .9
+
+  - community: Oscarville
+    name: Oscarville increase 00%
+    input files: model/m0.19.0_d0.19.0/input_files/Oscarville
+    config: model/m0.19.0_d0.19.0/config/Oscarville_config.yaml
+    scalers: 
+      diesel price: 1
+
+
+  - community: Oscarville
+    name: Oscarville increase 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Oscarville
+    config: model/m0.19.0_d0.19.0/config/Oscarville_config.yaml
+    scalers: 
+      diesel price: 1.1
+      
+  - community: Oscarville
+    name: Oscarville increase 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Oscarville
+    config: model/m0.19.0_d0.19.0/config/Oscarville_config.yaml
+    scalers: 
+      diesel price: 1.2
+    
+  - community: Oscarville
+    name: Oscarville increase 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Oscarville
+    config: model/m0.19.0_d0.19.0/config/Oscarville_config.yaml
+    scalers: 
+      diesel price: 1.3
+      
+  - community: Oscarville
+    name: Oscarville increase 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Oscarville
+    config: model/m0.19.0_d0.19.0/config/Oscarville_config.yaml
+    scalers: 
+      diesel price: 1.4
+      
+  - community: Oscarville
+    name: Oscarville increase 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Oscarville
+    config: model/m0.19.0_d0.19.0/config/Oscarville_config.yaml
+    scalers: 
+      diesel price: 1.5
+      
+
+ # Akutan ----------------------------------------------------------------
+  - community: Akutan
+    name: Akutan decrease 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Akutan
+    config: model/m0.19.0_d0.19.0/config/Akutan_config.yaml
+    scalers: 
+      diesel price: .5
+
+  - community: Akutan
+    name: Akutan decrease 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Akutan
+    config: model/m0.19.0_d0.19.0/config/Akutan_config.yaml
+    scalers: 
+      diesel price: .6
+
+  - community: Akutan
+    name: Akutan decrease 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Akutan
+    config: model/m0.19.0_d0.19.0/config/Akutan_config.yaml
+    scalers: 
+      diesel price: .7
+      
+  - community: Akutan
+    name: Akutan decrease 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Akutan
+    config: model/m0.19.0_d0.19.0/config/Akutan_config.yaml
+    scalers: 
+      diesel price: .8
+      
+  - community: Akutan
+    name: Akutan decrease 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Akutan
+    config: model/m0.19.0_d0.19.0/config/Akutan_config.yaml
+    scalers: 
+      diesel price: .9
+
+  - community: Akutan
+    name: Akutan increase 00%
+    input files: model/m0.19.0_d0.19.0/input_files/Akutan
+    config: model/m0.19.0_d0.19.0/config/Akutan_config.yaml
+    scalers: 
+      diesel price: 1
+
+
+  - community: Akutan
+    name: Akutan increase 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Akutan
+    config: model/m0.19.0_d0.19.0/config/Akutan_config.yaml
+    scalers: 
+      diesel price: 1.1
+      
+  - community: Akutan
+    name: Akutan increase 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Akutan
+    config: model/m0.19.0_d0.19.0/config/Akutan_config.yaml
+    scalers: 
+      diesel price: 1.2
+    
+  - community: Akutan
+    name: Akutan increase 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Akutan
+    config: model/m0.19.0_d0.19.0/config/Akutan_config.yaml
+    scalers: 
+      diesel price: 1.3
+      
+  - community: Akutan
+    name: Akutan increase 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Akutan
+    config: model/m0.19.0_d0.19.0/config/Akutan_config.yaml
+    scalers: 
+      diesel price: 1.4
+      
+  - community: Akutan
+    name: Akutan increase 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Akutan
+    config: model/m0.19.0_d0.19.0/config/Akutan_config.yaml
+    scalers: 
+      diesel price: 1.5
+      
+
+ # Chefornak ----------------------------------------------------------------
+  - community: Chefornak
+    name: Chefornak decrease 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Chefornak
+    config: model/m0.19.0_d0.19.0/config/Chefornak_config.yaml
+    scalers: 
+      diesel price: .5
+
+  - community: Chefornak
+    name: Chefornak decrease 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Chefornak
+    config: model/m0.19.0_d0.19.0/config/Chefornak_config.yaml
+    scalers: 
+      diesel price: .6
+
+  - community: Chefornak
+    name: Chefornak decrease 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Chefornak
+    config: model/m0.19.0_d0.19.0/config/Chefornak_config.yaml
+    scalers: 
+      diesel price: .7
+      
+  - community: Chefornak
+    name: Chefornak decrease 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Chefornak
+    config: model/m0.19.0_d0.19.0/config/Chefornak_config.yaml
+    scalers: 
+      diesel price: .8
+      
+  - community: Chefornak
+    name: Chefornak decrease 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Chefornak
+    config: model/m0.19.0_d0.19.0/config/Chefornak_config.yaml
+    scalers: 
+      diesel price: .9
+
+  - community: Chefornak
+    name: Chefornak increase 00%
+    input files: model/m0.19.0_d0.19.0/input_files/Chefornak
+    config: model/m0.19.0_d0.19.0/config/Chefornak_config.yaml
+    scalers: 
+      diesel price: 1
+
+
+  - community: Chefornak
+    name: Chefornak increase 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Chefornak
+    config: model/m0.19.0_d0.19.0/config/Chefornak_config.yaml
+    scalers: 
+      diesel price: 1.1
+      
+  - community: Chefornak
+    name: Chefornak increase 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Chefornak
+    config: model/m0.19.0_d0.19.0/config/Chefornak_config.yaml
+    scalers: 
+      diesel price: 1.2
+    
+  - community: Chefornak
+    name: Chefornak increase 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Chefornak
+    config: model/m0.19.0_d0.19.0/config/Chefornak_config.yaml
+    scalers: 
+      diesel price: 1.3
+      
+  - community: Chefornak
+    name: Chefornak increase 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Chefornak
+    config: model/m0.19.0_d0.19.0/config/Chefornak_config.yaml
+    scalers: 
+      diesel price: 1.4
+      
+  - community: Chefornak
+    name: Chefornak increase 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Chefornak
+    config: model/m0.19.0_d0.19.0/config/Chefornak_config.yaml
+    scalers: 
+      diesel price: 1.5
+      
+
+ # False_Pass ----------------------------------------------------------------
+  - community: False_Pass
+    name: False_Pass decrease 50%
+    input files: model/m0.19.0_d0.19.0/input_files/False_Pass
+    config: model/m0.19.0_d0.19.0/config/False_Pass_config.yaml
+    scalers: 
+      diesel price: .5
+
+  - community: False_Pass
+    name: False_Pass decrease 40%
+    input files: model/m0.19.0_d0.19.0/input_files/False_Pass
+    config: model/m0.19.0_d0.19.0/config/False_Pass_config.yaml
+    scalers: 
+      diesel price: .6
+
+  - community: False_Pass
+    name: False_Pass decrease 30%
+    input files: model/m0.19.0_d0.19.0/input_files/False_Pass
+    config: model/m0.19.0_d0.19.0/config/False_Pass_config.yaml
+    scalers: 
+      diesel price: .7
+      
+  - community: False_Pass
+    name: False_Pass decrease 20%
+    input files: model/m0.19.0_d0.19.0/input_files/False_Pass
+    config: model/m0.19.0_d0.19.0/config/False_Pass_config.yaml
+    scalers: 
+      diesel price: .8
+      
+  - community: False_Pass
+    name: False_Pass decrease 10%
+    input files: model/m0.19.0_d0.19.0/input_files/False_Pass
+    config: model/m0.19.0_d0.19.0/config/False_Pass_config.yaml
+    scalers: 
+      diesel price: .9
+
+  - community: False_Pass
+    name: False_Pass increase 00%
+    input files: model/m0.19.0_d0.19.0/input_files/False_Pass
+    config: model/m0.19.0_d0.19.0/config/False_Pass_config.yaml
+    scalers: 
+      diesel price: 1
+
+
+  - community: False_Pass
+    name: False_Pass increase 10%
+    input files: model/m0.19.0_d0.19.0/input_files/False_Pass
+    config: model/m0.19.0_d0.19.0/config/False_Pass_config.yaml
+    scalers: 
+      diesel price: 1.1
+      
+  - community: False_Pass
+    name: False_Pass increase 20%
+    input files: model/m0.19.0_d0.19.0/input_files/False_Pass
+    config: model/m0.19.0_d0.19.0/config/False_Pass_config.yaml
+    scalers: 
+      diesel price: 1.2
+    
+  - community: False_Pass
+    name: False_Pass increase 30%
+    input files: model/m0.19.0_d0.19.0/input_files/False_Pass
+    config: model/m0.19.0_d0.19.0/config/False_Pass_config.yaml
+    scalers: 
+      diesel price: 1.3
+      
+  - community: False_Pass
+    name: False_Pass increase 40%
+    input files: model/m0.19.0_d0.19.0/input_files/False_Pass
+    config: model/m0.19.0_d0.19.0/config/False_Pass_config.yaml
+    scalers: 
+      diesel price: 1.4
+      
+  - community: False_Pass
+    name: False_Pass increase 50%
+    input files: model/m0.19.0_d0.19.0/input_files/False_Pass
+    config: model/m0.19.0_d0.19.0/config/False_Pass_config.yaml
+    scalers: 
+      diesel price: 1.5
+      
+ 
+ # Galena ----------------------------------------------------------------
+  - community: Galena
+    name: Galena decrease 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Galena
+    config: model/m0.19.0_d0.19.0/config/Galena_config.yaml
+    scalers: 
+      diesel price: .5
+
+  - community: Galena
+    name: Galena decrease 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Galena
+    config: model/m0.19.0_d0.19.0/config/Galena_config.yaml
+    scalers: 
+      diesel price: .6
+
+  - community: Galena
+    name: Galena decrease 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Galena
+    config: model/m0.19.0_d0.19.0/config/Galena_config.yaml
+    scalers: 
+      diesel price: .7
+      
+  - community: Galena
+    name: Galena decrease 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Galena
+    config: model/m0.19.0_d0.19.0/config/Galena_config.yaml
+    scalers: 
+      diesel price: .8
+      
+  - community: Galena
+    name: Galena decrease 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Galena
+    config: model/m0.19.0_d0.19.0/config/Galena_config.yaml
+    scalers: 
+      diesel price: .9
+
+  - community: Galena
+    name: Galena increase 00%
+    input files: model/m0.19.0_d0.19.0/input_files/Galena
+    config: model/m0.19.0_d0.19.0/config/Galena_config.yaml
+    scalers: 
+      diesel price: 1
+
+
+  - community: Galena
+    name: Galena increase 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Galena
+    config: model/m0.19.0_d0.19.0/config/Galena_config.yaml
+    scalers: 
+      diesel price: 1.1
+      
+  - community: Galena
+    name: Galena increase 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Galena
+    config: model/m0.19.0_d0.19.0/config/Galena_config.yaml
+    scalers: 
+      diesel price: 1.2
+    
+  - community: Galena
+    name: Galena increase 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Galena
+    config: model/m0.19.0_d0.19.0/config/Galena_config.yaml
+    scalers: 
+      diesel price: 1.3
+      
+  - community: Galena
+    name: Galena increase 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Galena
+    config: model/m0.19.0_d0.19.0/config/Galena_config.yaml
+    scalers: 
+      diesel price: 1.4
+      
+  - community: Galena
+    name: Galena increase 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Galena
+    config: model/m0.19.0_d0.19.0/config/Galena_config.yaml
+    scalers: 
+      diesel price: 1.5
+
+ # Holy_Cross ----------------------------------------------------------------
+  - community: Holy_Cross
+    name: Holy_Cross decrease 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Holy_Cross
+    config: model/m0.19.0_d0.19.0/config/Holy_Cross_config.yaml
+    scalers: 
+      diesel price: .5
+
+  - community: Holy_Cross
+    name: Holy_Cross decrease 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Holy_Cross
+    config: model/m0.19.0_d0.19.0/config/Holy_Cross_config.yaml
+    scalers: 
+      diesel price: .6
+
+  - community: Holy_Cross
+    name: Holy_Cross decrease 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Holy_Cross
+    config: model/m0.19.0_d0.19.0/config/Holy_Cross_config.yaml
+    scalers: 
+      diesel price: .7
+      
+  - community: Holy_Cross
+    name: Holy_Cross decrease 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Holy_Cross
+    config: model/m0.19.0_d0.19.0/config/Holy_Cross_config.yaml
+    scalers: 
+      diesel price: .8
+      
+  - community: Holy_Cross
+    name: Holy_Cross decrease 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Holy_Cross
+    config: model/m0.19.0_d0.19.0/config/Holy_Cross_config.yaml
+    scalers: 
+      diesel price: .9
+
+  - community: Holy_Cross
+    name: Holy_Cross increase 00%
+    input files: model/m0.19.0_d0.19.0/input_files/Holy_Cross
+    config: model/m0.19.0_d0.19.0/config/Holy_Cross_config.yaml
+    scalers: 
+      diesel price: 1
+
+
+  - community: Holy_Cross
+    name: Holy_Cross increase 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Holy_Cross
+    config: model/m0.19.0_d0.19.0/config/Holy_Cross_config.yaml
+    scalers: 
+      diesel price: 1.1
+      
+  - community: Holy_Cross
+    name: Holy_Cross increase 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Holy_Cross
+    config: model/m0.19.0_d0.19.0/config/Holy_Cross_config.yaml
+    scalers: 
+      diesel price: 1.2
+    
+  - community: Holy_Cross
+    name: Holy_Cross increase 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Holy_Cross
+    config: model/m0.19.0_d0.19.0/config/Holy_Cross_config.yaml
+    scalers: 
+      diesel price: 1.3
+      
+  - community: Holy_Cross
+    name: Holy_Cross increase 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Holy_Cross
+    config: model/m0.19.0_d0.19.0/config/Holy_Cross_config.yaml
+    scalers: 
+      diesel price: 1.4
+      
+  - community: Holy_Cross
+    name: Holy_Cross increase 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Holy_Cross
+    config: model/m0.19.0_d0.19.0/config/Holy_Cross_config.yaml
+    scalers: 
+      diesel price: 1.5
+      
+
+ # Craig_intertie ----------------------------------------------------------------
+  - community: Craig_intertie
+    name: Craig_intertie decrease 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Craig_intertie
+    config: model/m0.19.0_d0.19.0/config/Craig_intertie_config.yaml
+    scalers: 
+      diesel price: .5
+
+  - community: Craig_intertie
+    name: Craig_intertie decrease 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Craig_intertie
+    config: model/m0.19.0_d0.19.0/config/Craig_intertie_config.yaml
+    scalers: 
+      diesel price: .6
+
+  - community: Craig_intertie
+    name: Craig_intertie decrease 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Craig_intertie
+    config: model/m0.19.0_d0.19.0/config/Craig_intertie_config.yaml
+    scalers: 
+      diesel price: .7
+      
+  - community: Craig_intertie
+    name: Craig_intertie decrease 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Craig_intertie
+    config: model/m0.19.0_d0.19.0/config/Craig_intertie_config.yaml
+    scalers: 
+      diesel price: .8
+      
+  - community: Craig_intertie
+    name: Craig_intertie decrease 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Craig_intertie
+    config: model/m0.19.0_d0.19.0/config/Craig_intertie_config.yaml
+    scalers: 
+      diesel price: .9
+
+  - community: Craig_intertie
+    name: Craig_intertie increase 00%
+    input files: model/m0.19.0_d0.19.0/input_files/Craig_intertie
+    config: model/m0.19.0_d0.19.0/config/Craig_intertie_config.yaml
+    scalers: 
+      diesel price: 1
+
+
+  - community: Craig_intertie
+    name: Craig_intertie increase 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Craig_intertie
+    config: model/m0.19.0_d0.19.0/config/Craig_intertie_config.yaml
+    scalers: 
+      diesel price: 1.1
+      
+  - community: Craig_intertie
+    name: Craig_intertie increase 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Craig_intertie
+    config: model/m0.19.0_d0.19.0/config/Craig_intertie_config.yaml
+    scalers: 
+      diesel price: 1.2
+    
+  - community: Craig_intertie
+    name: Craig_intertie increase 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Craig_intertie
+    config: model/m0.19.0_d0.19.0/config/Craig_intertie_config.yaml
+    scalers: 
+      diesel price: 1.3
+      
+  - community: Craig_intertie
+    name: Craig_intertie increase 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Craig_intertie
+    config: model/m0.19.0_d0.19.0/config/Craig_intertie_config.yaml
+    scalers: 
+      diesel price: 1.4
+      
+  - community: Craig_intertie
+    name: Craig_intertie increase 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Craig_intertie
+    config: model/m0.19.0_d0.19.0/config/Craig_intertie_config.yaml
+    scalers: 
+      diesel price: 1.5
+      
+ # Klawock ----------------------------------------------------------------
+  - community: Klawock
+    name: Klawock decrease 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Klawock
+    config: model/m0.19.0_d0.19.0/config/Klawock_config.yaml
+    scalers: 
+      diesel price: .5
+
+  - community: Klawock
+    name: Klawock decrease 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Klawock
+    config: model/m0.19.0_d0.19.0/config/Klawock_config.yaml
+    scalers: 
+      diesel price: .6
+
+  - community: Klawock
+    name: Klawock decrease 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Klawock
+    config: model/m0.19.0_d0.19.0/config/Klawock_config.yaml
+    scalers: 
+      diesel price: .7
+      
+  - community: Klawock
+    name: Klawock decrease 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Klawock
+    config: model/m0.19.0_d0.19.0/config/Klawock_config.yaml
+    scalers: 
+      diesel price: .8
+      
+  - community: Klawock
+    name: Klawock decrease 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Klawock
+    config: model/m0.19.0_d0.19.0/config/Klawock_config.yaml
+    scalers: 
+      diesel price: .9
+
+  - community: Klawock
+    name: Klawock increase 00%
+    input files: model/m0.19.0_d0.19.0/input_files/Klawock
+    config: model/m0.19.0_d0.19.0/config/Klawock_config.yaml
+    scalers: 
+      diesel price: 1
+
+
+  - community: Klawock
+    name: Klawock increase 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Klawock
+    config: model/m0.19.0_d0.19.0/config/Klawock_config.yaml
+    scalers: 
+      diesel price: 1.1
+      
+  - community: Klawock
+    name: Klawock increase 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Klawock
+    config: model/m0.19.0_d0.19.0/config/Klawock_config.yaml
+    scalers: 
+      diesel price: 1.2
+    
+  - community: Klawock
+    name: Klawock increase 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Klawock
+    config: model/m0.19.0_d0.19.0/config/Klawock_config.yaml
+    scalers: 
+      diesel price: 1.3
+      
+  - community: Klawock
+    name: Klawock increase 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Klawock
+    config: model/m0.19.0_d0.19.0/config/Klawock_config.yaml
+    scalers: 
+      diesel price: 1.4
+      
+  - community: Klawock
+    name: Klawock increase 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Klawock
+    config: model/m0.19.0_d0.19.0/config/Klawock_config.yaml
+    scalers: 
+      diesel price: 1.5
+      
+      
+ # Kiana ----------------------------------------------------------------
+  - community: Kiana
+    name: Kiana decrease 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Kiana
+    config: model/m0.19.0_d0.19.0/config/Kiana_config.yaml
+    scalers: 
+      diesel price: .5
+
+  - community: Kiana
+    name: Kiana decrease 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Kiana
+    config: model/m0.19.0_d0.19.0/config/Kiana_config.yaml
+    scalers: 
+      diesel price: .6
+
+  - community: Kiana
+    name: Kiana decrease 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Kiana
+    config: model/m0.19.0_d0.19.0/config/Kiana_config.yaml
+    scalers: 
+      diesel price: .7
+      
+  - community: Kiana
+    name: Kiana decrease 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Kiana
+    config: model/m0.19.0_d0.19.0/config/Kiana_config.yaml
+    scalers: 
+      diesel price: .8
+      
+  - community: Kiana
+    name: Kiana decrease 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Kiana
+    config: model/m0.19.0_d0.19.0/config/Kiana_config.yaml
+    scalers: 
+      diesel price: .9
+
+  - community: Kiana
+    name: Kiana increase 00%
+    input files: model/m0.19.0_d0.19.0/input_files/Kiana
+    config: model/m0.19.0_d0.19.0/config/Kiana_config.yaml
+    scalers: 
+      diesel price: 1
+
+
+  - community: Kiana
+    name: Kiana increase 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Kiana
+    config: model/m0.19.0_d0.19.0/config/Kiana_config.yaml
+    scalers: 
+      diesel price: 1.1
+      
+  - community: Kiana
+    name: Kiana increase 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Kiana
+    config: model/m0.19.0_d0.19.0/config/Kiana_config.yaml
+    scalers: 
+      diesel price: 1.2
+    
+  - community: Kiana
+    name: Kiana increase 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Kiana
+    config: model/m0.19.0_d0.19.0/config/Kiana_config.yaml
+    scalers: 
+      diesel price: 1.3
+      
+  - community: Kiana
+    name: Kiana increase 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Kiana
+    config: model/m0.19.0_d0.19.0/config/Kiana_config.yaml
+    scalers: 
+      diesel price: 1.4
+      
+  - community: Kiana
+    name: Kiana increase 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Kiana
+    config: model/m0.19.0_d0.19.0/config/Kiana_config.yaml
+    scalers: 
+      diesel price: 1.5
+      
+      
+ # Kotlik ----------------------------------------------------------------
+  - community: Kotlik
+    name: Kotlik decrease 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Kotlik
+    config: model/m0.19.0_d0.19.0/config/Kotlik_config.yaml
+    scalers: 
+      diesel price: .5
+
+  - community: Kotlik
+    name: Kotlik decrease 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Kotlik
+    config: model/m0.19.0_d0.19.0/config/Kotlik_config.yaml
+    scalers: 
+      diesel price: .6
+
+  - community: Kotlik
+    name: Kotlik decrease 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Kotlik
+    config: model/m0.19.0_d0.19.0/config/Kotlik_config.yaml
+    scalers: 
+      diesel price: .7
+      
+  - community: Kotlik
+    name: Kotlik decrease 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Kotlik
+    config: model/m0.19.0_d0.19.0/config/Kotlik_config.yaml
+    scalers: 
+      diesel price: .8
+      
+  - community: Kotlik
+    name: Kotlik decrease 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Kotlik
+    config: model/m0.19.0_d0.19.0/config/Kotlik_config.yaml
+    scalers: 
+      diesel price: .9
+
+  - community: Kotlik
+    name: Kotlik increase 00%
+    input files: model/m0.19.0_d0.19.0/input_files/Kotlik
+    config: model/m0.19.0_d0.19.0/config/Kotlik_config.yaml
+    scalers: 
+      diesel price: 1
+
+
+  - community: Kotlik
+    name: Kotlik increase 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Kotlik
+    config: model/m0.19.0_d0.19.0/config/Kotlik_config.yaml
+    scalers: 
+      diesel price: 1.1
+      
+  - community: Kotlik
+    name: Kotlik increase 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Kotlik
+    config: model/m0.19.0_d0.19.0/config/Kotlik_config.yaml
+    scalers: 
+      diesel price: 1.2
+    
+  - community: Kotlik
+    name: Kotlik increase 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Kotlik
+    config: model/m0.19.0_d0.19.0/config/Kotlik_config.yaml
+    scalers: 
+      diesel price: 1.3
+      
+  - community: Kotlik
+    name: Kotlik increase 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Kotlik
+    config: model/m0.19.0_d0.19.0/config/Kotlik_config.yaml
+    scalers: 
+      diesel price: 1.4
+      
+  - community: Kotlik
+    name: Kotlik increase 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Kotlik
+    config: model/m0.19.0_d0.19.0/config/Kotlik_config.yaml
+    scalers: 
+      diesel price: 1.5
+      
+ # Noorvik ----------------------------------------------------------------
+  - community: Noorvik
+    name: Noorvik decrease 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Noorvik
+    config: model/m0.19.0_d0.19.0/config/Noorvik_config.yaml
+    scalers: 
+      diesel price: .5
+
+  - community: Noorvik
+    name: Noorvik decrease 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Noorvik
+    config: model/m0.19.0_d0.19.0/config/Noorvik_config.yaml
+    scalers: 
+      diesel price: .6
+
+  - community: Noorvik
+    name: Noorvik decrease 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Noorvik
+    config: model/m0.19.0_d0.19.0/config/Noorvik_config.yaml
+    scalers: 
+      diesel price: .7
+      
+  - community: Noorvik
+    name: Noorvik decrease 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Noorvik
+    config: model/m0.19.0_d0.19.0/config/Noorvik_config.yaml
+    scalers: 
+      diesel price: .8
+      
+  - community: Noorvik
+    name: Noorvik decrease 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Noorvik
+    config: model/m0.19.0_d0.19.0/config/Noorvik_config.yaml
+    scalers: 
+      diesel price: .9
+
+  - community: Noorvik
+    name: Noorvik increase 00%
+    input files: model/m0.19.0_d0.19.0/input_files/Noorvik
+    config: model/m0.19.0_d0.19.0/config/Noorvik_config.yaml
+    scalers: 
+      diesel price: 1
+
+
+  - community: Noorvik
+    name: Noorvik increase 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Noorvik
+    config: model/m0.19.0_d0.19.0/config/Noorvik_config.yaml
+    scalers: 
+      diesel price: 1.1
+      
+  - community: Noorvik
+    name: Noorvik increase 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Noorvik
+    config: model/m0.19.0_d0.19.0/config/Noorvik_config.yaml
+    scalers: 
+      diesel price: 1.2
+    
+  - community: Noorvik
+    name: Noorvik increase 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Noorvik
+    config: model/m0.19.0_d0.19.0/config/Noorvik_config.yaml
+    scalers: 
+      diesel price: 1.3
+      
+  - community: Noorvik
+    name: Noorvik increase 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Noorvik
+    config: model/m0.19.0_d0.19.0/config/Noorvik_config.yaml
+    scalers: 
+      diesel price: 1.4
+      
+  - community: Noorvik
+    name: Noorvik increase 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Noorvik
+    config: model/m0.19.0_d0.19.0/config/Noorvik_config.yaml
+    scalers: 
+      diesel price: 1.5
+      
+ # Kodiak_intertie ----------------------------------------------------------------
+  - community: Kodiak_intertie
+    name: Kodiak_intertie decrease 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Kodiak_intertie
+    config: model/m0.19.0_d0.19.0/config/Kodiak_intertie_config.yaml
+    scalers: 
+      diesel price: .5
+
+  - community: Kodiak_intertie
+    name: Kodiak_intertie decrease 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Kodiak_intertie
+    config: model/m0.19.0_d0.19.0/config/Kodiak_intertie_config.yaml
+    scalers: 
+      diesel price: .6
+
+  - community: Kodiak_intertie
+    name: Kodiak_intertie decrease 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Kodiak_intertie
+    config: model/m0.19.0_d0.19.0/config/Kodiak_intertie_config.yaml
+    scalers: 
+      diesel price: .7
+      
+  - community: Kodiak_intertie
+    name: Kodiak_intertie decrease 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Kodiak_intertie
+    config: model/m0.19.0_d0.19.0/config/Kodiak_intertie_config.yaml
+    scalers: 
+      diesel price: .8
+      
+  - community: Kodiak_intertie
+    name: Kodiak_intertie decrease 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Kodiak_intertie
+    config: model/m0.19.0_d0.19.0/config/Kodiak_intertie_config.yaml
+    scalers: 
+      diesel price: .9
+
+  - community: Kodiak_intertie
+    name: Kodiak_intertie increase 00%
+    input files: model/m0.19.0_d0.19.0/input_files/Kodiak_intertie
+    config: model/m0.19.0_d0.19.0/config/Kodiak_intertie_config.yaml
+    scalers: 
+      diesel price: 1
+
+
+  - community: Kodiak_intertie
+    name: Kodiak_intertie increase 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Kodiak_intertie
+    config: model/m0.19.0_d0.19.0/config/Kodiak_intertie_config.yaml
+    scalers: 
+      diesel price: 1.1
+      
+  - community: Kodiak_intertie
+    name: Kodiak_intertie increase 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Kodiak_intertie
+    config: model/m0.19.0_d0.19.0/config/Kodiak_intertie_config.yaml
+    scalers: 
+      diesel price: 1.2
+    
+  - community: Kodiak_intertie
+    name: Kodiak_intertie increase 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Kodiak_intertie
+    config: model/m0.19.0_d0.19.0/config/Kodiak_intertie_config.yaml
+    scalers: 
+      diesel price: 1.3
+      
+  - community: Kodiak_intertie
+    name: Kodiak_intertie increase 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Kodiak_intertie
+    config: model/m0.19.0_d0.19.0/config/Kodiak_intertie_config.yaml
+    scalers: 
+      diesel price: 1.4
+      
+  - community: Kodiak_intertie
+    name: Kodiak_intertie increase 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Kodiak_intertie
+    config: model/m0.19.0_d0.19.0/config/Kodiak_intertie_config.yaml
+    scalers: 
+      diesel price: 1.5
+      
+      
+ # Port_Lions ----------------------------------------------------------------
+  - community: Port_Lions
+    name: Port_Lions decrease 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Port_Lions
+    config: model/m0.19.0_d0.19.0/config/Port_Lions_config.yaml
+    scalers: 
+      diesel price: .5
+
+  - community: Port_Lions
+    name: Port_Lions decrease 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Port_Lions
+    config: model/m0.19.0_d0.19.0/config/Port_Lions_config.yaml
+    scalers: 
+      diesel price: .6
+
+  - community: Port_Lions
+    name: Port_Lions decrease 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Port_Lions
+    config: model/m0.19.0_d0.19.0/config/Port_Lions_config.yaml
+    scalers: 
+      diesel price: .7
+      
+  - community: Port_Lions
+    name: Port_Lions decrease 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Port_Lions
+    config: model/m0.19.0_d0.19.0/config/Port_Lions_config.yaml
+    scalers: 
+      diesel price: .8
+      
+  - community: Port_Lions
+    name: Port_Lions decrease 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Port_Lions
+    config: model/m0.19.0_d0.19.0/config/Port_Lions_config.yaml
+    scalers: 
+      diesel price: .9
+
+  - community: Port_Lions
+    name: Port_Lions increase 00%
+    input files: model/m0.19.0_d0.19.0/input_files/Port_Lions
+    config: model/m0.19.0_d0.19.0/config/Port_Lions_config.yaml
+    scalers: 
+      diesel price: 1
+
+
+  - community: Port_Lions
+    name: Port_Lions increase 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Port_Lions
+    config: model/m0.19.0_d0.19.0/config/Port_Lions_config.yaml
+    scalers: 
+      diesel price: 1.1
+      
+  - community: Port_Lions
+    name: Port_Lions increase 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Port_Lions
+    config: model/m0.19.0_d0.19.0/config/Port_Lions_config.yaml
+    scalers: 
+      diesel price: 1.2
+    
+  - community: Port_Lions
+    name: Port_Lions increase 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Port_Lions
+    config: model/m0.19.0_d0.19.0/config/Port_Lions_config.yaml
+    scalers: 
+      diesel price: 1.3
+      
+  - community: Port_Lions
+    name: Port_Lions increase 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Port_Lions
+    config: model/m0.19.0_d0.19.0/config/Port_Lions_config.yaml
+    scalers: 
+      diesel price: 1.4
+      
+  - community: Port_Lions
+    name: Port_Lions increase 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Port_Lions
+    config: model/m0.19.0_d0.19.0/config/Port_Lions_config.yaml
+    scalers: 
+      diesel price: 1.5
+      
+      
+ # Ruby ----------------------------------------------------------------
+  - community: Ruby
+    name: Ruby decrease 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Ruby
+    config: model/m0.19.0_d0.19.0/config/Ruby_config.yaml
+    scalers: 
+      diesel price: .5
+
+  - community: Ruby
+    name: Ruby decrease 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Ruby
+    config: model/m0.19.0_d0.19.0/config/Ruby_config.yaml
+    scalers: 
+      diesel price: .6
+
+  - community: Ruby
+    name: Ruby decrease 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Ruby
+    config: model/m0.19.0_d0.19.0/config/Ruby_config.yaml
+    scalers: 
+      diesel price: .7
+      
+  - community: Ruby
+    name: Ruby decrease 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Ruby
+    config: model/m0.19.0_d0.19.0/config/Ruby_config.yaml
+    scalers: 
+      diesel price: .8
+      
+  - community: Ruby
+    name: Ruby decrease 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Ruby
+    config: model/m0.19.0_d0.19.0/config/Ruby_config.yaml
+    scalers: 
+      diesel price: .9
+
+  - community: Ruby
+    name: Ruby increase 00%
+    input files: model/m0.19.0_d0.19.0/input_files/Ruby
+    config: model/m0.19.0_d0.19.0/config/Ruby_config.yaml
+    scalers: 
+      diesel price: 1
+
+
+  - community: Ruby
+    name: Ruby increase 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Ruby
+    config: model/m0.19.0_d0.19.0/config/Ruby_config.yaml
+    scalers: 
+      diesel price: 1.1
+      
+  - community: Ruby
+    name: Ruby increase 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Ruby
+    config: model/m0.19.0_d0.19.0/config/Ruby_config.yaml
+    scalers: 
+      diesel price: 1.2
+    
+  - community: Ruby
+    name: Ruby increase 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Ruby
+    config: model/m0.19.0_d0.19.0/config/Ruby_config.yaml
+    scalers: 
+      diesel price: 1.3
+      
+  - community: Ruby
+    name: Ruby increase 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Ruby
+    config: model/m0.19.0_d0.19.0/config/Ruby_config.yaml
+    scalers: 
+      diesel price: 1.4
+      
+  - community: Ruby
+    name: Ruby increase 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Ruby
+    config: model/m0.19.0_d0.19.0/config/Ruby_config.yaml
+    scalers: 
+      diesel price: 1.5
+      
+      
+ # Sand_Point ----------------------------------------------------------------
+  - community: Sand_Point
+    name: Sand_Point decrease 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Sand_Point
+    config: model/m0.19.0_d0.19.0/config/Sand_Point_config.yaml
+    scalers: 
+      diesel price: .5
+
+  - community: Sand_Point
+    name: Sand_Point decrease 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Sand_Point
+    config: model/m0.19.0_d0.19.0/config/Sand_Point_config.yaml
+    scalers: 
+      diesel price: .6
+
+  - community: Sand_Point
+    name: Sand_Point decrease 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Sand_Point
+    config: model/m0.19.0_d0.19.0/config/Sand_Point_config.yaml
+    scalers: 
+      diesel price: .7
+      
+  - community: Sand_Point
+    name: Sand_Point decrease 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Sand_Point
+    config: model/m0.19.0_d0.19.0/config/Sand_Point_config.yaml
+    scalers: 
+      diesel price: .8
+      
+  - community: Sand_Point
+    name: Sand_Point decrease 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Sand_Point
+    config: model/m0.19.0_d0.19.0/config/Sand_Point_config.yaml
+    scalers: 
+      diesel price: .9
+
+  - community: Sand_Point
+    name: Sand_Point increase 00%
+    input files: model/m0.19.0_d0.19.0/input_files/Sand_Point
+    config: model/m0.19.0_d0.19.0/config/Sand_Point_config.yaml
+    scalers: 
+      diesel price: 1
+
+
+  - community: Sand_Point
+    name: Sand_Point increase 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Sand_Point
+    config: model/m0.19.0_d0.19.0/config/Sand_Point_config.yaml
+    scalers: 
+      diesel price: 1.1
+      
+  - community: Sand_Point
+    name: Sand_Point increase 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Sand_Point
+    config: model/m0.19.0_d0.19.0/config/Sand_Point_config.yaml
+    scalers: 
+      diesel price: 1.2
+    
+  - community: Sand_Point
+    name: Sand_Point increase 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Sand_Point
+    config: model/m0.19.0_d0.19.0/config/Sand_Point_config.yaml
+    scalers: 
+      diesel price: 1.3
+      
+  - community: Sand_Point
+    name: Sand_Point increase 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Sand_Point
+    config: model/m0.19.0_d0.19.0/config/Sand_Point_config.yaml
+    scalers: 
+      diesel price: 1.4
+      
+  - community: Sand_Point
+    name: Sand_Point increase 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Sand_Point
+    config: model/m0.19.0_d0.19.0/config/Sand_Point_config.yaml
+    scalers: 
+      diesel price: 1.5
+      
+      
+ # Shishmaref ----------------------------------------------------------------
+  - community: Shishmaref
+    name: Shishmaref decrease 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Shishmaref
+    config: model/m0.19.0_d0.19.0/config/Shishmaref_config.yaml
+    scalers: 
+      diesel price: .5
+
+  - community: Shishmaref
+    name: Shishmaref decrease 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Shishmaref
+    config: model/m0.19.0_d0.19.0/config/Shishmaref_config.yaml
+    scalers: 
+      diesel price: .6
+
+  - community: Shishmaref
+    name: Shishmaref decrease 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Shishmaref
+    config: model/m0.19.0_d0.19.0/config/Shishmaref_config.yaml
+    scalers: 
+      diesel price: .7
+      
+  - community: Shishmaref
+    name: Shishmaref decrease 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Shishmaref
+    config: model/m0.19.0_d0.19.0/config/Shishmaref_config.yaml
+    scalers: 
+      diesel price: .8
+      
+  - community: Shishmaref
+    name: Shishmaref decrease 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Shishmaref
+    config: model/m0.19.0_d0.19.0/config/Shishmaref_config.yaml
+    scalers: 
+      diesel price: .9
+
+  - community: Shishmaref
+    name: Shishmaref increase 00%
+    input files: model/m0.19.0_d0.19.0/input_files/Shishmaref
+    config: model/m0.19.0_d0.19.0/config/Shishmaref_config.yaml
+    scalers: 
+      diesel price: 1
+
+
+  - community: Shishmaref
+    name: Shishmaref increase 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Shishmaref
+    config: model/m0.19.0_d0.19.0/config/Shishmaref_config.yaml
+    scalers: 
+      diesel price: 1.1
+      
+  - community: Shishmaref
+    name: Shishmaref increase 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Shishmaref
+    config: model/m0.19.0_d0.19.0/config/Shishmaref_config.yaml
+    scalers: 
+      diesel price: 1.2
+    
+  - community: Shishmaref
+    name: Shishmaref increase 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Shishmaref
+    config: model/m0.19.0_d0.19.0/config/Shishmaref_config.yaml
+    scalers: 
+      diesel price: 1.3
+      
+  - community: Shishmaref
+    name: Shishmaref increase 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Shishmaref
+    config: model/m0.19.0_d0.19.0/config/Shishmaref_config.yaml
+    scalers: 
+      diesel price: 1.4
+      
+  - community: Shishmaref
+    name: Shishmaref increase 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Shishmaref
+    config: model/m0.19.0_d0.19.0/config/Shishmaref_config.yaml
+    scalers: 
+      diesel price: 1.5
+      
+ # Quinhagak ----------------------------------------------------------------
+  - community: Quinhagak
+    name: Quinhagak decrease 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Quinhagak
+    config: model/m0.19.0_d0.19.0/config/Quinhagak_config.yaml
+    scalers: 
+      diesel price: .5
+
+  - community: Quinhagak
+    name: Quinhagak decrease 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Quinhagak
+    config: model/m0.19.0_d0.19.0/config/Quinhagak_config.yaml
+    scalers: 
+      diesel price: .6
+
+  - community: Quinhagak
+    name: Quinhagak decrease 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Quinhagak
+    config: model/m0.19.0_d0.19.0/config/Quinhagak_config.yaml
+    scalers: 
+      diesel price: .7
+      
+  - community: Quinhagak
+    name: Quinhagak decrease 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Quinhagak
+    config: model/m0.19.0_d0.19.0/config/Quinhagak_config.yaml
+    scalers: 
+      diesel price: .8
+      
+  - community: Quinhagak
+    name: Quinhagak decrease 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Quinhagak
+    config: model/m0.19.0_d0.19.0/config/Quinhagak_config.yaml
+    scalers: 
+      diesel price: .9
+
+  - community: Quinhagak
+    name: Quinhagak increase 00%
+    input files: model/m0.19.0_d0.19.0/input_files/Quinhagak
+    config: model/m0.19.0_d0.19.0/config/Quinhagak_config.yaml
+    scalers: 
+      diesel price: 1
+
+
+  - community: Quinhagak
+    name: Quinhagak increase 10%
+    input files: model/m0.19.0_d0.19.0/input_files/Quinhagak
+    config: model/m0.19.0_d0.19.0/config/Quinhagak_config.yaml
+    scalers: 
+      diesel price: 1.1
+      
+  - community: Quinhagak
+    name: Quinhagak increase 20%
+    input files: model/m0.19.0_d0.19.0/input_files/Quinhagak
+    config: model/m0.19.0_d0.19.0/config/Quinhagak_config.yaml
+    scalers: 
+      diesel price: 1.2
+    
+  - community: Quinhagak
+    name: Quinhagak increase 30%
+    input files: model/m0.19.0_d0.19.0/input_files/Quinhagak
+    config: model/m0.19.0_d0.19.0/config/Quinhagak_config.yaml
+    scalers: 
+      diesel price: 1.3
+      
+  - community: Quinhagak
+    name: Quinhagak increase 40%
+    input files: model/m0.19.0_d0.19.0/input_files/Quinhagak
+    config: model/m0.19.0_d0.19.0/config/Quinhagak_config.yaml
+    scalers: 
+      diesel price: 1.4
+      
+  - community: Quinhagak
+    name: Quinhagak increase 50%
+    input files: model/m0.19.0_d0.19.0/input_files/Quinhagak
+    config: model/m0.19.0_d0.19.0/config/Quinhagak_config.yaml
+    scalers: 
+      diesel price: 1.5

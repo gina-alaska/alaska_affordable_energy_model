@@ -3,3 +3,5 @@
 *.DS_store
 /data/*
 *.egg-info
+/model/*
+docs/build/*

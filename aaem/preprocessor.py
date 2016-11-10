@@ -9,10 +9,64 @@ import shutil
 import os.path
 from diagnostics import diagnostics
 import numpy as np
-from forecast import growth
+#~ from forecast import growth
 from datetime import datetime
 
+from importlib import import_module
+
+from aaem.components import comp_lib
+
+GENERATION_AVG = .03
+
+
+
+def growth(xs, ys , x):
+    """
+    growth function
+
+    pre:
+        xs,ys are arrays of known x and y values. x is a scaler or np.array
+    of values to calculate new y values for
+
+    post:
+        return new y values
+    """
+    xs = np.array(xs)
+    ys = np.log(np.array(ys))
+
+    xy_bar = np.average(xs*ys)
+    x_bar = np.average(xs)
+    y_bar = np.average(ys)
+    x_sq_bar = np.average(xs**2)
+
+    beta = (xy_bar - x_bar*y_bar)/(x_sq_bar- x_bar**2)
+    alpha = y_bar - beta* x_bar
+    return np.exp(alpha  + beta * x)
+
+
 class Preprocessor (object):
+    MODEL_FILES = {"DIESEL_PRICES": "diesel_prices_community.csv",
+               "HDD": "heating_degree_days.csv",
+               "CPI": "cpi.csv",
+               "COM_BUILDING_EST": "non-res_consumption_estimates.csv",
+               "COM_BUILDING_INV": "community_buildings.csv",
+               "COM_BUILFING_COUNT": "non-res_count.csv",
+               "INTERTIES": "current_interties.csv",
+               "PRICES": "prices.csv",
+               "REGION": "region.csv",
+               "RES_DATA": "residential_data.csv",
+               "WWW_DATA": "wastewater_data.csv",
+               "POPULATION": "population_projections.csv",
+               "ELECTRICITY": "yearly_electricity_summary.csv",
+               "PRICES_NONELECTRIC": 'prices_non-electric_fixed.csv',
+               "COPIES":'copies.csv',
+               "GENERATION_LIMITS":'renewable_generation_capacities.csv',
+               #~ "GOALS_C":"goals_community.csv",
+               #~ "GOALS_R":"goals_regional.csv",
+               #~ 'construction_multipliers': 'construction_multipliers.yaml',
+               }
+    
+    
     def __init__ (self, com_id, data_dir, out_dir, diag = None):
         if diag == None:
             diag = diagnostics()
@@ -23,7 +77,7 @@ class Preprocessor (object):
         # join add ensure the path is a directory
         self.data_dir = os.path.join(os.path.abspath(data_dir),"")
         self.out_dir = os.path.join(os.path.abspath(out_dir),"")
-    
+
     def preprocess (self):
         """
         preprocess data in to data dir
@@ -33,50 +87,90 @@ class Preprocessor (object):
             out_dir: save location
             com_id: community id("Name")
         post:
-            all of the files necessary to run the model are in out_dir, if out_dir
-        dose not it exist it is created
+            all of the files necessary to run the model are in out_dir,
+        if out_dir dose not it exist it is created
         """
-
          # join makes it a directory not a file
         data_dir = self.data_dir
         out_dir = self.out_dir
         com_id = self.com_id
+        print com_id
         try:
             os.makedirs(out_dir)
         except OSError:
             pass
+        self.load_ids()
+        
+        current_interties = self.current_interties()
+        self.prices()
 
         ### copy files that still need their own preprocessor function yet
-        shutil.copy(os.path.join(data_dir,"diesel_fuel_prices.csv"), out_dir)
-        shutil.copy(os.path.join(data_dir,"hdd.csv"), out_dir)
+        #~ shutil.copy(os.path.join(data_dir,"diesel_fuel_prices.csv"), out_dir)
         shutil.copy(os.path.join(data_dir,"cpi.csv"), out_dir)
 
         ###
+        try:
+            self.hdd()
+        except KeyError:
+            self.diagnostics.add_warning("HDD (Heating Degree-Days)",
+                                ("" + self.com_id + " not found in input data"
+                                 " if current_interties parent community will be used"))
+
         self.population()
         self.electricity()
         self.region()
-        self.interties()
-        
+
         self.residential()
+        self.residential_add_kWh_consumption_per_household()
+        #~ print self.residential_data.ix['year']
         base_pop = np.float(self.population_data.ix\
-                            [self.residential_data.ix['year']]["population"])
+                        [int(self.residential_data.ix['Year'])]["population"])
         self.buildings(base_pop)
         self.wastewater()
-    
-        
+        self.renewable_generation_capacities()
+        self.diesel_powerhouse_data()
+        self.preprocess_road_system()
+
+        for comp in comp_lib:
+            try:
+                l = import_module("aaem.components." +comp_lib[comp]).\
+                                                            preprocess_funcs
+            except AttributeError:
+                continue
+            for fn in l:
+                fn(self)
+        self.projects = []
+        for comp in comp_lib:
+            try:
+                fn = import_module("aaem.components." +comp_lib[comp]).\
+                                                    preprocess_existing_projects
+            except AttributeError:
+                continue
+            l = fn(self)
+            #~ print l
+            #~ print l
+            for i in l:
+                #~ if self.out_dir[-1] == "/" or self.out_dir[-1] == "\\":
+                    #~ root =  self.out_dir[:-1]
+                #~ print root+"+wind_project_" + str(i)
+                #~ try:
+                    #~ shutil.rmtree(root+'+'+i)
+                #~ except OSError:
+                    #~ pass
+                self.projects.append('+'+i)
+                #~ shutil.copytree(self.out_dir,root+'+'+i)
 
 
-        
-                                                    
+
     ## HEADER FUNCTIONS ########################################################
-    def population_header (self):
+    def population_header (self, source):
         """
         returns the population file header
         """
         # TODO: find original source (ADEG & TotalPopulationPlace2014.xls??)
         return "# " + self.com_id + " population\n" + \
                "# generated: " + str(datetime.now()).split('.')[0] +"\n" +\
-               "# Data Source: (DATA REPO)\n" +\
+               "# Data Source: " + source + "\n" +\
                "# recorded population in a given year\n" + \
                self.comments_dataframe_divide
 
@@ -115,7 +209,7 @@ class Preprocessor (object):
         """
         """
         #TODO find what assumptions mean
-        #TODO check sources 
+        #TODO check sources
         return  "# " + self.com_id + " wastewater data\n"+ \
                 "# generated: " + str(datetime.now()).split('.')[0] +"\n" +\
                 "# source: wastewater_data.csv" +\
@@ -127,6 +221,7 @@ class Preprocessor (object):
                 "# kWh/yr w/ retro: kWh/yr used post-retrofit\n"+ \
                 "# Implementation Cost: cost to refit \n"+ \
                 "# HR: heat recovery (units ???) \n"+ \
+                "# Biomass: (boolean) is biomass used \n"+ \
                 "# Steam District: ??? \n"+ \
                 "# -----------------------------" +\
                 "# source: wastewater_assumptions.csv (AEA)" +\
@@ -143,44 +238,40 @@ class Preprocessor (object):
         return  "# " + self.com_id + " residential data\n"+\
                 "# generated: " + str(datetime.now()).split('.')[0] +"\n" +\
                 "# Data Source: residential_data.csv"+\
-                "# energy_region: region used by model \n"+\
-                "# year: year of data  collected \n"+\
-                "# total_occupied: # houses occupied \n"+\
-                "# BEES_number: # of houses at BEES standard \n"+\
-                "# BEES_avg_area: average Sq. ft. of BEES home \n"+\
-                "# BEES_avg_EUI: BEES energy use intensity MMBtu/sq. ft.\n"+\
-                "# BEES_total_consumption: " +\
+                "# Energy Region: region used by model \n"+\
+                "# Year: year of data  collected \n"+\
+                "# Total Occupied: # houses occupied \n"+\
+                "# BEES Number: # of houses at BEES standard \n"+\
+                "# BEES Avg Area (SF): average Sq. ft. of BEES home \n"+\
+                "# BEES Avg EUI (MMBtu/sf): BEES energy use intensity MMBtu/sq. ft.\n"+\
+                "# BEES Total Consumption (MMBtu): " +\
                                 "   BEES home energy consumption MMBtu \n"+\
-                "# pre_number: # of houses pre-retrofit \n"+\
-                "# pre_avg_area: average Sq. ft. of pre-retrofit home \n"+\
-                "# pre_avg_EUI: " +\
+                "# Pre-Retrofit Number: # of houses pre-retrofit \n"+\
+                "# Pre-Retrofit Avg Area (SF): average Sq. ft. of pre-retrofit home \n"+\
+                "# Pre-Retrofit Avg EUI (MMBtu/sf): " +\
                           "pre-retrofit energy use intensity MMBtu/sq. ft.\n"+\
-                "# post_number: # of houses at post-retrofit \n"+\
-                "# post_avg_area: average Sq. ft. of post-retrofithome \n"+\
-                "# post_avg_EUI: post-retrofit energy use intensity "+\
+                "# Post-Retrofit Number: # of houses at post-retrofit \n"+\
+                "# Post-Retrofit Avg Area (SF): average Sq. ft. of post-retrofithome \n"+\
+                "# Post-Retrofit Avg. EUI Reduction: \n" +\
+                "# Post-Retrofit Avg EUI (MMBtu/sf): post-retrofit energy use intensity "+\
                          "MMBtu/sq. ft.\n"+\
-                "# post_total_consumption: "+\
+                "# Total Consumption (MMBtu): "+\
                             "post-retrofit home energy consumption MMBtu \n"+\
-                "# opportunity_non-Wx_HERP_BEES:  # of houses \n"+\
-                "# opportunity_potential_reduction: ???? \n"+\
-                "# opportunity_savings: "+\
-                            "potention savings in heating Fuel(gal)\n"+\
-                "# opportunity_total_percent_community_savings: ???\n"+\
                 "# Total; Utility Gas; LP; Electricity; Fuel Oil; "+\
                         "Coal; Wood; Solar; Other; No Fuel Used: " +\
                                         "% of heating fuel types\n"+\
                 self.comments_dataframe_divide
-                
+
     def buildings_count_header (self):
         """
         """
         ## original source is AEA?
         return  "# " + self.com_id + " non-residential building count\n" + \
                 "# generated: " + str(datetime.now()).split('.')[0] +"\n" +\
-                "# Data Source: com_num_buildings.csv \n" +\
+                "# Data Source: non-res_count.csv \n" +\
                 self.comments_dataframe_divide
 
-        
+
     def buildings_estimates_header (self, pop):
         """
         """
@@ -188,7 +279,7 @@ class Preprocessor (object):
         # what is HDD
         return  "# " + self.com_id + " non-residential building estimates\n" +\
                 "# generated: " + str(datetime.now()).split('.')[0] +"\n" +\
-                "# Data Source: com_building_estimates.csv \n" +\
+                "# Data Source: non-res_consumption_estimates.csv \n" +\
                 "# Population used for estimates " + str(pop) + "\n"+\
                 "# building type: index \n" +\
                 "# kWh/sf: estimate kWh/sf used for building type\n" +\
@@ -196,7 +287,7 @@ class Preprocessor (object):
                 "# HDD: estimate Heating Degree Day\n" +\
                 "# Sqft: estimate square footage for building type\n" +\
                 self.comments_dataframe_divide
-        
+
     def buildings_inventory_header (self):
         """
         """
@@ -204,7 +295,7 @@ class Preprocessor (object):
         # find units for fuel sources
         return  "# " + self.com_id + " non-residential building inventory\n" +\
                 "# generated: " + str(datetime.now()).split('.')[0] +"\n" +\
-                "# Data Source: non_res_buildings.csv \n" +\
+                "# Data Source: non-res_buildings.csv \n" +\
                 "# building type: index \n" +\
                 "# Square Feet: Measured Square Footage of building\n" +\
                 "# Audited: True or False \n" +\
@@ -221,16 +312,16 @@ class Preprocessor (object):
                 "# Propane: Gal propane used \n" +\
                 "# Propane Post: Gal propane used if refit\n" +\
                 self.comments_dataframe_divide
-    
-    def interties_header (self):
+
+    def current_interties_header (self):
         """
         """
         # original source compiled by AEA
         return  "# " + self.com_id + " intertied communities\n" +\
                 "# generated: " + str(datetime.now()).split('.')[0] +"\n" +\
-                "# Data Source: interties.csv \n" +\
+                "# Data Source: current_interties.csv \n" +\
                 self.comments_dataframe_divide
-    
+
     def region_header (self):
         """
         """
@@ -243,8 +334,42 @@ class Preprocessor (object):
                 "# premium: heating fuel premium for region \n" +\
                 self.comments_dataframe_divide
 
+    def hdd_header (self):
+        """ Function doc """
+        return ("# " + self.com_id + " Heating Degree Days\n"
+                "# generated: " + str(datetime.now()).split('.')[0] +"\n"
+                "# Data Source: heating_degree_days.csv\n"
+                "# HDD: heating degree-days per year for community (HDD/Yr)\n"
+                "" + self.comments_dataframe_divide + "" )
+                
+    def propane_prices_header (self):
+        """
+        """
+        return "# prices"
+        
+    def renewable_generation_capacities_header (self):
+        """ """
+        return ('# '   + self.com_id + " Generation Limits\n"
+                "# generated: " + str(datetime.now()).split('.')[0] +"\n"
+                "# units are in kWh\n")
+        
+    def diesel_powerhouse_data_header(self):
+        return ('# '   + self.com_id + " diesel data\n"
+                "# generated: " + str(datetime.now()).split('.')[0] +"\n"
+                "# Total Number of generators, \n"
+                "# Total Capacity (in kW), capacity of generators\n"
+                "# Largest generator (in kW), capacity of largest generator\n"
+                "# Sizing, \n"
+                '# Number to replace ("Poor"),\n'
+                '# Switchgear Suitable,\n'
+                '# Waste Heat Recovery Opperational,\n'
+                '# Add waste heat Avail,\n'
+                '# Est. current annual heating fuel gallons displaced,\n'
+                '# Est. potential annual heating fuel gallons displaced,\n')
+
     ## PROCESS FUNCTIONS #######################################################
-    def population (self, threshold = 20, end_year = 2040, percent = .02):
+    def population (self, threshold = 20, end_year = 2050,
+                          percent = .02, currnet_year = 2015):
         """
         create the population input file
 
@@ -254,16 +379,26 @@ class Preprocessor (object):
         post:
             a file is saved, and the data frame it was generated from isreturned
         """
-        in_file = os.path.join(self.data_dir,"population.csv")
+        in_file = os.path.join(self.data_dir,"population_projections.csv")
+
+        pop_data = read_csv(in_file, index_col = 1) # update to GNIS
+        pop_source = "ICER's population forecast"
         
-        pop_data = read_csv(in_file, index_col = 0) # update to GNIS
-        pops = DataFrame(pop_data.ix[self.com_id]["2003":str(end_year)])
-        
+        pops = self.get_communities_data(pop_data)
+        pops = DataFrame(pops.iloc[0]["2003":])
+        #~ try:
+            #~ pops = DataFrame(pop_data.ix[self.com_id]["2003":str(end_year)])
+        #~ except KeyError:
+            #~ in_file = os.path.join(self.data_dir,"population_neil.csv")
+            #~ pop_data = read_csv(in_file, index_col = 0) # update to GNIS
+            #~ pop_source = "Neil's Calculations"
+            #~ pops = DataFrame(pop_data.ix[self.com_id]["2003":str(end_year)])
+
         if (pops.values < threshold).any():
             self.diagnostics.add_warning("Population",
                                             "population < " + str(threshold))
 
-        p = pops.T.values[0]
+        p = pops.T.values
         k = pops.T.keys().values
         for idx in range(1,len(p)):
             #~ print idx
@@ -277,19 +412,17 @@ class Preprocessor (object):
                                             " to " + k[idx])
 
         pops.columns  = ["population"]
-        p_map = concat(\
-                     [pops - pops]).astype(bool).astype(str).\
-                      replace("True", "P").\
-                      replace("False", "P")
+        p_map=concat([pops[:str(currnet_year-1)].astype(bool).replace(True, "I"),
+                      pops[str(currnet_year):].astype(bool).replace(True, "I")])
         p_map.columns  = [p_map.columns[0] + "_qualifier"]
-        out_file = os.path.join(self.out_dir,"population.csv")
+        out_file = os.path.join(self.out_dir,"population_projections.csv")
         fd = open(out_file,'w')
-        fd.write(self.population_header())
+        fd.write(self.population_header(pop_source))
         fd.close()
 
 
-        df = concat([pops,p_map],axis = 1)
-        df.to_csv(out_file,mode="a")
+        df = concat([pops,p_map],axis = 1).fillna(0)
+        df.to_csv(out_file,mode="a",index_label='year')
         self.population_data = df
         self.population_data.index = self.population_data.index.astype(int)
 
@@ -307,8 +440,8 @@ class Preprocessor (object):
             raises a key error if the community is not in the waste water data
         or if the system type is unknown
         """
-        data_file = os.path.join(self.data_dir,"ww_data.csv")
-        assumptions_file =  os.path.join(self.data_dir,"ww_assumptions.csv")
+        data_file = os.path.join(self.data_dir,"water-wastewater_projects_potential.csv")
+        assumptions_file =  os.path.join(self.data_dir,"water-wastewater_assumptions.csv")
 
         ## system type mapping From Neil
         ##Circulating/Gravity: Circulating/Gravity, Circulating/Pressure,
@@ -321,7 +454,7 @@ class Preprocessor (object):
 
         sys_map = {
                     "Circulating/Gravity":"Circulating/Gravity",
-                    "Circulating/Pressurey":"Circulating/Gravity",
+                    "Circulating/Pressure":"Circulating/Gravity",
                     "Circulating/ST/DF":"Circulating/Gravity",
                     "Circulating/Vacuum":"Circulating/Vac",
                     "Closed Haul/Vacuum":"Circulating/Vac",
@@ -332,11 +465,12 @@ class Preprocessor (object):
                     "Pressure/NA": "Pressure/Gravity",
                     "Pressure/ST/DF": "Pressure/Gravity",
                     "Washeteria":"Wash/HB",
+                    "None": "None",
                   }
 
 
         try:
-            ww_d = read_csv(data_file, comment = '#', 
+            ww_d = read_csv(data_file, comment = '#',
                                                 index_col = 0).ix[self.com_id]
         except KeyError:
             #~ raise StandardError, str(com_id) + " is not in " + data_file
@@ -349,9 +483,15 @@ class Preprocessor (object):
             ww_d["HR Installed"] = False
 
 
+        try:
+            a = ww_d["Biomass"]
+        except KeyError:
+            ww_d["Biomass"] = False
 
         try:
             sys_type = sys_map[ww_d["System Type"]]
+            if sys_type == "None":
+                raise ValueError, "no w/ww system"
             ww_a = read_csv(assumptions_file, comment = '#', index_col = 0)
             ww_a = ww_a.ix[sys_type]
             ww_a["assumption type used"] = sys_type
@@ -359,9 +499,14 @@ class Preprocessor (object):
         except (KeyError, ValueError )as e:
             self.diagnostics.add_warning("wastewater",
                                          "system type unknown")
+            ww_d['HDD kWh']	= 0.0
+            ww_d['HDD HF'] = 0.0
+            ww_d['pop kWh'] = 0.0
+            ww_d['pop HF'] = 0.0
+            
+            ww_d["Year"] = 2010
             ww_d["assumption type used"] = "UNKNOWN"
             #~ ww_d.to_csv(out_file, mode = 'a')
-
             df = ww_d
 
         out_file = os.path.join(self.out_dir,"wastewater_data.csv")
@@ -386,24 +531,66 @@ class Preprocessor (object):
         """
         data_file = os.path.join(self.data_dir, "res_model_data.csv")
         fuel_file = os.path.join(self.data_dir, "res_fuel_source.csv")
+
+        fuel_data = read_csv(fuel_file, index_col=0, comment = "#")
+        fuel = self.get_communities_data(fuel_data).T
         
-        fuel = read_csv(fuel_file, index_col=0, comment = "#").ix[self.com_id]
         fuel = fuel.ix[["Total", "Utility Gas", "LP", "Electricity", "Fuel Oil",
                         "Coal", "Wood", "Solar", "Other", "No fuel used"]]
 
-        data = read_csv(data_file, index_col=0, comment = "#").ix[self.com_id]
-
-        df = concat([data,fuel])
-        del df.T["energy_region"]
         
+        data = read_csv(data_file, index_col=0, comment = "#").ix[self.com_id]
+        
+        fuel.columns = [self.com_id]
+        
+        df = concat([DataFrame(data),fuel])
+        df = df.T
+        del df['Energy Region']
+        df = df.T
+
         out_file = os.path.join(self.out_dir, "residential_data.csv")
         fd = open(out_file,'w')
         fd.write(self.residential_header())
         fd.write("key,value\n")
         fd.close()
 
-        df.to_csv(out_file,mode="a")
+        df.to_csv(out_file,mode="a",header=False)
         self.residential_data = df
+        
+        self.init_households = int(df.ix["Total Occupied"])
+        self.init_household_year = int(df.ix["Year"])
+        
+        
+    def residential_add_kWh_consumption_per_household(self):
+        """
+            add the average kWh/houshold consumption number to the residential
+        input file
+        
+        pre:
+            self.residential and self.electricity need to have been called
+        post:
+            kWh/houshold is added to res data output file
+        """
+        try:
+            consumption_res = self.electricity_data["consumption residential"]\
+                                               [self.init_household_year]
+            average = consumption_res/ self.init_households 
+        except AttributeError as e:
+            average = "CALC_FOR_INTERTIE"
+        except KeyError:
+            average = np.nan
+        if self.combined_com == True:
+            average = "CALC_FOR_INTERTIE"
+        #~ print average
+        out_file = os.path.join(self.out_dir, "residential_data.csv")
+        fd = open(out_file,'a')
+        fd.write("average kWh per house,"+str(average)+'\n')
+        fd.close()
+        
+        
+        
+        
+        
 
     def region (self):
         """
@@ -415,9 +602,9 @@ class Preprocessor (object):
         """
         data_file = os.path.join(self.data_dir,"res_model_data.csv")
         premium_file = os.path.join(self.data_dir,"heating_fuel_premium.csv")
-        
+
         region = read_csv(data_file, index_col=0,
-                                        comment='#').energy_region[self.com_id]
+                                        comment='#')['Energy Region'][self.com_id]
         premium = read_csv(premium_file, index_col=0,
                                             comment='#').premium[region]
 
@@ -433,13 +620,20 @@ class Preprocessor (object):
     def electricity(self):
         """
         """
+        self.combined_com = False
+        
         try:
+            if self.com_id == "South Naknek":
+                raise KeyError, "S. Naknek"
             self.electricity_process_pce()
             self.electricity_prices_pce()
+            self.elec_data_source = "PCE"
         except KeyError:
             try:
+                self.combined_com = False
                 self.electricity_process_eia()
                 self.electricity_prices_eia()
+                self.elec_data_source = "EIA"
                 # Valdez work around.
                 if self.com_id == "Valdez":
                     val = os.path.join(self.data_dir,
@@ -448,12 +642,10 @@ class Preprocessor (object):
                     val["Total"] = val.sum(1)
                     val['non-res'] = val[['Commercial','Industrial']].sum(1)
                     val = concat([self.electricity_data,val],axis = 1)
-                    
+
                     val["consumption"] = val["Total"]
-                    val["consumption residential"] = \
-                                                              val["Residential"]
-                    val["consumption non-residential"] = \
-                                                              val["non-res"]
+                    val["consumption residential"] = val["Residential"]
+                    val["consumption non-residential"] = val["non-res"]
                     val = val[['generation','consumption',
                                              'fuel used', 'efficiency',
                                              'line loss', 'net generation',
@@ -470,18 +662,20 @@ class Preprocessor (object):
                     self.electricity_data["line loss"] = \
                                     1.0 - self.electricity_data['consumption']/\
                                          self.electricity_data['net generation']
-                    out_file = os.path.join(self.out_dir, 
+                    out_file = os.path.join(self.out_dir,
                                               "yearly_electricity_summary.csv")
 
                     fd = open(out_file,'w')
                     fd.write(self.electricity_header("EIA"))
                     fd.close()
-            
+
                     self.electricity_data.to_csv(out_file,mode="a")
                     self.p_key = None
                     self.diagnostics.add_note("Electricity",
                                                       "Valdez sales data added")
             except KeyError as e:
+                #~ print e
+                self.elec_data_source = ""
                 self.diagnostics.add_error("Electricity",
                         "Generation and Sales for " + str(self.com_id) +\
                         " data not in PCE or EIA")
@@ -491,28 +685,53 @@ class Preprocessor (object):
         """
         fuel prices EIA
         """
-        # TODO: find a way to calculate this
+        #~ # TODO: find a way to calculate this
         con_file = os.path.join(self.data_dir, "eia_sales.csv")
-        self.diagnostics.add_note("Electricity Prices (EIA)",
-                                "they need to be input in community data")        
-        #~ out_file = os.path.join(self.out_dir, "prices.csv")
-        #~ fd = open(out_file,'w')
-        #~ fd.write(self.electricity_prices_header("PCE"))
-        #~ fd.write("key,value \n")
-        #~ fd.write("res non-PCE elec cost,"+ str(res_nonPCE_price) + "\n")
-        #~ fd.write("elec non-fuel cost," + str(elec_nonFuel_cost) + "\n")
-        #~ fd.close()
+        try:
+            cid = self.com_id
+            if cid == 'Glennallen' or cid == 'Valdez':
+                cid = "Copper Valley"
+            con_data = read_csv(con_file, comment='#', index_col=2).ix[cid]
+        except KeyError:
+            self.diagnostics.add_note("Electricity Prices (EIA)",
+                                  "they need to be input in community data")
+            return
+
+        idx = con_data["Data Year"] == con_data["Data Year"].max()
+        
+        try:
+            res_nonPCE_price = \
+                        float(con_data[idx]['Residential Thousand Dollars']) /\
+                        float(con_data[idx]['Residential Megawatthours'])
+        except ZeroDivisionError:
+            self.diagnostics.add_note('prices eia', "0 sold")
+            res_nonPCE_price = 0
+
+        elec_nonFuel_cost = float(con_data[idx]['Total Thousand Dollars']) /\
+                           float(con_data[idx]['Total Megawatthours'])
+
+        out_file = os.path.join(self.out_dir, "prices.csv")
+        fd = open(out_file,'w')
+        fd.write(self.electricity_prices_header("EIA"))
+        fd.write("key,value \n")
+        fd.write("res non-PCE elec cost,"+ str(res_nonPCE_price) + "\n")
+        fd.write("elec non-fuel cost," + str(elec_nonFuel_cost) + "\n")
+        fd.close()
 
     def electricity_prices_pce (self):
         """
         pre process fuel prices
         """
         in_file = os.path.join(self.data_dir,
-                            "2013-add-power-cost-equalization-pce-data.csv")
+                            "power-cost-equalization-pce-data.csv")
         data = read_csv(in_file, index_col=1, comment = "#")
         try:
             if self.com_id == "Craig":
                 data = data.loc[["Craig","Craig, Klawock"]]
+            elif self.com_id == "Upper Kalskag":
+                data = data.ix['Kalskag']
+            elif self.com_id == "Klukwan":
+                data = data.loc[["Klukwan","Chilkat Valley"]]
             else:
                 data = data.ix[self.com_id]
         except KeyError:
@@ -526,20 +745,39 @@ class Preprocessor (object):
                                          "unbilled_kwh", "fuel_cost"]]
 
         last_year = data["year"].max()
-        while len(data[data["year"] == last_year]) != 12:
+        while len(data[data["year"] == last_year])%12 != 0:
             last_year -= 1
 
 
-        elec_fuel_cost = (data[data["year"] == last_year]['fuel_cost'].mean()\
-                     / data[data["year"] == last_year][["residential_kwh_sold",
+        #~ print data[data["year"] == last_year][["residential_kwh_sold",
+                                         #~ "commercial_kwh_sold",
+                                         #~ "community_kwh_sold",
+                                         #~ "government_kwh_sold",
+                                         #~ "unbilled_kwh"]].sum(axis =1 )
+        #~ print data[data["year"] == last_year]['fuel_cost']
+        elec_fuel_cost = (data[data["year"] == last_year]['fuel_cost']/data[data["year"] == last_year][["residential_kwh_sold",
                                          "commercial_kwh_sold",
                                          "community_kwh_sold",
                                          "government_kwh_sold",
-                                         "unbilled_kwh"]].mean().sum())
+                                         "unbilled_kwh"]].sum(axis = 1) ).mean()
+                                         
+        
+
+        #~ elec_fuel_cost = (data[data["year"] == last_year]['fuel_cost'].mean()\
+                     #~ / data[data["year"] == last_year][["residential_kwh_sold",
+                                         #~ "commercial_kwh_sold",
+                                         #~ "community_kwh_sold",
+                                         #~ "government_kwh_sold",
+                                         #~ "unbilled_kwh"]].mean(axis =1).sum())
+        if np.isnan(elec_fuel_cost):
+            elec_fuel_cost = 0.0
+            self.diagnostics.add_note("Electricity Prices PCE",
+                                "fuel price not available, seting to 0")
 
         res_nonPCE_price = data[data["year"] == \
                                 last_year]["residential_rate"].mean()
         elec_nonFuel_cost = res_nonPCE_price - elec_fuel_cost
+        #~ print elec_nonFuel_cost, res_nonPCE_price, elec_fuel_cost
 
         self.diagnostics.add_note("Electricity Prices PCE",
                                 "calculated res non-PCE elec cost: " + \
@@ -563,6 +801,10 @@ class Preprocessor (object):
         gen_file = os.path.join(self.data_dir, "eia_generation.csv" )
         con_file = os.path.join(self.data_dir, "eia_sales.csv")
 
+        ## for sales
+        cid = self.com_id
+        if cid == 'Glennallen':
+            cid = "Copper Valley"
 
         try:
             generation = read_csv(gen_file, comment = "#", index_col=3)\
@@ -574,6 +816,11 @@ class Preprocessor (object):
                                           'ELEC FUEL CONSUMPTION MMBTUS',
                                           'NET GENERATION (megawatthours)',
                                           'Year']]
+            if any(generation['NET GENERATION (megawatthours)'] < 0):
+                self.diagnostics.add_note("EIA Electricity",
+                    "Negative generation values have been set to 0")
+                idx = generation['NET GENERATION (megawatthours)'] < 0
+                generation['NET GENERATION (megawatthours)'][idx] = 0
             g_bool = True
         except KeyError:
             self.diagnostics.add_warning("EIA Electricity",
@@ -582,7 +829,7 @@ class Preprocessor (object):
 
         try:
             sales = read_csv(con_file, comment = "#", index_col=2)\
-                                                    .loc[self.com_id]\
+                                                    .loc[cid]\
                                                   [["Data Year",
                                                     "Residential Megawatthours",
                                                     "Total Megawatthours"]]
@@ -594,10 +841,12 @@ class Preprocessor (object):
 
         if not g_bool and not s_bool:
             raise KeyError, "Community not in EIA Data"
-        
+
         # TODO add other fuel sources These two are from sitka example
         power_type_lib = {"WAT":"hydro",
                           "DFO":"diesel",
+                          "WND":"wind",
+                          "NG": "natural gas",
                           "WO":"bla",}
 
         if g_bool:
@@ -608,17 +857,20 @@ class Preprocessor (object):
                                                            groupby('Year').sum()
                 temp['generation ' + power_type_lib[t]] = \
                                  temp['NET GENERATION (megawatthours)'] * 1000.0
-    
+
                 temp2 = DataFrame(temp['generation ' + power_type_lib[t]])
-                
+
                 if power_type_lib[t] == "diesel":
                     temp2["fuel used"] = \
                                   temp['TOTAL FUEL CONSUMPTION QUANTITY'] * 42.0
-  
+                
+
+                    
                 l.append(temp2)
+                
+                
             fuel_types = concat(l, axis =1 )
-    
-    
+
             try:
                 df_diesel = fuel_types[['generation diesel',"fuel used"]]
             except KeyError:
@@ -651,12 +903,21 @@ class Preprocessor (object):
             except KeyError:
                 df_biomass = DataFrame({"year":(2003,2004),
                         "generation biomass":(np.nan,np.nan)}).set_index('year')
-    
+
             total_generation = DataFrame(generation.groupby('Year').sum()\
                                      ['NET GENERATION (megawatthours)'])* 1000.0
-            total_generation["generation"] = \
+            total_generation["net generation"] = \
                               total_generation['NET GENERATION (megawatthours)']
-            total_generation["net generation"] = total_generation["generation"]
+            
+            try:
+                total_generation["generation"] = total_generation["net generation"]+\
+                      df_diesel['generation diesel'] * GENERATION_AVG
+            except StandardError as w:
+                print w
+            
+            self.diagnostics.add_note("EIA Electricity",
+                        "Gross Generation assumed to be " +\
+                         str((1+GENERATION_AVG)*100) + " of net generation")
 
         else:
             total_generation = DataFrame({"year":(2003,2004),
@@ -675,7 +936,7 @@ class Preprocessor (object):
                     "generation solar":(np.nan,np.nan)}).set_index('year')
             df_biomass = DataFrame({"year":(2003,2004),
                     "generation biomass":(np.nan,np.nan)}).set_index('year')
-                            
+
         if s_bool:
             sales["consumption"] = sales["Total Megawatthours"] * 1000
             sales['consumption residential'] = \
@@ -686,6 +947,19 @@ class Preprocessor (object):
             sales = sales[['year',"consumption",
                            'consumption residential',
                            'consumption non-residential']].set_index('year')
+            if cid == "Copper Valley":
+                val = os.path.join(self.data_dir, "valdez_kwh_consumption.csv")
+                val = read_csv(val, comment = '#', index_col=0)
+                val["Total"] = val.sum(1)
+                val['non-res'] = val[['Commercial','Industrial']].sum(1)
+                #~ val = concat([self.electricity_data,val],axis = 1)
+
+                val["consumption"] = val["Total"]
+                val["consumption residential"] = val["Residential"]
+                val["consumption non-residential"] = val["non-res"]
+                val = val[["consumption","consumption residential",
+                           "consumption non-residential"]]
+                sales = sales - val
         else:
             sales = DataFrame({"year":(2003,2004),
                     "consumption":(np.nan,np.nan),
@@ -734,17 +1008,25 @@ class Preprocessor (object):
         ## set up files
         lib_file = os.path.join(self.data_dir, "purchased_power_lib.csv")
         in_file = os.path.join(self.data_dir,
-                                "2013-add-power-cost-equalization-pce-data.csv")
+                                "power-cost-equalization-pce-data.csv")
         ## Load Data
         data = read_csv(in_file, index_col=1, comment = "#")
         try:
             if self.com_id == "Craig":
                 data = data.loc[["Craig","Craig, Klawock"]]
+                self.combined_com = True
+            elif self.com_id == "Upper Kalskag":
+                data = data.ix['Kalskag']
+            elif self.com_id == "Klukwan":
+                data = data.loc[["Klukwan","Chilkat Valley"]]
+                self.combined_com = True
             else:
                 data = data.loc[self.com_id]
         except KeyError:
             try:
                 data = data.loc[[self.com_id+',' in s for s in data.index]]
+                if self.intertied:
+                    self.combined_com = True
             except KeyError:
                 raise KeyError, "Community not in PCE data"
         data = data[["year","diesel_kwh_generated",
@@ -759,18 +1041,24 @@ class Preprocessor (object):
                      "community_kwh_sold",
                      "government_kwh_sold",
                      "unbilled_kwh"]]
-
+        #~ print data
         ## Load Purchased from library
         try:
             lib = read_csv(lib_file, index_col=0, comment = '#')
             try:
-                lib = lib.ix[self.com_id]
+                if self.com_id == "Craig":
+                    data = data.loc[["Craig","Craig, Klawock"]]
+                elif self.com_id == "Upper Kalskag":
+                    data = data.ix['Kalskag']
+                elif self.com_id == "Klukwan":
+                    data = data.loc[["Klukwan","Chilkat Valley"]]
+                else:
+                    data = data.loc[self.com_id]
             except KeyError:
                 lib = lib.loc[[self.com_id+',' in s for s in lib.index]]
         except:
              self.diagnostics.add_note("PCE Electricity",
              "Reading purchased from no utilities listed for community")
-
         ## Determine if and what kind of power is purchased
         try:
             sources = sorted(set(data[data["purchased_from"].notnull()]\
@@ -778,12 +1066,20 @@ class Preprocessor (object):
 
             self.diagnostics.add_note("PCE Electricity",
                         "Utility list (alphabetized) for purchased power" + \
-                        str(sources) + "using " + str(sources[0]) + \
-                        "as default provider of purchased power")
-
-            p_key = lib[lib['purchased_from'] == sources[0]]\
+                        str(sources) )
+            #~ print sources
+            for s in sources:
+                try:
+                    p_key = lib[lib['purchased_from'] == s]\
                                         ['Energy Source'].values[0].lower()
-
+                    provider = s
+                except IndexError as e:
+                    self.diagnostics.add_warning("PCE Electricity",
+                                            "Utility " + s + \
+                                            " not found in utility-power "+\
+                                            "source lib not using as provider")
+            self.diagnostics.add_note("PCE Electricity",
+                          "Purchased from utility: " + str(s))
             self.diagnostics.add_note("PCE Electricity",
                           "Purchased energy type: " + str(p_key))
         except:
@@ -818,7 +1114,7 @@ class Preprocessor (object):
                         ", as it wasthe most common energy source amoung " + \
                         str(s_set) )
 
-
+            o1_key = o1_key.lower()
             if o1_key not in ('diesel', 'natural gas','wind', 'solar'):
                 self.diagnostics.add_warning("PCE Electricity",
                 "energy source key " + str(o1_key) + \
@@ -848,7 +1144,7 @@ class Preprocessor (object):
                         ", as it wasthe most common energy source amoung " + \
                         str(s_set) )
 
-
+            o2_key = o2_key.lower()
             if o2_key not in ('diesel', 'natural gas','wind', 'solar'):
                 self.diagnostics.add_warning("PCE Electricity",
                 "energy source key " + str(o2_key) + \
@@ -857,29 +1153,37 @@ class Preprocessor (object):
         except:
             o2_key = None
 
-
         ## create yearly summaries
         sums = []
         for year in set(data["year"].values):
             #take full years only
-            if len(data[data["year"] == year]) != 12:
+            if len(data[data["year"] == year])%12 != 0:
                 continue
             ## sum of every value for the year
             temp = data[data["year"] == year].sum()
             ## get year as int
             temp["year"] = int(year)
+            
+            temp = temp.fillna(0)
+            
             ## get gross generation
+            #~ print temp[['diesel_kwh_generated',
+                                        #~ "powerhouse_consumption_kwh",
+                                        #~ "hydro_kwh_generated",
+                                        #~ "other_1_kwh_generated",
+                                        #~ "other_2_kwh_generated",
+                                        #~ "kwh_purchased"]]
             temp['generation'] = temp[['diesel_kwh_generated',
                                         "powerhouse_consumption_kwh",
                                         "hydro_kwh_generated",
                                         "other_1_kwh_generated",
                                         "other_2_kwh_generated",
                                         "kwh_purchased"]].sum()
-
             ## get generation by fuel type
             temp['generation diesel'] = temp['diesel_kwh_generated']
             temp['generation hydro'] = temp['hydro_kwh_generated']
             ## for other 1
+            
             if np.isreal(temp["other_1_kwh_generated"]) and o1_key is not None:
                 val = temp["other_1_kwh_generated"]
                 if o1_key == "diesel":
@@ -897,6 +1201,7 @@ class Preprocessor (object):
             if np.isreal(temp["kwh_purchased"]) and p_key is not None:
                 val = temp['kwh_purchased']
                 if p_key == "diesel":
+                    #~ print temp['generation diesel'] + val
                     temp['generation diesel'] = temp['generation diesel'] + val
                 else:
                     temp['generation ' + p_key] = val
@@ -906,20 +1211,37 @@ class Preprocessor (object):
                                         "commercial_kwh_sold",
                                         "community_kwh_sold",
                                         "government_kwh_sold",
-                                        "unbilled_kwh"]].sum().sum()
-            temp['consumption residential'] = temp["residential_kwh_sold"].sum()
+                                        "unbilled_kwh"]].sum()
+
+            temp['consumption residential'] = temp["residential_kwh_sold"]
             temp['consumption non-residential'] = temp['consumption'] - \
                                                  temp['consumption residential']
             ## net generation
-            temp['net generation'] = temp['generation'] - \
-                                     temp["powerhouse_consumption_kwh"]
+            phc = temp["powerhouse_consumption_kwh"]
+            if np.isnan(phc):
+                phc = temp['generation diesel'] * GENERATION_AVG
+                self.diagnostics.add_note("PCE Electricity",
+                        "Powerhouse consumption not found for " + \
+                        str(year) +" assuming to be " +\
+                        str(GENERATION_AVG*100) + "% of gross generation.")
+                temp['net generation'] = temp['generation'] 
+                temp['generation'] = temp['generation'] + phc
+            else:
+                temp['net generation'] = temp['generation'] - phc
 
             ## other values
             temp['fuel used'] = temp['fuel_used_gal']
             temp['line loss'] = 1.0 - temp['consumption']/temp['net generation']
-            temp['efficiency'] = temp['generation'] / temp['fuel_used_gal']
+            
+            try:
+                temp['efficiency'] = temp['generation diesel'] / \
+                                                        temp['fuel_used_gal']
+            except ZeroDivisionError:
+                temp['efficiency'] = np.nan
+            if np.isinf(temp['efficiency']):
+                temp['efficiency'] = np.nan
+            
             sums.append(temp)
-
         ## pull out diesel & hydro
         df_diesel = DataFrame(sums)[["year",
                                         'generation diesel']].set_index('year')
@@ -967,45 +1289,54 @@ class Preprocessor (object):
         fd.close()
 
         df.to_csv(out_file,mode="a")
-        
+
+        #~ print self.electricity_data
         self.electricity_data = df
+        #~ print self.electricity_data
         self.purchase_type = p_key
 
-    def interties (self):
+    def current_interties (self):
         """
-        preprocess interties
+        preprocess current_interties
 
         pre:
             in_infile is the intertie data file
             out_dir is a directory
             com_id is a string
         post
-            com_id's intertie data is saved to out_dir as interties.csv
+            com_id's intertie data is saved to out_dir as current_interties.csv
         """
+        self.intertied = False 
         try:
-            in_file = os.path.join(self.data_dir,"interties.csv")
+            in_file = os.path.join(self.data_dir,"current_interties.csv")
             data = read_csv(in_file, index_col=0,
                             comment = "#").ix[self.com_id].fillna("''")
-            out_file = os.path.join(self.out_dir, "interties.csv")
+            if data['Plant Intertied'] == 'Yes' and \
+               data['Other Community on Intertie'] != "''":
+                self.intertied = True
+            data['parent'] = self.com_id
+            out_file = os.path.join(self.out_dir, "current_interties.csv")
             fd = open(out_file,'w')
-            fd.write(self.interties_header())
+            fd.write(self.current_interties_header())
             fd.close()
             data.to_csv(out_file, mode = 'a')
             self.it_ids = data
+            
             return data
-        
+
         except KeyError:
             self.diagnostics.add_note("Interties",
                                                     "no intertie on community")
+        
 
     def buildings_count (self):
-        """ 
-        Function doc 
         """
-        count_file = os.path.join(self.data_dir,"com_num_buildings.csv")
+        Function doc
+        """
+        count_file = os.path.join(self.data_dir,"non-res_count.csv")
         try:
             data = int(read_csv(count_file ,comment = "#", index_col = 0,
-                                                 header = 0).ix[self.com_id])
+                                                 header = 0).ix[self.com_id][0])
 
         except KeyError:
             try:
@@ -1016,28 +1347,28 @@ class Preprocessor (object):
                         [[self.com_id  in s for s in data.index.astype(str)]]
                 data = data.values[0][0]
             except (KeyError, IndexError):
-                
+
                 data = 0
                 self.diagnostics.add_note("buildigns(count)",
                         "Community " + self.community + \
                         " does not have an entry in the input data, using 0")
-        
-        out_file = os.path.join(self.out_dir, "com_num_buildings.csv")
+
+        out_file = os.path.join(self.out_dir, "non-res_count.csv")
         fd = open(out_file,'w')
         fd.write(self.buildings_count_header())
-        fd.write("key, value" + str(data) +"\n")
+        fd.write("key, value\n")
         fd.write("Buildings," + str(data) +"\n")
         fd.close()
-        
-        self.buildigns_count_data = data
+
+        self.buildings_count_data = data
 
 
     def buildings_estimates(self, pop):
         """
         """
-        est_file = os.path.join(self.data_dir,"com_building_estimates.csv")
+        est_file = os.path.join(self.data_dir,"non-res_consumption_estimates.csv")
         data = read_csv(est_file ,comment = u"#",index_col = 0, header = 0)
-        
+
         units = set(data.ix["Estimate units"])
         l = []
         for itm in units:
@@ -1047,58 +1378,74 @@ class Preprocessor (object):
                           [data.ix["Estimate units"] == itm]\
                           [(data.T[data.ix["Estimate units"] == itm]\
                           ["Upper Limit"].astype(float) > pop)])
-        
-        df = concat(l).set_index("Estimate units") 
+
+        df = concat(l).set_index("Estimate units")
         del(df["Lower Limit"])
         del(df["Upper Limit"])
         #~ del(df["Estimate units"])
         df = df.T
 
-        out_file = os.path.join(self.out_dir, "com_building_estimates.csv")
+        out_file = os.path.join(self.out_dir, "non-res_consumption_estimates.csv")
         fd = open(out_file,'w')
         fd.write(self.buildings_estimates_header(pop))
         fd.close()
         df.to_csv(out_file,mode="a",index_label="building type")
         self.buildings_estimates_data = df
-        
+
     def buildings_inventory (self):
         """
         """
-        in_file = os.path.join(self.data_dir,"non_res_buildings.csv")
+        in_file = os.path.join(self.data_dir,"non-res_buildings.csv")
         try:
-            data = read_csv(in_file, index_col=0, comment = "#").ix[self.com_id]
+            data = read_csv(in_file, index_col=1, comment = "#")
+            #~ data = data[data.index == self.com_id]
+            data = self.get_communities_data(data)
 
-            l = ["Square Feet","implementation cost", 
-                 "Electric", "Electric Post", 
+            l = ["Square Feet","implementation cost",
+                 "Electric", "Electric Post",
                  "Fuel Oil", "Fuel Oil Post",
-                 "HW District", "HW District Post", 
+                 "HW District", "HW District Post",
                  "Natural Gas", "Natural Gas Post",
-                 "Propane", "Propane Post"]
-            data[l] = data[l].replace(r'\s+', np.nan, regex=True)
+                 "Propane", "Propane Post",
+                 "Biomass","Biomass Post"]
+            #~ print "BEFORE"
+            #~ print data["HW District"]
+            data[l] = data[l].replace(r'\S+', np.nan, regex=True)
+            #~ print "AFTER"
+            #~ print data["HW District"]
 
-
-            
-            c = ["Building Type", "Square Feet", 
+            c = ["Building Type", "Square Feet",
                  "Audited", "Retrofits Done",
-                 "implementation cost", 
-                 "Electric", "Electric Post", 
-                 "Fuel Oil", "Fuel Oil Post", 
-                 "HW District", "HW District Post", 
-                 "Natural Gas", "Natural Gas Post", 
-                 "Propane", "Propane Post"]
+                 "implementation cost",
+                 "Electric", "Electric Post",
+                 "Fuel Oil", "Fuel Oil Post",
+                 "HW District", "HW District Post",
+                 "Natural Gas", "Natural Gas Post",
+                 "Propane", "Propane Post",
+                 "Biomass","Biomass Post"]
             out_file = os.path.join(self.out_dir, "community_buildings.csv")
             fd = open(out_file,'w')
             fd.write(self.buildings_inventory_header())
             fd.close()
             data[c].to_csv(out_file, mode="a", index=False)
             self.buildings_inventory_data = data[c]
-        except KeyError:
+        except KeyError as e :
             self.diagnostics.add_error("buildings(inventory)",
                                 "Community " + self.community + \
                                 " does not have an entry in the input data" +\
                                 " cannot generate model input file "+\
                                 "'community_buildings.csv'" )
             self.buildings_inventory_data = None
+            out_file = os.path.join(self.out_dir, "community_buildings.csv")
+            fd = open(out_file,'w')
+            fd.write(self.buildings_inventory_header())
+            fd.write('"Building Type","Square Feet","Audited",'
+                     '"Retrofits Done","implementation cost","Electric",'
+                     '"Electric Post","Fuel Oil","Fuel Oil Post",'
+                     '"HW District","HW District Post","Natural Gas",'
+                     '"Natural Gas Post","Propane","Propane Post"\n')
+            fd.close()
+
 
     def buildings (self, population):
         """ Function doc """
@@ -1106,45 +1453,356 @@ class Preprocessor (object):
         self.buildings_estimates(population)
         self.buildings_inventory()
 
+    def hdd (self):
+        """ Function doc """
+        in_file = os.path.join(self.data_dir, "heating_degree_days.csv")
+        hdd = read_csv(in_file, index_col=0,
+                       comment = "#", header=0)#.ix[self.com_id].values[0]
+        
+        hdd = self.get_communities_data(hdd)
+        try:
+            hdd = hdd.values[0][0]
+        except IndexError:
+            return
+        out_file = os.path.join(self.out_dir, "heating_degree_days.csv")
+        fd = open(out_file,'w')
+        fd.write(self.hdd_header())
+        fd.write("key, value\n")
+        fd.write("HDD," + str(hdd) +"\n")
+        fd.close()
 
+    def prices (self):
+        """
+        """
+        out_file = os.path.join(self.out_dir, "prices_non-electric_fixed.csv")
+        fd = open(out_file,'w')
+        fd.write(self.hdd_header())
+        fd.write("fuel, price\n")
+        fd.write("Propane," + str(self.prices_propane()) +"\n")
+        
+        cord, pellet = self.prices_biomass()
+        
+        fd.write("Cordwood," + str(cord) +"\n")
+        fd.write("Pellet," + str(pellet) +"\n")
+        fd.close()
+        
+        
+        ## Diesel prices saved in diesel_prices function
+        self.prices_diesel()
+        
+        
 
-def preprocess (data_dir, out_dir, com_id):
+    def prices_propane (self):
+        """
+        """
+        #~ print self.com_id
+        in_file = os.path.join(self.data_dir, "propane_price_estimates.csv")
+        data = read_csv(in_file, index_col=0,comment = "#", header=0)
+        if len(self.get_communities_data(data)['Source'])==0:
+            self.diagnostics.add_warning("prices-propane", "not found")
+            return 0
+            
+        self.diagnostics.add_note("prices-propane", "price source: " +\
+                      str(self.get_communities_data(data)['Source']))
+        return float(self.get_communities_data(data)['Propane ($/gallon)'])
+        
+    def prices_diesel (self):
+        """
+        """
+        in_file = os.path.join(self.data_dir, "diesel_fuel_prices.csv")
+        data = read_csv(in_file, index_col=3, comment="#", header=0)
+        data = self.get_communities_data(data)
+        try:
+            keys = data.keys()[3:]
+            data = np.array(data.values[0][3:], dtype = np.float64)
+            prices_for = self.com_id
+        except IndexError:
+            self.diagnostics.add_note('Diesel Prices', 
+                        'Not found. Using regional average')
+            
+            keys = read_csv(os.path.join(self.data_dir, "community_list.csv"),
+            index_col=1, comment="#", header=0)
+            energy_region = str(keys['Energy Region'][self.com_id])
+            keys = keys[keys['Energy Region'] == energy_region].index.tolist()
+            
+            
+            data = read_csv(in_file, index_col=3, comment="#", header=0)
+            data = data.ix[keys]
+            keys = data.keys()[3:]
+            data = np.array(data.mean().values[2:], dtype = np.float64)
+            prices_for = energy_region + " (regional average)"
+
+        self.diesel_prices = DataFrame({"year":keys,
+                        prices_for :data}).set_index("year")
+
+        out_file = os.path.join(self.out_dir, "diesel_prices_community.csv")
+    
+        fd = open(out_file,'w')
+        fd.write("# diesel prices for " + prices_for + '\n')
+        fd.close()
+        self.diesel_prices.T.to_csv(out_file, mode = 'a')
+    
+    def prices_biomass (self):
+        """
+        """
+        in_file = os.path.join(self.data_dir, "biomass_prices.csv")
+        data = read_csv(in_file, index_col=0,comment = "#", header=0)
+        
+        if len(self.get_communities_data(data)['Source'])==0:
+            self.diagnostics.add_warning("prices-biomass", "not found")
+            return 0,0
+        self.diagnostics.add_warning("prices-biomass", "price source: " +\
+                      str(self.get_communities_data(data)['Source']))
+        try:
+            cord = float(self.get_communities_data(data)['Biomass ($/Cord)'])         
+        except ValueError:
+            self.diagnostics.add_note("prices-biomass", 
+                                        "is N/a treating as $0")
+            cord = 0
+        if np.isnan(cord):
+            self.diagnostics.add_note("prices-biomass", 
+                                        "is N/a treating as $0")
+            cord = 0 
+            
+        try:
+            pellet = \
+                float(self.get_communities_data(data)['Pellets ($/ton)'])         
+        except ValueError:
+            self.diagnostics.add_note("prices-biomass", 
+                                        "is N/a treating as $0")
+            pellet = 0
+        if np.isnan(pellet):
+            self.diagnostics.add_note("prices-biomass", 
+                                        "is N/a treating as $0")
+            pellet = 0 
+        return cord, pellet
+        
+    def renewable_generation_capacities (self):
+        in_file = os.path.join(self.data_dir, "renewable_generation_capacities.csv")
+        data = read_csv(in_file, index_col=0)
+        data = self.get_communities_data(data)
+        #~ print data
+        if len(data) == 0:
+            hydro = 0
+            hydro_cap = 0
+            wind = 0
+        else:
+            if len(data[data["Resource Type"] == 'Hydro']\
+                    ['Average Annual Generation (kWh)']) != 0:
+                hydro = float(data[data["Resource Type"] == 'Hydro']\
+                    ['Average Annual Generation (kWh)'].sum())
+                hydro_cap = float(data[data["Resource Type"] == 'Hydro']\
+                    ['Capacity (kW)'].sum())
+            else:
+                hydro = 0
+                hydro_cap = 0
+        
+            if len(data[data["Resource Type"] == 'Wind']\
+                    ['Average Annual Generation (kWh)']) != 0:
+                wind = float(data[data["Resource Type"] == 'Wind']\
+                    ['Average Annual Generation (kWh)'].sum())
+            else:
+                wind = 0
+           
+        #~ in_file = os.path.join(self.data_dir, "wind_existing_systems.csv")
+        #~ wind = read_csv(in_file, index_col=0)
+        #~ wind = self.get_communities_data(wind)
+        #~ try:
+            #~ wind = int(wind['Rated Power (kW)'])
+        #~ except TypeError:
+            #~ wind = 0    
+        out_file = os.path.join(self.out_dir, "renewable_generation_capacities.csv")
+        fd = open(out_file,'w')
+        fd.write(self.renewable_generation_capacities_header())
+        fd.write("fuel, kwh\n")
+        fd.write("hydro," + str(hydro) +"\n")
+        fd.write("wind," + str(wind) +"\n")
+        fd.write("hydro capacity," + str(hydro_cap) +"\n")
+        fd.close()
+        
+    def diesel_powerhouse_data (self):
+        """
+            preprocess the diesel data
+        """
+        
+        diesel = read_csv(os.path.join(self.data_dir, "diesel_powerhouse_data.csv"),
+                       comment = '#',index_col = 0)
+        diesel = self.get_communities_data(diesel)
+        
+        if len(diesel) == 0:
+            diesel.ix[self.com_id] = 'N/a'
+        
+        out_file = os.path.join(self.out_dir, "diesel_powerhouse_data.csv")
+        fd = open(out_file,'w')
+        fd.write(self.diesel_powerhouse_data_header())
+        fd.write('key,value\n')
+        fd.close()
+        diesel.T.fillna('N/a').to_csv(out_file, mode = 'a',header = False)
+        self.MODEL_FILES['DIESEL_DATA'] = "diesel_powerhouse_data.csv"
+        
+        
+        
+        
+    def get_communities_data(self, dataframe):
+        """
+            pull the data for a community out of a data frame with multiple 
+        communities. 
+        """
+        #~ dataframe = dataframe.ix[self.id_list]
+        #~ print self.id_list
+        #~ print dataframe
+        
+        #~ return dataframe.ix[dataframe.index[dataframe.T.any()]]  
+        for idx in self.id_list:
+            try:
+                temp = DataFrame(dataframe.ix[idx])
+                
+                if len(temp.T) == 1:
+                    if not temp.T.index[0] in self.id_list:
+                        continue
+                    return temp.T
+                return temp
+            except (IndexError, KeyError) as e:
+                continue
+        return DataFrame(columns=dataframe.columns)
+    
+    def load_ids (self):
+        """
+            for a community get a list of alternate id's and potential synonyms 
+        for the id.
+        """
+        in_file = os.path.join(self.data_dir, "community_list.csv")
+        data = read_csv(in_file, comment = '#')
+        ids = data.ix[data.index[data.T[data.T==self.com_id].any()]]
+        region = ids['Energy Region'].values[0]
+    
+        ids = ids[ids.keys()[ids.keys()!='Energy Region']].set_index("Model ID")
+        self.energy_region = region.replace(' Region','')
+        #~ print ids
+        self.id_df = ids
+        il = ids.values[0].tolist()
+
+        self.id_list = []
+        for i in il:
+            if type(i) != str and np.isnan(i):
+               continue
+            self.id_list.append(i)
+            
+    
+    ## the folowing functions were moved from the biomass pellet system
+    def preprocess_road_system_header(self):
+        """
+        pre: 
+            self is a preprocessor object
+        post:
+            returns the road header
+        """
+        return  "# " + self.com_id + " road system data\n"+ \
+                "# is community on road system or in south east \n" +\
+                self.comments_dataframe_divide
+    
+    def preprocess_road_system (self):
+        """
+        preprocess road_system data
+        pre: 
+            self is a preprocessor object
+        post:
+            saves "biomass_data.csv", and updates MODEL_FILES
+        """
+        data = read_csv(os.path.join(self.data_dir,"road_system.csv"),
+                            comment = '#',index_col = 0)
+                            
+        data = self.get_communities_data(data)
+        #~ print data.T
+        data = data.values[0][0]
+        
+                        
+        out_file = os.path.join(self.out_dir,"road_system.csv")
+        
+        fd = open(out_file,'w')
+        fd.write(self.preprocess_road_system_header())
+        fd.write("key,value\n")
+        fd.write("On Road/SE," + data + '\n')
+        #~ print "a"
+        fd.close()
+    
+        # create data and uncomment this
+        #~ data.to_csv(out_file, mode = 'a',header=False)
+        
+        self.MODEL_FILES['road_system'] = "road_system.csv" # change this
+            
+
+def preprocess (data_dir, out_dir, com_id, dev = False):
     """ Function doc """
-
+    #~ print com_id
     diag = diagnostics()
 
     pp = preprocess_no_intertie(data_dir,
                         os.path.join(out_dir,com_id.replace(" ","_")), com_id,
                                                                     diag)
+    if type(pp) is bool:
+        # return enpty list commuity is part of intertie an has been 
+        # preprocessed
+        return []
     try:
         if pp.it_ids["Plant Intertied"].lower() == "yes":
-
+            #~ print "JADA"
             ids = pp.it_ids[['Other Community on Intertie',
                              'Other Community on Intertie.1',
                              'Other Community on Intertie.2',
                              'Other Community on Intertie.3',
                              'Other Community on Intertie.4',
                              'Other Community on Intertie.5',
-                             'Other Community on Intertie.6'
+                             'Other Community on Intertie.6',
+                             'Other Community on Intertie.7',
+                             'Other Community on Intertie.8',
+                             'Other Community on Intertie.9',
+                             'Other Community on Intertie.10',
+                             'Other Community on Intertie.11',
+                             'Other Community on Intertie.12',
+                             'Other Community on Intertie.13',
+                             'Other Community on Intertie.14',
+                             'Other Community on Intertie.15',
+                             #'Other Community on Intertie.16',
                            ]].values
+            #~ print ids
             ids = ids[ids != "''"].tolist()
-            
-            
+
+
             ids = [com_id] + ids
+
             if len(ids) >1 :
                 diag = diagnostics()
                 diag.add_note("preprocessor",
                                  "Includes dianostis for " + str(ids))
                 pp = preprocess_intertie(data_dir, out_dir, ids, diag)
-            
-            pp = ids
-        else:
-            pp = [com_id]
-    except AttributeError:
-        pp = [com_id]
 
+                pp = [com_id + '_intertie'] + ids + pp[1]
+                #~ print 1
+            else:
+                #~ print 2
+                pp = [com_id] + [com_id + pro for pro in pp.projects]
+        else:
+            pp = [com_id] + [com_id + pro for pro in pp.projects]
+            #~ print 2.5
+    except AttributeError as e:
+        #~ print e
+        try:
+            it = read_csv(os.path.join(data_dir, 'current_interties.csv'), 
+                                                                index_col = 0)
+            if (it == com_id).any().any() == True:
+                pp = [com_id]
+                #~ print 3
+            else:
+                pp = [com_id] + [com_id + pro for pro in pp.projects]
+                #~ print 4
+        except AttributeError:
+            pp = [com_id]
+            #~ print 5
     diag.save_messages(os.path.join(out_dir,
-                                            str(com_id) + "_diagnostis.csv"))
+                       str(com_id.replace(" ","_")) +\
+                            "_preprocessor_diagnostics.csv"))
+    #~ print pp
     return pp
 
 
@@ -1153,20 +1811,172 @@ def preprocess (data_dir, out_dir, com_id):
 def preprocess_no_intertie (data_dir, out_dir, com_id, diagnostics):
     """
     """
+    
+    if os.path.exists(os.path.join(out_dir)):
+        it = read_csv(os.path.join(data_dir, 'current_interties.csv'), index_col = 0)
+        if (it == com_id).any().any() == True:
+    
+            return False
+
+        
     pp = Preprocessor(com_id, data_dir,out_dir, diagnostics)
     pp.preprocess()
+    
+    copied_data = { "yearly electric summary":False,
+                    "current_interties" : False,
+                    'prices': False,
+                    'HDD': False
+                }
+    #~ print [''] + pp.projects
+    #~ for project in [''] + pp.projects:
+        #~ if out_dir[-1] in ['/','\\']:
+            #~ out_dir = out_dir[:-1]
+    f_path = os.path.join(out_dir,'copies.csv')
+        #~ if not os.path.exists(f_path):
+        
+    fd = open(f_path,'w')
+    fd.write("# a list of copied data for the child community")
+    fd.close()
+    DataFrame(copied_data,["copied"]).T.to_csv(f_path,mode='a')
+    
+    
     return pp
 
 def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
     """ Function doc """
+    #~ print com_ids
     parent = com_ids[0]
     pp_data = []
-    parent_dir = os.path.join(out_dir, parent)
+    parent_dir = os.path.join(out_dir, parent.replace(" ","_"))
+    #~ print com_ids
+    projects = []
+    
+    total_building_count = 0
+    building_inventory = []
+    
     for com in com_ids:
-        pp = Preprocessor(com, data_dir,os.path.join(out_dir,com), diagnostics)
+
+        #~ print com
+        pp = Preprocessor(com, data_dir,os.path.join(out_dir,
+                                            com.replace(" ","_")), diagnostics)
         pp.preprocess()
         pp_data.append(pp)
+        
+        building_inventory.append(pp.buildings_inventory_data)
+        total_building_count += pp.buildings_count_data
+        
+        copied_data = { "yearly electric summary":False,
+                    "current_interties":False,
+                    'prices':False,
+                    'HDD' :False
+                }
+
+        f_path = os.path.join(out_dir,com.replace(" ","_"),
+                                            "yearly_electricity_summary.csv")
+        if com != parent and not os.path.exists(f_path):
+            #print com + " adding data - electricity"
+            shutil.copy(os.path.join(parent_dir,
+                                    "yearly_electricity_summary.csv")
+                                    ,os.path.join(out_dir,com.replace(" ","_")))
+            copied_data["yearly electric summary"] = True
+            diagnostics.add_warning("Intertie update (electricity)",
+                                    ("" + com + " is using it's "
+                                     "parent's (" + parent + ""
+                                     ") yearly_electricity_summary"))
+
+        f_path = os.path.join(out_dir, com, "prices.csv")
+        if com != parent and not os.path.exists(f_path):
+            #print com + " adding data- prices"
+            #print "copying"
+            shutil.copy(os.path.join(parent_dir,
+                                    "prices.csv")
+                                    ,os.path.join(out_dir,com.replace(" ","_")))
+            copied_data["prices"] = True
+            diagnostics.add_warning("Intertie update (prices)",
+                                    ("" + com + " is using it's "
+                                     "parent's (" + parent + ""
+                                     ") prices. "
+                                     "Interties Alaways Use parents Prices"))
+                                     
+        if com != parent and os.path.exists(f_path):
+            ##print com
+            p_file = os.path.join(parent_dir, "prices.csv")
+            parent_prices = read_csv(p_file, comment = '#', index_col = 0)
+            prices = read_csv(f_path, comment = '#', index_col = 0)
+            for i in prices.index:
+                val = float(parent_prices.ix[i])
+                if np.isnan(float(prices.ix[i])):
+                    prices.ix[i] = val
+                    diagnostics.add_warning("Intertie update (prices )",
+                                    ("" + com + " is using it's "
+                                     "parent's (" + parent + ""
+                                     ") " + str(i)))
+            
+            fd = open(f_path, 'r')
+            text = ""
+            while True:
+                l = fd.readline()    
+                if l[0] != '#':
+                    break
+                text += l 
+            fd.close()
+            fd = open(f_path, 'w')
+            fd.write(text)
+            fd.close()
+            prices.to_csv(f_path,mode='a')
+            
+            
+                
+        f_path = os.path.join(out_dir,com,"heating_degree_days.csv")
+        if com != parent and not os.path.exists(f_path):
+            #print com + " adding data- hdd"
+            copied_data["HDD"] = True
+            shutil.copy(os.path.join(parent_dir,
+                                    "heating_degree_days.csv")
+                                    ,os.path.join(out_dir,com.replace(" ","_")))
+            diagnostics.add_warning("Intertie update (HDD)",
+                                    ("" + com + " is using it's "
+                                     "parent's (" + parent + ""
+                                     ") Heating degree days "))
+
+        f_path = os.path.join(out_dir,com.replace(" ","_"),"current_interties.csv")
+        if com != parent and not os.path.exists(f_path):
+            #print com + " adding data - electricity"
+            shutil.copy(os.path.join(parent_dir,
+                                    "current_interties.csv")
+                                    ,os.path.join(out_dir,com.replace(" ","_")))
+            copied_data["current_interties"] = True
+            diagnostics.add_warning("Intertie update (current_interties)",
+                                    ("" + com + " has copy of parents intertie"
+                                     " info(current_interties.csv)" ))
     
+        # save which files were copied
+        f_path = os.path.join(out_dir,com.replace(" ","_"),'copies.csv')
+        fd = open(f_path,'w')
+        fd.write("# a list of copied data for the child community")
+        fd.close()
+        
+        DataFrame(copied_data,["copied"]).T.to_csv(f_path,mode='a')
+        for project in pp.projects:
+            #~ if out_dir[-1] in ['/','\\']:
+                #~ out_dir = out_dir[:-1]
+            #~ shutil.rmtree(os.path.join(out_dir,com.replace(" ","_")+project))
+            projects.append(com+project)
+            #~ shutil.copytree(os.path.join(out_dir,com.replace(" ","_")),os.path.join(out_dir,com.replace(" ","_")+project))
+    
+        
+    # for intertie
+    #   generation = generation(parent) +
+    #             (generation(child) - kWh_purchased(child)) for each child
+    #   net_generation = net_generation(parent) +
+    #             (net_generation(child) - kWh_purchased(child)) for each child
+    #
+    #   for consumption[res, non-res, total] & generation by fuel type
+    #       field = field(parent) +
+    #                   (field (child) - kWh_purchased(child)) for each child
+    #
+    #   line loss = consumption(intertie) / net generation(intertie)
+
     # make Deep copy of parent city
     population = pp_data[0].population_data.copy(True)
     electricity = pp_data[0].electricity_data.copy(True)
@@ -1175,13 +1985,13 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
             continue
 
         population['population'] = population['population'] + \
-                                        pp_data[idx].population_data['population']
+                                    pp_data[idx].population_data['population']
 
         #   try, except for communities that don't exist on their own such as
         # oscarville, which is bethel,oscarville
         try:
             temp = pp_data[idx].electricity_data
-            electricity['electricity'] = electricity['generation'].fillna(0) +\
+            electricity['generation'] = electricity['generation'].fillna(0) +\
                 (temp['generation'].fillna(0) - temp['kwh_purchased'].fillna(0))
             electricity['net generation'] = \
                         electricity['net generation'].fillna(0) +\
@@ -1193,67 +2003,210 @@ def preprocess_intertie (data_dir, out_dir, com_ids, diagnostics):
                         'generation wind', 'generation solar',
                         'generation biomass',
                        ]:
+                #~ print "loop"
                 try:
+                    
                     if pp_data[idx].purchase_type == key.split(' ')[1]:
                         electricity[key] = electricity[key].fillna(0) + \
                             (temp[key].fillna(0) - \
                                 temp['kwh_purchased'].fillna(0))
-                        continue
-                except IndexError:
+                    else:
+                        electricity[key] = electricity[key].fillna(0) + \
+                                                            temp[key].fillna(0)
+                    continue
+                except (IndexError, AttributeError) as e:
                     electricity[key] = electricity[key].fillna(0) + \
                                                             temp[key].fillna(0)
-        except AttributeError:
+                
+        except AttributeError as e :
             pass
     electricity['line loss'] = 1.0 - \
                         electricity['consumption']/electricity['net generation']
 
 
+    if pp_data[0].elec_data_source == "PCE":
+        ### prices need to be updated for pce interies
+        pce = read_csv(os.path.join(data_dir,'power-cost-equalization-pce-data.csv'), index_col=1)
+        #~ print pce
+        price_ids = com_ids
+        #~ print com_ids
+        if 'Upper Kalskag' in com_ids:
+            price_ids = ['Kalskag','Lower Kalskag']
+        elif "Craig" in com_ids:
+            price_ids = com_ids + ["Craig, Klawock"] 
+          
+        #~ elif self.com_id == "Klukwan":
+            #~ price_ids = ["Klukwan","Chilkat Valley"] 
+        for c in com_ids:
+            try:
+                c_to_add = [s for s in pce.index if s.find(c) != -1][0]
+                price_ids = price_ids + [c_to_add]
+            except IndexError:
+                pass
+            #~ price_ids  += [c+',' in s for s in pce.index]
+        price_ids = sorted(set(price_ids ))
+        
+        #~ print price_ids 
+        pdata = pce.ix[price_ids][["year","month","residential_rate",
+                         "pce_rate","effective_rate","residential_kwh_sold",
+                                             "commercial_kwh_sold",
+                                             "community_kwh_sold",
+                                             "government_kwh_sold",
+                                             "unbilled_kwh", "fuel_cost"]]
+        ly = pdata[pdata['year'] == pdata['year'].max()]
+                                             
+        fc = ly[['fuel_cost','month']].groupby('month').sum()
+        
+        sales = ly[["residential_kwh_sold",
+                                             "commercial_kwh_sold",
+                                             "community_kwh_sold",
+                                             "government_kwh_sold",
+                                             "unbilled_kwh",'month']].groupby('month').sum().sum(axis=1)
+        elec_fuel_cost = (fc['fuel_cost']/ sales).mean()
+        #~ p_file = os.path.join(out_dir,'prices.csv')
+    
+        res_nonPCE_price = ly["residential_rate"].mean()
+        elec_nonFuel_cost = res_nonPCE_price - elec_fuel_cost
+        #~ print elec_nonFuel_cost, res_nonPCE_price, elec_fuel_cost
+        if np.isnan(elec_fuel_cost):
+            elec_fuel_cost = 0.0
+        
+        ### end prices update
 
+    total_HH = 0 
+    for idx in range(len(pp_data)):
+        com = pp_data[idx].com_id
+        total_HH += pp_data[idx].init_households
+        
+    consumption_res = electricity["consumption residential"]\
+                                               [pp_data[0].init_household_year]
+    average = consumption_res/total_HH
+    for com in com_ids:
+        f_path = os.path.join(out_dir,com.replace(" ","_"),
+                                                "residential_data.csv")
 
+        fd = open(f_path,"r")
+        text = fd.read()
+        fd.close()
+        
+        if text.find("CALC_FOR_INTERTIE") == -1:
+            continue
+            
+        diagnostics.add_note("Intertie update (Res avg kWh/household)",
+                                ("" + com + " is using the intertie value of"
+                                " " + str(average) + " for KWh/household"))
+        text = text.replace("CALC_FOR_INTERTIE",str(average))
+        fd = open(f_path,"w")
+        fd.write(text)
+        fd.close()
+    
 
-
-    out_dir = os.path.join(out_dir,com_ids[0] +'_intertie')
+    it_dir = os.path.join(out_dir,com_ids[0].replace(" ","_") +'_intertie')
+    #~ print it_dir
     try:
-            os.makedirs(out_dir)
+        os.makedirs(it_dir)
     except OSError:
-            pass
+        pass
 
-    out_file = os.path.join(out_dir,'population.csv')
+
+    diagnostics.add_note("Intertie (population)",
+        "the intertie population is the sum of all populations on intertie")
+    out_file = os.path.join(it_dir, 'population_projections.csv')
     population.to_csv(out_file)
 
-    out_file = os.path.join(out_dir,'yearly_electricity_summary.csv')
+    diagnostics.add_note("Intertie(yearly_electricity_summary)",
+        ("for generation and consumption values in intertie: "
+         "value = value(parent) + (value(child) - "
+         "kWh_purchased(child)) for each child"))
+    diagnostics.add_note("Intertie(yearly_electricity_summary)",
+        "Line Loss is recalulated from new totals")
+    out_file = os.path.join(it_dir,'yearly_electricity_summary.csv')
     electricity.to_csv(out_file)
-
-
-
-    shutil.copy(os.path.join(parent_dir,"diesel_fuel_prices.csv"), out_dir)
-    shutil.copy(os.path.join(parent_dir,"hdd.csv"), out_dir)
-    shutil.copy(os.path.join(parent_dir,"cpi.csv"), out_dir)
-    shutil.copy(os.path.join(parent_dir,"com_building_estimates.csv"), out_dir)
-    shutil.copy(os.path.join(parent_dir,"community_buildings.csv"), out_dir)
-    shutil.copy(os.path.join(parent_dir,"com_num_buildings.csv"), out_dir)
-    shutil.copy(os.path.join(parent_dir,"interties.csv"), out_dir)
-    shutil.copy(os.path.join(parent_dir,"prices.csv"), out_dir)
-    shutil.copy(os.path.join(parent_dir,"region.csv"), out_dir)
-    shutil.copy(os.path.join(parent_dir,"residential_data.csv"), out_dir)
-    shutil.copy(os.path.join(parent_dir,"wastewater_data.csv"), out_dir)
-
-
-    return pp_data
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            
+    for f in Preprocessor.MODEL_FILES:
+        if f in ["ELECTRICITY",]:
+            continue
+        shutil.copy(os.path.join(parent_dir,
+            Preprocessor.MODEL_FILES[f]),it_dir) 
+         
+    for project in  pp_data[0].projects:
+        projects.append(parent+'_intertie'+project)
+    
+    #~ print total_building_count 
+    building_inventory = concat(building_inventory) 
+    out_file = os.path.join(it_dir, "community_buildings.csv")
+    fd = open(out_file,'w')
+    fd.write(pp.buildings_inventory_header())
+    fd.close()
+    building_inventory.to_csv(out_file, mode="a", index=False)
+    
+    out_file = os.path.join(it_dir, "non-res_count.csv")
+    fd = open(out_file,'w')
+    fd.write(pp.buildings_count_header())
+    fd.write("key, value\n")
+    fd.write("Buildings," + str(total_building_count ) +"\n")
+    fd.close()
+    
+    if pp.elec_data_source == "PCE":
+        out_file = os.path.join(it_dir, "prices.csv")
+        fd = open(out_file,'w')
+        fd.write(pp.electricity_prices_header("PCE"))
+        fd.write("key,value \n")
+        fd.write("res non-PCE elec cost,"+ str(res_nonPCE_price) + "\n")
+        fd.write("elec non-fuel cost," + str(elec_nonFuel_cost) + "\n")
+        fd.close()
+    
+    
+    p2 = []
+    for project in projects:
+        if project.find('hydro') != -1 and project.find('intertie') != -1:
+            p2.append(project)
+        if project.find('wind') != -1 and project.find('intertie') != -1:
+            p2.append(project)
+        if project.find('heat_recovery') != -1 and \
+                project.find('intertie') == -1:
+            p2.append(project)
+            
+    projects = p2
+            
+    #~ print parent
+    import yaml
+    
+    projects = []
+    for tech in [ 'wind', 'hydro' ]:
+        #~ print tech
+        p_cfg = {}
+        
+        for com in com_ids:
+            f_path = os.path.join(out_dir,com.replace(" ","_"), 
+                                                tech + "_projects.yaml")
+                                                
+            if com != parent:
+                with open(f_path,'r') as fd:
+            
+                    text = yaml.load(fd)
+                    if not text is None:
+                        for c, idx in enumerate(text):
+                            p_cfg[tech+'+project_' + \
+                                        com.replace(' ','_').lower()\
+                                        + '_' + str(c)] = text[idx]
+        
+            with open(f_path,'w') as fd:
+                fd.write("")
+    
+        all_prj = None
+        with open(os.path.join(out_dir,parent.replace(" ","_") + '_intertie',
+                                        tech + "_projects.yaml"),'r') as fd:
+            all_prj = yaml.load(fd)
+            if all_prj is None:
+                all_prj = p_cfg
+            else:
+                all_prj.update(p_cfg)
+        with open(os.path.join(out_dir,parent.replace(" ","_") + '_intertie',
+                                        tech + "_projects.yaml"),'w') as fd:
+            fd.write(yaml.dump(all_prj,default_flow_style=False))
+        projects += [parent.replace(" ","_") + '_intertie+' +p for p in all_prj.keys()]
+    
+    #~ print projects
+    #~ print projects
+    return pp_data, projects

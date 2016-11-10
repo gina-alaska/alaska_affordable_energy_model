@@ -1,0 +1,62 @@
+.navbar-aaem {
+
+  margin-bottom: 0px;
+
+}
+
+.navbar-summary {
+
+  background-color: white;
+
+}
+
+
+
+.stats{
+  font-size:12pt;
+  padding-left: 20px;
+}
+
+
+.hideoverflow
+{
+    overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+}
+
+.hidy:after {
+    font-family: "Glyphicons Halflings";
+    content: "\e114";
+}
+
+/* Icon when the collapsible content is hidden */
+.hidy.collapsed:after {
+    content: "\e080";
+}
+
+.description {
+    padding-top:20px;
+    text-indent: 50px;
+    padding-right:20%;
+    font-size: 15pt;
+}
+
+
+h3 {
+  padding-left: 10px;
+  font-size:16pt;
+}
+
+.page-title {
+  color:black;
+  font-size:15pt;
+
+}
+.page-subtitle {
+  color:gray;
+  font-size:12pt;
+
+}
+
+

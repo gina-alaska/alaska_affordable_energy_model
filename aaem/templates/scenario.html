@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+
+
+{% block title %}{{ com }} - {{ type }} summary{% endblock %}
+
+{% block JS %}
+    {% include 'plot.html' %}
+{% endblock %}
+
+    
+{% block left %}
+    <div class="stats">
+        <H2> {{ type }} Summary</H2>
+        {% for item in info %}
+            <p>{{item.words}}: {{item.value}} {{item.units}}</p>
+        {% endfor %}
+
+        
+    </div>
+{% endblock %}
+    
+{% block right %}
+    <div class = 'charts'>
+        {% for chart in charts %}
+        <div class="{{chart.name}}">
+            <div id="{{chart.name}}_chart"></div>
+            <div id='{{chart.name}}_png'></div><button type='button' id='{{ chart.name }}_button'>plot/table</button>
+        </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+
+

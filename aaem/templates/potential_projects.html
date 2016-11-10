@@ -1,0 +1,67 @@
+{% extends "layout.html" %}
+
+
+{% block title %}{{ com }} - {{ type }} summary{% endblock %}
+
+{% block additional_css %}
+  <link href="../summary.css" rel="stylesheet">
+{% endblock %}
+
+{% block JS %}
+    {% include 'plot.html' %}
+{% endblock %}
+
+{% block secondary_nav %}
+    {% include 'summary_nav.html' %}
+{% endblock %}
+
+ {% block header %} 
+
+    {{ super() }}
+ {% endblock %}
+
+    
+{% block full%}
+    <div class="stats">
+<!--
+        <div class="panel panel-default">
+        <div class="panel-heading">Panel Heading</div>
+        <div class="panel-body center-block">
+-->
+            <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Technology/Project</th>
+                    <th>NPV benefits</th>
+                    <th>NPV cost</th>
+                    <th>NPV net benefit</th>
+                    <th>Benefit cost atio</th>
+                    <th>Levelized cost of energy: electricity ($/kwh)</th>
+                    <th>Levelized cost of energy: heating Oil ($/gal)</th>
+                    <th>Gallons fuel /saved per year</th>
+                </tr>
+          </thead>
+          <tbody>
+            {% for project in potential_projects %}
+            <tr {% if project.sucess %}class="success"{% endif %} >
+                <td><a href="{{ project.comp.lower().replace(' ', "_").replace(")", "").replace("(", "") }}.html">{{ project.name }} </a></td>
+                <td>{{ project.benefits }}</td>
+                <td>{{ project.costs }}</td>
+                <td>{{ project.net }}</td>
+                <td>{{ project.ratio }}</td>
+                <td>{{ project.lcoe_e }}</td>
+                <td>{{ project.lcoe_hf }}</td>
+                <td>{{ project.fuel_saved }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+            </table>
+        
+<!--
+        </div>
+        <div class="panel-footer"></div>
+        </div>
+-->
+    </div>
+{% endblock %}
+    

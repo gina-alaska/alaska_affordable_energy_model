@@ -6,13 +6,15 @@ try:
 except ImportError:
     from distutils.core import setup
 
+import aaem
+
 config = {
     'description': 'Alaska Affordable Energy Model',
-    'author': 'ross',
-    'url': 'https://github.com/gina-alaska/alaska_affordable_energy_model',
-    'download_url': 'TODO',
+    'author': 'GINA',
+    'url': aaem.__url__,
+    'download_url': aaem.__download_url__,
     'author_email': 'TODO',
-    'version': '0.1',
+    'version': aaem.__version__,
     'install_requires': ['numpy','scipy','pandas','pyyaml'],
     'packages': ['aaem', 'aaem.components'],
     'scripts': [],

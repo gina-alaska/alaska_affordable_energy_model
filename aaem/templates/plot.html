@@ -1,0 +1,102 @@
+
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+    // setup
+    google.charts.load('current', {'packages':['corechart','table']});
+    google.charts.setOnLoadCallback(drawCharts);
+
+    // for the charts
+    function drawCharts() {
+        
+        // set up vars (data/options) for each chart
+        var plot = 'plot'
+        var chart = 'chart'
+        
+        var year_fmat = new google.visualization.NumberFormat({pattern:'####'})
+        //~ var cur_fmat = new google.visualization.NumberFormat({prefix:'$'})
+        // make each chart
+        {% for chart in charts %}
+            {% if chart.plot %}
+            // data
+            var {{ chart.name }} = google.visualization.arrayToDataTable({{ chart.data.replace('"','') }})
+            year_fmat.format({{ chart.name }},0)
+            
+            
+            // plot options
+            {% if chart.type  == "'$'" %}
+            dollar =  {format: '$#,###'}
+            {% elif chart.type == "'other'" %}
+            dollar=  {title: 'gallons'}
+            {% elif chart.type ==  "'currency'" %}
+            dollar =  {format: 'currency'}
+            {% elif chart.type ==  "'percent'" %} 
+            dollar = {format: 'percent'}
+            {% else %}
+            dollar = {title: {{ chart.type }} }
+            {% endif %}
+            
+
+            width = 1000
+            height = 600
+
+            var {{ chart.name }}_options = {'title': '{{ com.replace("_"," ") }}: {{ chart.title[0].upper() }}{{ chart.title[1:].lower() }}',
+                                            'height':height,
+                                            chartArea:{height:'85%', width:'100%', left:100, right:200},
+                                            hAxis: {format: '####',
+                                                    title: 'year'},
+                                            vAxis: dollar,
+                                            {% if chart.stacked %} isStacked: 'relative', {% endif %}
+                                            
+                                            annotations:{style:'line'},
+                                            
+                                            };
+            
+                        
+          
+            // plot state plot or table
+            var {{ chart.name }}_state = plot;
+        
+            // draw plot 
+            function drawPlot_{{ chart.name }}() {
+                {% if not chart.stacked %}
+                var {{ chart.name }}_plot = new google.visualization.LineChart(document.getElementById('{{ chart.name }}_chart'));
+                {% else %}
+                var {{ chart.name }}_plot = new google.visualization.AreaChart(document.getElementById('{{ chart.name }}_chart'));
+                {% endif %}
+                
+                {{ chart.name }}_plot.draw({{ chart.name }}, {{ chart.name }}_options);
+                return {{ chart.name }}_plot
+            }   
+            
+            // draw table
+            function drawTable_{{ chart.name }}() {
+                var {{ chart.name }}_table = new google.visualization.Table(document.getElementById('{{ chart.name }}_chart'))
+                {{ chart.name }}_table.draw({{ chart.name }}, {'title': '{{ chart.title }}','width':width, 'height':height,})
+            }
+            
+      // draw table
+      function drawTable_{{ chart.name }}() {
+        var {{ chart.name }}_table = new google.visualization.Table(document.getElementById('{{ chart.name }}_chart'))
+        {{ chart.name }}_table.draw({{ chart.name }}, {'title': '{{ chart.title }}','width':'100%', 'height':600,})
+      }
+            
+      // set up toggle
+      {{ chart.name }}_button = document.getElementById('{{ chart.name }}_button')
+      {{ chart.name }}_button.onclick = function() {
+        if ({{ chart.name }}_state == plot) {
+          drawTable_{{ chart.name }}();
+          {{ chart.name }}_state = chart;
+        } else {
+          drawPlot_{{ chart.name }}();
+          {{ chart.name }}_state = plot;
+        }
+      }
+      // initilize with plot
+      var  {{ chart.name }}_plot = drawPlot_{{ chart.name }}()
+      
+      document.getElementById('{{ chart.name }}_png').outerHTML = '<button class="btn btn-default" onclick="location.href=\'' + {{ chart.name }}_plot.getImageURI() + '\' ">Printable Plot</button>'
+        
+    {% endif %} 
+    {% endfor %}
+  }
+</script>
