@@ -1040,7 +1040,8 @@ class Preprocessor (object):
                      "commercial_kwh_sold",
                      "community_kwh_sold",
                      "government_kwh_sold",
-                     "unbilled_kwh"]]
+                     "unbilled_kwh",
+                     "residential_rate"]]
         #~ print data
         ## Load Purchased from library
         try:
@@ -1240,6 +1241,8 @@ class Preprocessor (object):
                 temp['efficiency'] = np.nan
             if np.isinf(temp['efficiency']):
                 temp['efficiency'] = np.nan
+                
+            temp['residential_rate'] = data[data["year"] == year]['residential_rate'].mean()
             
             sums.append(temp)
         ## pull out diesel & hydro
@@ -1278,7 +1281,7 @@ class Preprocessor (object):
                               'efficiency', 'line loss', 'net generation',
                               'consumption residential',
                               'consumption non-residential',
-                              "kwh_purchased"]].set_index("year")
+                              "kwh_purchased",'residential_rate']].set_index("year")
         df = concat([df,df_diesel,df_hydro,df_gas,df_wind,df_solar,df_biomass],
                                                                        axis = 1)
         ## save

@@ -3,7 +3,9 @@
 ## [0.21.6]
 ### changes
 - Html: formating for some numbers, titles, and labels
-- pandas libaray version is 0.19.1
+
+### adds
+- support for pandas libaray version 0.19.1
 
 ## [0.21.5]
 ### changes

@@ -14,8 +14,7 @@ import numpy as np
 import yaml
 from pickle import PicklingError
 
-#WHAT TO DO IF ALL PLOT DATA IS NANS?
-#~ import aaem
+
 class WebSummary(object):
     """ Class doc """
     
@@ -353,7 +352,28 @@ class WebSummary(object):
         elec_price = res['community data'].get_item('community','electric non-fuel prices')
         if not type(elec_price) is str:
             elec_price ['year'] = elec_price.index
-            ep_table = self.make_plot_table(elec_price[['year','price']], names = ['year', 'electricity price ($/kWh)'], sigfig = 2)
+            try:
+                m_data = read_csv(os.path.join(self.model_root,
+                                            'input_files',com,
+                                            'yearly_electricity_summary.csv'),comment='#')
+                
+                m_data = m_data[['residential_rate','year']]
+                m_data.columns = ['price','year']
+                m_data['year'] = m_data['year'].astype(int)
+                elec_price = concat([m_data,elec_price])
+                ly = max(m_data['year'].values)
+            except StandardError as  e:
+                #~ print e
+                ly = min(elec_price['year'].values)
+                pass
+            #~ print ly
+            elec_price['annotation'] = np.nan 
+            elec_price['annotation'][2015] = 'start of forecast'
+            elec_price = elec_price[['year','annotation','price']]
+            elec_price.columns = ['year','annotation','Electricity price ($/kwh)']
+            #~ print elec_price
+
+            ep_table = self.make_plot_table(elec_price, sigfig = 2)
             charts.append({'name':'e_price', 'data': str(ep_table).replace('nan','null'), 
                         'title':'Electricity Price ($/kWh)',
                         'type': "'currency'",
