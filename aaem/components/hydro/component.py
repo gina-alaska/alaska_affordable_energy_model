@@ -72,7 +72,7 @@ class Hydropower (AnnualSavings):
         tag = self.cd['name'].split('+')
         if len(tag) > 1 and tag[1] != 'hydro':
             self.run = False
-            self.reason = "Not a Hydro project"
+            self.reason = "Not a Hydropower project"
             return 
         
         if self.comp_specs["project details"] is None:
@@ -82,8 +82,8 @@ class Hydropower (AnnualSavings):
         
         if not self.cd["model electricity"]:
             self.run = False
-            self.reason = ("'model electricity' in the communtiy data"
-                           " must be True to run this component")
+            self.reason = "Electricty must be modeled to analyze hydropower." +\
+                                " It was not for this community"
             return 
             
         try:
@@ -93,7 +93,8 @@ class Hydropower (AnnualSavings):
             self.diagnostics.add_warning(self.component_name, 
                             "could not be run")
             self.run = False
-            self.reason = "could not find average load or proposed generation"
+            self.reason = "Could not calculate average load or " + \
+                            "proposed generation"
             return
             
         if self.load_offset_proposed is None:

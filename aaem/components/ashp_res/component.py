@@ -102,7 +102,7 @@ class ASHPResidential (ashp_base.ASHPBase):
         tag = self.cd['name'].split('+')
         if len(tag) > 1 and tag[1] != 'ASHP_res':
             self.run = False
-            self.reason = "Not a ASHP_res project"
+            self.reason = "Not a Residential ASHP project"
             return 
         
         if self.cd["model heating fuel"]:
@@ -139,7 +139,7 @@ class ASHPResidential (ashp_base.ASHPBase):
         #~ print self.benefit_cost_ratio
             self.calc_levelized_costs(self.proposed_ashp_operation_cost)
         else:
-            self.reason = "Financial Modeling disabled"
+            self.reason = "Financial modeling disabled for this community."
 
     def calc_capital_costs (self):
         """
