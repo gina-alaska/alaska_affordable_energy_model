@@ -36,8 +36,12 @@
                 <div class="panel-body center-block">
                     <div class="{{chart.name}}">
                     {%if chart.plot %}
+                        {% if chart.pie %}
+                            <div style="float:left; width:30%"> <p>{{ chart.description }}</p></div>
+                            <div style="float:right; width:70%"><div id="{{chart.name}}_chart"></div></div>
+                        {% else %}
                         <div id="{{chart.name}}_chart"></div>
-                
+                        {% endif %}
                     {% elif chart.table %}
                         <table class="table table-striped">
                         <tbody>
@@ -54,9 +58,6 @@
                             <a href="{{ row.url }}" class="list-group-item">{{ row.text }}</a>
                         {% endfor %}
                         </div>
-                    {% elif chart.pie %}
-                        I'm pie chart
-                        <div id="{{chart.name}}_chart"></div>
                     {% else %}
                         <p>This chart could not be generated. {{ chart.data }}</P>
                     {% endif %}

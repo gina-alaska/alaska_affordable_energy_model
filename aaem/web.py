@@ -535,7 +535,16 @@ class WebSummary(object):
              #~ [False,'Square feet', '{:,.0f}'.format(estimates['Square Feet'].sum())],
              #~ [False,'% Buildings identified', '{:,.2f}%'.format(percent_id*100)],
              #~ [False,'% Square feet measured','{:,.2f}%'.format(percent_sf*100)]]
-             
+            description = "There is a estimated total of " + \
+                    '{:,.0f}'.format(estimates['Square Feet'].sum()) + \
+                    " square feet for the " + str(int(count+num)) + \
+                    " non-residential buildings in this community. " +\
+                    '{:,.2f}%'.format(percent_id*100) + " of the buildings " +\
+                    "have been identified. The others are assumed to exist. " +\
+                    '{:,.2f}%'.format(percent_sf*100) + " of the assumed" +\
+                    " square footage is from measured sources." +\
+                    " The break down of heating fuel consumption by building" +\
+                    " type is pesented in the pie chart"
              
             for t in building_types:
                 n = t
@@ -552,7 +561,8 @@ class WebSummary(object):
                 'title':'Non-residential Buildings',
                 'pie': True,
                 'plot':True,
-                'type': "'pie'"})
+                'type': "'pie'",
+                'description': description})
         except (ZeroDivisionError):
             charts.append({'name':'non_residential_buildings', 
                 'data': "No Building data avaialble." ,
