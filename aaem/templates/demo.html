@@ -54,6 +54,9 @@
                             <a href="{{ row.url }}" class="list-group-item">{{ row.text }}</a>
                         {% endfor %}
                         </div>
+                    {% elif chart.pie %}
+                        I'm pie chart
+                        <div id="{{chart.name}}_chart"></div>
                     {% else %}
                         <p>This chart could not be generated. {{ chart.data }}</P>
                     {% endif %}

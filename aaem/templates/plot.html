@@ -58,8 +58,10 @@
         
             // draw plot 
             function drawPlot_{{ chart.name }}() {
-                {% if not chart.stacked %}
+                {% if not chart.stacked and not chart.pie%}
                 var {{ chart.name }}_plot = new google.visualization.LineChart(document.getElementById('{{ chart.name }}_chart'));
+                {% elif chart.pie %}
+                var {{ chart.name }}_plot = new google.visualization.PieChart(document.getElementById('{{ chart.name }}_chart'));
                 {% else %}
                 var {{ chart.name }}_plot = new google.visualization.AreaChart(document.getElementById('{{ chart.name }}_chart'));
                 {% endif %}
