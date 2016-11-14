@@ -1021,8 +1021,8 @@ class WebSummary(object):
                         fs = fs[0]
                         
                     if type(c.levelized_cost_of_energy) is dict:
-                        lcoe_e = c.levelized_cost_of_energy['kWh']
-                        lcoe_hf = c.levelized_cost_of_energy['MMBtu']
+                        lcoe_e = c.levelized_cost_of_energy['kWh'] #* mmbtu_to_kWh
+                        lcoe_hf = c.levelized_cost_of_energy['MMBtu'] * mmbtu_to_gal_HF
                     
                     elif comp in ["Wind Power",'Solar Power','Hydropower',
                                   'Transmission and Interties',

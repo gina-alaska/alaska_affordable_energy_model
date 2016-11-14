@@ -235,6 +235,8 @@ class WaterWastewaterSystems (AnnualSavings):
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
             self.calc_levelized_costs(0)
+            self.levelized_cost_of_energy['MMBtu'] *= .5
+            self.levelized_cost_of_energy['kWh'] *= .5
 
     
     def calc_baseline_kWh_consumption (self):
