@@ -386,9 +386,35 @@ class WebSummary(object):
         diesel = res['community data'].get_item('community','diesel prices')
         diesel = DataFrame(diesel.projected_prices, columns = ['Diesel Price ($/gal)'],index=range(diesel.start_year,diesel.start_year+len(diesel.projected_prices)))
         diesel['year'] = diesel.index
+        
         #~ print diesel
         diesel['Heating Fuel ($/gal)'] = diesel['Diesel Price ($/gal)'] + res['community data'].get_item('community','heating fuel premium')
-        d_table = self.make_plot_table(diesel[['year','Diesel Price ($/gal)','Heating Fuel ($/gal)']], sigfig = 2)
+        try:
+            m_data = read_csv(os.path.join(self.model_root,
+                'input_files', com,'measured_heating_fuel_prices.csv'),
+                comment='#', index_col = 0)
+            
+            m_data.columns = ['Heating Fuel ($/gal)']
+            m_data['year'] = m_data.index
+            #~ m_data
+            diesel = concat([m_data,diesel])
+                
+            
+        except IOError as e:
+            #~ print e
+            pass
+        #~ print diesel
+        
+        try:
+            diesel['annotation'] = np.nan 
+            diesel['annotation'][2015] = 'start of forecast'
+        except StandardError as e:
+            diesel['annotation'] = np.nan 
+            diesel['annotation'][2015.0] = 'start of forecast'
+            #~ print diesel
+            #~ print str(e), '<-------------------->', com
+        
+        d_table = self.make_plot_table(diesel[['year','annotation','Diesel Price ($/gal)','Heating Fuel ($/gal)']], sigfig = 2)
         charts.append({'name':'d_price', 'data': str(d_table).replace('nan','null'), 
                         'title':'Fuel Price',
                         'type': "'currency'",

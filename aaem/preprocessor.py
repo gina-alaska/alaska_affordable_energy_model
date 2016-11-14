@@ -130,6 +130,8 @@ class Preprocessor (object):
         self.renewable_generation_capacities()
         self.diesel_powerhouse_data()
         self.preprocess_road_system()
+        
+        self.measured_heating_fuel_prices()
 
         for comp in comp_lib:
             try:
@@ -366,6 +368,26 @@ class Preprocessor (object):
                 '# Add waste heat Avail,\n'
                 '# Est. current annual heating fuel gallons displaced,\n'
                 '# Est. potential annual heating fuel gallons displaced,\n')
+    
+    
+    def measured_heating_fuel_prices_header (self, year):
+        """ returns header for measured_heating_fuel_prices csv"""
+        return ('# '   + self.com_id + " measured heating fuel prices\n"
+                "# generated: " + str(datetime.now()).split('.')[0] +"\n"
+                "# This data is generated from avaliable heating fuel"
+                    " prices from the Fuel Price Survey by the Alaska"
+                    " Housing Finance Corporation (AHFC). All values"
+                    " of Heating Fuel #1 and # 2 for a year are averaged"
+                    " to find the average fuel price per year for a"
+                    " community. This data is not used in the model"
+                    " directly. It is used for display purposes in"
+                    " the summaries that may be generated from model"
+                    " results. Calculated avergages are for years"
+                    " before " + str(year) + ".\n"
+                "# year: year of data\n"
+                "# average price: average of all a communities available"
+                    " heating oil #1 and #2 prices for the year\n")
+    
 
     ## PROCESS FUNCTIONS #######################################################
     def population (self, threshold = 20, end_year = 2050,
@@ -1643,9 +1665,48 @@ class Preprocessor (object):
         diesel.T.fillna('N/a').to_csv(out_file, mode = 'a',header = False)
         self.MODEL_FILES['DIESEL_DATA'] = "diesel_powerhouse_data.csv"
         
+    def measured_heating_fuel_prices (self, current_year = 2015):
+        """
+            calculate the average of a communites fuel oil prices for each year
+        before current year
         
+        input:
+            current_year: a year <int>
         
+        preconditions:
+            "fuel-price-survey-data.csv" exists in the data directory
         
+        postconditions:
+            "measured_heating_fuel_prices.csv" is added to self.MODEL_FILES as
+        'MEASURES_HF_PRICES'
+            saves measured_heating_fuel_prices.csv in out_dir
+        
+        """
+        f_path = os.path.join(self.data_dir,"fuel-price-survey-data.csv")
+        fuel_prices = read_csv(f_path, index_col = 0 )
+        fuel_prices = self.get_communities_data(fuel_prices)
+        fuel_prices = fuel_prices[fuel_prices['year'] < current_year]
+        data = [] 
+        for year in set(fuel_prices['year']):
+            yr = fuel_prices[fuel_prices['year']==year] 
+            avg = float(yr[['no_1_fuel_oil_price',
+                'no_2_fuel_oil_price']].mean().mean())                           
+            data.append([year,avg])
+        data = DataFrame(data, columns = ['year', 'average price'])
+        data = data.sort('year')
+        
+        out_file = os.path.join(self.out_dir, 
+            "measured_heating_fuel_prices.csv")
+        fd = open(out_file,'w')
+        fd.write(self.measured_heating_fuel_prices_header(current_year))
+        fd.close()
+        data.to_csv(out_file, mode = 'a', index = False)
+        self.MODEL_FILES['MEASURES_HF_PRICES'] = \
+            "measured_heating_fuel_prices.csv"
+            
+
+        
+    # utility functions  
     def get_communities_data(self, dataframe):
         """
             pull the data for a community out of a data frame with multiple 
