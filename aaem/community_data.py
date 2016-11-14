@@ -645,8 +645,9 @@ class CommunityData (object):
         else:
             consumption = elec_summary[["consumption","consumption residential",
                                 "consumption non-residential"]]
-            line_losses = np.float(elec_summary["line loss"][-3:].mean())
-            diesel_gen_eff = np.float(elec_summary['efficiency'].values[-3:].mean())
+            line_losses = np.float(elec_summary["line loss"].values[-3:].mean())
+            diesel_gen_eff = \
+                np.float(elec_summary['efficiency'].values[-3:].mean())
             net_gen = elec_summary["net generation"]
             gen_by_type = elec_summary[['generation diesel', 'generation hydro',
                                        'generation natural gas',
@@ -661,26 +662,28 @@ class CommunityData (object):
             if line_losses is None:
                 self.set_item('community',"line losses",line_losses)
             else:
-                ll = np.float(elec_summary["line loss"][-3:].mean())
+                #~ ll = np.float(elec_summary["line loss"][-3:].mean())
+                ll = line_losses
                 if ll < 0.0 or np.isnan(ll):
                     try:
-                        def_ll = self.get_item('community',"default line losses")
+                        def_ll = self.get_item('community',
+                            "default line losses")
                     except KeyError:
                         def_ll = .1
                     self.diagnostics.add_note("Line Losses",
-                                    ("The lineloss was negative " + str(ll) + " "
-                                     "correcting to default "+ str(def_ll) + "."))
+                        ("The lineloss was negative " + str(ll) + " "
+                         "correcting to default "+ str(def_ll) + "."))
                     ll = def_ll
                  
                     
                 try:
-                    max_ll = self.get_item('community',"default line losses")
-                except KeyError:
                     max_ll = self.get_item('community',"max line losses")
+                except KeyError:
+                    max_ll = self.get_item('community',"default line losses")
                 if ll > max_ll:
                     self.diagnostics.add_note("Line Losses",
-                                    ("The lineloss " + str(ll) + " was greater than"
-                                     " max of "+ str(max_ll) + ". setting to max."))
+                        ("The lineloss " + str(ll) + " was greater than"
+                         " max of "+ str(max_ll) + ". setting to max."))
                     ll = max_ll
                 
                 self.set_item('community',"line losses",ll)
@@ -719,7 +722,9 @@ class CommunityData (object):
     
             
             #~ self.set_item('community','generation numbers', temp )
-            print "Generation data not available by energy type"
+            
+            self.diagnostics.add_note("Generation Data",
+                        "Generation data not available by energy type")
         
         
     def load_pp_csv(self, f_name):
