@@ -75,7 +75,8 @@ class DieselEfficiency(AnnualSavings):
         
         if not self.cd["model electricity"]:
             self.run = False
-            self.reason = "Electricty must be modeled"
+            self.reason = "Electricty must be modeled to analyze diesel" +\
+                                " efficency. It was not for this community"
             return 
             # change these below
             

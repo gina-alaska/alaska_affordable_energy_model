@@ -294,5 +294,5 @@ layer.addTo(mymap);
 // add list of region with color key
 for (r in region_colors){
     
-    document.getElementById('colorkey').innerHTML += '<a href="'+r.replace(' ','_').replace('/','_') + '.html" class="list-group-item">' + r + ' <span class="label label-default" style="color:' + region_colors[r] + ';background-color:' + region_colors[r] + ';"> color </span> </li> ';
+    document.getElementById('colorkey').innerHTML += '<a href="'+r.replace(' ','_').replace('/','_') + '.html" class="list-group-item"><span class="label label-default" style="margin-right:10px;color:' + region_colors[r] + ';background-color:' + region_colors[r] + ';"> color </span> ' + r + '</li> ';
 }

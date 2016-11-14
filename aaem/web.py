@@ -285,7 +285,9 @@ class WebSummary(object):
         self.generate_regional_summaries()
 
         try:
+            os.fork
             from multiprocessing import Process, Lock,active_children, cpu_count
+            
             lock = Lock()
     
             for com in keys: #["Stebbins","Adak","Brevig_Mission"]:
@@ -298,7 +300,7 @@ class WebSummary(object):
                 
             while len(active_children()) > 0:
                 continue
-        except (ImportError, NotImplementedError, PicklingError):
+        except (ImportError, NotImplementedError, PicklingError, AttributeError):
             for com in keys: #["Stebbins","Adak","Brevig_Mission"]:
                 start = datetime.now()
                 self.generate_web_summaries(com)
@@ -373,7 +375,7 @@ class WebSummary(object):
             elec_price.columns = ['year','annotation','Electricity price ($/kwh)']
             #~ print elec_price
 
-            ep_table = self.make_plot_table(elec_price, sigfig = 2)
+            ep_table = self.make_plot_table(elec_price, sigfig = 2,  community = com, fname = com+"_e_price.csv")
             charts.append({'name':'e_price', 'data': str(ep_table).replace('nan','null'), 
                         'title':'Electricity Price ($/kWh)',
                         'type': "'currency'",
@@ -414,7 +416,7 @@ class WebSummary(object):
             #~ print diesel
             #~ print str(e), '<-------------------->', com
         
-        d_table = self.make_plot_table(diesel[['year','annotation','Diesel Price ($/gal)','Heating Fuel ($/gal)']], sigfig = 2)
+        d_table = self.make_plot_table(diesel[['year','annotation','Diesel Price ($/gal)','Heating Fuel ($/gal)']], sigfig = 2,  community = com, fname = com+"_d_price.csv")
         charts.append({'name':'d_price', 'data': str(d_table).replace('nan','null'), 
                         'title':'Fuel Price',
                         'type': "'currency'",
@@ -459,7 +461,7 @@ class WebSummary(object):
 
         costs = costs[['year'] + list(costs.columns)[1:][::-1]]
         #~ print costs
-        costs_table = self.make_plot_table(costs, sigfig = 2)
+        costs_table = self.make_plot_table(costs, sigfig = 2,  community = com, fname = com+"_costs.csv")
         
         #~ if costs_data:
         charts.append({'name':'costs', 'data': str(costs_table).replace('nan','null'), 
@@ -577,26 +579,38 @@ class WebSummary(object):
                 
             
             
-            table = [[False,'# Buildings',count+num],
-             [False,'Square feet', '{:,.0f}'.format(estimates['Square Feet'].sum())],
-             [False,'% Buildings identified', '{:,.2f}%'.format(percent_id*100)],
-             [False,'% Square feet measured','{:,.2f}%'.format(percent_sf*100)]]
-             
+            table = [['name','value']]#[[False,'# Buildings',count+num],
+             #~ [False,'Square feet', '{:,.0f}'.format(estimates['Square Feet'].sum())],
+             #~ [False,'% Buildings identified', '{:,.2f}%'.format(percent_id*100)],
+             #~ [False,'% Square feet measured','{:,.2f}%'.format(percent_sf*100)]]
+            description = "There is a estimated total of " + \
+                    '{:,.0f}'.format(estimates['Square Feet'].sum()) + \
+                    " square feet for the " + str(int(count+num)) + \
+                    " non-residential buildings in this community. " +\
+                    '{:,.2f}%'.format(percent_id*100) + " of the buildings " +\
+                    "have been identified. The others are assumed to exist. " +\
+                    '{:,.2f}%'.format(percent_sf*100) + " of the assumed" +\
+                    " square footage is from measured sources." +\
+                    " The break down of heating fuel consumption by building" +\
+                    " type is pesented in the pie chart"
              
             for t in building_types:
                 n = t
                 if n == 'Average':
                     n = 'Unknown'
-                n = '% Heating Fuel Consumption by ' + n + ' Type Buildings'
-                v = '{:,.2f}%'.format((building_types[t]/total)*100)
-                table.append([False,n,v])
+                n = 'Consumption by ' + n 
+                v = (building_types[t]/total)*100
+                table.append([n,v])
                              
                           
             
             charts.append({'name':'non_residential_buildings', 
-                'data': table,
+                'data': str(table),
                 'title':'Non-residential Buildings',
-                'table': True,})
+                'pie': True,
+                'plot':True,
+                'type': "'pie'",
+                'description': description})
         except (ZeroDivisionError):
             charts.append({'name':'non_residential_buildings', 
                 'data': "No Building data avaialble." ,
@@ -625,7 +639,7 @@ class WebSummary(object):
             cols.insert(1,'annotation')
         
             consumption_table = self.make_plot_table(consumption[cols] ,
-                                                                names = names)
+                                                                names = names, community = com, fname = com+"_consumption.csv" )
             #~ print consumption_table
             charts.append({'name':'consumption', 
                     'data': str(consumption_table).replace('nan','null'), 
@@ -684,7 +698,7 @@ class WebSummary(object):
         diesel_consumption = diesel_consumption[['year'] + list(diesel_consumption.columns)[1:][::-1]]
             
 
-        diesel_consumption_table = self.make_plot_table(diesel_consumption, sigfig = 2)
+        diesel_consumption_table = self.make_plot_table(diesel_consumption, sigfig = 2,  community = com, fname = com+"_diesel_consumption.csv")
         charts.append({'name':'diesel_consumption', 'data': str(diesel_consumption_table).replace('nan','null'), 
                         'title':'Energy Consumption',
                         'type': "'percent'",
@@ -831,7 +845,7 @@ class WebSummary(object):
             line_loss['annotation'][start] = 'start of forecast'
 
         line_loss = line_loss.replace([np.inf, -np.inf], np.nan)
-        line_loss_table = self.make_plot_table(line_loss[['year', 'annotation', "line losses"]],sigfig = 2)
+        line_loss_table = self.make_plot_table(line_loss[['year', 'annotation', "line losses"]],sigfig = 2,  community = com, fname = com+"_line_loss.csv")
         charts.append({'name':'line_loss', 'data': str(line_loss_table).replace('nan','null').replace('None','null'), 
                 'title':'line losses',
                 'type': "'percent'",'plot': True,})
@@ -1053,8 +1067,8 @@ class WebSummary(object):
                         fs = fs[0]
                         
                     if type(c.levelized_cost_of_energy) is dict:
-                        lcoe_e = c.levelized_cost_of_energy['kWh']
-                        lcoe_hf = c.levelized_cost_of_energy['MMBtu']
+                        lcoe_e = c.levelized_cost_of_energy['kWh'] #* mmbtu_to_kWh
+                        lcoe_hf = c.levelized_cost_of_energy['MMBtu'] * mmbtu_to_gal_HF
                     
                     elif comp in ["Wind Power",'Solar Power','Hydropower',
                                   'Transmission and Interties',

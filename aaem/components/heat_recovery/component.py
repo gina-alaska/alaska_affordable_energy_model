@@ -86,7 +86,7 @@ class HeatRecovery (AnnualSavings):
                 self.calc_proposed_heat_recovery()
             except AttributeError:
                 self.run = False
-                self.reason = "could not find proposed heat recovery"
+                self.reason = "Could not caclulate proposed heat recovery"
                 self.diagnostics.add_note(self.component_name, self.reason)
                 return 
                 

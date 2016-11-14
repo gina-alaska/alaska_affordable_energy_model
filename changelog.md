@@ -1,5 +1,17 @@
 #Change Log
 
+## [0.21.7]
+### changes
+- components: reasons for components not running are updated
+- water wastewater: LCOE is halved between kWh and MMBtu
+- html consumption: added pie chart for non-residential consumption
+- html index: moved list of regions
+
+### fixes
+- community data: line loss bug with mixed up keys
+- windows: added test for fork function to fix the windows summaries import bug
+
+
 ## [0.21.6]
 ### changes
 - Html: formating for some numbers, titles, and labels

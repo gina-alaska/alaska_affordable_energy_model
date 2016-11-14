@@ -71,7 +71,8 @@ class SolarPower (AnnualSavings):
             self.diagnostics.add_warning(self.component_name, 
             "could not be run")
             self.run = False
-            self.reason = "could not find average load or proposed generation"
+            self.reason = "Could not calculate average load" + \
+                            " or proposed generation"
             return
             
         
@@ -80,7 +81,11 @@ class SolarPower (AnnualSavings):
             self.diagnostics.add_note(self.component_name, 
             "model did not meet minimum generation requirments")
             self.run = False
-            self.reason = "average load too small or proposed load <= 0"
+            
+            if self.average_load < self.comp_specs['average load limit']:
+                self.reason = "average load too small for viable solar power"
+            else: 
+                self.reason = "propsed load was less than 0"
             return
         
         
