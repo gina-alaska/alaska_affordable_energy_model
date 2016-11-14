@@ -286,7 +286,9 @@ class WebSummary(object):
         self.generate_regional_summaries()
 
         try:
+            os.fork
             from multiprocessing import Process, Lock,active_children, cpu_count
+            
             lock = Lock()
     
             for com in keys: #["Stebbins","Adak","Brevig_Mission"]:
@@ -299,7 +301,7 @@ class WebSummary(object):
                 
             while len(active_children()) > 0:
                 continue
-        except (ImportError, NotImplementedError, PicklingError):
+        except (ImportError, NotImplementedError, PicklingError, AttributeError):
             for com in keys: #["Stebbins","Adak","Brevig_Mission"]:
                 start = datetime.now()
                 self.generate_web_summaries(com)
