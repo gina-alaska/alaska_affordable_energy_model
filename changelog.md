@@ -1,5 +1,10 @@
 #Change Log
 
+## [0.21.8]
+### added
+- html: added known values for prices (heating fuel & electririty)
+
+
 ## [0.21.7]
 ### changes
 - components: reasons for components not running are updated
