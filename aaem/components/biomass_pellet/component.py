@@ -64,7 +64,8 @@ class BiomassPellet (bmb.BiomassBase):
             self.biomass_fuel_consumed = 0
             self.fuel_price_per_unit = 0
             self.heat_diesel_displaced = 0
-            self.reason = "Not on road system"
+            self.reason = \
+                "Not on road system, so its assumed pellets cannot be deliverd."
             return
         
         if self.cd["model heating fuel"]:

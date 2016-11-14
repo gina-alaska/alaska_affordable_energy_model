@@ -215,7 +215,7 @@ class CommunityBuildings (AnnualSavings):
         
         if len(self.comp_specs['com building data']) == 0:
             self.run = False
-            self.reason = "No Buildings"
+            self.reason = "No Buildings in community"
             return 
         
         self.calc_total_sqft_to_retrofit()

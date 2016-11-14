@@ -84,13 +84,14 @@ class Transmission (AnnualSavings):
             
         if not self.cd["model electricity"]:
             self.run = False
-            self.reason = ("'model electricity' in the communtiy data"
-                           " must be True to run this component")
+            self.reason = "Electricty must be modeled to analyze "+\
+                                "transmission. It was not for this community"
             return 
         if np.isnan(self.comp_specs['nearest community']\
                                     ['Distance to Community']):
             self.run = False
-            self.reason = ("no community to intertie with transmission line")
+            self.reason = ("There is no viable nearby communities"
+                                " for building a transmission line")
             return 
         
         self.calc_average_load()
@@ -98,7 +99,7 @@ class Transmission (AnnualSavings):
             self.get_intertie_values()
         except IOError:
             self.run = False
-            self.reason = ("Community to Intertie to is missing input data")
+            self.reason = ("Could not find data on community to Intertie to")
             return 
         self.calc_pre_intertie_generation()
         self.calc_intertie_offset_generation()

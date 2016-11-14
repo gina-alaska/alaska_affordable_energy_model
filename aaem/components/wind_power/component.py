@@ -76,7 +76,8 @@ class WindPower(AnnualSavings):
             self.diagnostics.add_warning(self.component_name, 
                             "could not be run")
             self.run = False
-            self.reason = "could not find average load or proposed generation"
+            self.reason = ("Could not Calculate average load or "
+                                    "proposed generation")
             return
             
         
@@ -141,9 +142,10 @@ class WindPower(AnnualSavings):
             #~ print "wind project not feasiable"
             self.run = False
             if self.load_offset_proposed <= 0: 
-                self.reason = "no load offset proposed"
+                self.reason = "Proposed load offset less than 0"
             else:
-                self.reason = "average load too small"
+                self.reason = \
+                    "Average load too small for viable wind generation"
             self.diagnostics.add_note(self.component_name, 
             "communites average load is not large enough to consider project")
         #~ print self.benefit_cost_ratio
