@@ -355,17 +355,22 @@ class WebSummary(object):
         if not type(elec_price) is str:
             elec_price ['year'] = elec_price.index
             try:
-                m_data = read_csv(os.path.join(self.model_root,
+                f_data = read_csv(os.path.join(self.model_root,
                                             'input_files',com,
                                             'yearly_electricity_summary.csv'),comment='#')
                 
-                m_data = m_data[['residential_rate','year']]
+                m_data = f_data[['residential_rate','year']]
                 m_data.columns = ['price','year']
                 m_data['year'] = m_data['year'].astype(int)
                 elec_price = concat([m_data,elec_price])
                 ly = max(m_data['year'].values)
+                try:
+                    diesel_data = f_data[['diesel_price','year']]
+                except:
+                    diesel_data = None
             except StandardError as  e:
                 #~ print e
+                diesel_data = None
                 ly = min(elec_price['year'].values)
                 pass
             #~ print ly
@@ -381,6 +386,7 @@ class WebSummary(object):
                         'type': "'currency'",
                         'plot': True,})
         else:
+            diesel_data = None
             charts.append({'name':'e_price', 'data': "No electricity price for community.", 
                         'title':'Electricity Price ($/kWh)',
                         'type': "'currency'",})
@@ -397,6 +403,9 @@ class WebSummary(object):
                 comment='#', index_col = 0)
             
             m_data.columns = ['Heating Fuel ($/gal)']
+            if not diesel_data is None:
+                diesel_data = diesel_data.set_index('year')
+                m_data['Diesel Price ($/gal)'] = diesel_data['diesel_price']
             m_data['year'] = m_data.index
             #~ m_data
             diesel = concat([m_data,diesel])
@@ -405,8 +414,11 @@ class WebSummary(object):
         except IOError as e:
             #~ print e
             pass
+        #~ if not diesel_data is None:
+            #~ for row in diesel_data:
+                #~ diesel['Diesel Price ($/gal)'].ix[row['year']] = \
+                                                            #~ row['diesel_price']
         #~ print diesel
-        
         try:
             diesel['annotation'] = np.nan 
             diesel['annotation'][2015] = 'start of forecast'
