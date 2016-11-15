@@ -445,8 +445,10 @@ class WaterWastewaterSystems (AnnualSavings):
         """
         kWh_savings = self.savings_kWh_consumption[:self.actual_project_life]
         HF_savings = self.savings_HF_consumption[:self.actual_project_life]
-        
-        heating_cost_percent = self.comp_specs['heating cost precent']
+        try:
+            heating_cost_percent = self.comp_specs['heating cost precent']
+        except KeyError:
+            heating_cost_percent = .5
         return {'kWh': (kWh_savings, 1 - heating_cost_percent), 
                 'MMBtu': (HF_savings, heating_cost_percent)
                }
