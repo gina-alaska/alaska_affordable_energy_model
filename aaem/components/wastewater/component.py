@@ -235,8 +235,8 @@ class WaterWastewaterSystems (AnnualSavings):
             self.calc_annual_net_benefit()
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
             self.calc_levelized_costs(0)
-            self.levelized_cost_of_energy['MMBtu'] *= .5
-            self.levelized_cost_of_energy['kWh'] *= .5
+            #~ self.levelized_cost_of_energy['MMBtu'] *= .5
+            #~ self.levelized_cost_of_energy['kWh'] *= .5
 
     
     def calc_baseline_kWh_consumption (self):
@@ -443,8 +443,12 @@ class WaterWastewaterSystems (AnnualSavings):
         """
         returns the total energy produced
         """
-        return {'kWh': 
-                    self.proposed_kWh_consumption[:self.actual_project_life], 
-                'MMBtu':
-                    self.proposed_HF_consumption[:self.actual_project_life]
+        kWh_savings = self.savings_kWh_consumption[:self.actual_project_life]
+        HF_savings = self.savings_HF_consumption[:self.actual_project_life]
+        try:
+            heating_cost_percent = self.comp_specs['heating cost precent']
+        except KeyError:
+            heating_cost_percent = .5
+        return {'kWh': (kWh_savings, 1 - heating_cost_percent), 
+                'MMBtu': (HF_savings, heating_cost_percent)
                }

@@ -147,6 +147,7 @@ class AnnualSavings (object):
                                         
         energy_produced = self.get_total_enery_produced ()
         if type(energy_produced) is dict:
+            #~ print energy_produced['MMBtu']
             self.levelized_cost_of_energy = {}
             self.levelized_cost_of_energy['MMBtu'] = \
                 self.calc_cost_of_energy(energy_produced['MMBtu'][0],

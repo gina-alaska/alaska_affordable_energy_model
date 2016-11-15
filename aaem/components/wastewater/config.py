@@ -16,7 +16,8 @@ yaml = {'enabled': False,
         'data': 'IMPORT',
         'electricity refit reduction': .25,
         'heating fuel refit reduction': .35,
-        'heat recovery multiplier': {True: .5, False: 1.0}
+        'heat recovery multiplier': {True: .5, False: 1.0},
+        'heating cost precent': .5,
             }
 
 ## default values for yaml key/Value pairs
