@@ -1,5 +1,13 @@
 #Change Log
 
+## [0.21.9]
+### added 
+- html: known diesel prices
+- adds lower limit of 0 to heating feul premium 
+
+### fixes 
+- water wastewater: levelized cost of energy 
+
 ## [0.21.8]
 ### added
 - html: added known values for prices (heating fuel & electririty)
