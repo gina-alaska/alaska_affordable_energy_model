@@ -474,9 +474,14 @@ class CommunityData (object):
         region = self.load_pp_csv("region.csv")
         if self.get_item('community',"region") in IMPORT_FLAGS:
             self.set_item('community',"region", region.ix["region"][0])
-        if self.get_item('community',"heating fuel premium") in IMPORT_FLAGS:    
-            self.set_item('community',"heating fuel premium", 
-                         float(region.ix["premium"][0]))
+        if self.get_item('community',"heating fuel premium") in IMPORT_FLAGS:  
+            
+            premium = float(region.ix["premium"][0]) 
+            if premium < 0:
+                premium = 0.0
+                self.diagnostics.add_note("heating fuel premium", 
+                    "premium was less than 0, using 0")
+            self.set_item('community',"heating fuel premium", premium)
                          
         try:
             prices = self.load_pp_csv("prices.csv")
