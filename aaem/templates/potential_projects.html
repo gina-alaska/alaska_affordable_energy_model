@@ -5,6 +5,8 @@
 
 {% block additional_css %}
   <link href="../summary.css" rel="stylesheet">
+  <link href="{% if not in_root %}../{% endif %}footer.css" rel="stylesheet">
+  <link href="{% if not in_root %}../{% endif %}dropdown.css" rel="stylesheet">
 {% endblock %}
 
 {% block JS %}

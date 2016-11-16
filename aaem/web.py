@@ -1035,6 +1035,12 @@ class WebSummary(object):
         cats = {}
         
         for i in [i for i in sorted(self.results.keys()) if i.find(com) != -1 ]:
+            
+            if com.find('_intertie') == -1 and i.find('_intertie') != -1:
+                continue
+            if com != i:
+                continue
+            #~ print i
             comps = self.results[i]
             if i.find('hydro') != -1:
                 comps = ['Hydropower']
@@ -1145,7 +1151,15 @@ class WebSummary(object):
             except KeyError:
                 pass
         
-        
+        #~ p_set = set([])
+        #~ p_temp = []
+        #~ for p in projs:
+            #~ if p['name'] in p_set:
+                #~ continue
+            #~ p_set = p_set.union([p['name']])
+            #~ p_temp.append(p)
+        #~ projs = p_temp
+        #~ print projs
         msg = None
         if com in self.bad_data_coms:
             msg = self.bad_data_msg
