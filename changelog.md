@@ -1,5 +1,10 @@
 #Change Log
 
+## [0.21.10]
+### fixed 
+- Html: dupilcation on potential projects page
+- Html: ashp name is not biomass any more
+
 ## [0.21.9]
 ### added 
 - html: known diesel prices
