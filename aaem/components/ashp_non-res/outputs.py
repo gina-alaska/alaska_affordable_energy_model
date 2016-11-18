@@ -269,7 +269,8 @@ def generate_web_summary (web_object, community):
         
          
     ## info table (list to send to template)
-    info_for_projects = [{'name':'Modeled biomass Project','info':info}]
+    info_for_projects = [{'name':'Modeled Air Source Heat Pump Project',
+                          'info':info}]
             
     
     ## create list of charts
