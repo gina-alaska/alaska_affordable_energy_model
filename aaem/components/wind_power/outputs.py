@@ -156,10 +156,46 @@ def communities_summary (coms, res_dir):
     data = DataFrame(out,columns = cols).set_index('Community')#.round(2)
     f_name = os.path.join(res_dir,
                 COMPONENT_NAME.lower().replace(' ','_') + '_summary.csv')
-    #~ fd = open(f_name,'w')
-    #~ fd.write(("# wind summary\n"))
-    #~ fd.close()
-    data.to_csv(f_name, mode='w')
+    fd = open(f_name,'w')
+    fd.write(("# wind summary\n" 
+        '# add description/model metadata\n'
+        '# Community: name of community/project.\n'
+        '# Start Year: year the project is pojected to start operation.\n'
+        '# project phase: current phase of project.\n'
+        '# Assumed Wind Class: \n'
+        '# Average Diesel Load [kw]: Current average load '
+            'from diesel generation in community in kilowatts.\n'
+        '# Wind Capacity Proposed [kW]: Proposed additional capacity for wind'
+            ' generation in kilowatts.\n'
+        '# Existing Wind Capacity [kW]: Existing wind generation capacity'
+            ' in kilowatts.\n'
+        '# Existing Solar Capacity [kW]: Existing solar generation capacity'
+            ' in kilowatts.\n'
+        '# Assumed Wind Class Capacity Factor [%]:\n'
+        '# Net Proposed Wind Generation [kWh]: Proposed wind net generation'
+            ' in kilowatt hours.\n'
+        '# Heating Oil Equivalent Captured by Secondary Load [gal]: \n'
+        '# Loss of Recovered Heat from Genset [gal]: \n'
+        '# Heat Recovery Operational: Indicates if heat recovery is operational'
+            ' in a community'
+        '# Net in Heating Oil Consumption [gal]: \n'
+        '# Wind Power Reduction in Utility Diesel Consumed per year: Estimated '
+            'Reduction in utility diesel if wind power system is '
+            'installed/upgraded. In gallons per year\n'
+        '# Diesel Denerator Efficiency: estimated efficiency of diesel '
+            'generator in killowatt hours per gallon. \n '
+        '# Diesel Price - year 1 [$\gal]: Estimated diesle price in '
+            'start year.\n'
+        '# Break Even Diesel Price [$/gal]: \n'
+        '# Levelized Cost Of Energy [$/kWh]:\n'
+        '# Wind NPV benefits [$]: Net Present Value benefits(savings)\n'
+        '# Wind NPV Costs [$]: Net Present Value costs\n'
+        '# Wind NPV Net benefit [$]: Net Present Value costs savings - costs\n'
+        '# Wind Internal Rate of Return: \n'
+        '# Wind Benefit Cost Ratio: NPV Benefits over NPV costs\n'
+        '# notes: notes on why model may not have run for community\n'))
+    fd.close()
+    data.to_csv(f_name, mode='a')
     
 def create_regional_summary (results):
     """
