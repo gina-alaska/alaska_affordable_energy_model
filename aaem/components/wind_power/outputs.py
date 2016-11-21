@@ -158,7 +158,8 @@ def communities_summary (coms, res_dir):
                 COMPONENT_NAME.lower().replace(' ','_') + '_summary.csv')
     fd = open(f_name,'w')
     fd.write(("# wind summary\n" 
-        '# add description/model metadata\n'
+        '# Breakdown by community of potential wind power improvements'
+        '# \n'
         '# Community: name of community/project.\n'
         '# Start Year: year the project is pojected to start operation.\n'
         '# project phase: current phase of project.\n'
@@ -189,9 +190,9 @@ def communities_summary (coms, res_dir):
         '# Break Even Diesel Price [$/gal]: Diesel price where project'
             ' would become cost effective. Dollars per gallon\n'
         '# Levelized Cost Of Energy [$/kWh]:\n'
-        '# Wind NPV benefits [$]: Net Present Value benefits(savings)\n'
+        '# Wind NPV benefits [$]: Net Present Value benefits (savings)\n'
         '# Wind NPV Costs [$]: Net Present Value costs\n'
-        '# Wind NPV Net benefit [$]: Net Present Value costs savings - costs\n'
+        '# Wind NPV Net benefit [$]: Net Present Value (savings - costs)\n'
         '# Wind Internal Rate of Return: \n'
         '# Wind Benefit Cost Ratio: NPV Benefits over NPV costs\n'
         '# notes: notes on why model may not have run for community\n'))
