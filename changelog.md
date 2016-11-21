@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.21.11]
+### fixed
+- preprocessor: fixes the purchasesed power lib use
+
 ## [0.21.10]
 ### fixed 
 - Html: dupilcation on potential projects page
