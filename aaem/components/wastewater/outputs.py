@@ -100,7 +100,7 @@ def communities_summary (coms, res_dir):
     fd = open(f_name,'w')
     fd.write(("# non residental building component summary by community\n"
         '# \n'
-        '# community',
+        '# community: \n',
         '# Water/Wastewater Efficiency NPV Benefit:'
             ' Net Present Value benefits (savings)\n'
         '# Water/Wastewater Efficiency NPV Cost: Net Present Value costs\n'
@@ -123,7 +123,7 @@ def communities_summary (coms, res_dir):
         '# Water/Wastewater Efficiency Heating Oil Equiv. Saved[gal/year]:\n',
         '# Water/Wastewater Efficiency Electricity Saved[kWh/year]:\n'))
     fd.close()
-    data.to_csv(f_name, mode='w')
+    data.to_csv(f_name, mode='a')
 
 def create_regional_summary (results):
     """

@@ -209,8 +209,41 @@ def communities_summary (coms, res_dir):
     data = DataFrame(out,columns = cols).set_index('Community to connect')
     f_name = os.path.join(res_dir,
                 COMPONENT_NAME.replace(" ","_").lower() + '_summary.csv')
+   
+    fd = open(f_name, 'w')
+    fd.write(("# Transmission component summary by community\n"
+        '# Community to connect: name of main community.\n'
+        '# Community/Intertie to connect to: name of secondary community.\n'
+        '# Start Year: year the project is pojected to start operation.\n'
+        '# Project Phase: current phase of project.\n'
+        '# Miles of Transmission Line:'
+            ' Distance transmission line needs to be.\n'
+        '# Generation Displaced in community to connect [kWh]: \n'
+        '# Electricity Generated, Conserved, or transmitted [kWh]: \n'
+        '# Loss of Recovered Heat from Genset in community to connect [gal]: \n'
+        '# Heat Recovery Operational in community to connect: \n'
+        '# Diesel Generator Efficiency in community to connect: \n'
+        '# Diesel Generator Efficiency in community to connect to: \n'
+        '# Diesel Price - year 1 [$/gal] in community to connect: \n'
+        '# Diesel Price - year 1 [$/gal] in community to connect to: \n'
+        '# Break Even Diesel Price [$/gal]: \n'
+        '# Annual Transmission loss percentage: \n'
+        '# Levelized Cost Of Energy [$/kWh]: \n'
+        '# Status Quo generation Cost (Year 1): \n'
+        '# Proposed generation cost (Year 1): \n'
+        '# Benefit from reduced generation cost (year 1): \n'
+        '# Transmission NPV benefits [$]:'
+            ' Net Present Value benefits (savings)\n'
+        '# Transmission NPV Costs [$]:'
+            ' Net Present Value costs\n'
+        '# Transmission NPV Net benefit [$]:'
+            ' Net Present Value (savings - costs)\n'
+        '# Transmission Internal Rate of Return: \n'
+        '# Transmission Benefit Cost Ratio: NPV Benefits over NPV costs\n'
+        '# notes: notes on why model may not have run for community\n'))
+    fd.close()
 
-    data.to_csv(f_name, mode='w')
+    data.to_csv(f_name, mode='a')
     
 def create_regional_summary (results):
     """
