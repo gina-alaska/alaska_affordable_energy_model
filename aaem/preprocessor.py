@@ -1087,7 +1087,7 @@ class Preprocessor (object):
         try:
             sources = sorted(set(data[data["purchased_from"].notnull()]\
                                                 ["purchased_from"].values))
-
+            #~ print sources
             self.diagnostics.add_note("PCE Electricity",
                         "Utility list (alphabetized) for purchased power" + \
                         str(sources) )
@@ -1095,9 +1095,11 @@ class Preprocessor (object):
             for s in sources:
                 try:
                     p_key = lib[lib['purchased_from'] == s]\
-                                        ['Energy Source'].values[0].lower()
+                                        ['Energy Source'].values[0]
                     provider = s
+                    #~ print p_key
                 except IndexError as e:
+                    #~ print e
                     self.diagnostics.add_warning("PCE Electricity",
                                             "Utility " + s + \
                                             " not found in utility-power "+\
@@ -1106,7 +1108,8 @@ class Preprocessor (object):
                           "Purchased from utility: " + str(s))
             self.diagnostics.add_note("PCE Electricity",
                           "Purchased energy type: " + str(p_key))
-        except:
+        except StandardError as e:
+            #~ print e
             l = len(data["purchased_from"][data["purchased_from"].notnull()])
             if l != 0:
                 self.diagnostics.add_warning("PCE Electricity",
@@ -1213,14 +1216,14 @@ class Preprocessor (object):
                 if o1_key == "diesel":
                     temp['generation diesel'] = temp['generation diesel'] + val
                 else:
-                    temp['generation ' + o1_key] = val
+                    temp['generation ' + o1_key.lower()] = val
             ## for other 2
             if np.isreal(temp["other_2_kwh_generated"]) and o2_key is not None:
                 val =  temp["other_2_kwh_generated"]
                 if o2_key == "diesel":
                     temp['generation diesel'] = temp['generation diesel'] + val
                 else:
-                    temp['generation ' + o2_key] = val
+                    temp['generation ' + o2_key.lower()] = val
             ## for purchased
             if np.isreal(temp["kwh_purchased"]) and p_key is not None:
                 val = temp['kwh_purchased']
@@ -1228,7 +1231,10 @@ class Preprocessor (object):
                     #~ print temp['generation diesel'] + val
                     temp['generation diesel'] = temp['generation diesel'] + val
                 else:
-                    temp['generation ' + p_key] = val
+                    try:
+                        temp['generation ' + p_key.lower()] = val
+                    except AttributeError:
+                        pass
 
             ## get consumption (sales) total & by type
             temp['consumption'] = temp[["residential_kwh_sold",
