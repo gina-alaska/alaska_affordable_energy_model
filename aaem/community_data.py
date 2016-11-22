@@ -474,6 +474,12 @@ class CommunityData (object):
         region = self.load_pp_csv("region.csv")
         if self.get_item('community',"region") in IMPORT_FLAGS:
             self.set_item('community',"region", region.ix["region"][0])
+        if self.get_item('community',"senate district") in IMPORT_FLAGS:
+            self.set_item('community',"senate district", 
+                region.ix["senate district"][0])
+        if self.get_item('community',"house district") in IMPORT_FLAGS:
+            self.set_item('community',"house district", 
+            region.ix["house district"][0])
         if self.get_item('community',"heating fuel premium") in IMPORT_FLAGS:  
             
             premium = float(region.ix["premium"][0]) 

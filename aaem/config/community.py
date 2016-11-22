@@ -5,6 +5,8 @@ section_name = 'community'
 items = {
     'name': 'ABSOLUTE DEFAULT NAME',
     'region': 'IMPORT',
+    'house district': 'IMPORT',
+    'senate district': 'IMPORT',
     'current year': 'ABSOLUTE DEFAULT',
     
     'model financial': True,
@@ -68,6 +70,8 @@ items = {
 order = [      
     'name',
     'region',
+    'house district',
+    'senate district',
     'current year',
     
     'model financial',
@@ -131,6 +135,8 @@ order = [
 comments = {
     'name': 'Name of community <String>',
     'region': 'Name of region <String>',
+    'house district':' a number',
+    'senate district':' a letter',
     'construction multiplier': '<float>',
     'current year': 
         'Year for which the NPV calculations are based <int>',

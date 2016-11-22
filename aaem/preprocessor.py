@@ -624,11 +624,27 @@ class Preprocessor (object):
         """
         data_file = os.path.join(self.data_dir,"res_model_data.csv")
         premium_file = os.path.join(self.data_dir,"heating_fuel_premium.csv")
+        election_file = os.path.join(self.data_dir,'election-divisions.csv')
 
         region = read_csv(data_file, index_col=0,
                                         comment='#')['Energy Region'][self.com_id]
         premium = read_csv(premium_file, index_col=0,
                                             comment='#').premium[region]
+
+        try:
+            election = read_csv(election_file,
+                index_col=0,comment='#').ix[self.com_id]
+            house = election['House District']
+            senate = election['Senate']
+        except KeyError:
+            election = read_csv(election_file,
+                index_col=0,comment='#').ix[self.com_id + ' (part)']
+            senate = str(list(set(election['Senate'].\
+                values.tolist()))).replace(',','/').replace('[',
+                '').replace(']','').replace(' ','')
+            house = str(list(set(election['House District'].\
+                values.tolist()))).replace(',','/').replace('[',
+                '').replace(']','').replace(' ','')
 
         out_file = os.path.join(self.out_dir, "region.csv")
         fd = open(out_file,'w')
@@ -636,6 +652,8 @@ class Preprocessor (object):
         fd.write("key,value \n")
         fd.write("region,"+ str(region) + "\n")
         fd.write("premium," + str(premium) + "\n")
+        fd.write("senate district," + str(senate) + '\n') 
+        fd.write("house district," + str(house) + '\n') 
         fd.close()
 
 

@@ -190,7 +190,11 @@ class WebSummary(object):
         
         template = self.env.get_template('navbar.js')
         with open(os.path.join(self.directory,'navbar.js'), 'w') as html:
-            html.write(template.render(communities = self.get_cleanded_coms(), regions=self.get_regions()))
+            html.write(template.render(communities = self.get_cleanded_coms(),
+                                       regions=self.get_regions(),
+                                       senate_dist=self.get_senate_dists(),
+                                       house_dist=self.get_house_dists()
+                        ))
         
         
     def get_web_summary(self, component):
@@ -245,6 +249,58 @@ class WebSummary(object):
         #~ print self.regions
         return self.regions 
     
+    def get_senate_dists (self):
+        try:
+            return self.senate
+        except AttributeError:
+            pass
+            
+        temp = {}
+        for com in self.get_coms():
+            reg = self.results[com]['community data']\
+                                            .get_item('community', 
+                                                        'senate district')
+            for d in reg.split('/'): 
+                try:
+                    temp[d.replace("'",'')].append(com.replace("'",''))
+                except:
+                    temp[d.replace("'",'')] = [com.replace("'",'')]
+            
+        senate = []
+        for k in sorted(temp.keys()):
+            senate.append({"district":k, "communities":temp[k], 
+                            "clean": k.replace(' ','_').replace('(','').\
+                                replace(')','').replace('/','_').lower()})
+        
+        
+        self.senate = senate
+        return self.senate
+        
+    def get_house_dists (self):
+        try:
+            return self.house
+        except AttributeError:
+            pass
+            
+        temp = {}
+        for com in self.get_coms():
+            reg = self.results[com]['community data']\
+                                            .get_item('community', 
+                                                        'house district')
+            for d in reg.split('/'): 
+                try:
+                    temp[int(d)].append(com.replace("'",''))
+                except:
+                    temp[int(d)] = [com.replace("'",'')]
+            
+        house = []
+        for k in sorted(temp.keys()):
+            house.append({"district":str(k), "communities":temp[k], 
+                            "clean": str(k)})
+        
+        
+        self.house = house
+        return self.house
     
     def get_summary_pages (self):
         """
