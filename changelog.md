@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.22.0]
+### added
+- html: election divisions to navbar
+
 ## [0.21.11]
 ### fixed
 - preprocessor: fixes the purchasesed power lib use
