@@ -289,9 +289,9 @@ class WebSummary(object):
                                                         'house district')
             for d in reg.split('/'): 
                 try:
-                    temp[int(d)].append(com.replace("'",''))
+                    temp[d].append(com.replace("'",''))
                 except:
-                    temp[int(d)] = [com.replace("'",'')]
+                    temp[d] = [com.replace("'",'')]
             
         house = []
         for k in sorted(temp.keys()):

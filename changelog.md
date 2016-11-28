@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.22.1]
+### fix
+- summaries bug with house district
+
 ## [0.22.0]
 ### added
 - html: election divisions to navbar
