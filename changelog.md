@@ -1,11 +1,14 @@
 #Change Log
 
 ## [0.22.2]
-### fix
+### added
+- html: links to sources for hydro and wind
+
+### fixed
 - missing data in forecast_component_consumption_comparison_summary.csv 
 
 ## [0.22.1]
-### fix
+### fixed
 - summaries bug with house district
 
 ## [0.22.0]
