@@ -367,6 +367,13 @@ def create_project_details_list (project):
           float(project.forecast.cd.get_item('community',
                                                 'generation').iloc[-1:])
     pen *= 100
+    
+    try:
+        source = "<a href='" + \
+            project.comp_specs['project details']['source'] + "'> link </a>"
+    except StandardError as e:
+        source = "unknown"
+    
     return [
         {'words':'Capital Cost ($)', 
             'value': '${:,.0f}'.format(project.get_NPV_costs())},
@@ -390,5 +397,7 @@ def create_project_details_list (project):
             'value': '${:,.0f}'.format(cost)},
         {'words':'Estimated Hydro Penetration Level (%)', 
             'value': '{:,.2f}%'.format(pen)},
+        {'words':'source', 
+            'value': source},
             ]
 

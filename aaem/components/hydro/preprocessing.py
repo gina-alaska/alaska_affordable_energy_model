@@ -66,6 +66,7 @@ def preprocess_existing_projects (ppo):
         #~ distance_to_resource = float(cp['Distance'])
         generation_capital_cost = float(cp['Construction Cost (2014$)'])
         transmission_capital_cost = float(cp['Transmission Cost (current)'])
+        source = cp['Source']
         expected_years_to_operation = UNKNOWN
         if phase == "0":
             ppo.diagnostics.add_note('Hydropower Projects', 
@@ -86,7 +87,8 @@ def preprocess_existing_projects (ppo):
                     #~ 'distance to resource': distance_to_resource,
                     'generation capital cost': generation_capital_cost,
                     'transmission capital cost': transmission_capital_cost,
-                    'expected years to operation': expected_years_to_operation
+                    'expected years to operation': expected_years_to_operation,
+                    'source':source
                         }
     
     with open(os.path.join(ppo.out_dir,"hydro_projects.yaml"),'w') as fd:

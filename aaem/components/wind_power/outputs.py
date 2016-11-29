@@ -372,7 +372,13 @@ def create_project_details_list (project):
     pen = project.generation_wind_proposed/\
           float(project.forecast.cd.get_item('community',
                                                 'generation').iloc[-1:])
-    pen *= 100    
+    pen *= 100  
+    
+    try:
+        source = "<a href='" + \
+            project.comp_specs['project details']['source'] + "'> link </a>"
+    except StandardError as e:
+        source = "unknown"  
     
     return [
         {'words':'Capital Cost ($)', 
@@ -396,4 +402,6 @@ def create_project_details_list (project):
                 project.comp_specs['resource data']['assumed capacity factor']},
         {'words':'Estimated Wind Penetration Level (%)', 
             'value': '{:,.2f}%'.format(pen)},
+        {'words':'source', 
+            'value': source},
             ]

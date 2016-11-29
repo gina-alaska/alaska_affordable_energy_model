@@ -180,41 +180,67 @@ def preprocess_existing_projects (ppo):
         operational_costs = cp['Operational Costs / year']
         #~ expected_years_to_operation = cp['Expected years to operation']
         expected_years_to_operation = UNKNOWN
+        source = cp['link']
         if phase == "0":
             continue
-        if phase == "Reconnaissance" and np.isnan(proposed_capacity) and\
-           np.isnan(proposed_generation) and np.isnan(distance_to_resource) and\
-           np.isnan(generation_capital_cost)  and \
-           np.isnan(transmission_capital_cost) and \
-           np.isnan(operational_costs) and \
-           np.isnan(expected_years_to_operation):
+        try:
+            if phase == "Reconnaissance" and np.isnan(proposed_capacity) and\
+               np.isnan(proposed_generation) and \
+               np.isnan(distance_to_resource) and\
+               np.isnan(generation_capital_cost)  and \
+               np.isnan(transmission_capital_cost) and \
+               np.isnan(operational_costs) and \
+               np.isnan(expected_years_to_operation):
+                continue
+        except TypeError:
             continue
         
         projects.append(p_name)
         
-        proposed_capacity = float(proposed_capacity)
-        if np.isnan(proposed_capacity):
+        try:
+            proposed_capacity = float(proposed_capacity)
+            if np.isnan(proposed_capacity):
+                proposed_capacity = UNKNOWN
+        except ValueError:
             proposed_capacity = UNKNOWN
     
-        proposed_generation = float(proposed_generation)
-        if np.isnan(proposed_generation):
+        try:
+            proposed_generation = float(proposed_generation)
+            if np.isnan(proposed_generation):
+                proposed_generation = UNKNOWN
+        except ValueError:
             proposed_generation = UNKNOWN
         
-        distance_to_resource = float(distance_to_resource)
-        if np.isnan(distance_to_resource):
+        try:
+            distance_to_resource = float(distance_to_resource)
+            if np.isnan(distance_to_resource):
+                distance_to_resource = UNKNOWN
+        except ValueError:
             distance_to_resource = UNKNOWN
            
-        generation_capital_cost = float(generation_capital_cost)
-        if np.isnan(generation_capital_cost):
+        try:
+            generation_capital_cost = float(generation_capital_cost)
+            if np.isnan(generation_capital_cost):
+                generation_capital_cost = UNKNOWN
+        except ValueError:
             generation_capital_cost = UNKNOWN
         
-        transmission_capital_cost = float(transmission_capital_cost)
-        if np.isnan(transmission_capital_cost):
+        try:
+            transmission_capital_cost = float(transmission_capital_cost)
+            if np.isnan(transmission_capital_cost):
+                transmission_capital_cost = UNKNOWN
+        except ValueError:
             transmission_capital_cost = UNKNOWN
         
-        operational_costs = float(operational_costs)
-        if np.isnan(operational_costs):
+        try:
+            operational_costs = float(operational_costs)
+            if np.isnan(operational_costs):
+                operational_costs = UNKNOWN
+        except ValueError:
             operational_costs = UNKNOWN
+            
+        #~ if np.isnan(source):
+            #~ source = "N/a"
             
         #~ expected_years_to_operation = float(expected_years_to_operation)
         #~ if np.isnan(expected_years_to_operation):
@@ -228,7 +254,8 @@ def preprocess_existing_projects (ppo):
                     'generation capital cost': generation_capital_cost,
                     'transmission capital cost': transmission_capital_cost,
                     'operational costs': operational_costs,
-                    'expected years to operation': expected_years_to_operation
+                    'expected years to operation': expected_years_to_operation,
+                    'source': source
                         }
                             
     if len(p_data) != 0:
