@@ -74,6 +74,13 @@ class HeatRecovery (AnnualSavings):
         """
         self.run = True
         self.reason = "OK"
+        if self.cd['name'].find('+') == -1:
+            self.run = False
+            self.reason = PROJECT_TYPE + \
+                " component requires a known project to run"
+            self.diagnostics.add_note(self.component_name, self.reason)
+            return 
+        
         tag = self.cd['name'].split('+')
         if len(tag) > 1 and tag[1] != PROJECT_TYPE:
             self.run = False

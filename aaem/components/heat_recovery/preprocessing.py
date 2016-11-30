@@ -27,6 +27,7 @@ def preprocess (ppo):
     
     """
     #CHANGE THIS
+    #~ return
     out_file = os.path.join(ppo.out_dir,"heat_recovery_projects_potential.csv")
 
     data = read_csv(os.path.join(ppo.data_dir,"heat_recovery_projects_potential.csv"), 
@@ -36,8 +37,8 @@ def preprocess (ppo):
     data_cols = ['Waste Heat Recovery Opperational','Add waste heat Avail',
                  'Est. current annual heating fuel gallons displaced',
                  'Est. potential annual heating fuel gallons displaced']
-    data =  data[data_cols]
-    
+    #~ data =  data[data_cols]
+    data = []
     # if no data add defaults
     if len(data) == 0:
         data = DataFrame([['No','No', np.nan, np.nan],],columns = data_cols)
@@ -85,13 +86,14 @@ def preprocess_existing_projects (ppo):
     projects = []
     p_data = {}
     
-    proj_cols = ['Project Name','Year','Phase Completed',
+    proj_cols = ['Project Name','Year of Feasibility Study Completion','Phase Completed',
                  'New/Repair/Extension',
                  'Total Round-trip Distance of Piping (feet)',
                  'Number of Buildings/Facilities',
                  'Buildings/Facilities to be Served',
                  'Proposed Gallons of Diesel Offset',
-                 'Proposed Maximum Btu/hr','Total CAPEX','Source']
+                 'Proposed Maximum Btu/hr','Total CAPEX','Source',
+                 'Link','Notes']
     project_data = read_csv(os.path.join(ppo.data_dir,
                                 "heat_recovery_projects_potential.csv"),
                             comment = '#',index_col = 0)[proj_cols]
@@ -133,7 +135,9 @@ def preprocess_existing_projects (ppo):
                           'proposed Maximum btu/hr': max_btu_per_hr, 
                           'capital costs':capex,
                           'expected years to operation':
-                                                expected_years_to_operation
+                                                expected_years_to_operation,
+                          'link':cp['Link'],
+                          'notes':cp['Notes'],
                         }
         
         

@@ -12,9 +12,13 @@ from yaml import load
 def process_data_import(data_dir):
     """
     """
+    #~ return {}
+    #~ try:
     data_file = os.path.join(data_dir, "heat_recovery_projects_potential.csv")
     data = read_csv(data_file, comment = '#', index_col=0, header=0)
     return data['value'].to_dict()
+    #~ except:
+        #~ return {}
     
 def load_project_details (data_dir):
     """
@@ -50,7 +54,7 @@ def load_project_details (data_dir):
 
     if tag is None:
         # if no data make some
-        yto = int(round(float(data['Reconnaissance'])))
+        yto = 0
         return {'name': 'None', 
                 'phase': 'Reconnaissance',
                 'project type': 'New',
@@ -63,6 +67,7 @@ def load_project_details (data_dir):
                 'expected years to operation': yto
                 }
     
+    
     # CHANGE THIS
     with open(os.path.join(data_dir, "heat_recovery_projects.yaml"), 'r') as fd:
         dets = load(fd)[tag]
@@ -72,8 +77,11 @@ def load_project_details (data_dir):
     if yto == UNKNOWN:
         try:
             yto = int(round(float(data[dets['phase']])))
-        except TypeError:
-            yto = 0
+        except (TypeError, KeyError):
+            if dets['phase'] == "CDR":
+                yto = int(round(float(data['Design'])))
+            else:
+                yto = 0
         dets['expected years to operation'] = yto
     dets['expected years to operation'] = int(yto)
     #~ print dets

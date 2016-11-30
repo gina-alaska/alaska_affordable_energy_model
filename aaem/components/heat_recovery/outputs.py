@@ -201,7 +201,10 @@ def generate_web_summary (web_object, community):
     #~ print community
     projects, s1, e1 = wl.get_projects(web_object, community, 
                                        COMPONENT_NAME, 'heat_recovery')
-    if np.isnan(modeled.get_net_benefit()).all() and projects == {}:
+    
+    #~ print projects
+
+    if projects == {}:
         raise RuntimeError, "no projects or modeling info" 
     
     sy = modeled.start_year
@@ -339,6 +342,18 @@ def create_project_details_list (project):
         BC = '{:,.2f}'.format(project.get_BC_ratio())
     except ValueError:
         BC = project.get_BC_ratio()
+        
+    try:
+        source = "<a href='" + \
+            project.comp_specs['project details']['source'] + "'> link </a>"
+    except StandardError as e:
+        source = "unknown"
+        
+    try:
+        notes = project.comp_specs['project details']['notes'] 
+    except StandardError as e:
+        notes = "N/a"
+    
     
     return [
         {'words':'Capital Cost ($)', 
@@ -349,4 +364,8 @@ def create_project_details_list (project):
             'value': net_benefits},
         {'words':'Benefit Cost Ratio', 
             'value': BC},
+        {'words':'source', 
+            'value': source},
+        {'words':'notes', 
+            'value': notes},
             ]

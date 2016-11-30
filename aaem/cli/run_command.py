@@ -187,6 +187,7 @@ class RunCommand(pycommand.CommandBase):
                     run_driver.run(com, img_dir = img_dir,
                                     plot = plot, tag = tag, scalers = scalers)
                 except (RuntimeError, IOError) as e:
+                    print e
                     msg = "RUN ERROR: "+ com + \
                                     " not a configured community/project"
                     cli_lib.print_error_message(msg)

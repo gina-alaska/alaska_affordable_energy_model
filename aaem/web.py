@@ -956,7 +956,9 @@ class WebSummary(object):
         hr_data = res['community data'].get_item('Heat Recovery', 
                                                   'estimate data')
         hr_opp = hr_data['Waste Heat Recovery Opperational']
+        #~ hr_opp = "TBD"
         hr_ava = hr_data['Est. current annual heating fuel gallons displaced']
+        #~ hr_ava = 0
         if type(hr_ava) is str or np.isnan(hr_ava):
             hr_ava = 0
             

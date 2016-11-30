@@ -71,6 +71,7 @@ class RefreshCommand(pycommand.CommandBase):
             coms = read_csv(os.path.join(repo,'community_list.csv'),
                          comment="#",index_col=0).Community.tolist()
     
+        #~ coms = ['Brevig Mission']
         my_setup = driver.Setup(model_root, sorted(coms), repo, tag)
         if not my_setup.setup(force):
             pth = os.path.join(model_root, my_setup.tag)
