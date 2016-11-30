@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.23.0]
+### updated
+- heat recovery: only runs for projects
+
 ## [0.22.2]
 ### added
 - html: links to sources for hydro and wind
