@@ -260,7 +260,7 @@ def generate_web_summary (web_object, community):
     current = [
         {'words':'Waste Heat Recovery Operational', 
          'value': ests['Waste Heat Recovery Opperational']},
-        {'words':'Add waste heat Avail', 'value': ests['Add waste heat Avail']},
+        {'words':'Identified as priority by HR working group', 'value': ests['Identified as priority by HR working group']},
         {'words':'Est. current annual heating fuel gallons displaced', 
          'value': ests['Est. current annual heating fuel gallons displaced']},
         {'words':'Est. potential annual heating fuel gallons displaced', 

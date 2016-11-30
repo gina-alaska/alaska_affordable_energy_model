@@ -34,11 +34,20 @@ def preprocess (ppo):
                                     comment = '#',index_col = 0)
                                     
     data = ppo.get_communities_data(data)
-    data_cols = ['Waste Heat Recovery Opperational','Add waste heat Avail',
+    
+    
+    
+    data_cols = ['Waste Heat Recovery Opperational',
+                'Identified as priority by HR working group',
                  'Est. current annual heating fuel gallons displaced',
                  'Est. potential annual heating fuel gallons displaced']
-    #~ data =  data[data_cols]
-    data = []
+    data_cols_in = ['HR Functioning as of November 2016 (Yes/No)',
+                    'Identified as priority by HR working group',
+                 'Est. current annual heating fuel gallons displaced',
+                 'Proposed Gallons of Diesel Offset']
+    data =  data[data_cols_in]
+    data.columns = data_cols
+    #~ data = []
     # if no data add defaults
     if len(data) == 0:
         data = DataFrame([['No','No', np.nan, np.nan],],columns = data_cols)
@@ -50,7 +59,7 @@ def preprocess (ppo):
 
     data['Waste Heat Recovery Opperational'] = \
         data['Waste Heat Recovery Opperational'].fillna('No')
-    data['Add waste heat Avail'] = data['Add waste heat Avail'].fillna('No')
+    data['Identified as priority by HR working group'] = data['Identified as priority by HR working group'].fillna('No')
     
     data = data.T
 
