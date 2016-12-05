@@ -181,6 +181,12 @@ def preprocess_existing_projects (ppo):
         #~ expected_years_to_operation = cp['Expected years to operation']
         expected_years_to_operation = UNKNOWN
         source = cp['link']
+        notes = cp['notes']
+        try:
+            np.isnan(notes)
+            notes = ""
+        except:
+            pass
         if phase == "0":
             continue
         try:
@@ -255,6 +261,7 @@ def preprocess_existing_projects (ppo):
                     'transmission capital cost': transmission_capital_cost,
                     'operational costs': operational_costs,
                     'expected years to operation': expected_years_to_operation,
+                    'notes': notes,
                     'source': source
                         }
                             

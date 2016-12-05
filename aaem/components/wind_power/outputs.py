@@ -375,6 +375,11 @@ def create_project_details_list (project):
     pen *= 100  
     
     try:
+        notes = project.comp_specs['project details']['notes']
+    except:
+        notes = ''
+    
+    try:
         source = "<a href='" + \
             project.comp_specs['project details']['source'] + "'> link </a>"
     except StandardError as e:
@@ -402,6 +407,8 @@ def create_project_details_list (project):
                 project.comp_specs['resource data']['assumed capacity factor']},
         {'words':'Estimated Wind Penetration Level (%)', 
             'value': '{:,.2f}%'.format(pen)},
+        {'words':'notes', 
+            'value':  notes},
         {'words':'source', 
             'value': source},
             ]

@@ -1,6 +1,14 @@
 #Change Log
 
 ## [0.23.0]
+### added 
+- HTML: 'report errors' messege in footer
+- HTML: notes for wind power projects
+
+## fixed
+- HTML: fixes conversion factor for lcoe on potential projects page
+
+## [0.23.0]
 ### updated
 - heat recovery: only runs for projects
 
