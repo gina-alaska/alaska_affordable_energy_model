@@ -345,7 +345,7 @@ def create_project_details_list (project):
         
     try:
         source = "<a href='" + \
-            project.comp_specs['project details']['source'] + "'> link </a>"
+            project.comp_specs['project details']['link'] + "'> link </a>"
     except StandardError as e:
         source = "unknown"
         

@@ -1,6 +1,11 @@
 #Change Log
 
-## [0.23.0]
+## [0.23.2]
+### fixed
+- HTML: footer formating
+- HTML: fix heat recovery links
+
+## [0.23.1]
 ### added 
 - HTML: 'report errors' messege in footer
 - HTML: notes for wind power projects
