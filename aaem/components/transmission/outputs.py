@@ -131,7 +131,10 @@ def communities_summary (coms, res_dir):
                 
             
                 
-            l = [c, 
+            name = c
+            if name == 'Barrow':
+                name = 'Utqiagvik'
+            l = [name,  
                 connect_to,
                 start_yr,
                 phase,

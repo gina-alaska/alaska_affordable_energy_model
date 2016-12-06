@@ -61,7 +61,10 @@ def communities_summary (coms, res_dir):
                 levelized_cost = 0
             
             
-            l = [c, 
+            name = c
+            if name == 'Barrow':
+                name = 'Utqiagvik'
+            l = [name,  
                  biomass.max_boiler_output,
                  biomass.heat_displaced_sqft,
                  biomass.biomass_fuel_consumed,

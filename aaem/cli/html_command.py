@@ -73,6 +73,41 @@ class HtmlCommand(pycommand.CommandBase):
         print "Loading Results..."
         ws = web.WebSummary(root, out, tag)
         print "Generating Summaries..."
-        ws.generate_all()
+        
+        try:
+            ws.generate_all()
+            pth = os.path.join(out, 'Barrow')
+            os.rename(pth, pth.replace('Barrow','Utqiagvik'))
+            
+            pth = os.path.join(out, 'Utqiagvik', 'csv')
+            for f_name in os.listdir(pth):
+                f = os.path.join(pth, f_name)
+                #~ print f
+                os.rename(f,f.replace('Barrow','Utqiagvik'))
+            
+            pth = os.path.join(out, 'Utqiagvik')
+            for f_name in os.listdir(pth):
+                if f_name.find('.html') != -1:
+                    f = os.path.join(pth,f_name)
+                    with open(f,'r') as in_f:
+                        text = in_f.read()
+                    with open(f,'w') as out_f:
+                        out_f.write(text.replace('Barrow','Utqiagvik'))
+            
+            
+            f = os.path.join(out,'map.js')
+            with open(f,'r') as in_f:
+                text = in_f.read()
+            with open(f,'w') as out_f:
+                out_f.write(text.replace('Barrow','Utqiagvik'))
+            f = os.path.join(out,'navbar.js')
+            with open(f,'r') as in_f:
+                text = in_f.read()
+            with open(f,'w') as out_f:
+                out_f.write(text.replace('Barrow','Utqiagvik'))
+        except:
+            pass
+        
         print 'Complete'
+        
         

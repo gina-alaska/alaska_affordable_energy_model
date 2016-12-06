@@ -74,7 +74,10 @@ def communities_summary (coms, res_dir):
             except AttributeError:
                 break_even = 0
             
-            l = [c, assumed_out, average_load, proposed_capacity, 
+            name = c
+            if name == 'Barrow':
+                name = 'Utqiagvik'
+            l = [name,  assumed_out, average_load, proposed_capacity, 
                  existing_capacity, wind_capacity, net_gen, loss_heat, hr_op,
                  net_heating, red_per_year, eff, diesel_price,
                  break_even,

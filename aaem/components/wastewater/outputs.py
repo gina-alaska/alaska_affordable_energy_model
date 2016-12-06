@@ -57,7 +57,12 @@ def communities_summary (coms, res_dir):
             
             savings = (www.baseline_HF_consumption -\
                       www.proposed_HF_consumption) * constants.mmbtu_to_gal_HF
-            out.append([c,
+            
+            name = c
+            if name == 'Barrow':
+                name = 'Utqiagvik'
+            
+            out.append([name,
                 www.get_NPV_benefits(),www.get_NPV_costs(),
                 www.get_NPV_net_benefit(),www.irr,www.get_BC_ratio(),
                 oil_p, elec_p ,

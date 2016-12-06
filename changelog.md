@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.23.3]
+### changes
+- Barrow output name is Utqiagvik
+
 ## [0.23.2]
 ### fixed
 - HTML: footer formating

@@ -74,7 +74,10 @@ def communities_summary (coms, res_dir):
             diesel_price = float(ashp.diesel_prices[0].round(2))
             hf_price =  diesel_price + ashp.cd['heating fuel premium'] 
             
-            l = [c, 
+            name = c
+            if name == 'Barrow':
+                name = 'Utqiagvik'
+            l = [name, 
                  ashp.average_cop,
                  ashp.heat_displaced_sqft,
                  tcr,

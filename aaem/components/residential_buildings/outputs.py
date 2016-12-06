@@ -50,7 +50,11 @@ def communities_summary (coms, res_dir):
             continue
         try:
             res = coms[c][COMPONENT_NAME]
-            out.append([c,
+            
+            name = c
+            if name == 'Barrow':
+                name = 'Utqiagvik'
+            out.append([name,
                 res.get_NPV_benefits(),res.get_NPV_costs(),
                 res.get_NPV_net_benefit(),res.irr,res.get_BC_ratio(),
                 res.hoil_price[0], res.init_HH, res.opportunity_HH,

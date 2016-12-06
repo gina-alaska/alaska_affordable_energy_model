@@ -56,7 +56,10 @@ def communities_summary (coms, res_dir):
                 break_even_cost = np.nan
                 levelized_cost_of_energy = np.nan
             
-            l = [c, 
+            name = c
+            if name == 'Barrow':
+                name = 'Utqiagvik'
+            l = [name,  
                  
                  
                  propsed_hr,

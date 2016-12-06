@@ -186,6 +186,7 @@ class RunCommand(pycommand.CommandBase):
                 try:
                     run_driver.run(com, img_dir = img_dir,
                                     plot = plot, tag = tag, scalers = scalers)
+                                    
                 except (RuntimeError, IOError) as e:
                     print e
                     msg = "RUN ERROR: "+ com + \
@@ -199,6 +200,34 @@ class RunCommand(pycommand.CommandBase):
                 msg = "RUN ERROR: No valid communities/projects provided"
                 cli_lib.print_error_message(msg)
                 return 0
+                
+            #~ try:
+            name =  'Utqiagvik'
+            os.rename(os.path.join(base, rd, 'Barrow'),
+                        os.path.join(base, rd, 'Utqiagvik'))
+            for f_name in os.listdir(os.path.join(base, rd, 'Utqiagvik')):
+                if f_name.find('.csv') != -1:
+                    f = os.path.join(base, rd, 'Utqiagvik',f_name)
+                    with open(f,'r') as in_f:
+                        text = in_f.read()
+                    with open(f,'w') as out_f:
+                        out_f.write(text.replace('Barrow','Utqiagvik'))
+            
+                    os.rename(f,f.replace('Barrow','Utqiagvik'))
+            for f_name in os.listdir(os.path.join(base, rd, 'Utqiagvik','component_outputs')):
+                #~ print f_name
+                if f_name.find('.csv') != -1:
+                    f = os.path.join(base, rd, 'Utqiagvik','component_outputs',f_name)
+                    with open(f,'r') as in_f:
+                        text = in_f.read()
+                    with open(f,'w') as out_f:
+                        out_f.write(text.replace('Barrow','Utqiagvik'))
+                    #~ print f
+                    os.rename(f,f.replace('Barrow','Utqiagvik'))
+            #~ except StandardError as e:
+                
+                #~ print e
+                #~ pass
             run_driver.save_metadata(tag)
             
         sys.stdout = sout
