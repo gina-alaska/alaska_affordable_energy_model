@@ -1,7 +1,16 @@
 #Change Log
 
+## [0.24.0]
+### changed
+- changed preprocessor for new diesel_fuel_price data format
+
+### fixed
+- preporcessor bug where diesel generation was not being summed properly with purchased diesel 
+- cli code for changing barrow's name is ignored if barrow is not called
+- cli run: Utqiagvik can be used as individual community 
+
 ## [0.23.3]
-### changes
+### changed
 - Barrow output name is Utqiagvik
 
 ## [0.23.2]

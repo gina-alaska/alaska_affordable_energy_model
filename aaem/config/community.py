@@ -196,7 +196,7 @@ comments = {
         }
                 
 defaults = {
-    'current year': 2015,
+    'current year': 2016,
     'model financial': True,
     'model electricity': True,
     'model heating fuel': True,

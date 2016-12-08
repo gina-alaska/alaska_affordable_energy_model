@@ -1137,7 +1137,7 @@ class Preprocessor (object):
                self.diagnostics.add_note("PCE Electricity",
                                                 "No Purchased Power")
             p_key = None
-
+        #~ print p_key
         ## Determine if and what kind of power is other_1
         try:
             sources = list(data[data["other_1_kwh_type"].notnull()]\
@@ -1226,26 +1226,27 @@ class Preprocessor (object):
                                         "kwh_purchased"]].sum()
             ## get generation by fuel type
             temp['generation diesel'] = temp['diesel_kwh_generated']
+            #~ print temp['generation diesel']
             temp['generation hydro'] = temp['hydro_kwh_generated']
             ## for other 1
             
             if np.isreal(temp["other_1_kwh_generated"]) and o1_key is not None:
                 val = temp["other_1_kwh_generated"]
-                if o1_key == "diesel":
+                if o1_key.lower() == "diesel":
                     temp['generation diesel'] = temp['generation diesel'] + val
                 else:
                     temp['generation ' + o1_key.lower()] = val
             ## for other 2
             if np.isreal(temp["other_2_kwh_generated"]) and o2_key is not None:
                 val =  temp["other_2_kwh_generated"]
-                if o2_key == "diesel":
+                if o2_key.lower() == "diesel":
                     temp['generation diesel'] = temp['generation diesel'] + val
                 else:
                     temp['generation ' + o2_key.lower()] = val
             ## for purchased
             if np.isreal(temp["kwh_purchased"]) and p_key is not None:
                 val = temp['kwh_purchased']
-                if p_key == "diesel":
+                if p_key.lower() == "diesel":
                     #~ print temp['generation diesel'] + val
                     temp['generation diesel'] = temp['generation diesel'] + val
                 else:
@@ -1253,7 +1254,7 @@ class Preprocessor (object):
                         temp['generation ' + p_key.lower()] = val
                     except AttributeError:
                         pass
-
+                        
             ## get consumption (sales) total & by type
             temp['consumption'] = temp[["residential_kwh_sold",
                                         "commercial_kwh_sold",
@@ -1560,11 +1561,11 @@ class Preprocessor (object):
         """
         """
         in_file = os.path.join(self.data_dir, "diesel_fuel_prices.csv")
-        data = read_csv(in_file, index_col=3, comment="#", header=0)
+        data = read_csv(in_file, index_col=0, comment="#", header=0)
         data = self.get_communities_data(data)
         try:
-            keys = data.keys()[3:]
-            data = np.array(data.values[0][3:], dtype = np.float64)
+            keys = data.keys()[0:]
+            data = np.array(data.values[0][0:], dtype = np.float64)
             prices_for = self.com_id
         except IndexError:
             self.diagnostics.add_note('Diesel Prices', 
@@ -1576,12 +1577,15 @@ class Preprocessor (object):
             keys = keys[keys['Energy Region'] == energy_region].index.tolist()
             
             
-            data = read_csv(in_file, index_col=3, comment="#", header=0)
+            data = read_csv(in_file, index_col=0, comment="#", header=0)
             data = data.ix[keys]
-            keys = data.keys()[3:]
-            data = np.array(data.mean().values[2:], dtype = np.float64)
+            keys = data.keys()[0:]
+            data = np.array(data.mean().values[0:], dtype = np.float64)
             prices_for = energy_region + " (regional average)"
 
+
+        #~ print keys
+        #~ print data
         self.diesel_prices = DataFrame({"year":keys,
                         prices_for :data}).set_index("year")
 
