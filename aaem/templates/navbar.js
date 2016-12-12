@@ -20,16 +20,19 @@ document.getElementById('tech_drop').innerHTML = '{% for reg in techs %}<li clas
 
 
 $(document).ready(function(){
-  $('.dropdown-submenu a.nested').on("click", function(e){
+  $(document).on('click', '.dropdown-submenu a.nested', function(e) {
     $(this).next('ul').toggle();
+    
+    var parentLi = $(this).parent();
+    var parentUl = parentLi.parent();
+    var activeLi = parentUl.find('.active');
+    
+    if (activeLi.length > 0) {
+        activeLi.find('ul').toggle();
+        activeLi.removeClass('active');
+    }
+    $(parentLi).addClass('active');
     e.stopPropagation();
     e.preventDefault();
   });
 });
-
-
-//~ $(document).ready(function(){
-    //~ $('.dropdown-submenu a.nested').blur(function(){
-        //~ $(this).next('ul').toggle();
-    //~ });
-//~ });
