@@ -16,6 +16,8 @@ document.getElementById('senate_drop').innerHTML = '{% for reg in senate_dist %}
 
 document.getElementById('house_drop').innerHTML = '{% for reg in house_dist %}<li class="dropdown-submenu"><a class="nested" tabindex="-1" href="#">{{ reg.district }}<span class="caret"></span></a><ul class="dropdown-menu short-menu"><li>{% for com in reg.communities %}<li><a href="' + prefix + '{{ com }}/overview.html">{{ com.replace("_", " ") }}</a></li>{% endfor %}</ul></li>{% endfor %}';
 
+document.getElementById('tech_drop').innerHTML = '{% for reg in techs %}<li class="dropdown-submenu"><a class="nested" tabindex="-1" href="#">{{ reg.district }}<span class="caret"></span></a><ul class="dropdown-menu short-menu"><li><a href="' + prefix + '{{ reg.clean }}.html">Summary<a></li><li role="separator" class="divider"></li><li><small>Viable Communities</small></li>{% for com in reg.communities %}<li><a href="' + prefix + '{{ com }}/overview.html">{{ com.replace("_", " ") }}</a></li>{% endfor %}</ul></li>{% endfor %}';
+
 
 $(document).ready(function(){
   $('.dropdown-submenu a.nested').on("click", function(e){

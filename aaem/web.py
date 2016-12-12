@@ -21,6 +21,19 @@ class WebSummary(object):
     def __init__ (self, model_root, directory, tag = ''):
         """ Class initialiser """
         self.max_year = 2040
+        self.viable_communities = {"Residential Energy Efficiency":set(),
+              "Non-residential Energy Efficiency":set(),
+              "Water and Wastewater Efficiency":set(),
+              "Wind Power":set(),
+              'Solar Power':set(),
+              'Biomass for Heat (Cordwood)':set(),
+              'Biomass for Heat (Pellet)':set(),
+              'Residential ASHP':set(),
+              'Non-Residential ASHP':set(),
+              'Hydropower':set(),
+              'Transmission and Interties':set(),
+              'Heat Recovery':set(),
+              'Diesel Efficiency':set()}
         self.model_root = model_root
         model = driver.Driver(self.model_root)
         self.results = model.load_results(tag)
@@ -63,6 +76,26 @@ class WebSummary(object):
         self.no_results_html = self.env.get_template('no_results.html')
         self.index_html = self.env.get_template('index.html')
         self.comp_redir_html = self.env.get_template('intertie_redir.html')
+        self.get_ratios_greater_than_limit()
+    
+    def get_ratios_greater_than_limit (self, limit = 1.0):
+        """ Function doc """
+        #~ keys = sorted([k for k in self.results.keys() if k.find('+') == -1])
+        for com in self.results.keys():
+            for comp in self.results[com]:
+                try:
+                    ratio =  self.results[com][comp].get_BC_ratio()
+                    if ratio == 'N/A':
+                        continue
+                    if ratio >= limit:
+                        #~ print ratio, type(ratio)
+                        self.viable_communities[comp].add(com.split('+')[0])
+                except AttributeError as e:
+                    #~ print e
+                    pass
+
+                
+        #~ print self.viable_communities
         
 
     def get_viable_components (self, com, cutoff = 1):
@@ -189,11 +222,29 @@ class WebSummary(object):
         shutil.copy(os.path.join(pth,'templates','map.js'),self.directory)
         
         template = self.env.get_template('navbar.js')
+        
+        
+        
+        #~ print self.get_house_dists()
+        techs = []
+
+        for comp in sorted(self.viable_communities.keys()):
+            temp = []
+            for com in sorted(self.viable_communities[comp]):
+                try:
+                    temp.append(com.replace("'",''))
+                except:
+                    temp = [com.replace("'",'')]
+            
+            techs.append({'communities':temp,'clean': comp, 'district': comp})
+
+        
         with open(os.path.join(self.directory,'navbar.js'), 'w') as html:
             html.write(template.render(communities = self.get_cleanded_coms(),
                                        regions=self.get_regions(),
                                        senate_dist=self.get_senate_dists(),
-                                       house_dist=self.get_house_dists()
+                                       house_dist=self.get_house_dists(),
+                                       techs = techs
                         ))
         
         
@@ -361,6 +412,8 @@ class WebSummary(object):
                 start = datetime.now()
                 self.generate_web_summaries(com)
                 print com, datetime.now() - start
+                
+        #~ print self.viable_communities
     
     
     def generate_com_mc (self, com, lock):
@@ -1180,9 +1233,8 @@ class WebSummary(object):
                     name = comp
                 
                 name = name.decode('unicode_escape').encode('ascii','ignore')
-            
-            
-
+                
+                
                 cats[comp].append({'name': name,
                               'sucess': True if ratio > 1.0 else False,
                               'comp':comp,
