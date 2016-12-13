@@ -1,5 +1,19 @@
 #Change Log
 
+## [0.24.1]
+### added
+- html: technology nav
+- html: tech summaries
+- cli: run use * after a single community to run all it and it's projects (i.e. aaem run <model> Adak* will run Adak, Adak+hydo+project_1, ...)
+
+### changed 
+- html: potential projects b/c ratio < 0 projets are red
+- html: added not on b/c ratio to potential projets page
+- html: potential projets table header
+
+### fixes:
+- html: typos on potential projets page
+
 ## [0.24.0]
 ### changed
 - changed preprocessor for new diesel_fuel_price data format
