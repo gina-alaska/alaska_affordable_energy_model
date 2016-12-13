@@ -169,11 +169,11 @@ def create_regional_summary (results):
             regions[c_region]['Number of communities in region'] +=1
             k = 'Number of communities with cost effective projects'
             regions[c_region][k] += 1 if bc_ratio else 0
-            k = 'Investment needed for cost-effective projects'
+            k = 'Investment needed for cost-effective projects ($)'
             regions[c_region][k] += capex 
-            k = 'Net benefit of cost-effective projects'
+            k = 'Net benefit of cost-effective projects ($)'
             regions[c_region][k] += net_benefit
-            k = 'Heating oil displaced by cost-effective projects'
+            k = 'Heating oil displaced by cost-effective projects (gallons)'
             regions[c_region][k] += displaced_hoil
             k = 'Additional capacity needed (kW)'
             regions[c_region][k] += add_kW
@@ -183,20 +183,20 @@ def create_regional_summary (results):
             regions[c_region] = {'Number of communities in region':1}
             k = 'Number of communities with cost effective projects'
             regions[c_region][k] = 1 if bc_ratio else 0
-            k = 'Investment needed for cost-effective projects'
+            k = 'Investment needed for cost-effective projects ($)'
             regions[c_region][k] = capex 
-            k = 'Net benefit of cost-effective projects'
+            k = 'Net benefit of cost-effective projects ($)'
             regions[c_region][k] = net_benefit
-            k = 'Heating oil displaced by cost-effective projects'
+            k = 'Heating oil displaced by cost-effective projects (gallons)'
             regions[c_region][k] = displaced_hoil
             k = 'Additional capacity needed (kW)'
             regions[c_region][k] = add_kW
             
     summary = DataFrame(regions).T[['Number of communities in region',
                         'Number of communities with cost effective projects',
-                        'Investment needed for cost-effective projects',
-                        'Net benefit of cost-effective projects',
-                        'Heating oil displaced by cost-effective projects',
+                        'Investment needed for cost-effective projects ($)',
+                        'Net benefit of cost-effective projects ($)',
+                        'Heating oil displaced by cost-effective projects (gallons)',
                         'Additional capacity needed (kW)']]
     
     summary.ix['All Regions'] = summary.sum()  

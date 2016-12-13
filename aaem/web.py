@@ -76,6 +76,7 @@ class WebSummary(object):
         self.no_results_html = self.env.get_template('no_results.html')
         self.index_html = self.env.get_template('index.html')
         self.comp_redir_html = self.env.get_template('intertie_redir.html')
+        self.tech_html = self.env.get_template('tech.html')
         self.get_ratios_greater_than_limit()
     
     def get_ratios_greater_than_limit (self, limit = 1.0):
@@ -87,7 +88,7 @@ class WebSummary(object):
                     ratio =  self.results[com][comp].get_BC_ratio()
                     if ratio == 'N/A':
                         continue
-                    if ratio >= limit:
+                    if ratio > limit:
                         #~ print ratio, type(ratio)
                         self.viable_communities[comp].add(com.split('+')[0])
                 except AttributeError as e:
@@ -220,7 +221,7 @@ class WebSummary(object):
         shutil.copy(os.path.join(pth,'templates','footer.css'),self.directory)
         shutil.copy(os.path.join(pth,'templates','dropdown.css'),self.directory)
         shutil.copy(os.path.join(pth,'templates','map.js'),self.directory)
-        
+        shutil.copy(os.path.join(pth,'templates','tech_map.js'),self.directory)
         template = self.env.get_template('navbar.js')
         
         
@@ -236,7 +237,10 @@ class WebSummary(object):
                 except:
                     temp = [com.replace("'",'')]
             
-            techs.append({'communities':temp,'clean': comp, 'district': comp})
+            techs.append({'communities':temp,
+                          'clean': comp.replace('(','').\
+                                        replace(')','').replace(' ','_'),
+                          'district': comp})
 
         
         with open(os.path.join(self.directory,'navbar.js'), 'w') as html:
@@ -246,6 +250,65 @@ class WebSummary(object):
                                        house_dist=self.get_house_dists(),
                                        techs = techs
                         ))
+                        
+    def generate_tech_summaries (self):
+        
+        for comp in comp_order:
+            try:
+                coms = str(list(self.viable_communities[comp]))
+                coms = coms.decode('unicode_escape').encode('ascii','ignore')
+                clean = comp.replace('(','').replace(')','').replace(' ','_')
+                cols = self.get_tech_summary(comp_lib[comp]).columns
+                
+                regions = self.get_tech_summary(comp_lib[comp]).index
+                
+                data = []
+                for row in regions:
+                    d = self.get_tech_summary(comp_lib[comp]).ix[row].values
+                    
+                    
+                    r = [row] 
+                    for i in d:
+                        r.append(int(i))
+                    data.append(r)
+                
+                
+                
+                template = self.tech_html
+                with open(os.path.join(self.directory,
+                                        clean+'.html'), 'w') as html:
+                    html.write(template.render(coms=coms,
+                                        metadata = self.metadata,
+                                        columns = ['Region'] + list(cols),
+                                        data = data,
+                                        tech = comp,
+                                        bc_limit = 1.0,
+                                        in_root=True))
+                
+                
+                
+            except StandardError as e:
+                print e
+            
+            
+            
+        
+    
+    def get_tech_summary(self, component):
+        """
+        """
+        try:
+            return self.tech_summaries[component]
+        except AttributeError as e:
+            #~ print e
+            self.tech_summaries = {}
+        except KeyError as e:
+            #~ print e
+            pass
+            
+        self.tech_summaries[component] = \
+                    import_module("aaem.components." + component).create_regional_summary(self.results)
+        return self.tech_summaries[component]
         
         
     def get_web_summary(self, component):
@@ -388,9 +451,11 @@ class WebSummary(object):
         """ Function doc """
         keys = sorted([k for k in self.results.keys() if k.find('+') == -1])
         self.copy_etc()
+        self.generate_tech_summaries()
         self.generate_index()
         self.generate_regional_summaries()
-
+        #~ import sys
+        #~ sys.exit()
         try:
             os.fork
             from multiprocessing import Process, Lock,active_children, cpu_count
@@ -1146,12 +1211,13 @@ class WebSummary(object):
         cats = {}
         
         for i in [i for i in sorted(self.results.keys()) if i.find(com) != -1 ]:
-            
+            print cats
+            print i
             if com.find('_intertie') == -1 and i.find('_intertie') != -1:
                 continue
             if com != i:
                 continue
-            #~ print i
+            print i
             comps = self.results[i]
             if i.find('hydro') != -1:
                 comps = ['Hydropower']

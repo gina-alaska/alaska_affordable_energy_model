@@ -191,11 +191,11 @@ def create_regional_summary (results):
             regions[c_region]['Number of communities/interties in region'] +=1
             k = 'Number of communities with cost effective projects'
             regions[c_region][k] += 1 if bc_ratio else 0
-            k = 'Investment needed for cost-effective projects'
+            k = 'Investment needed for cost-effective projects ($)'
             regions[c_region][k] += capex 
-            k = 'Net benefit of cost-effective projects'
+            k = 'Net benefit of cost-effective projects ($)'
             regions[c_region][k] += net_benefit
-            k = 'Generation diesel displaced by cost-effective projects'
+            k = 'Generation diesel displaced by cost-effective projects (gallons)'
             regions[c_region][k] += displaced_fuel
             
         else:
@@ -203,25 +203,25 @@ def create_regional_summary (results):
             regions[c_region] = {'Number of communities/interties in region':1}
             k = 'Number of communities with cost effective projects'
             regions[c_region][k] = 1 if bc_ratio else 0
-            k = 'Investment needed for cost-effective projects'
+            k = 'Investment needed for cost-effective projects ($)'
             regions[c_region][k] = capex 
-            k = 'Net benefit of cost-effective projects'
+            k = 'Net benefit of cost-effective projects ($)'
             regions[c_region][k] = net_benefit
-            k = 'Generation diesel displaced by cost-effective projects'
+            k = 'Generation diesel displaced by cost-effective projects (gallons)'
             regions[c_region][k] = displaced_fuel
             
     try:
         summary = DataFrame(regions).T[['Number of communities/interties in region',
                         'Number of communities with cost effective projects',
-                        'Investment needed for cost-effective projects',
-                        'Net benefit of cost-effective projects',
-                    'Generation diesel displaced by cost-effective projects']]
+                        'Investment needed for cost-effective projects ($)',
+                        'Net benefit of cost-effective projects ($)',
+                    'Generation diesel displaced by cost-effective projects (gallons)']]
     except KeyError:
         summary = DataFrame(columns = ['Number of communities/interties in region',
                         'Number of communities with cost effective projects',
-                        'Investment needed for cost-effective projects',
-                        'Net benefit of cost-effective projects',
-                    'Generation diesel displaced by cost-effective projects'])
+                        'Investment needed for cost-effective projects ($)',
+                        'Net benefit of cost-effective projects ($)',
+                    'Generation diesel displaced by cost-effective projects (gallons)'])
     summary.ix['All Regions'] = summary.sum()                 
     #~ print summary
     return summary
