@@ -255,8 +255,8 @@ class WebSummary(object):
         
         for comp in comp_order:
             try:
-                coms = str(list(self.viable_communities[comp]))
-                coms = coms.decode('unicode_escape').encode('ascii','ignore')
+                coms = str(list(self.viable_communities[comp])).replace('_', ' ')
+                #~ coms = coms.decode('unicode_escape').encode('ascii','ignore')
                 clean = comp.replace('(','').replace(')','').replace(' ','_')
                 cols = self.get_tech_summary(comp_lib[comp]).columns
                 
@@ -1211,13 +1211,12 @@ class WebSummary(object):
         cats = {}
         
         for i in [i for i in sorted(self.results.keys()) if i.find(com) != -1 ]:
-            print cats
-            print i
+            #~ print cats
+            #~ print i
             if com.find('_intertie') == -1 and i.find('_intertie') != -1:
                 continue
-            if com != i:
-                continue
-            print i
+            #~ if com != i:
+                #~ continue
             comps = self.results[i]
             if i.find('hydro') != -1:
                 comps = ['Hydropower']
@@ -1229,6 +1228,7 @@ class WebSummary(object):
             it = self.results[com]['community data'].intertie    
             
             for comp in comps:  
+                #~ print i
                 if comp in ['forecast', 'community data']:
                     continue
                   
@@ -1300,9 +1300,10 @@ class WebSummary(object):
                 
                 name = name.decode('unicode_escape').encode('ascii','ignore')
                 
-                
+                #~ print name
                 cats[comp].append({'name': name,
                               'sucess': True if ratio > 1.0 else False,
+                              'negitive': True if ratio < 0 else False,
                               'comp':comp,
                               'benefits': '${:,.0f}'.format(benefit),
                               'costs': '${:,.0f}'.format(costs),
@@ -1324,6 +1325,8 @@ class WebSummary(object):
                     'Residential ASHP', 'Non-Residential ASHP', 
                     'Heat Recovery']:
             try:
+                #~ print comp
+                #~ print cats[comp]
                 projs += cats[comp]
             except KeyError:
                 pass
@@ -1352,7 +1355,8 @@ class WebSummary(object):
                                     communities = self.get_cleanded_coms(),
                                     potential_projects = projs,
                                     metadata = self.metadata,
-                                    message = msg
+                                    message = msg,
+                                    bc_limit = 1.0
                                     ))
                                     
     def overview (self, com):

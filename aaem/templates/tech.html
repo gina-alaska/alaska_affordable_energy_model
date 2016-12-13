@@ -1,0 +1,73 @@
+{% extends "layout.html" %}
+
+{% block title %} Alaska Affordable Energy Model{% endblock %}
+
+{% block additional_css %}
+<link href="footer.css" rel="stylesheet">
+<link href="dropdown.css" rel="stylesheet">
+
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.0.1/dist/leaflet.js"></script>
+<!-- END OF LIB INCLUDES -->
+<!-- Set some styling on the map to make sure it has a height -->
+<style media="screen">
+  #mapid { height: 500px; }
+</style>
+{% endblock %}
+    
+{% block full %}
+
+<div class="panel panel-default">
+    <div class="panel-heading">{{ tech }}</div>
+    <div class="panel-body center-block">
+    <p>Summary for the modeled {{ tech }} improvments. </p>
+    
+    
+    
+    </div>
+<!--
+    <div class="panel-footer"></div>
+-->
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-heading">Communities with cost effective projects</div>
+    <div class="panel-body center-block">
+    <div id="mapid" <!--style="float:left;width:80%;"-->></div>
+    <!--
+    <div class="list-group" id="colorkey" style="float:right;width:20%;max-height: 500px;overflow-y: auto;"></div>
+    -->
+    
+    <script type="text/javascript">var A_list = {{ coms }};</script>
+    <script src="tech_map.js" charset="utf-8"></script>
+    </div>
+    <div class="panel-footer">Cost effective projects have a benefit cost ratio greater than {{ bc_limit }}.</div>
+</div>
+
+
+<div class="panel panel-default">
+    <div class="panel-heading">Summary by region</div>
+    <div class="panel-body center-block">
+        <table class="table table-striped">
+        <thead>
+            <tr>
+                {% for col in columns %}<th>{{ col }}</th>{% endfor %}
+            </tr>
+      </thead>
+      <tbody>
+        {% for row in data %}
+            <tr>
+            {% for col in row %} <td>{{ col }}</td> {% endfor %}
+            </tr>
+        {% endfor %}
+        </tbody>
+        </table>
+    </div>
+<!--
+    <div class="panel-footer"></div>
+-->
+</div>
+
+
+{% endblock %}

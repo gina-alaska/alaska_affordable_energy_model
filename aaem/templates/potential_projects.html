@@ -37,15 +37,15 @@
                     <th>NPV benefits</th>
                     <th>NPV cost</th>
                     <th>NPV net benefit</th>
-                    <th>Benefit cost atio</th>
-                    <th>Levelized cost of energy: electricity ($/kwh)</th>
-                    <th>Levelized cost of energy: heating Oil ($/gal)</th>
-                    <th>Gallons fuel /saved per year</th>
+                    <th>Benefit cost ratio</th>
+                    <th>Levelized cost of energy:<br>electricity ($/kwh)</th>
+                    <th>Levelized cost of energy:<br>heating oil ($/gal)</th>
+                    <th>gallons fuel saved per year</th>
                 </tr>
           </thead>
           <tbody>
             {% for project in potential_projects %}
-            <tr {% if project.sucess %}class="success"{% endif %} >
+            <tr {% if project.sucess %}class="success"{% elif project.negitive %}class="danger"{% endif %} >
                 <td><a href="{{ project.comp.lower().replace(' ', "_").replace(")", "").replace("(", "") }}.html">{{ project.name }} </a></td>
                 <td>{{ project.benefits }}</td>
                 <td>{{ project.costs }}</td>
@@ -64,6 +64,9 @@
         <div class="panel-footer"></div>
         </div>
 -->
+
+    <p>Cost effective projects have a benefit cost ratio greater than {{ bc_limit }}.</p>
+    
     </div>
 {% endblock %}
     

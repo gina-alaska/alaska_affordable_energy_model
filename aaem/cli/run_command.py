@@ -126,9 +126,13 @@ class RunCommand(pycommand.CommandBase):
                 # listed coms
                 coms = self.args[1:]
                 if len(coms) == 1:
-                    # Regional coms
-                    region = coms[0]
-                    coms = cli_lib.get_regional_coms(region, base)
+                    if coms[0][-1] == '*':
+                        coms = [c for c in cli_lib.get_config_coms(base) if c.find(coms[0][:-1]) != -1]
+                        #~ print coms
+                    else:
+                        # Regional coms
+                        region = coms[0]
+                        coms = cli_lib.get_regional_coms(region, base)
                 # model thinks its barrow
                 if 'Utqiagvik' in coms:
                     coms[coms.index('Utqiagvik')] = 'Barrow'
