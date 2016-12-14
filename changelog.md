@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.24.2]
+### fixed
+- interties on tech maps
+
 ## [0.24.1]
 ### added
 - html: technology nav

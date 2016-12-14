@@ -85,12 +85,30 @@ class WebSummary(object):
         for com in self.results.keys():
             for comp in self.results[com]:
                 try:
+                    
+                    
+                    it = self.results[com]['community data'].intertie
+                    if not it is None:
+                        if it == 'parent' and not comp in ["Wind Power",
+                                                 'Solar Power',
+                                                  'Hydropower',
+                                                 'Transmission and Interties',
+                                                 'Diesel Efficiency']:
+                            continue
+                        if it == 'child' and comp in ["Wind Power",
+                                                 'Solar Power',
+                                                  'Hydropower',
+                                                 'Transmission and Interties',
+                                                 'Diesel Efficiency']:
+                            continue
+                    
                     ratio =  self.results[com][comp].get_BC_ratio()
                     if ratio == 'N/A':
                         continue
                     if ratio > limit:
                         #~ print ratio, type(ratio)
                         self.viable_communities[comp].add(com.split('+')[0])
+                        self.viable_communities[comp].add(com.split('+')[0].replace("_intertie",""))
                 except AttributeError as e:
                     #~ print e
                     pass
