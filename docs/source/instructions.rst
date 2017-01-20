@@ -7,8 +7,5 @@ Pages
    :maxdepth: 2
    
    installation
-   setup
-   running
-   refreshing
-   scenarios
-   
+   commands
+
