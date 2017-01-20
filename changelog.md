@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.24.3]
+### fixed
+- bug with regional creating summaries if there were no communites for a given  project amoung the communites run 
+
 ## [0.24.2]
 ### fixed
 - interties on tech maps
