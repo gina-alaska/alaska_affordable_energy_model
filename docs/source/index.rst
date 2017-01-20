@@ -6,6 +6,12 @@
 Welcome to Alaska Affordable Energy Model's documentation!
 ==========================================================
 
+This is documentation for the `Alaska Affordable Energy Model <http://akenergyinventory.org/energymodel>` a component of the `Alaska Energy Authority (AEA) <http://www.akenergyauthority.org/>`'s `Alaska Affordable Energy Strategy <http://www.akenergyauthority.org/Policy-Planning/AlaskaAffordableEnergyStrategy>` policy planning activity.  This model was developed by the `University of Alaska Fairbanks <http://uaf.edu>` `Geographic Information Network of Alaska (UAF-GINA) <http://gina.alaska.edu>`.
+
+Check the AEA Affordable Energy Strategy website to understand the purpose this model was developed for: http://www.akenergyauthority.org/Policy-Planning/AlaskaAffordableEnergyStrategy
+
+See the `AEA Alaska Energy Inventory <http://akenergyinventory.org>` website for details on where browse the model docs and other details for the model: http://akenergyinventory.org/energymodel
+
 Contents:
 
 .. toctree::
