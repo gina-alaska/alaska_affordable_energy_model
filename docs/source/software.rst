@@ -19,5 +19,6 @@ Python
 Web
 ---
 * Bootstrap
+* Google Charts
 * Map
 
