@@ -162,12 +162,18 @@ def create_regional_summary (results):
             k = 'kWh displaced yearly (kwh)'
             regions[c_region][k] = displaced_kWh
             
-    summary = DataFrame(regions).T[['Number of communities/interties in region',
-                        'Number of communities with cost effective projects',
-                        'Investment needed for cost-effective projects ($)',
-                        'Net benefit of cost-effective projects ($)',
-                        'Heating oil displaced yearly (gallons)',
-                        'kWh displaced yearly (kwh)']]
+    cols = ['Number of communities/interties in region',
+            'Number of communities with cost effective projects',
+            'Investment needed for cost-effective projects ($)',
+            'Net benefit of cost-effective projects ($)',
+            'Heating oil displaced yearly (gallons)',
+            'kWh displaced yearly (kwh)']
+                        
+    try:        
+        summary = DataFrame(regions).T[cols]
+    except KeyError:
+        summary = DataFrame(columns = cols)
+                        
     summary.ix['All Regions'] = summary.sum()                 
     #~ print summary
     return summary
