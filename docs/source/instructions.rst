@@ -1,5 +1,5 @@
-Instructions for running the  model
-===================================
+Instructions
+============
 
 Pages
 
