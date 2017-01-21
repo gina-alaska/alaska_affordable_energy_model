@@ -52,7 +52,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Alaska Affordable Energy Model'
-copyright = u'2016, GINA'
+copyright = u'2017, AEA, GINA'
 author = u'GINA'
 
 # The version info for the project you're documenting, acts as replacement for
