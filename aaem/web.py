@@ -107,7 +107,7 @@ class WebSummary(object):
                         continue
                     if ratio > limit:
                         #~ print ratio, type(ratio)
-                        self.viable_communities[comp].add(com.split('+')[0])
+                        #~ self.viable_communities[comp].add(com.split('+')[0])
                         self.viable_communities[comp].add(com.split('+')[0].replace("_intertie",""))
                 except AttributeError as e:
                     #~ print e

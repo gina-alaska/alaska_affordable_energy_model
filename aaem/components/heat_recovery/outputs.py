@@ -162,11 +162,17 @@ def create_regional_summary (results):
             k = 'Heating oil displaced by cost-effective projects (gallons)'
             regions[c_region][k] = displaced_hoil
             
-    summary = DataFrame(regions).T[['Number of communities in region',
-                        'Number of communities with cost effective projects',
-                        'Investment needed for cost-effective projects ($)',
-                        'Net benefit of cost-effective projects ($)',
-                        'Heating oil displaced by cost-effective projects (gallons)']]
+    
+    cols = ['Number of communities in region',
+            'Number of communities with cost effective projects',
+            'Investment needed for cost-effective projects ($)',
+            'Net benefit of cost-effective projects ($)',
+            'Heating oil displaced by cost-effective projects (gallons)']
+    try:        
+        summary = DataFrame(regions).T[cols]
+    except KeyError:
+        summary = DataFrame(columns = cols)
+    
     
     summary.ix['All Regions'] = summary.sum()  
     return summary
