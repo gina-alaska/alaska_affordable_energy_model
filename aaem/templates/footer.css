@@ -30,9 +30,14 @@ body {
   padding: 0 15px;
 }
 .container .text-muted {
-  margin: 20px 0;
+  margin-top: 0px;
+  margin-bottom: 0px;
 }
 
 .content{
     padding-bottom: 20px;
+}
+
+.indent {
+    text-indent: 25px;
 }
