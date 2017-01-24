@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.24.6]
+### updated 
+- added google analytics code to docs and summaries
+
 ## [0.24.5]
 ### updated 
 - Html: updated disclaimer
