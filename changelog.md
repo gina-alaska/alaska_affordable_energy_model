@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.24.5]
+### updated 
+- Html: updated disclaimer
+
 ## [0.24.4]
 ### updated
 - Docs: cli and installation documentation
