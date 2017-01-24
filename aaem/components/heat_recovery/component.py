@@ -17,18 +17,46 @@ from config import COMPONENT_NAME, PROJECT_TYPE, UNKNOWN
 class HeatRecovery (AnnualSavings):
     """ Heat Recovery of the Alaska Affordable Eenergy Model
 
+    
     :param commnity_data: CommintyData Object for a community
     :type commnity_data: CommunityData
     :param forecast: forcast for a community 
     :type forecast: Forecast
-    :param forecast: forcast for a community 
-    :type forecast: Forecast
-    :param forecast: forcast for a community 
-    :type forecast: Forecast
+    :param diagnostics: diagnostics for tracking error/warining messeges
+    :type diagnostics: diagnostics
+    :param prerequisites: prerequisite component data
+    :type prerequisites: dictionary
 
+
+    :ivar diagnostics: initial value: diag or new diagnostics object
+    :ivar forecast: initial value: forecast
+    :ivar cd: initial value: 'community' section of community_data
+    :type cd: dict
+    :ivar comp_specs: initial value: 'heat recovery' section of community_data
+
+
+    Parameters
+    ----------
+    commnity_data : aaem.community_data.CommunityData
+        CommintyData Object for a community
+    forecast : Forecast
+        forcast for a community 
+    diagnostics : diagnostics, optional
+        diagnostics for tracking error/warining messeges
+    prerequisites : dictionary of components, optional
+        prerequisite component data
+        
+    See also
+    --------
+    aaem.community_data.CommunityData : constructor from tuples, also record arrays
+
+
+
+    
     .. note::
 
-       An example of intersphinx is this: you **cannot** use :mod:`pickle` on this class.
+       Component Requires an existing project for a communty to be run to 
+       completion.
     """
     def __init__ (self, community_data, forecast, 
                         diag = None, prerequisites = {}):
@@ -89,6 +117,9 @@ class HeatRecovery (AnnualSavings):
          - Uses sphinx markups, which will certainly be improved in future
            version
          - Nice HTML output with the See Also, Note, Warnings directives
+
+        :ivar var1: initial value: par1
+        :type var1: int, float,...
 
 
         **Drawbacks**:
