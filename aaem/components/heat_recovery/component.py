@@ -15,18 +15,34 @@ import aaem.constants as constants
 from config import COMPONENT_NAME, PROJECT_TYPE, UNKNOWN
 
 class HeatRecovery (AnnualSavings):
-    """
+    """ Heat Recovery of the Alaska Affordable Eenergy Model
+
+    :param commnity_data: CommintyData Object for a community
+    :type commnity_data: CommunityData
+    :param forecast: forcast for a community 
+    :type forecast: Forecast
+    :param forecast: forcast for a community 
+    :type forecast: Forecast
+    :param forecast: forcast for a community 
+    :type forecast: Forecast
+
+    .. note::
+
+       An example of intersphinx is this: you **cannot** use :mod:`pickle` on this class.
     """
     def __init__ (self, community_data, forecast, 
                         diag = None, prerequisites = {}):
-        """
-        Class initialiser
+        """Class initialiser
+        
+        :param commnity_data: the first value
+        :param arg2: the first value
+        :param arg3: the first value
+        :type arg1: int, float,...
+        :type arg2: int, float,...
+        :type arg3: int, float,...
+        :returns: arg1/arg2 +arg3
+        :rtype: int, float
 
-        pre:
-            community_data is a CommunityData object. diag (if provided) should 
-        be a Diagnostics object
-        post:
-            the model can be run
         """
         self.diagnostics = diag
         if self.diagnostics == None:
@@ -52,11 +68,54 @@ class HeatRecovery (AnnualSavings):
         self.load_prerequisite_variables(prerequisites)
         
     def load_prerequisite_variables (self, comps):
-        """
-        load variables from prerequisites
-        
-        pre:
-             prerequisites: dictonary of componentes
+        """returns (arg1 / arg2) + arg3
+
+        This is a longer explanation, which may include math with latex syntax
+        :math:`\\alpha`.
+        Then, you need to provide optional subsection in this order (just to be
+        consistent and have a uniform documentation. Nothing prevent you to
+        switch the order):
+
+          - parameters using ``:param <name>: <description>``
+          - type of the parameters ``:type <name>: <description>``
+          - returns using ``:returns: <description>``
+          - examples (doctest)
+          - seealso using ``.. seealso:: text``
+          - notes using ``.. note:: text``
+          - warning using ``.. warning:: text``
+          - todo ``.. todo:: text``
+
+        **Advantages**:
+         - Uses sphinx markups, which will certainly be improved in future
+           version
+         - Nice HTML output with the See Also, Note, Warnings directives
+
+
+        **Drawbacks**:
+         - Just looking at the docstring, the parameter, type and  return
+           sections do not appear nicely
+
+        :param arg1: the first value
+        :param arg2: the first value
+        :param arg3: the first value
+        :type arg1: int, float,...
+        :type arg2: int, float,...
+        :type arg3: int, float,...
+        :returns: arg1/arg2 +arg3
+        :rtype: int, float
+
+        :Example:
+
+        >>> import template
+        >>> a = template.MainClass1()
+        >>> a.function1(1,1,1)
+        2
+
+        .. note:: can be useful to emphasize
+            important feature
+        .. seealso:: :class:`MainClass2`
+        .. warning:: arg2 must be non-zero.
+        .. todo:: check that arg2 is non zero.
         """
         # LOAD anything needed from the components passed as input
         # WRITE this
