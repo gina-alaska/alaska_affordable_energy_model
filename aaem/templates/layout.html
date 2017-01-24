@@ -21,6 +21,20 @@
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
     {% block JS %}{% endblock %}
+
+    <!-- added google analytics -->
+    <script type="text/javascript"  >
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    
+      ga('create', 'UA-6824535-25', 'auto');
+      ga('send', 'pageview');
+    
+    </script>
+
+
   </head>
   <body >
      {% include 'navbar.html' %}
@@ -57,10 +71,19 @@
     
     <footer class="footer">
       <div class="container">
+        <p style="margin-top:15px;"></p>
         {% if metadata %}
-        <p class="text-muted"> Generated from Model Version {{metadata.version}} and Data Version {{metadata.data_version}} on {{metadata.date}}</p>
+        <p class="text-muted">Copyright 2017, AEA, GINA. Generated from Model Version {{metadata.version}} and Data Version {{metadata.data_version}} on {{metadata.date}}</p>
         {% endif %}
-        <p class="text-muted">Please contact the Alaska Energy Authority if you find any errors.</p>
+        <p></p><!-- add a line-->
+        <p class="text-muted">
+        The Alaska Affordable Energy Model is a screening-level community 
+        energy evaluation and planning tool under development by the Alaska
+        Energy Authority (AEA).
+        Model data and results should not be used without consultation with AEA.
+        </P>
+        <p></p><!-- add a line-->
+        <p class="text-muted">Please contact Neil McMahon (NMcMahon@aidea.org) at the Alaska Energy Authority if you find any errors or issues on these pages.</P>
       </div>
     </footer>
 

@@ -1,25 +1,106 @@
+************
 Installation
-============
+************
 
 
-instructions for installation
 
-for Linux/Mac
--------------
+Step 1: Get the repos
+======================
 
-Installing dependencies
-~~~~~~~~~~~~~~~~~~~~~~~
-Dependencies for the Alask Affordable Energy Model can be installed using [pip](https://pypi.python.org/pypi/pip)
+Get these repositories:
 
-    pip install --user -r requirements.txt
+https://github.com/gina-alaska/alaska_affordable_energy_model
+
+https://github.com/gina-alaska/alaska_affordable_energy_model-data
+
+Note: repos are currently private 
+
+Step 2: Install dependencies 
+============================
+
+Installation can be done using pip or an anaconda virtual environment. See :ref:`software` for infromation on software used.
 
 
-Installing Devlopment Version 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+Open a Command Line Interface, and navigate to the location of the alaska_affordable_energy_model folder.
 
-    python setup.py develop
+    2a: using pip
+	
+    Be sure python(2.7) is installed then us pip:
+	
+    >>> pip install --user -r requirements.txt
+    
 
-Uninstall Development version
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    2b: using Anaconda
+	Install the conda pacage manager for python(2.7) http://conda.pydata.org/miniconda.html
 
-    python setup.py develop -u
+	Set up the environment from file:
+	
+    >>> conda env create -f environment.ymal
+
+	Activate the environment. Be sure to do this each time you want to use the project. 
+	
+    linux/mac: 
+    
+    >>> source activate AAEM_env
+
+    windows:
+    
+    >>> activate AAEM_env
+
+    To deactivate the environment when finished.
+	
+    linux/mac: 
+    
+    >>> source deactivate AAEM_env
+    
+    windows: 
+    
+    >>> deactivate AAEM_env
+
+
+
+Step 3: Install AAEM package
+============================
+
+From the alaska-affordable-energy-model directory 
+
+    3a: regular installation
+	
+    Install:
+     
+    >>> python setup.py install --user
+
+    3b: development installation/uninstallation 
+	
+    The the development version  will allow the package to be modified without reinstalling it during development. 
+
+    Development install: 
+    
+    >>> python setup.py develop --user
+    
+    Development uninstall: 
+    
+    >>> python setup.py develop -u
+
+	
+Step 4: add utility to path
+===========================
+
+    For linux/mac:
+    
+    From your home directory open .bash_profile in a text editor, and add the aaem bin directory to the path.
+
+    Add something similar to this:
+    
+    .. code-block:: bash
+
+        export PATH="<path to aaem repo>/alaska_affordable_energy_model/bin/:$PATH"
+	
+Step 5: perform initial setup 
+=============================
+
+This will set up the model and add run it:
+
+>>> aaem setup <path to setup location> <path to data repo>
+
+See :ref:`CLI` documentation from more information on the aaem command line interface commands including the setup command.

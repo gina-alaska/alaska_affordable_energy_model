@@ -1,5 +1,20 @@
 #Change Log
 
+## [0.24.6]
+### updated 
+- added google analytics code to docs and summaries
+
+## [0.24.5]
+### updated 
+- Html: updated disclaimer
+
+## [0.24.4]
+### updated
+- Docs: cli and installation documentation
+- Docs: listed software used
+- Docs: added intro text
+- html footer updated with disclaimer, contact, and copyright info.
+
 ## [0.24.3]
 ### fixed
 - bug with regional creating summaries if there were no communites for a given  project amoung the communites run 
