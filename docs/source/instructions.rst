@@ -1,7 +1,7 @@
 Instructions
 ============
 
-Pages
+**Pages:**
 
 .. toctree::
    :maxdepth: 2

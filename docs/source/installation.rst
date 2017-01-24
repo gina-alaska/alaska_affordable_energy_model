@@ -92,7 +92,9 @@ Step 4: add utility to path
 
     Add something similar to this:
     
-    export PATH="<path to aaem repo>/alaska_affordable_energy_model/bin/:$PATH"
+    .. code-block:: bash
+
+        export PATH="<path to aaem repo>/alaska_affordable_energy_model/bin/:$PATH"
 	
 Step 5: perform initial setup 
 =============================

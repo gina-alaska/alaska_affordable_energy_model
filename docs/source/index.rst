@@ -2,6 +2,7 @@
    sphinx-quickstart on Thu Aug  4 15:06:12 2016.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
+   
 
 Welcome to Alaska Affordable Energy Model's documentation!
 ==========================================================
@@ -12,20 +13,20 @@ Check the AEA Affordable Energy Strategy website to understand the purpose this 
 
 See the `AEA Alaska Energy Inventory <http://akenergyinventory.org>`_ website for details on where browse the model docs and other details for the model: http://akenergyinventory.org/energymodel
 
-Contents:
+**Contents:**
 
 .. toctree::
    :maxdepth: 2
 
    instructions
-   modules
+.. ~    modules
    software
    
 
-Indices and tables
-==================
+.. ~ Indices and tables
+.. ~ ==================
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. ~ * :ref:`genindex`
+.. ~ * :ref:`modindex`
+.. ~ * :ref:`search`
 
