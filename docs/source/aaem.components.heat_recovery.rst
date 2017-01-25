@@ -4,10 +4,10 @@ aaem.components.heat_recovery package
 Submodules
 ----------
 
-aaem.components.heat_recovery.component module
-----------------------------------------------
+Heat Recovery Component
+-----------------------
 
-.. automodule:: aaem.components.heat_recovery.component
+.. autoclass:: aaem.components.heat_recovery.component.HeatRecovery
     :members:
     :undoc-members:
     :show-inheritance:

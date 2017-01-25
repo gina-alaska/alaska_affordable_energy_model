@@ -1,7 +1,7 @@
 """
-component.py
+Heat Recovery component body
+----------------------------
 
-    Heat Recovery component body
 """
 import numpy as np
 from pandas import DataFrame
@@ -14,62 +14,66 @@ from aaem.diagnostics import diagnostics
 import aaem.constants as constants
 from config import COMPONENT_NAME, PROJECT_TYPE, UNKNOWN
 
+
 class HeatRecovery (AnnualSavings):
-    """ Heat Recovery of the Alaska Affordable Eenergy Model
+    """Heat Recovery of the Alaska Affordable Eenergy Model
 
-    
-    :param commnity_data: CommintyData Object for a community
-    :type commnity_data: CommunityData
-    :param forecast: forcast for a community 
-    :type forecast: Forecast
-    :param diagnostics: diagnostics for tracking error/warining messeges
-    :type diagnostics: diagnostics
-    :param prerequisites: prerequisite component data
-    :type prerequisites: dictionary
+    .. note::
 
-
-    :ivar diagnostics: initial value: diag or new diagnostics object
-    :ivar forecast: initial value: forecast
-    :ivar cd: initial value: 'community' section of community_data
-    :type cd: dict
-    :ivar comp_specs: initial value: 'heat recovery' section of community_data
-
+       Component Requires an existing project for a communty to be run to 
+       completion.
 
     Parameters
     ----------
-    commnity_data : aaem.community_data.CommunityData
+    commnity_data : CommunityData
         CommintyData Object for a community
     forecast : Forecast
         forcast for a community 
     diagnostics : diagnostics, optional
         diagnostics for tracking error/warining messeges
     prerequisites : dictionary of components, optional
-        prerequisite component data
+        prerequisite component data this component has no prerequisites 
+        leave empty
+        
+    Attributes
+    ----------
+    diagnostics : diagnostics
+        for tracking error/warining messeges
+        initial value: diag or new diagnostics object
+    forecast : forecast
+        community forcast for estimating future values
+        initial value: forecast
+    cd : dictionary
+        general data for a community.
+        Initial value: 'community' section of community_data
+    comp_specs : dictionary
+        component specific data for a community.
+        Initial value: 'heat recovery' section of community_data
         
     See also
     --------
-    aaem.community_data.CommunityData : constructor from tuples, also record arrays
+    aaem.community_data : 
+        community data module, see for information on CommintyData Object
+    aaem.forecast : 
+        forecast module, see for information on Forecast Object
+    aaem.diagnostics :
+        diagnostics module, see for information on diagnostics Object
 
-
-
-    
-    .. note::
-
-       Component Requires an existing project for a communty to be run to 
-       completion.
     """
     def __init__ (self, community_data, forecast, 
                         diag = None, prerequisites = {}):
         """Class initialiser
         
-        :param commnity_data: the first value
-        :param arg2: the first value
-        :param arg3: the first value
-        :type arg1: int, float,...
-        :type arg2: int, float,...
-        :type arg3: int, float,...
-        :returns: arg1/arg2 +arg3
-        :rtype: int, float
+        Parameters
+        ----------
+        commnity_data : CommunityData
+            CommintyData Object for a community
+        forecast : Forecast
+            forcast for a community 
+        diagnostics : diagnostics, optional
+            diagnostics for tracking error/warining messeges
+        prerequisites : dictionary of components, optional
+            prerequisite component data
 
         """
         self.diagnostics = diag
@@ -93,74 +97,42 @@ class HeatRecovery (AnnualSavings):
         ### load prerequisites in the following function
         ### if there are no prerequisites you can delete this and the 
         ### load_prerequisite_variables function
-        self.load_prerequisite_variables(prerequisites)
+        ##### no prerequisites needed here commend out loading functionality
+        #~ self.load_prerequisite_variables(prerequisites)
         
-    def load_prerequisite_variables (self, comps):
-        """returns (arg1 / arg2) + arg3
-
-        This is a longer explanation, which may include math with latex syntax
-        :math:`\\alpha`.
-        Then, you need to provide optional subsection in this order (just to be
-        consistent and have a uniform documentation. Nothing prevent you to
-        switch the order):
-
-          - parameters using ``:param <name>: <description>``
-          - type of the parameters ``:type <name>: <description>``
-          - returns using ``:returns: <description>``
-          - examples (doctest)
-          - seealso using ``.. seealso:: text``
-          - notes using ``.. note:: text``
-          - warning using ``.. warning:: text``
-          - todo ``.. todo:: text``
-
-        **Advantages**:
-         - Uses sphinx markups, which will certainly be improved in future
-           version
-         - Nice HTML output with the See Also, Note, Warnings directives
-
-        :ivar var1: initial value: par1
-        :type var1: int, float,...
-
-
-        **Drawbacks**:
-         - Just looking at the docstring, the parameter, type and  return
-           sections do not appear nicely
-
-        :param arg1: the first value
-        :param arg2: the first value
-        :param arg3: the first value
-        :type arg1: int, float,...
-        :type arg2: int, float,...
-        :type arg3: int, float,...
-        :returns: arg1/arg2 +arg3
-        :rtype: int, float
-
-        :Example:
-
-        >>> import template
-        >>> a = template.MainClass1()
-        >>> a.function1(1,1,1)
-        2
-
-        .. note:: can be useful to emphasize
-            important feature
-        .. seealso:: :class:`MainClass2`
-        .. warning:: arg2 must be non-zero.
-        .. todo:: check that arg2 is non zero.
-        """
-        # LOAD anything needed from the components passed as input
-        # WRITE this
-        pass
+    #~ def load_prerequisite_variables (self, comps):
+        #~ """
+        #~ Parameters
+        #~ ----------
+        #~ comps : 
+        #~ """
+        #~ # LOAD anything needed from the components passed as input
+        #~ pass
         
     def run (self, scalers = {'capital costs':1.0}):
         """
-        run the forecast model
+        runs the component. The Annual Total Savings,Annual Costs, 
+        Annual Net Benefit, NPV Benefits, NPV Costs, NPV Net Benefits, 
+        Benefit Cost Ratio, Levelized Cost of Energy, 
+        and Internal Rate of Return will all be calculated. There must be a 
+        known Heat Recovery project for this component to run.
         
-        pre:
-            self.cd should be the community library from a community data object
-        post:
-            TODO: define output values. 
-            the model is run and the output values are available
+        Parameters
+        ----------
+        scalers: dictionay of valid scalers, optional
+            Scalers to adjust normal run variables. 
+            See note on accepted  scalers
+        
+        Attributes
+        ----------
+        run : bool
+            True in the component runs to completion, False otherwise
+        reason : string
+            lists reason for failure if run == False
+            
+        Notes
+        -----
+            Accepted scalers: capital costs.
         """
         self.run = True
         self.reason = "OK"
@@ -215,36 +187,50 @@ class HeatRecovery (AnnualSavings):
     
     def get_fuel_total_saved (self):
         """
-        returns the total fuel saved in gallons
+        Returns 
+        -------
+            the total fuel saved in gallons
         """
         return self.proposed_heat_recovery
     
     def get_total_enery_produced (self):
         """
-        returns the total energy produced
+        Returns
+        ------- 
+            the total energy produced
         """
         return self.proposed_heat_recovery/ constants.mmbtu_to_gal_HF
  
     def calc_proposed_heat_recovery (self):
-        """
-        calculate the proposed heat recovery 
+        """calculate the proposed heat recovery 
         
-        if Project details exist:
-            proposed_heat_recovery = projects 'proposed gallons diesel offset'
+        Attributes
+        ----------
+        proposed_heat_recovery : float
+            caclulated or loaded proposed heat recovery
             
-        hr_available = %hr * diesel_for_generation
-        potential_hr = 'Est. potential annual heating fuel gallons displaced'
-        if hr_opp and waste_heat_available:
-            if potential_hr  unknown:
-                proposed_heat_recovery = (hr_available * .3) / 
-                                          'heating conversion efficiency'
-            else:
-                proposed_heat_recovery = potential_hr/
-                                         'heating conversion efficiency'
-        else:
-            proposed_heat_recovery = 0
+        Notes
+        -----
+        Proposed_heat_recovery currently is only set if there a project for 
+        heat recovery in a community.
         
         """
+        ### OLD COMMENTS
+        ## if Project details exist:
+        ##    proposed_heat_recovery = projects 'proposed gallons diesel offset'
+            
+        ##hr_available = %hr * diesel_for_generation
+        ##potential_hr = 'Est. potential annual heating fuel gallons displaced'
+        ##if hr_opp and waste_heat_available:
+        ##    if potential_hr  unknown:
+        ##        proposed_heat_recovery = (hr_available * .3) / 
+        ##                                  'heating conversion efficiency'
+        ##    else:
+        ##        proposed_heat_recovery = potential_hr/
+        ##                                 'heating conversion efficiency'
+        ##else:
+        ##    proposed_heat_recovery = 0
+        
         p_gallons = self.comp_specs["project details"]\
                             ['proposed gallons diesel offset']
         p_btu = self.comp_specs["project details"]\
@@ -254,6 +240,9 @@ class HeatRecovery (AnnualSavings):
         if p_gallons != UNKNOWN and p_btu != UNKNOWN:
             self.proposed_heat_recovery = p_gallons
             return
+            
+        ## not currently estmaing unknown proposed heat recovery
+        return
         # else:
         hr_opp = self.comp_specs['estimate data']\
                     ['Waste Heat Recovery Opperational']
@@ -292,7 +281,13 @@ class HeatRecovery (AnnualSavings):
     
     # Make this do stuff
     def calc_capital_costs (self):
-        """ Function Doc"""
+        """Calculate or Load the project Captial Costs.
+        
+        Attributes
+        ----------
+        capital_costs : float
+            caclulated or loaded captial costs for heat recovery
+        """
         capital_costs = self.comp_specs["project details"]['capital costs']
         if capital_costs == UNKNOWN:
 
@@ -312,14 +307,26 @@ class HeatRecovery (AnnualSavings):
         
     
     def calc_annual_electric_savings (self):
-        """
+        """Set annual electric savings to zero as this component is for 
+        improving heating fuel use
+        
+        Attributes
+        ----------
+        annual_electric_savings : float, dollars per year
+            set to zero
         """
         self.annual_electric_savings = 0
         
-    # Make this do sruff. Remember the different fuel type prices if using
     def calc_annual_heating_savings (self):
+        """Calculate Annual Heating Savings, from proposed Heat recovery and 
+        Heating Fuel Price.
+        
+        Attributes
+        ----------
+        annual_heating_savings : float, dollars per year
+            Savings gained by Heat Recovey improvments
         """
-        """
+        self.annual_electric_savings = 0
         price = (self.diesel_prices + self.cd['heating fuel premium'])
         
         self.annual_heating_savings = self.proposed_heat_recovery * price + \
