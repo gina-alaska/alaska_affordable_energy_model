@@ -1,5 +1,0 @@
-Refreshing
-==========
-
-
-instructions for updating

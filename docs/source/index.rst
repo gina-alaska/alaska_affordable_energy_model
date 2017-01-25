@@ -15,7 +15,7 @@ See the `AEA Alaska Energy Inventory <http://akenergyinventory.org>`_ website fo
 
 This documentation is a *work in progress* : contributions, questions, and corrections are welcomed.
 
-The source for this website/the model documentation is managed in the same code repository as the model code under the `/docs <https://github.com/gina-alaska/alaska_affordable_energy_model/docs> directory. The documentation is publicly hosted on http://model-docs.akenergyinventory.org.  The `Sphynx <http://www.sphinx-doc.org>` tool is used to manage and render the documentation which is written in `reStructuredText <http://www.sphinx-doc.org/en/1.5.1/rest.html>` markup.  
+The source for this website/the model documentation is managed in the same code repository as the model code under the `/docs <https://github.com/gina-alaska/alaska_affordable_energy_model/docs>`_ directory. The documentation is publicly hosted on http://model-docs.akenergyinventory.org.  The `Sphynx <http://www.sphinx-doc.org>`_ tool is used to manage and render the documentation which is written in `reStructuredText <http://www.sphinx-doc.org/en/1.5.1/rest.html>`_ markup.  
 
 **Contents:**
 

@@ -1,51 +1,47 @@
+************************************
 aaem.components.ashp_res package
-================================
+************************************
 
-Submodules
-----------
+.. ~ Submodules
+.. ~ ----------
 
-aaem.components.ashp_res.ashp_res module
-----------------------------------------
+Air Source Heat Pump Residential Component
+------------------------------------------
 
-.. automodule:: aaem.components.ashp_res.ashp_res
+.. autoclass:: aaem.components.ashp_res.component.ASHPResidential
     :members:
     :undoc-members:
     :show-inheritance:
 
-aaem.components.ashp_res.component module
------------------------------------------
+.. ~ aaem.components.ashp_res.config module
+.. ~ -------------------------------------------
 
-.. automodule:: aaem.components.ashp_res.component
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-aaem.components.ashp_res.config module
---------------------------------------
+.. ~ Air Source Heat Pump Residential Configuration
+.. ~ ----------------------------------------------
 
 .. automodule:: aaem.components.ashp_res.config
     :members:
     :undoc-members:
     :show-inheritance:
 
-aaem.components.ashp_res.inputs module
---------------------------------------
+.. ~ aaem.components.ashp_res.inputs module
+.. ~ --------------------------------------
 
 .. automodule:: aaem.components.ashp_res.inputs
     :members:
     :undoc-members:
     :show-inheritance:
 
-aaem.components.ashp_res.outputs module
----------------------------------------
+.. ~ aaem.components.ashp_res.outputs module
+.. ~ ---------------------------------------
 
 .. automodule:: aaem.components.ashp_res.outputs
     :members:
     :undoc-members:
     :show-inheritance:
 
-aaem.components.ashp_res.preprocessing module
----------------------------------------------
+.. ~ aaem.components.ashp_res.preprocessing module
+.. ~ ---------------------------------------------
 
 .. automodule:: aaem.components.ashp_res.preprocessing
     :members:
@@ -53,10 +49,10 @@ aaem.components.ashp_res.preprocessing module
     :show-inheritance:
 
 
-Module contents
----------------
+.. ~ Module contents
+.. ~ ---------------
 
-.. automodule:: aaem.components.ashp_res
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. ~ .. automodule:: aaem.components.ashp_res
+.. ~     :members:
+.. ~     :undoc-members:
+.. ~     :show-inheritance:

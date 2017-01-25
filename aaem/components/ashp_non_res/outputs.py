@@ -1,7 +1,9 @@
 """
-outputs.py
+Air Source Heat Pump Non-residential Outputs
+---------------------
 
-    ouputs functions for Air Source Heat Pumps - Non-Residential component
+output functions for Air Source Heat Pump Non-residential component
+
 """
 import os.path
 import numpy as np

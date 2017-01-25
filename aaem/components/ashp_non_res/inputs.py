@@ -1,7 +1,12 @@
 """
-inputs.py
+Air Source Heat Pump Non-residential inputs
+-------------------------------------------
 
-    input functions for Air Source Heat Pumps - Non-Residential component
+    input functions for Air Source Heat Pump Non-residential component
+    
+    .. note::
+        Uses ASHP Base input functions
+    
 """
 #~ import os.path
 #~ from pandas import read_csv

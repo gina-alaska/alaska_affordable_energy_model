@@ -1,7 +1,16 @@
 """
-config.py
-
-    Air Source Heat Pumps - Non-Residential config info for community data yaml file
+Air Sorce Heat Pump Non-residential Configuration 
+-------------------------------------------------
+    
+    Contains Air Sorce Heat Pump Non-residential configuration info for community
+    data yaml file, and other set-up requirements
+    
+    **Unique Configuration keys**
+    
+        btu/hrs: btu/hrs
+        
+        cost per btu/hrs: cost of heating $/btu/hr
+        
 """
 import aaem.components.ashp_base as ashp_base
 from copy import deepcopy

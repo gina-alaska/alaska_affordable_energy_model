@@ -1,53 +1,53 @@
-aaem.components.non-residential package
+aaem.components.non_residential package
 =======================================
 
 Submodules
 ----------
 
-aaem.components.non-residential.community_buildings module
+aaem.components.non_residential.community_buildings module
 ----------------------------------------------------------
 
-.. automodule:: aaem.components.non-residential.community_buildings
+.. automodule:: aaem.components.non_residential.community_buildings
     :members:
     :undoc-members:
     :show-inheritance:
 
-aaem.components.non-residential.component module
+aaem.components.non_residential.component module
 ------------------------------------------------
 
-.. automodule:: aaem.components.non-residential.component
+.. automodule:: aaem.components.non_residential.component
     :members:
     :undoc-members:
     :show-inheritance:
 
-aaem.components.non-residential.config module
+aaem.components.non_residential.config module
 ---------------------------------------------
 
-.. automodule:: aaem.components.non-residential.config
+.. automodule:: aaem.components.non_residential.config
     :members:
     :undoc-members:
     :show-inheritance:
 
-aaem.components.non-residential.inputs module
+aaem.components.non_residential.inputs module
 ---------------------------------------------
 
-.. automodule:: aaem.components.non-residential.inputs
+.. automodule:: aaem.components.non_residential.inputs
     :members:
     :undoc-members:
     :show-inheritance:
 
-aaem.components.non-residential.outputs module
+aaem.components.non_residential.outputs module
 ----------------------------------------------
 
-.. automodule:: aaem.components.non-residential.outputs
+.. automodule:: aaem.components.non_residential.outputs
     :members:
     :undoc-members:
     :show-inheritance:
 
-aaem.components.non-residential.preprocessing module
+aaem.components.non_residential.preprocessing module
 ----------------------------------------------------
 
-.. automodule:: aaem.components.non-residential.preprocessing
+.. automodule:: aaem.components.non_residential.preprocessing
     :members:
     :undoc-members:
     :show-inheritance:
@@ -56,7 +56,7 @@ aaem.components.non-residential.preprocessing module
 Module contents
 ---------------
 
-.. automodule:: aaem.components.non-residential
+.. automodule:: aaem.components.non_residential
     :members:
     :undoc-members:
     :show-inheritance:
