@@ -1,7 +1,28 @@
 """
-config.py
+Heat Recovery Configuration 
+---------------------------
+    
+Contains Heat Recovery configuration info for community data yaml file, and 
+other driver paths
 
-    Heat Recovery config info for community data yaml file
+**Unique Configuration keys**
+
+    'estimate data': data from heat recovery projects, loaded from data 
+    
+    'estimate pipe distance': distance of pipe (ft)
+    
+    'estimate pipe cost/ft': Cost of pipe($/ft)
+    
+    'estimate buildings to heat': # of buildings estimated to retrofit (#)
+    
+    'estimate cost/building': estimated cost to retrofit each building ($)
+    
+    'heating conversion efficiency': efficiency for heat conversion
+    
+    'o&m per year': operation and maintainence cost per yer
+    
+    'percent heat recovered': percent of heat recoverd
+
 """
 COMPONENT_NAME = "Heat Recovery"
 PROJECT_TYPE = 'heat_recovery'
