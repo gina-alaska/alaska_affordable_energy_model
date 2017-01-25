@@ -20,11 +20,11 @@ def component_summary (results, res_dir):
     
     Parameters
     ----------
-        results : dictionay
-            results from the model, dictionay with each community or project 
-            as key
-        res_dir :  path
-            location to save file
+    results : dictionay
+        results from the model, dictionay with each community or project 
+        as key
+    res_dir :  path
+        location to save file
     
     """
     communities_summary (results, res_dir)
@@ -35,11 +35,11 @@ def communities_summary (coms, res_dir):
     
     Parameters
     ----------
-        coms : dictionay
-            results from the model, dictionay with each community or project 
-            as key
-        res_dir :  path
-            location to save file
+    coms : dictionay
+        results from the model, dictionay with each community or project 
+        as key
+    res_dir :  path
+        location to save file
     
     """
     out = []
@@ -124,9 +124,9 @@ def create_regional_summary (results):
     
     Parameters
     ----------
-        results : dictionay
-            results from the model, dictionay with each community or project 
-            as key
+    results : dictionay
+        results from the model, dictionay with each community or project 
+        as key
             
     Returns
     -------
@@ -199,10 +199,10 @@ def save_regional_summary (summary, res_dir):
     
     Parameters
     ----------
-        summary : Dataframe
-            compiled regional results
-        res_dir :  path
-            location to save file
+    summary : Dataframe
+        compiled regional results
+    res_dir :  path
+        location to save file
 
     """
     f_name = os.path.join(res_dir, '__regional_' +
@@ -217,10 +217,10 @@ def generate_web_summary (web_object, community):
     
     Parameters
     ----------
-        web_object: WebSummary
-            a WebSummary object
-        community: str
-            community name
+    web_object: WebSummary
+        a WebSummary object
+    community: str
+        community name
             
     See also
     --------
@@ -367,8 +367,8 @@ def create_project_details_list (project):
     
     Parameters
     ----------
-        projcet: HeatRecovery
-            A HeatRecovery object thats run function has been called
+    projcet: HeatRecovery
+        A HeatRecovery object thats run function has been called
             
     Returns
     -------

@@ -1,7 +1,7 @@
 """
-component.py
+Air Source Heat Pumps - Non-residential component body
+------------------------------------------------------
 
-    Air Source Heat Pumps - Non-Residential component body
 """
 import numpy as np
 from pandas import DataFrame
@@ -28,8 +28,8 @@ class ASHPNonResidential (ashp_base.ASHPBase):
     diagnostics : diagnostics, optional
         diagnostics for tracking error/warining messeges
     prerequisites : dictionary of components, optional
-        prerequisite component data this component has no prerequisites 
-        leave empty
+        'Non-residential Energy Efficiency' component is a required prerequisite
+        for this component
         
     Attributes
     ----------
@@ -54,18 +54,27 @@ class ASHPNonResidential (ashp_base.ASHPBase):
         forecast module, see for information on Forecast Object
     aaem.diagnostics :
         diagnostics module, see for information on diagnostics Object
+    aaem.components.non_residential :
+        'Non-residential Energy Efficiency' component is a required prerequisite
+        for this component
 
     """
     def __init__ (self, community_data, forecast, 
                         diag = None, prerequisites = {}):
-        """
-        Class initialiser
+        """Class initialiser
+        
+        Parameters
+        ----------
+        commnity_data : CommunityData
+            CommintyData Object for a community
+        forecast : Forecast
+            forcast for a community 
+        diagnostics : diagnostics, optional
+            diagnostics for tracking error/warining messeges
+        prerequisites : dictionary of components, optional
+            prerequisite component data, 
+            'Non-residential Energy Efficiency' component
 
-        pre:
-            community_data is a CommunityData object. diag (if provided) should 
-        be a Diagnostics object
-        post:
-            the model can be run
         """
         self.component_name = COMPONENT_NAME
         super(ASHPNonResidential, self).__init__(community_data, forecast,
@@ -77,11 +86,31 @@ class ASHPNonResidential (ashp_base.ASHPBase):
         self.ashp_sector_system = "non-residential"
         
     def load_prerequisite_variables (self, comps):
-        """
-        load variables from prerequisites
+        """Loads square footage of Non-residential buildings and average 
+        heating consumption per sqft(gal heating fuel/sqft)
         
-        pre:
-             prerequisites: dictonary of componentes
+        Parameters
+        ----------
+        comps: Dictionary of components
+            Dictionary of components, needs 'Non-residential Energy Efficiency'
+            key
+        
+        Attributes
+        ----------
+        non_res_sqft : float
+            Total square footage that may be refit of nonresidental buildings,
+            Will be set to 0 if a value cannot be found in 
+            'Non-residential Energy Efficiency' component
+        avg_gal_per_sqft : float
+            Heating fuel consumption per square foot. Will be set to 0 if a,
+            value cannot be found in 'Non-residential Energy Efficiency'
+            component
+            
+        Raises
+        ------
+            KeyError
+                if 'Non-residential Energy Efficiency' component not found.
+        
         """
         tag = self.cd['name'].split('+')
         if len(tag) > 1 and tag[1].split('_')[0] != 'ASHP_res':
@@ -98,23 +127,48 @@ class ASHPNonResidential (ashp_base.ASHPBase):
         
         
     def calc_heat_energy_produced_per_year (self):
+        """Calculate the heat energy produced per year by ASHP system 
+        (TODO: Double check defintion)
+        
+        Attributes
+        ----------
+        heat_displaced_sqft : float
+            Building Square footage that will be heated by ASHP
+        heat_energy_produced_per_year : float
+            Heat energe produced per year in BTU
         """
-        """
-        self.heat_displaced_sqft = self.non_res_sqft * self.cd[ 'assumed percent non-residential sqft heat displacement']
-        average_net_btu_per_hr_pr_sf = self.avg_gal_per_sqft * self.cd["heating oil efficiency"]*(1/constants.mmbtu_to_gal_HF)*1e6/ constants.hours_per_year
-        self.heat_energy_produced_per_year = average_net_btu_per_hr_pr_sf * self.heat_displaced_sqft /1e6 * constants.hours_per_year
+        self.heat_displaced_sqft = self.non_res_sqft *\
+            self.cd[ 'assumed percent non-residential sqft heat displacement']
+        average_net_btu_per_hr_pr_sf = self.avg_gal_per_sqft * \
+            self.cd["heating oil efficiency"] * \
+            (1/constants.mmbtu_to_gal_HF) * 1e6/ constants.hours_per_year
+        self.heat_energy_produced_per_year = average_net_btu_per_hr_pr_sf * \
+            self.heat_displaced_sqft /1e6 * constants.hours_per_year
                         
         #~ print self.heat_energy_produced_per_year
         
     def run (self, scalers = {'capital costs':1.0}):
-        """
-        run the forecast model
+        """Runs the component. The Annual Total Savings,Annual Costs, 
+        Annual Net Benefit, NPV Benefits, NPV Costs, NPV Net Benefits, 
+        Benefit Cost Ratio, Levelized Cost of Energy, 
+        and Internal Rate of Return will all be calculated. 
         
-        pre:
-            self.cd should be the community library from a community data object
-        post:
-            TODO: define output values. 
-            the model is run and the output values are available
+        Parameters
+        ----------
+        scalers: dictionay of valid scalers, optional
+            Scalers to adjust normal run variables. 
+            See note on accepted  scalers
+        
+        Attributes
+        ----------
+        run : bool
+            True in the component runs to completion, False otherwise
+        reason : string
+            lists reason for failure if run == False
+            
+        Notes
+        -----
+            Accepted scalers: capital costs.
         """
         self.run = True
         self.reason = "OK"
@@ -158,8 +212,14 @@ class ASHPNonResidential (ashp_base.ASHPBase):
             self.reason = "Financial modeling disabled for this community."
 
     def calc_capital_costs (self):
-        """
-        calculate the capital costs
+        """Calculate or Load the project Captial Costs.
+        
+        Attributes
+        ----------
+        total_cap_required : float
+            total ASHP capacity provided.
+        capital_costs : float
+            caclulated or loaded captial costs for heat recovery
         """
         min_tem = float(self.comp_specs['data']\
                                 .ix['Minimum Temp'].astype(float))
@@ -188,8 +248,13 @@ class ASHPNonResidential (ashp_base.ASHPBase):
                                     self.regional_multiplier
         
     def save_component_csv (self, directory):
-        """
-        save the component output csv in directory
+        """Save the component output csv in directory
+        
+        Parameters
+        ----------
+        directory : path
+            output directory
+            
         """
         if not self.run:
             return

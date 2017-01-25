@@ -23,14 +23,14 @@ The source for this website/the model documentation is managed in the same code 
    :maxdepth: 2
 
    instructions
-.. ~    modules
+   modules
    software
    
 
-.. ~ Indices and tables
-.. ~ ==================
+Indices and tables
+==================
 
-.. ~ * :ref:`genindex`
-.. ~ * :ref:`modindex`
-.. ~ * :ref:`search`
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
 

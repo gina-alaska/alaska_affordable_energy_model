@@ -110,8 +110,7 @@ class HeatRecovery (AnnualSavings):
         #~ pass
         
     def run (self, scalers = {'capital costs':1.0}):
-        """
-        runs the component. The Annual Total Savings,Annual Costs, 
+        """runs the component. The Annual Total Savings,Annual Costs, 
         Annual Net Benefit, NPV Benefits, NPV Costs, NPV Net Benefits, 
         Benefit Cost Ratio, Levelized Cost of Energy, 
         and Internal Rate of Return will all be calculated. There must be a 
