@@ -14,7 +14,7 @@
 {% block secondary_nav %}{% include 'summary_nav.html' %} {% endblock %}
     
 {% block left %}<div class="stats">
-    {% for project in info %}<H3>{{ project.name[0].upper() }}{{ project.name[1:].lower() }} <small class = "hidy" data-toggle="collapse" data-target="#{{ project.name.replace(' ','_').replace(')','').replace('(','').replace('#','').replace(',','') }}"></small> </H3>
+    {% for project in info %}<H3>{{ project.name[0].upper() }}{{ project.name[1: project.name.find('--')].lower() }}{{ project.name[ project.name.find('--'):] }}<small class = "hidy" data-toggle="collapse" data-target="#{{ project.name.replace(' ','_').replace(')','').replace('(','').replace('#','').replace(',','') }}"></small> </H3>
     <div id="{{ project.name.replace(' ','_').replace(')','').replace('(','').replace('#','').replace(',','') }}" class="collapse in" >
     {% for item in project.info %} <p class="stats">{{item.words}}: {{item.value}} {{item.units}}</p>{% endfor %}
     </div>{% endfor %}

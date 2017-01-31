@@ -137,15 +137,15 @@ class HeatRecovery (AnnualSavings):
         self.reason = "OK"
         if self.cd['name'].find('+') == -1:
             self.run = False
-            self.reason = PROJECT_TYPE + \
-                " component requires a known project to run"
+            self.reason = "Heat recovery" + \
+                " component requires a known project to run."
             self.diagnostics.add_note(self.component_name, self.reason)
             return 
         
         tag = self.cd['name'].split('+')
         if len(tag) > 1 and tag[1] != PROJECT_TYPE:
             self.run = False
-            self.reason = "Not a " + PROJECT_TYPE + " project"
+            self.reason = "Not a " + "Heat recovery" + " project."
             self.diagnostics.add_note(self.component_name, self.reason)
             return 
         
@@ -154,14 +154,14 @@ class HeatRecovery (AnnualSavings):
                 self.calc_proposed_heat_recovery()
             except AttributeError:
                 self.run = False
-                self.reason = "Could not caclulate proposed heat recovery"
+                self.reason = "Could not caclulate proposed heat recovery."
                 self.diagnostics.add_note(self.component_name, self.reason)
                 return 
                 
         if np.isnan(self.proposed_heat_recovery) or \
                 self.proposed_heat_recovery == 0:
             self.run = False
-            self.reason = "No proposed heat recovery"
+            self.reason = "No proposed heat recovery."
             self.diagnostics.add_note(self.component_name, self.reason)
             return 
         

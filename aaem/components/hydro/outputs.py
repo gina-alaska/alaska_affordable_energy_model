@@ -145,7 +145,7 @@ def communities_summary (coms, res_dir):
             'Hydro NPV Costs [$]',
             'Hydro NPV Net benefit [$]',
             'Hydro Internal Rate of Return',
-            'Hydro Benefit Cost Ratio',
+            'Hydro Benefit-cost ratio',
             'notes'
             ]
         
@@ -324,6 +324,7 @@ def generate_web_summary (web_object, community):
         info = create_project_details_list(project)
             
         info_for_projects.append({'name':name,'info':info})
+        #~ print name
             
     
     ## create list of charts
@@ -378,27 +379,27 @@ def create_project_details_list (project):
         source = "unknown"
     
     return [
-        {'words':'Capital Cost ($)', 
+        {'words':'Capital cost', 
             'value': '${:,.0f}'.format(project.get_NPV_costs())},
-        {'words':'Lifetime Savings ($)', 
+        {'words':'Lifetime savings', 
             'value': '${:,.0f}'.format(project.get_NPV_benefits())},
-        {'words':'Net Lifetime Savings ($)', 
+        {'words':'Net lifetime savings', 
             'value': '${:,.0f}'.format(project.get_NPV_net_benefit())},
-        {'words':'Benefit Cost Ratio', 
+        {'words':'Benefit-cost ratio', 
             'value': '{:,.3f}'.format(project.get_BC_ratio())},
-        {'words':'Proposed Nameplate Capacity(kW)', 
+        {'words':'Proposed nameplate capacity', 
             'value': 
-            '{:,.0f}'.format(project.comp_specs['project details']\
+            '{:,.0f} kW'.format(project.comp_specs['project details']\
             ['proposed capacity'])},
-        {'words':'Expected Yearly Generation (kWh/year)', 
+        {'words':'Expected yearly generation', 
          'value': 
-         '{:,.0f}'.format(project.comp_specs['project details']\
+         '{:,.0f} kWh/year'.format(project.comp_specs['project details']\
                                 ['proposed generation'])},
         {'words':'Phase', 
          'value': project.comp_specs['project details']['phase']},
-        {'words':'Total Capital Cost', 
+        {'words':'Total capital cost', 
             'value': '${:,.0f}'.format(cost)},
-        {'words':'Estimated Hydro Penetration Level (%)', 
+        {'words':'Estimated hydro penetration level', 
             'value': '{:,.2f}%'.format(pen)},
         {'words':'source', 
             'value': source},

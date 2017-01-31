@@ -81,7 +81,7 @@ class ResidentialBuildings(AnnualSavings):
         tag = self.cd['name'].split('+')
         if len(tag) > 1 and tag[1] != 'residential':
             self.run = False
-            self.reason = "Not a residential project"
+            self.reason = "Not a residential project."
             return 
             
         # needed for electric or HF component and has a default value

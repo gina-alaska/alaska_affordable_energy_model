@@ -181,6 +181,9 @@ class WebSummary(object):
                     reason = self.results[com][comp].reason
                     if reason.lower() == 'ok':
                         reason = "The component has a bad motivator"
+                        
+                    # make a proper sentence.
+                    #~ reason = reason[0].upper() + reason[1:].lower()
                     html.write(template.render( 
                                     type = comp, 
                                     com = com.replace("'",'') ,
@@ -669,7 +672,7 @@ class WebSummary(object):
         
         #~ if costs_data:
         charts.append({'name':'costs', 'data': str(costs_table).replace('nan','null'), 
-                            'title':'Costs by Sector',
+                            'title':'Energy by Sector',
                             'type': "'percent'",
                             'stacked': True,
                             'plot': True,})  
@@ -715,23 +718,25 @@ class WebSummary(object):
         r = res['Residential Energy Efficiency'] # res. eff. component
         rd = r.comp_specs['data'].T # res. data
         
-        table = [[ True, "", "Number Houses","Avg. Sqft.", "Avg. EUI" ],
+        table = [[ True, "", "Number Houses",
+                        "Houshold Avg. Square Feet",
+                         "Avg. EUI" ],
                  [ False, "BEES", 
                             '{:,.0f}'.format(float(rd["BEES Number"])),
                             '{:,.0f}'.format(float(rd['BEES Avg Area (SF)'])),
-                            '{:,.4f}'.format(\
+                            '{:,.2f}'.format(\
                                 float(rd['BEES Avg EUI (MMBtu/sf)']))],
                  [ False, "Post-Retrofit", 
                             '{:,.0f}'.format(float(rd["Post-Retrofit Number"])),
                             '{:,.0f}'.format(\
                                 float(rd['Post-Retrofit Avg Area (SF)'])),
-                            '{:,.4f}'.format(\
+                            '{:,.2f}'.format(\
                                 float(rd['Post-Retrofit Avg EUI (MMBtu/sf)']))],
                  [ False, "Pre-Retrofit", 
                             '{:,.0f}'.format(r.opportunity_HH),  
                             '{:,.0f}'.format(float(\
                                         rd['Pre-Retrofit Avg Area (SF)'])), 
-                            '{:,.4f}'.format(\
+                            '{:,.2f}'.format(\
                                 float(rd['Pre-Retrofit Avg EUI (MMBtu/sf)']))],
                 ]
         
@@ -791,9 +796,9 @@ class WebSummary(object):
                     '{:,.0f}'.format(estimates['Square Feet'].sum()) + \
                     " square feet for the " + str(int(count+num)) + \
                     " non-residential buildings in this community. " +\
-                    '{:,.2f}%'.format(percent_id*100) + " of the buildings " +\
+                    '{:,.1f}%'.format(percent_id*100) + " of the buildings " +\
                     "have been identified. The others are assumed to exist. " +\
-                    '{:,.2f}%'.format(percent_sf*100) + " of the assumed" +\
+                    '{:,.1f}%'.format(percent_sf*100) + " of the assumed" +\
                     " square footage is from measured sources." +\
                     " The break down of heating fuel consumption by building" +\
                     " type is pesented in the pie chart"
@@ -862,28 +867,28 @@ class WebSummary(object):
         diesel_consumption['year']=diesel_consumption.index
         if hasattr(res['Residential Energy Efficiency'],
                     'baseline_fuel_Hoil_consumption'):
-            diesel_consumption['Residential Heating Oil(gallons)'] = \
+            diesel_consumption['Residential Heating Oil (gallons)'] = \
                                         res['Residential Energy Efficiency'].\
                                         baseline_fuel_Hoil_consumption
         else:
-            diesel_consumption['Residential Heating Oil(gallons)'] = np.nan
+            diesel_consumption['Residential Heating Oil (gallons)'] = np.nan
         
         
         if hasattr(res['Non-residential Energy Efficiency'], 
                     'baseline_fuel_Hoil_consumption'):
-            diesel_consumption['Non-residential Heating Oil(gallons)'] = \
+            diesel_consumption['Non-residential Heating Oil (gallons)'] = \
                                     res['Non-residential Energy Efficiency'].\
                                     baseline_fuel_Hoil_consumption
         else:
-            diesel_consumption['Non-residential Heating Oil(gallons)'] = np.nan
+            diesel_consumption['Non-residential Heating Oil (gallons)'] = np.nan
         
         if hasattr(res['Water and Wastewater Efficiency'], 
                     'baseline_fuel_Hoil_consumption'):
-            diesel_consumption['Water/Wastewater Heating Oil(gallons)'] = \
+            diesel_consumption['Water/Wastewater Heating Oil (gallons)'] = \
                                         res['Water and Wastewater Efficiency'].\
                                         baseline_fuel_Hoil_consumption
         else:
-            diesel_consumption['Water/Wastewater Heating Oil(gallons)'] = np.nan
+            diesel_consumption['Water/Wastewater Heating Oil (gallons)'] = np.nan
             
         if hasattr(res['forecast'], 'generation_by_type'):
             eff = res['community data'].get_item("community",
@@ -892,11 +897,11 @@ class WebSummary(object):
                 eff = np.nan
                 
             #~ print res['forecast'].generation_by_type["generation diesel"]
-            diesel_consumption['Utility Diesel(gallons)'] = \
+            diesel_consumption['Utility Diesel (gallons)'] = \
                 res['forecast'].generation_by_type["generation diesel"] / eff
             #~ diesel_consumption['Utility Diesel(gallons)']
         else:
-            diesel_consumption['Utility Diesel(gallons)'] = np.nan
+            diesel_consumption['Utility Diesel (gallons)'] = np.nan
             
             
         diesel_consumption = diesel_consumption[['year'] + list(diesel_consumption.columns)[1:][::-1]]
@@ -945,7 +950,13 @@ class WebSummary(object):
                                                                         'generation_solar [kWh/year]',
                                                                         'generation_biomass [kWh/year]']]
             
-                                                                        
+                     
+            generation.columns = ['generation diesel [kWh/year]',
+                                'generation hydro [kWh/year]',
+                                'generation natural gas [kWh/year]',
+                                'generation wind [kWh/year]',
+                                'generation solar [kWh/year]',
+                                'generation biomass [kWh/year]']
               
                                                                     
             generation['year']=generation.index
@@ -1152,8 +1163,8 @@ class WebSummary(object):
             [True, "Power House", ""],
             [False, "Efficiency", '{:,.2f} kWh/gallon'.format(eff)],
             [False, "Total number of generators", num_gens],
-            [False, "Total capacity (in kW)", cap], 
-            [False, "Largest generator (in kW)", largest],
+            [False, "Total capacity", cap], 
+            [False, "Largest generator", largest],
             [False, "Sizing", size],
             [False, "Ratio of total capacity to average load", 
                                                     '{:,.2f}'.format(ratio)],
@@ -1163,16 +1174,16 @@ class WebSummary(object):
                 "Estimated number of gallons of heating oil displaced", 
                                             '{:,.0f} gallons'.format(hr_ava)],
             [True, "Wind Power", ""],
-            [False, "Current wind capacity (kW)",  '{:,.0f} kW'.format(w_cap)],
-            [False, "Current wind generation (kWh/year)", w_gen],
+            [False, "Current wind capacity",  '{:,.0f} kW'.format(w_cap)],
+            [False, "Current wind generation", w_gen],
             [False, "Current wind capacity factor",  '{:,.2f}'.format(w_fac)],
             [True, "Solar Power", ""],
-            [False, "Current solar capacity (kW)",  '{:,.0f} kW'.format(s_cap)],
-            [False, "Current solar generation (kWh/year)",  s_gen],
+            [False, "Current solar capacity",  '{:,.0f} kW'.format(s_cap)],
+            [False, "Current solar generation",  s_gen],
             [False, "Current output per 10kW Solar PV", '{:,.0f}'.format(s_pv)],
             [True, "Hydropower", ""],
-            [False, "Current hydro capacity (kW)",  '{:,.0f} kW'.format(h_cap)],
-            [False, "Current hydro generation (kWh/year)",  h_gen],
+            [False, "Current hydro capacity",  '{:,.0f} kW'.format(h_cap)],
+            [False, "Current hydro generation",  h_gen],
             
             ]
 
@@ -1271,9 +1282,9 @@ class WebSummary(object):
                 c = self.results[i][comp]
                 ratio = c.get_BC_ratio()
                 
-                fs = 0
-                lcoe_e = 0
-                lcoe_hf = 0
+                fs = "N/A"
+                lcoe_e = "N/A"
+                lcoe_hf = "N/A"
                 if (not type(ratio) is str):
                     fs = c.get_fuel_total_saved() 
                     if type(fs) in [list, np.array, np.ndarray]:
@@ -1294,19 +1305,19 @@ class WebSummary(object):
                 
                 
                 net = c.get_NPV_net_benefit()
-                if net == 'N/A': 
-                    net = 0
+                #~ if net == 'N/A': 
+                    #~ net = 0
                 
                 benefit = c.get_NPV_benefits()
-                if benefit == 'N/A': 
-                    benefit = 0
+                #~ if benefit == 'N/A': 
+                    #~ benefit = 0
                     
                 costs = c.get_NPV_costs()
-                if costs == 'N/A': 
-                    costs = 0
+                #~ if costs == 'N/A': 
+                    #~ costs = 0
                 
-                if 'N/A' == ratio:
-                    ratio = 0
+                #~ if 'N/A' == ratio:
+                    #~ ratio = 0
   
                 
                 try:
@@ -1323,13 +1334,13 @@ class WebSummary(object):
                               'sucess': True if ratio > 1.0 else False,
                               'negitive': True if ratio < 0 else False,
                               'comp':comp,
-                              'benefits': '${:,.0f}'.format(benefit),
-                              'costs': '${:,.0f}'.format(costs),
-                              'net': '${:,.0f}'.format(net),
-                              'ratio': '{:,.2f}'.format(ratio),
-                              'lcoe_e':'${:,.2f}'.format(lcoe_e),
-                        'lcoe_hf':'${:,.2f}'.format(lcoe_hf/mmbtu_to_gal_HF),
-                              'fuel_saved': '{:,.0f}'.format(fs)})
+                              'benefits': '${:,.0f}'.format(benefit) if benefit != 'N/A' else benefit,
+                              'costs': '${:,.0f}'.format(costs) if costs != 'N/A' else costs,
+                              'net': '${:,.0f}'.format(net) if net != 'N/A' else net,
+                              'ratio': '{:,.1f}'.format(ratio) if ratio != 'N/A' else ratio,
+                              'lcoe_e':'${:,.2f}'.format(lcoe_e) if lcoe_e != 'N/A' else lcoe_e,
+                        'lcoe_hf':'${:,.2f}'.format(lcoe_hf/mmbtu_to_gal_HF) if lcoe_hf != 'N/A' else lcoe_hf,
+                              'fuel_saved': '{:,.0f}'.format(fs) if fs != 'N/A' else fs})
          
         projs =[]
         for comp in ["Residential Energy Efficiency", # start eff
@@ -1391,8 +1402,8 @@ class WebSummary(object):
         try:
             c_map = res['forecast'].c_map
             year = c_map[c_map['consumption_qualifier'] == 'M'].index.max()
-        
-            gen = '{:,.0f}'.format(res['forecast'].\
+
+            gen = '{:,.0f} kWh'.format(res['forecast'].\
                                         generation.ix[year].values[0])
             gen_year = year
        
@@ -1486,7 +1497,7 @@ class WebSummary(object):
             
         else:
             leff_year = ""
-            eff = '{:,.2f} kWh/gallons'.format(eff)
+            eff = '{:,.1f} kWh/gallons'.format(eff)
             
             ll = res['community data'].get_item('community','line losses')
             try:
@@ -1527,17 +1538,23 @@ class WebSummary(object):
             g_biomass = "unknown"
             
         try:
-            al = int(con/hours_per_year)
+            al = str(int(con/hours_per_year))  + ' kW'
         except:
             al = "unknown"
         
+        fuel_year = '(' + str(fuel_year) + ')'
+        con_year = '(' + str(con_year) + ')'
+        oil_year = '(' + str(oil_year) + ')'
+        gen_year = '(' + str(gen_year) + ')'
+        g_year = '(' + str(g_year) + ')'
+        leff_year = '(' + str(leff_year) + ')'
         table = [[ True, "Demographics", ""],
-                 [ False, "Population 2010", int(pop)],
-                 [ False, "Households 2010", int(hh)],
+                 [ False, "Population (2010)", int(pop)],
+                 [ False, "Households (2010)", int(hh)],
                  [ True, "Financial", ""],
-                 [ False, "Diesel fuel cost " + str(fuel_year), diesel_c],
-                 [ False, "Heating fuel cost " + str(fuel_year), HF_c],
-                 [ False, "Electricity cost " + str(fuel_year), elec_c],
+                 [ False, "Forecasted diesel fuel cost " + str(fuel_year), diesel_c],
+                 [ False, "Forecasted heating fuel cost " + str(fuel_year), HF_c],
+                 [ False, "Forecasted electricity cost " + str(fuel_year), elec_c],
                  [ True, "Consumption", ""],
                  [ False, "Total electricity consumption " + str(con_year), con],
                  [ False, 
@@ -1550,12 +1567,12 @@ class WebSummary(object):
                     "Estimated utility diesel " + str(oil_year),
                     utility],
                  [ True, "Generation", ""],
-                 [ False, "Total generation kWh " + str(gen_year), gen],
-                 [ False, "Average load kW " + str(gen_year), al],
-                 [ False, "Generation diesel kWh " + str(g_year), g_diesel],
-                 [ False, "Generation hydro kWh " + str(g_year), g_hydro],
+                 [ False, "Total generation" + str(gen_year), gen],
+                 [ False, "Average load" + str(gen_year), al],
+                 [ False, "Generation from diesel" + str(g_year), g_diesel],
+                 [ False, "Generation from hydropower" + str(g_year), g_hydro],
                  #~ [ False, "Generation natural gas kWh " + str(g_year), g_ng],
-                 [ False, "Generation wind kWh " + str(g_year), g_wind],
+                 [ False, "Generation from wind" + str(g_year), g_wind],
                  #~ [ False, "Generation solar kWh " + str(g_year), g_solar],
                 #~ [ False, "Generation biomass kWh " + str(g_year), g_biomass],
                  [ False, "Diesel generator efficiency " + str(leff_year) , eff],

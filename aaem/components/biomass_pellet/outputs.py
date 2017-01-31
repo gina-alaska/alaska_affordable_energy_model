@@ -102,7 +102,7 @@ def communities_summary (coms, res_dir):
             'Biomass Pellet NPV Costs [$]',
             'Biomass Pellet NPV Net benefit [$]',
             'Biomass Cordwood Internal Rate of Return',
-            'Biomass Pellet Benefit Cost Ratio',
+            'Biomass Pellet Benefit-cost ratio',
             'notes'
             ]
     except UnboundLocalError:
@@ -322,17 +322,17 @@ def create_project_details_list (project):
         BC = project.get_BC_ratio()
     
     return [
-        {'words':'Capital Cost ($)', 
+        {'words':'Capital cost', 
             'value': costs},
-        {'words':'Lifetime Savings ($)', 
+        {'words':'Lifetime savings', 
             'value': benefits},
-        {'words':'Net Lifetime Savings ($)', 
+        {'words':'Net lifetime savings', 
             'value': net_benefits},
-        {'words':'Benefit Cost Ratio', 
+        {'words':'Benefit-cost ratio', 
             'value': BC},
         {'words':"Energy Density [Btu/" + project.units + "]", 
             'value': project.comp_specs['energy density'] },
-        {'words':"Capacity Factor", 
+        {'words':"Capacity factor", 
             'value': project.comp_specs['data']['Capacity Factor'] },
             ]
 

@@ -56,7 +56,7 @@ class BiomassCordwood (bmb.BiomassBase):
         tag = self.cd['name'].split('+')
         if len(tag) > 1 and tag[1] != 'biomass_wood':
             self.run = False
-            self.reason = "Not a biomass cordwood project"
+            self.reason = "Not a biomass cordwood project."
             return 
         
         if not self.comp_specs['data'][s_key]:
@@ -67,7 +67,7 @@ class BiomassCordwood (bmb.BiomassBase):
             self.biomass_fuel_consumed = 0
             self.fuel_price_per_unit = 0
             self.heat_diesel_displaced = 0
-            self.reason = s_key + ' not available.'
+            self.reason = s_key[0].upper() + s_key[1:].lower() + ' not available.'
             return
         
         if self.cd["model heating fuel"]:

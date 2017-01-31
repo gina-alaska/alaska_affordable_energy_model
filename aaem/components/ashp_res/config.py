@@ -32,5 +32,5 @@ yaml_not_to_save = deepcopy(ashp_base.yaml_not_to_save)
 prereq_comps = ['Residential Energy Efficiency']
 
 DESCRIPTION = """
-    This component calculates the potential Heating Oil that could be offset by installing new Air Source Heat Pumps for Residential buildings . 
+    This component calculates the potential heating oil that could be offset by installing new air source heat pumps for residential buildings. 
 """

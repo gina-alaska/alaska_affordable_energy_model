@@ -34,5 +34,5 @@ yaml_comments = {'enabled': '',
 prereq_comps = []
 
 DESCRIPTION = """
-    This component calculates the potential reduction Heating Oil by improving the efficiency Residential buildings
+    This component calculates the potential reduction heating oil by improving the efficiency residential buildings
 """

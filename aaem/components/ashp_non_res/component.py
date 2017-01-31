@@ -176,7 +176,7 @@ class ASHPNonResidential (ashp_base.ASHPBase):
         tag = self.cd['name'].split('+')
         if len(tag) > 1 and tag[1] != 'ASHP_non-res':
             self.run = False
-            self.reason = "Not a Non-Residential ASHP project"
+            self.reason = "Not a non-residential air source heat pump project."
             return 
         
         if self.cd["model heating fuel"]:

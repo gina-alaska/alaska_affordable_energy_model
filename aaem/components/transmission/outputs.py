@@ -204,7 +204,7 @@ def communities_summary (coms, res_dir):
             'Transmission NPV Costs [$]',
             'Transmission NPV Net benefit [$]',
             'Transmission Internal Rate of Return',
-            'Transmission Benefit Cost Ratio',
+            'Transmission Benefit-cost ratio',
             'notes'
             ]
         
@@ -401,23 +401,24 @@ def create_project_details_list (project):
     """
    
     return [
-        {'words':'Capital Cost ($)', 
+        {'words':'Capital cost', 
             'value': '${:,.0f}'.format(project.get_NPV_costs())},
-        {'words':'Lifetime Savings ($)', 
+        {'words':'Lifetime savings', 
             'value': '${:,.0f}'.format(project.get_NPV_benefits())},
-        {'words':'Net Lifetime Savings ($)', 
+        {'words':'Net lifetime savings', 
             'value': '${:,.0f}'.format(project.get_NPV_net_benefit())},
-        {'words':'Benefit Cost Ratio', 
+        {'words':'Benefit-cost ratio', 
             'value': '{:,.3f}'.format(project.get_BC_ratio())},
-        {'words':'Nearest Community', 
+        {'words':'Nearest community', 
             'value': project.comp_specs['nearest community']\
             ['Nearest Community with Lower Price Power'] },
         {'words':'Distance', 
             'value': '{:,.0f} miles'.format(project.comp_specs\
             ['nearest community']['Distance to Community'] )},
-        {'words':'Maximum savings ($/kWh)', 
-            'value': project.comp_specs['nearest community']\
-            ['Maximum savings ($/kWh)'] },
+        {'words':'Maximum savings', 
+            'value': '${:,.2f}/kWh'.format(
+                project.comp_specs['nearest community']\
+                ['Maximum savings ($/kWh)']) },
         #~ {'words':'Expected Yearly Generation (kWh/year)', 
          #~ 'value': 
                 #~ '{:,.0f}'.format(project.proposed_load *\

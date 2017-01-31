@@ -70,13 +70,14 @@ class DieselEfficiency(AnnualSavings):
         tag = self.cd['name'].split('+')
         if len(tag) > 1 and tag[1] != 'diesel_efficiency':
             self.run = False
-            self.reason = "Not a Diesel efficiency project"
+            self.reason = "Not a diesel efficiency project."
             return 
         
         if not self.cd["model electricity"]:
             self.run = False
-            self.reason = "Electricty must be modeled to analyze diesel" +\
-                                " efficency. It was not for this community"
+            self.reason = "Electricity must be modeled to analyze diesel" +\
+                                " efficiency. It was not for this community"
+
             return 
             # change these below
             

@@ -319,15 +319,15 @@ def create_project_details_list (project):
     """
    
     return [
-        {'words':'Capital Cost ($)', 
+        {'words':'Capital cost', 
             'value': '${:,.0f}'.format(project.get_NPV_costs())},
-        {'words':'Lifetime Savings ($)', 
+        {'words':'Lifetime savings', 
             'value': '${:,.0f}'.format(project.get_NPV_benefits())},
-        {'words':'Net Lifetime Savings ($)', 
+        {'words':'Net lifetime savings', 
             'value': '${:,.0f}'.format(project.get_NPV_net_benefit())},
-        {'words':'Benefit Cost Ratio', 
+        {'words':'Benefit-cost ratio', 
             'value': '{:,.3f}'.format(project.get_BC_ratio())},
-        {'words':'Refit Cost Rate', 
+        {'words':'Refit cost Rate', 
             'value': '${:,.2f}/person'.format(project.cost_per_person)},
         #~ {'words':'Expected Yearly Generation (kWh/year)', 
          #~ 'value': 

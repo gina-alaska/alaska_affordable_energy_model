@@ -46,7 +46,8 @@
           <tbody>
             {% for project in potential_projects %}
             <tr {% if project.sucess %}class="success"{% elif project.negitive %}class="danger"{% endif %} >
-                <td><a href="{{ project.comp.lower().replace(' ', "_").replace(")", "").replace("(", "") }}.html">{{ project.name }} </a></td>
+                <td style="list-style-type: disc;list-style-position: inside;text-indent: -1em;padding-left: 2em;">
+                    <a href="{{ project.comp.lower().replace(' ', "_").replace(")", "").replace("(", "") }}.html">{{ project.name }} </a></td>
                 <td>{{ project.benefits }}</td>
                 <td>{{ project.costs }}</td>
                 <td>{{ project.net }}</td>

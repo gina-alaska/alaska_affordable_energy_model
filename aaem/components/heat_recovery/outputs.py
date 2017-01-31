@@ -107,7 +107,7 @@ def communities_summary (coms, res_dir):
             'Heat Recovery NPV Costs [$]',
             'Heat Recovery NPV Net benefit [$]',
             'Heat Recovery Internal Rate of Return',
-            'Heat Recovery Benefit Cost Ratio',
+            'Heat Recovery Benefit-cost ratio',
             'notes'
             ]
     
@@ -407,13 +407,13 @@ def create_project_details_list (project):
     
     
     return [
-        {'words':'Capital Cost ($)', 
+        {'words':'Capital cost', 
             'value': costs},
-        {'words':'Lifetime Savings ($)', 
+        {'words':'Lifetime savings', 
             'value': benefits},
-        {'words':'Net Lifetime Savings ($)', 
+        {'words':'Net lifetime savings', 
             'value': net_benefits},
-        {'words':'Benefit Cost Ratio', 
+        {'words':'Benefit-cost ratio', 
             'value': BC},
         {'words':'source', 
             'value': source},

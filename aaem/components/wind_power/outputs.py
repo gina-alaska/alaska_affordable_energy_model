@@ -151,7 +151,7 @@ def communities_summary (coms, res_dir):
             'Wind NPV Costs [$]',
             'Wind NPV Net benefit [$]',
             'Wind Internal Rate of Return',
-            'Wind Benefit Cost Ratio',
+            'Wind Benefit-cost ratio',
             'notes'
             ]
         
@@ -395,26 +395,26 @@ def create_project_details_list (project):
         source = "unknown"  
     
     return [
-        {'words':'Capital Cost ($)', 
+        {'words':'Capital cost', 
             'value': '${:,.0f}'.format(project.get_NPV_costs())},
-        {'words':'Lifetime Savings ($)', 
+        {'words':'Lifetime savings', 
             'value': '${:,.0f}'.format(project.get_NPV_benefits())},
-        {'words':'Net Lifetime Savings ($)', 
+        {'words':'Net lifetime savings', 
             'value': '${:,.0f}'.format(project.get_NPV_net_benefit())},
-        {'words':'Benefit Cost Ratio', 
+        {'words':'Benefit-cost ratio', 
             'value': '{:,.3f}'.format(project.get_BC_ratio())},
-        {'words':'Proposed Nameplate Capacity(kW)', 
-            'value': '{:,.0f}'.format(project.load_offset_proposed)},
-        {'words':'Expected Yearly Generation (kWh/year)', 
+        {'words':'Proposed mameplate Capacity', 
+            'value': '{:,.0f} kW'.format(project.load_offset_proposed)},
+        {'words':'Expected Yearly Generation', 
          'value': 
-                '{:,.0f}'.format(project.load_offset_proposed *\
+                '{:,.0f} kWh/year'.format(project.load_offset_proposed *\
                                  constants.hours_per_year)},
 
-        {'words':'Estimated Wind Class', 'value': wind_class},
+        {'words':'Estimated wind lass', 'value': wind_class},
         {'words':'Estimated Capacity Factor', 
             'value': 
                 project.comp_specs['resource data']['assumed capacity factor']},
-        {'words':'Estimated Wind Penetration Level (%)', 
+        {'words':'Estimated wind penetration level', 
             'value': '{:,.2f}%'.format(pen)},
         {'words':'notes', 
             'value':  notes},

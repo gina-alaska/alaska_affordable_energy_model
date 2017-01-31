@@ -53,7 +53,7 @@ class BiomassPellet (bmb.BiomassBase):
         tag = self.cd['name'].split('+')
         if len(tag) > 1 and tag[1] != 'biomass_pellet':
             self.run = False
-            self.reason = ("Not a biomass pellet project")
+            self.reason = ("Not a biomass pellet project.")
             return 
         
         if not self.cd["on road system"]:
@@ -65,7 +65,7 @@ class BiomassPellet (bmb.BiomassBase):
             self.fuel_price_per_unit = 0
             self.heat_diesel_displaced = 0
             self.reason = \
-                "Not on road system, so its assumed pellets cannot be deliverd."
+              "Not on road system, so its assumed pellets cannot be delivered."
             return
         
         if self.cd["model heating fuel"]:

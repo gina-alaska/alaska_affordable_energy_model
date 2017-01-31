@@ -229,22 +229,28 @@ def create_electric_system_summary (community_results):
             'generation numbers')['generation solar'].iloc[-1:])
     
     current = [
-        {'words':'Average Community Load (kW)(' + str(year) +')',
-         'value': '{:,.0f}'.format(total_load)},
-        {'words':'Average kWh/year(' + str(year) +')' , 
-         'value': '{:,.0f}'.format(float(total_gen))},
-        {'words':'Peak Load', 'value': 'Unknown'},
-        {'words':'Existing nameplate wind capacity (kW)', 
-         'value': wind.comp_specs['resource data']['existing wind']},
-        {'words':'Existing wind generation (kWh/year)(' + str(year) +')',
-         'value': '{:,.0f}'.format(w_gen).replace('nan','0')},
-        {'words':'Existing nameplate solar capacity (kW)', 
-         'value': solar.comp_specs['data']['Installed Capacity']},
-        {'words':'Existing solar generation (kWh/year)(' + str(year) +')', 
-         'value': '{:,.0f}'.format(s_gen).replace('nan','0')},
-        {'words':'Existing nameplate hydro capacity (kW)', 
-         'value': fc.cd.get_item('community','hydro generation capacity')},
-        {'words':'Existing hydro generation (kWh/year)(' + str(year) +')', 
-         'value': '{:,.0f}'.format(h_gen).replace('nan','0')},
+        {'words':'Average community load (' + str(year) +')',
+         'value': '{:,.0f} kW'.format(total_load)},
+        {'words':'Average generation (' + str(year) +')' , 
+         'value': '{:,.0f} kWh/year'.format(float(total_gen))},
+        {'words':'Peak load', 'value': 'Unknown'},
+        {'words':'Existing nameplate wind capacity', 
+         'value': 
+             '{:,.0f} kW'.format(
+             float(wind.comp_specs['resource data']['existing wind']))},
+        {'words':'Existing wind generation (' + str(year) +')',
+         'value': '{:,.0f} kWh/year'.format(w_gen).replace('nan','0')},
+        {'words':'Existing nameplate solar capacity', 
+         'value': 
+             '{:,.0f} kW'.format(
+             float(solar.comp_specs['data']['Installed Capacity']))},
+        {'words':'Existing solar generation (' + str(year) +')', 
+         'value': '{:,.0f} kWh/year'.format(s_gen).replace('nan','0')},
+        {'words':'Existing nameplate hydro capacity ', 
+         'value': 
+             '{:,.0f} kW'.format(
+             float(fc.cd.get_item('community','hydro generation capacity')))},
+        {'words':'Existing hydro generation (' + str(year) +')', 
+         'value': '{:,.0f} kWh/year'.format(h_gen).replace('nan','0')},
     ]
     return current

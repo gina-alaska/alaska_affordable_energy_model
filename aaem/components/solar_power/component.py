@@ -61,7 +61,7 @@ class SolarPower (AnnualSavings):
         tag = self.cd['name'].split('+')
         if len(tag) > 1 and tag[1] != 'solar':
             self.run = False
-            self.reason = "Not a solar project"
+            self.reason = "Not a solar project."
             return 
         
         try:
@@ -71,8 +71,9 @@ class SolarPower (AnnualSavings):
             self.diagnostics.add_warning(self.component_name, 
             "could not be run")
             self.run = False
-            self.reason = "Could not calculate average load" + \
-                            " or proposed generation"
+            self.reason = "Could not calculate average load," + \
+                            " or proposed generation."
+
             return
             
         
@@ -83,9 +84,9 @@ class SolarPower (AnnualSavings):
             self.run = False
             
             if self.average_load < self.comp_specs['average load limit']:
-                self.reason = "average load too small for viable solar power"
+                self.reason = "Average load too small for viable solar power."
             else: 
-                self.reason = "propsed load was less than 0"
+                self.reason = "Proposed load was less than 0."
             return
         
         

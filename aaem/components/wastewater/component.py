@@ -196,7 +196,7 @@ class WaterWastewaterSystems (AnnualSavings):
         
         if len(tag) > 1 and tag[1] != 'water-wastewater':
             self.run = False
-            self.reason = "Not a Water/Wastewater project"
+            self.reason = "Not a water/wastewater project."
             return 
             
         if self.cd["model electricity"]:

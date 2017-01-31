@@ -118,7 +118,7 @@ def communities_summary (coms, res_dir):
             'Solar NPV Net benefit [$]',
             
             'Solar Internal Rate of Return',
-            'Solar Benefit Cost Ratio',
+            'Solar Benefit-cost ratio',
             'notes']
     
     
@@ -326,24 +326,24 @@ def create_project_details_list (project):
     pen = pen[0]
    
     return [
-        {'words':'Capital Cost ($)', 
+        {'words':'Capital cost', 
             'value': '${:,.0f}'.format(project.get_NPV_costs())},
-        {'words':'Lifetime Savings ($)', 
+        {'words':'Lifetime savings', 
             'value': '${:,.0f}'.format(project.get_NPV_benefits())},
-        {'words':'Net Lifetime Savings ($)', 
+        {'words':'Net lifetime savings', 
             'value': '${:,.0f}'.format(project.get_NPV_net_benefit())},
-        {'words':'Benefit Cost Ratio', 
+        {'words':'Benefit-cost ratio', 
             'value': '{:,.3f}'.format(project.get_BC_ratio())},
-        {'words':'Proposed Nameplate Capacity(kW)', 
-            'value': '{:,.0f}'.format(project.proposed_load)},
-        {'words':'Expected Yearly Generation (kWh/year)', 
+        {'words':'Proposed cameplate Capacity', 
+            'value': '{:,.0f} kW'.format(project.proposed_load)},
+        {'words':'Expected Yearly Generation', 
          'value': 
-                '{:,.0f}'.format(project.proposed_load *\
+                '{:,.0f} kWh/year'.format(project.proposed_load *\
                                  constants.hours_per_year)},
 
         {'words':'Output per 10kW Solar PV', 
             'value': project.comp_specs['data']\
                                          ['Output per 10kW Solar PV']},
-        {'words':'Estimated Solar Penetration Level (%)', 
+        {'words':'Estimated Solar Penetration Level', 
             'value': '{:,.2f}%'.format(pen)},
             ]

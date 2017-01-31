@@ -207,7 +207,7 @@ class CommunityBuildings (AnnualSavings):
         tag = self.cd['name'].split('+')
         if len(tag) > 1 and tag[1] != 'non-residential':
             self.run = False
-            self.reason = "Not a non-residential project"
+            self.reason = "Not a non-residential project."
             return 
         
         self.update_num_buildings()
@@ -215,7 +215,7 @@ class CommunityBuildings (AnnualSavings):
         
         if len(self.comp_specs['com building data']) == 0:
             self.run = False
-            self.reason = "No Buildings in community"
+            self.reason = "No buildings in community."
             return 
         
         self.calc_total_sqft_to_retrofit()

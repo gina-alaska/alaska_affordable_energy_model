@@ -120,7 +120,7 @@ def communities_summary (coms, res_dir):
              'ASHP Residential NPV Costs [$]',
              'ASHP Residential NPV Net benefit [$]',
              'ASHP Residential Internal Rate of Return',
-             'ASHP Residential Benefit Cost Ratio',
+             'ASHP Residential Benefit-cost ratio',
              'Intertie',
              'notes'
              ]
@@ -279,7 +279,7 @@ def generate_web_summary (web_object, community):
         
          
     ## info table (list to send to template)
-    info_for_projects = [{'name':'Modeled Air Source Heat Pump Project',
+    info_for_projects = [{'name':'Modeled residential air source heat pump project',
                             'info':info}]
             
     
@@ -344,16 +344,16 @@ def create_project_details_list (project):
         BC = project.get_BC_ratio()
     
     return [
-        {'words':'Capital Cost ($)', 
+        {'words':'Capital cost', 
             'value': costs},
-        {'words':'Lifetime Savings ($)', 
+        {'words':'Lifetime savings', 
             'value': benefits},
-        {'words':'Net Lifetime Savings ($)', 
+        {'words':'Net lifetime savings', 
             'value': net_benefits},
-        {'words':'Benefit Cost Ratio', 
+        {'words':'Benefit-cost ratio', 
             'value': BC},
-        {'words':"btu/hrs", 
+        {'words':"Btu/hrs", 
             'value': project.comp_specs['btu/hrs'] },
-        {'words':"cost per btu/hrs", 
+        {'words':"Cost per btu/hrs", 
             'value': project.comp_specs['cost per btu/hrs'] },
             ]

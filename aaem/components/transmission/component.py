@@ -79,19 +79,19 @@ class Transmission (AnnualSavings):
         tag = self.cd['name'].split('+')
         if len(tag) > 1 and tag[1] != 'transmission':
             self.run = False
-            self.reason = "Not a transmission project"
+            self.reason = "Not a transmission project."
             return 
             
         if not self.cd["model electricity"]:
             self.run = False
-            self.reason = "Electricty must be modeled to analyze "+\
-                                "transmission. It was not for this community"
+            self.reason = "Electricity must be modeled to analyze "+\
+                                "transmission. It was not for this community."
             return 
         if np.isnan(self.comp_specs['nearest community']\
                                     ['Distance to Community']):
             self.run = False
             self.reason = ("There is no viable nearby communities"
-                                " for building a transmission line")
+                                " for building a transmission line.")
             return 
         
         self.calc_average_load()
@@ -99,7 +99,7 @@ class Transmission (AnnualSavings):
             self.get_intertie_values()
         except IOError:
             self.run = False
-            self.reason = ("Could not find data on community to Intertie to")
+            self.reason = ("Could not find data on community to intertie to.")
             return 
         self.calc_pre_intertie_generation()
         self.calc_intertie_offset_generation()

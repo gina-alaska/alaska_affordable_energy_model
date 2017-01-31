@@ -102,7 +102,7 @@ class ASHPResidential (ashp_base.ASHPBase):
         tag = self.cd['name'].split('+')
         if len(tag) > 1 and tag[1] != 'ASHP_res':
             self.run = False
-            self.reason = "Not a Residential ASHP project"
+            self.reason = "Not a residential air source heat pump project."
             return 
         
         if self.cd["model heating fuel"]:
