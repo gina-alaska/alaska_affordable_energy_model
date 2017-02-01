@@ -41,5 +41,5 @@ yaml_not_to_save = []
 prereq_comps = deepcopy(bmb.prereq_comps)
 
 DESCRIPTION = """
-    This component calculates the potential Heating Oil that could be offset by installing a new Biomass Pellet Boiler
+    This component calculates the potential Heating Oil offset by installing a new Biomass Pellet Boiler for 30% of non-residential square footage
 """

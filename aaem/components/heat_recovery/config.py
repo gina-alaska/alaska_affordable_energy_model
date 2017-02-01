@@ -69,5 +69,5 @@ prereq_comps = []
 
 
 DESCRIPTION = """
-    This component calculates the potential Heating Oil that could be offset by installing a new Heat Recovery System
+    This component calculates the potential heating oil offset by installing a new heat recovery System. Requires a known project exists to be run.
 """

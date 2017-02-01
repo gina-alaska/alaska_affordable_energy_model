@@ -297,17 +297,38 @@ def generate_web_summary (web_object, community):
     
     
     ## info for modeled
-   
-        
     ests = modeled.comp_specs['estimate data']
+    try:
+        current_hr = float(
+            ests['Est. current annual heating fuel gallons displaced'])
+        if not ests['Waste Heat Recovery Opperational'].lower == 'no' and\
+           not np.isnan(current_hr):
+            current_hr = '{:,.0f}'.format(
+                ests['Est. current annual heating fuel gallons displaced'])
+        elif ests['Waste Heat Recovery Opperational'].lower == 'no':
+            current_hr = 0
+        else:
+            current_hr = "unknown"
+    except ValueError:
+        current_hr = "unknown"
+        
+    try:
+        potential_hr = '{:,.0f}'.format(float(
+            ests['Est. potential annual heating fuel gallons displaced']))
+    except ValueError:
+        potential_hr =\
+            ests['Est. potential annual heating fuel gallons displaced']
+        
+    
     current = [
         {'words':'Waste Heat Recovery Operational', 
          'value': ests['Waste Heat Recovery Opperational']},
-        {'words':'Identified as priority by HR working group', 'value': ests['Identified as priority by HR working group']},
+        {'words':'Identified as priority by HR working group', 
+         'value': ests['Identified as priority by HR working group']},
         {'words':'Est. current annual heating fuel gallons displaced', 
-         'value': ests['Est. current annual heating fuel gallons displaced']},
+         'value': current_hr},
         {'words':'Est. potential annual heating fuel gallons displaced', 
-         'value': ests['Est. potential annual heating fuel gallons displaced']},
+         'value': potential_hr},
     ]
         
     
@@ -337,7 +358,7 @@ def generate_web_summary (web_object, community):
          'title': 'Estimated Heating Fuel Costs',
          'type': "'$'",'plot': True,},
         {'name':'consumption', 'data': str(table2).replace('nan','null'), 
-         'title':'Heating Fuel Consumed',
+         'title':'Heating Fuel Consumed for community',
          'type': "'other'",'plot': True,}
             ]
         
@@ -390,7 +411,7 @@ def create_project_details_list (project):
         net_benefits = project.get_NPV_net_benefit()
        
     try:
-        BC = '{:,.2f}'.format(project.get_BC_ratio())
+        BC = '{:,.1f}'.format(project.get_BC_ratio())
     except ValueError:
         BC = project.get_BC_ratio()
         
@@ -415,8 +436,8 @@ def create_project_details_list (project):
             'value': net_benefits},
         {'words':'Benefit-cost ratio', 
             'value': BC},
-        {'words':'source', 
+        {'words':'Source', 
             'value': source},
-        {'words':'notes', 
+        {'words':'Notes', 
             'value': notes},
             ]

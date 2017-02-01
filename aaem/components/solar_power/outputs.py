@@ -230,7 +230,7 @@ def generate_web_summary (web_object, community):
     end_year = modeled.actual_end_year
     
     ## for make table functions
-    projects = {'Modeled ' + COMPONENT_NAME:  modeled}
+    projects = {'Modeled ' + COMPONENT_NAME + ' (PV)':  modeled}
     
     ## get forecast stuff (consumption, generation, etc)
     fc = modeled.forecast
@@ -281,7 +281,7 @@ def generate_web_summary (web_object, community):
     ## create list of charts
     charts = [
         {'name':'costs', 'data': str(table1).replace('nan','null'), 
-         'title': 'Estimated Electricity Generation Fuel Costs per Year',
+         'title': 'Estimated Electricity Generation Costs per Year',
          'type': "'$'",'plot': True,},
         {'name':'consumption', 'data': str(table2).replace('nan','null'), 
          'title':'Diesel Consumed for Electricity Generation ',
@@ -333,7 +333,7 @@ def create_project_details_list (project):
         {'words':'Net lifetime savings', 
             'value': '${:,.0f}'.format(project.get_NPV_net_benefit())},
         {'words':'Benefit-cost ratio', 
-            'value': '{:,.3f}'.format(project.get_BC_ratio())},
+            'value': '{:,.1f}'.format(project.get_BC_ratio())},
         {'words':'Proposed cameplate Capacity', 
             'value': '{:,.0f} kW'.format(project.proposed_load)},
         {'words':'Expected Yearly Generation', 
@@ -342,8 +342,8 @@ def create_project_details_list (project):
                                  constants.hours_per_year)},
 
         {'words':'Output per 10kW Solar PV', 
-            'value': project.comp_specs['data']\
-                                         ['Output per 10kW Solar PV']},
+            'value': '{:,.0f} kWh/year'.format(project.comp_specs['data']\
+                                         ['Output per 10kW Solar PV'])},
         {'words':'Estimated Solar Penetration Level', 
-            'value': '{:,.2f}%'.format(pen)},
+            'value': '{:,.0f}%'.format(pen)},
             ]

@@ -41,5 +41,5 @@ prereq_comps = ['Non-residential Energy Efficiency']
 
 
 DESCRIPTION = """
-    This component calculates the potential heating oil that could be offset by installing new air source heat pumps for non-residential buildings . 
+    This component calculates the potential heating oil offset by installing new air source heat pumps for non-residential buildings . 
 """

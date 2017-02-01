@@ -76,5 +76,5 @@ prereq_comps = []
 
 
 DESCRIPTION = """
-   This component calculates the potential electricity generation from diesel that could be offset by installing new wind power infrastructure. 
+   This component calculates the potential electricity generation from diesel offset by installing new wind power infrastructure. 
 """

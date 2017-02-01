@@ -318,7 +318,7 @@ def create_project_details_list (project):
         {'words':'Net lifetime savings', 
             'value': '${:,.0f}'.format(project.get_NPV_net_benefit())},
         {'words':'Benefit-cost ratio', 
-            'value': '{:,.3f}'.format(project.get_BC_ratio())},
+            'value': '{:,.1f}'.format(project.get_BC_ratio())},
         {'words':'Refit cost rate', 
             'value': '${:,.2f}/sqft'.format(project.refit_cost_rate)},
         #~ {'words':'Expected Yearly Generation (kWh/year)', 

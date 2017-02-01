@@ -316,8 +316,8 @@ def generate_web_summary (web_object, community):
     ## get forecast stuff (consumption, generation, etc)
     fc = modeled.forecast
 
-    generation = fc.generation_by_type['generation diesel'].\
-                                        ix[start_year:end_year]
+    generation = fc.generation_by_type.\
+                                        ix[start_year:end_year].sum(1)
     
     ## get the diesel prices
     diesel_price = web_object.results[community]['community data'].\
@@ -362,7 +362,7 @@ def generate_web_summary (web_object, community):
     ## create list of charts
     charts = [
         {'name':'costs', 'data': str(table1).replace('nan','null'), 
-         'title': 'Estimated Electricity Generation Fuel Costs per Year',
+         'title': 'Estimated Electricity Generation Costs per Year',
          'type': "'$'",'plot': True,},
         {'name':'consumption', 'data': str(table2).replace('nan','null'), 
          'title':'Diesel Consumed for Electricity Generation ',
@@ -408,7 +408,7 @@ def create_project_details_list (project):
         {'words':'Net lifetime savings', 
             'value': '${:,.0f}'.format(project.get_NPV_net_benefit())},
         {'words':'Benefit-cost ratio', 
-            'value': '{:,.3f}'.format(project.get_BC_ratio())},
+            'value': '{:,.1f}'.format(project.get_BC_ratio())},
         {'words':'Nearest community', 
             'value': project.comp_specs['nearest community']\
             ['Nearest Community with Lower Price Power'] },

@@ -262,7 +262,7 @@ def generate_web_summary (web_object, community):
     
     
     
-    current = [{'words':'System Type', 
+    current = [{'words':'System type', 
                 "value":str(modeled.comp_specs['data']['value']['System Type'])},
             ]
     ## info for modeled
@@ -326,9 +326,9 @@ def create_project_details_list (project):
         {'words':'Net lifetime savings', 
             'value': '${:,.0f}'.format(project.get_NPV_net_benefit())},
         {'words':'Benefit-cost ratio', 
-            'value': '{:,.3f}'.format(project.get_BC_ratio())},
-        {'words':'Refit cost Rate', 
-            'value': '${:,.2f}/person'.format(project.cost_per_person)},
+            'value': '{:,.1f}'.format(project.get_BC_ratio())},
+        #~ {'words':'Refit cost Rate', 
+            #~ 'value': '${:,.2f}/person'.format(project.cost_per_person)},
         #~ {'words':'Expected Yearly Generation (kWh/year)', 
          #~ 'value': 
                 #~ '{:,.0f}'.format(project.proposed_load *\

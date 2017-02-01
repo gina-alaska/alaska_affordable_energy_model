@@ -289,7 +289,7 @@ def generate_web_summary (web_object, community):
          'title': 'Estimated Heating Fuel Costs',
          'type': "'$'",'plot': True,},
         {'name':'consumption', 'data': str(table2).replace('nan','null'), 
-         'title':'Heating Fuel Consumed',
+         'title':'Heating Fuel Consumed for residential buildings',
          'type': "'other'",'plot': True,}
             ]
         
@@ -339,7 +339,7 @@ def create_project_details_list (project):
         net_benefits = project.get_NPV_net_benefit()
        
     try:
-        BC = '{:,.2f}'.format(project.get_BC_ratio())
+        BC = '{:,.1f}'.format(project.get_BC_ratio())
     except ValueError:
         BC = project.get_BC_ratio()
     
@@ -352,8 +352,8 @@ def create_project_details_list (project):
             'value': net_benefits},
         {'words':'Benefit-cost ratio', 
             'value': BC},
-        {'words':"Btu/hrs", 
-            'value': project.comp_specs['btu/hrs'] },
-        {'words':"Cost per btu/hrs", 
-            'value': project.comp_specs['cost per btu/hrs'] },
+        #~ {'words':"Btu/hrs", 
+            #~ 'value': project.comp_specs['btu/hrs'] },
+        #~ {'words':"Cost per btu/hrs", 
+            #~ 'value': project.comp_specs['cost per btu/hrs'] },
             ]

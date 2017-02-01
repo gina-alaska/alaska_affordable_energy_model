@@ -265,7 +265,7 @@ def generate_web_summary (web_object, community):
          'title': 'Estimated Heating Fuel Costs',
          'type': "'$'",'plot': True,},
         {'name':'consumption', 'data': str(table2).replace('nan','null'), 
-         'title':'Heating Fuel Consumed',
+         'title':'Heating Fuel Consumed for non-residential buildings',
          'type': "'other'",'plot': True,}
             ]
         
@@ -317,7 +317,7 @@ def create_project_details_list (project):
         net_benefits = project.get_NPV_net_benefit()
        
     try:
-        BC = '{:,.2f}'.format(project.get_BC_ratio())
+        BC = '{:,.1f}'.format(project.get_BC_ratio())
     except ValueError:
         BC = project.get_BC_ratio()
     
