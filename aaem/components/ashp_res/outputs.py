@@ -352,6 +352,8 @@ def create_project_details_list (project):
             'value': net_benefits},
         {'words':'Benefit-cost ratio', 
             'value': BC},
+        {'words': 'Number of Homes',
+            'value': int(project.num_houses)}
         #~ {'words':"Btu/hrs", 
             #~ 'value': project.comp_specs['btu/hrs'] },
         #~ {'words':"Cost per btu/hrs", 

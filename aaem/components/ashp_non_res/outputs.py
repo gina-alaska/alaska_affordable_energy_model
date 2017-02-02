@@ -379,6 +379,11 @@ def create_project_details_list (project):
         BC = '{:,.1f}'.format(project.get_BC_ratio())
     except ValueError:
         BC = project.get_BC_ratio()
+        
+    try:
+        sqft = '{:,.0f}'.format(project.heat_displaced_sqft)
+    except ValueError:
+        sqft = project.projectheat_displaced_sqft
     
     return [
         {'words':'Capital cost ($)', 
@@ -389,6 +394,8 @@ def create_project_details_list (project):
             'value': net_benefits},
         {'words':'Benefit-cost ratio', 
             'value': BC},
+        {'words': 'Square feet heated by ASHP systems',
+            'value':  sqft}
         #~ {'words':"btu/hrs", 
             #~ 'value': project.comp_specs['btu/hrs'] },
         #~ {'words':"Cost per btu/hrs", 
