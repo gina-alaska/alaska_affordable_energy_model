@@ -1,7 +1,12 @@
 """
-inputs.py
+Air Source Heat Pump Residential inputs
+---------------------------------------
 
-    input functions for Air Source Heat Pumps - Residential component
+    input functions for Air Source Heat Pump Residential component
+    
+    .. note::
+        Uses ASHP Base input functions
+    
 """
 import os.path
 #~ from pandas import read_csv

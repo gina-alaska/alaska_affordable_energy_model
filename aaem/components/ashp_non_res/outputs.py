@@ -1,6 +1,6 @@
 """
 Air Source Heat Pump Non-residential Outputs
----------------------
+--------------------------------------------
 
 output functions for Air Source Heat Pump Non-residential component
 

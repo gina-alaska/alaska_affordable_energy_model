@@ -2,8 +2,8 @@
 Air Sorce Heat Pump Non-residential Configuration 
 -------------------------------------------------
     
-    Contains Air Sorce Heat Pump Non-residential configuration info for community
-    data yaml file, and other set-up requirements
+    Contains Air Sorce Heat Pump Non-residential configuration info for 
+    community data yaml file, and other set-up requirements
     
     **Unique Configuration keys**
     
