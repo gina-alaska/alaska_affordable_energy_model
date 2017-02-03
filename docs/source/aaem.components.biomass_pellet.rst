@@ -1,51 +1,47 @@
+************************************
 aaem.components.biomass_pellet package
-======================================
+************************************
 
-Submodules
-----------
+.. ~ Submodules
+.. ~ ----------
 
-aaem.components.biomass_pellet.biomass_pellet module
-----------------------------------------------------
+Biomass Pellet Component
+----------------------
 
-.. automodule:: aaem.components.biomass_pellet.biomass_pellet
+.. autoclass:: aaem.components.biomass_pellet.component.BiomassPellet
     :members:
     :undoc-members:
     :show-inheritance:
 
-aaem.components.biomass_pellet.component module
------------------------------------------------
+.. ~ aaem.components.biomass_pellet.config module
+.. ~ ------------------------------------------
 
-.. automodule:: aaem.components.biomass_pellet.component
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-aaem.components.biomass_pellet.config module
---------------------------------------------
+.. ~ Biomass Pellet Configuration
+.. ~ --------------------------
 
 .. automodule:: aaem.components.biomass_pellet.config
     :members:
     :undoc-members:
     :show-inheritance:
 
-aaem.components.biomass_pellet.inputs module
---------------------------------------------
+.. ~ aaem.components.biomass_pellet.inputs module
+.. ~ ------------------------------------------
 
 .. automodule:: aaem.components.biomass_pellet.inputs
     :members:
     :undoc-members:
     :show-inheritance:
 
-aaem.components.biomass_pellet.outputs module
----------------------------------------------
+.. ~ aaem.components.biomass_pellet.outputs module
+.. ~ -------------------------------------------
 
 .. automodule:: aaem.components.biomass_pellet.outputs
     :members:
     :undoc-members:
     :show-inheritance:
 
-aaem.components.biomass_pellet.preprocessing module
----------------------------------------------------
+.. ~ aaem.components.biomass_pellet.preprocessing module
+.. ~ -------------------------------------------------
 
 .. automodule:: aaem.components.biomass_pellet.preprocessing
     :members:
@@ -53,10 +49,10 @@ aaem.components.biomass_pellet.preprocessing module
     :show-inheritance:
 
 
-Module contents
----------------
+.. ~ Module contents
+.. ~ ---------------
 
-.. automodule:: aaem.components.biomass_pellet
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. ~ .. automodule:: aaem.components.biomass_pellet
+.. ~     :members:
+.. ~     :undoc-members:
+.. ~     :show-inheritance:

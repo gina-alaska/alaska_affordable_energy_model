@@ -212,14 +212,14 @@ class ASHPNonResidential (ashp_base.ASHPBase):
             self.reason = "Financial modeling disabled for this community."
 
     def calc_capital_costs (self):
-        """Calculate or Load the project Captial Costs.
+        """Calculate the project Captial Costs.
         
         Attributes
         ----------
         total_cap_required : float
             total ASHP capacity provided.
         capital_costs : float
-            caclulated or loaded captial costs for heat recovery
+            caclulated captial costs for heat recovery
         """
         min_tem = float(self.comp_specs['data']\
                                 .ix['Minimum Temp'].astype(float))

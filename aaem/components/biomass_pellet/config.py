@@ -1,7 +1,19 @@
 """
-config.py
+Air Sorce Heat Pump Non-residential Configuration 
+-------------------------------------------------
+    
+    Contains Air Sorce Heat Pump Non-residential configuration info for 
+    community data yaml file, and other set-up requirements
+    
+    **Unique Configuration keys**
+    
+        energy density: energy density of biomass fuel (btu/ton)
+        
+        pellete efficiency: effcicieny of pellets (% as decimal)
 
-    Biomass - Pellet config info for community data yaml file
+        cost per btu/hr: cost per btu/hr ($)
+        
+        default pellete price: pellet cost per ton ($)
 """
 import aaem.components.biomass_base as bmb
 from copy import deepcopy
