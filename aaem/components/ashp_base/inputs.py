@@ -19,7 +19,8 @@ def process_data_import(data_dir):
         
     Returns 
     -------
-        data as a Pandas.Dataframe
+    data : DataFrame
+        cliamte data from component to use
     
     """
     data = read_csv(os.path.join(data_dir,'ashp_climate_data.csv'),
@@ -36,15 +37,16 @@ def import_perfromance_data (data_dir):
         
     Returns 
     -------
-        a dictionary of 'Tempeature', 'COP', and 'PPercent of Total Capacity
+    data : dict
+         with 'Tempeature', 'COP', and 'PPercent of Total Capacity
     
     """
-    data = read_csv(os.path.join(data_dir,'ashp_perfromance_data.csv'))
-    rv = {}
-    rv['Temperature'] = data['Temperature'].tolist()
-    rv['COP'] = data['COP'].tolist()
-    rv['Percent of Total Capacity'] = data['Percent of Total Capacity'].tolist()
-    return rv
+    in_data = read_csv(os.path.join(data_dir,'ashp_perfromance_data.csv'))
+    data = {}
+    data['Temperature'] = in_data['Temperature'].tolist()
+    data['COP'] = in_data['COP'].tolist()
+    data['Percent of Total Capacity'] = in_data['Percent of Total Capacity'].tolist()
+    return data
     
 ## library of keys and functions for CommunityData IMPORT Keys
 yaml_import_lib = {'perfromance data':import_perfromance_data,

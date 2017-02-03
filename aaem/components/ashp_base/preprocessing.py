@@ -30,7 +30,8 @@ def preprocess_header (ppo):
             ppo.comments_dataframe_divide
             
 def preprocess (ppo):
-    """Preprocess air source heat pump data.
+    """Preprocess air source heat pump data into csv files used by model 
+    component.
     
     Parameters
     ----------

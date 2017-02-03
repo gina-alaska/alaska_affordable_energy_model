@@ -1,7 +1,9 @@
 """
-preprocessing.py
+Biomass base preprocessing 
+--------------------------
 
-    preprocessing functions for Biomass - Base component  
+    preprocessing functions for Biomass Base Component
+
 """
 import os.path
 from pandas import read_csv
@@ -12,11 +14,17 @@ raw_data_files = ['biomass_resource_data.csv']
 
 ## preprocessing functons 
 def preprocess_header (ppo):
-    """
-    pre: 
-        ppo is a preprocessor object
-    post:
-        returns the biomass header
+    """generate the header for the preprocessed file
+    
+    Parameters
+    ----------
+    ppo: preprocessor.Proprocessor
+        a preprocessor object
+        
+    Returns
+    -------
+    retruns a comment for the start of the file
+    
     """
     return  "# " + ppo.com_id + " biomass data\n"+ \
             "# biomass data from biomass_data.csv preprocessed into a \n" +\
@@ -24,12 +32,13 @@ def preprocess_header (ppo):
             ppo.comments_dataframe_divide
     
 def preprocess (ppo):
-    """
-    preprocess biomass data
-    pre: 
-        ppo is a preprocessor object
-    post:
-        saves "biomass_data.csv", and updates MODEL_FILES
+    """Preprocess biomass data into csv files by model 
+    component.
+    
+    Parameters
+    ----------
+    ppo: preprocessor.Proprocessor
+        a preprocessor object
     """
     try:
         data = read_csv(os.path.join(ppo.data_dir,"biomass_resource_data.csv"),

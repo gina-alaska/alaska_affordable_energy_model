@@ -2,7 +2,7 @@
 Air Sorce Heat Pump Base Configuration 
 --------------------------------------
     
-    Contains Air Sorce Heat Pump Residential configuration info for community
+    Contains Air Sorce Heat Pump Base configuration info for community
     data yaml file, and other set-up requirements
     
     **Unique Configuration keys**
