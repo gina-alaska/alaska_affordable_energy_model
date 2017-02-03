@@ -1,7 +1,27 @@
 """
-config.py
-
-    Biomass - Cordwood config info for community data yaml file
+Biomass Pellet configuration 
+----------------------------
+    
+    Contains biomass pellet configuration info for 
+    community data yaml file, and other set-up requirements
+    
+    **Unique Configuration keys**
+    
+        hours of storage for peak :
+        
+        percent at max output :
+        
+        cordwood system efficiency :
+        
+        hours operation per cord :
+        
+        operation cost per hour :
+        
+        energy density :
+        
+        boiler assumed output :
+        
+        cost per btu/hr :
 """
 import aaem.components.biomass_base as bmb
 from copy import deepcopy

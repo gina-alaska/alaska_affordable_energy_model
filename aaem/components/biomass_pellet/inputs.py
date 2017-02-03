@@ -1,8 +1,8 @@
 """
-Air Source Heat Pump Non-residential inputs
--------------------------------------------
+Biomass Pellet inputs
+---------------------
 
-    input functions for Air Source Heat Pump Non-residential component
+    input functions for Biomass Pellet component
     
     .. note::
         Uses Biomass Base input functions

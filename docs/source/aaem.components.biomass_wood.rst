@@ -1,51 +1,47 @@
+************************************
 aaem.components.biomass_wood package
-====================================
+************************************
 
-Submodules
-----------
+.. ~ Submodules
+.. ~ ----------
 
-aaem.components.biomass_wood.biomass_wood module
-------------------------------------------------
+Biomass Cordwood Component
+--------------------------
 
-.. automodule:: aaem.components.biomass_wood.biomass_wood
+.. autoclass:: aaem.components.biomass_wood.component.BiomassCordwood
     :members:
     :undoc-members:
     :show-inheritance:
 
-aaem.components.biomass_wood.component module
----------------------------------------------
+.. ~ aaem.components.biomass_wood.config module
+.. ~ ------------------------------------------
 
-.. automodule:: aaem.components.biomass_wood.component
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-aaem.components.biomass_wood.config module
-------------------------------------------
+.. ~ Biomass Cordwood Configuration
+.. ~ ------------------------------
 
 .. automodule:: aaem.components.biomass_wood.config
     :members:
     :undoc-members:
     :show-inheritance:
 
-aaem.components.biomass_wood.inputs module
-------------------------------------------
+.. ~ aaem.components.biomass_wood.inputs module
+.. ~ ------------------------------------------
 
 .. automodule:: aaem.components.biomass_wood.inputs
     :members:
     :undoc-members:
     :show-inheritance:
 
-aaem.components.biomass_wood.outputs module
--------------------------------------------
+.. ~ aaem.components.biomass_wood.outputs module
+.. ~ -------------------------------------------
 
 .. automodule:: aaem.components.biomass_wood.outputs
     :members:
     :undoc-members:
     :show-inheritance:
 
-aaem.components.biomass_wood.preprocessing module
--------------------------------------------------
+.. ~ aaem.components.biomass_wood.preprocessing module
+.. ~ -------------------------------------------------
 
 .. automodule:: aaem.components.biomass_wood.preprocessing
     :members:
@@ -53,10 +49,10 @@ aaem.components.biomass_wood.preprocessing module
     :show-inheritance:
 
 
-Module contents
----------------
+.. ~ Module contents
+.. ~ ---------------
 
-.. automodule:: aaem.components.biomass_wood
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. ~ .. automodule:: aaem.components.biomass_wood
+.. ~     :members:
+.. ~     :undoc-members:
+.. ~     :show-inheritance:

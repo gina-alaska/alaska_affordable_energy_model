@@ -1,12 +1,12 @@
-************************************
+**************************************
 aaem.components.biomass_pellet package
-************************************
+**************************************
 
 .. ~ Submodules
 .. ~ ----------
 
 Biomass Pellet Component
-----------------------
+------------------------
 
 .. autoclass:: aaem.components.biomass_pellet.component.BiomassPellet
     :members:
@@ -14,10 +14,10 @@ Biomass Pellet Component
     :show-inheritance:
 
 .. ~ aaem.components.biomass_pellet.config module
-.. ~ ------------------------------------------
+.. ~ --------------------------------------------
 
 .. ~ Biomass Pellet Configuration
-.. ~ --------------------------
+.. ~ ----------------------------
 
 .. automodule:: aaem.components.biomass_pellet.config
     :members:
@@ -25,7 +25,7 @@ Biomass Pellet Component
     :show-inheritance:
 
 .. ~ aaem.components.biomass_pellet.inputs module
-.. ~ ------------------------------------------
+.. ~ --------------------------------------------
 
 .. automodule:: aaem.components.biomass_pellet.inputs
     :members:
@@ -33,7 +33,7 @@ Biomass Pellet Component
     :show-inheritance:
 
 .. ~ aaem.components.biomass_pellet.outputs module
-.. ~ -------------------------------------------
+.. ~ ---------------------------------------------
 
 .. automodule:: aaem.components.biomass_pellet.outputs
     :members:
@@ -41,7 +41,7 @@ Biomass Pellet Component
     :show-inheritance:
 
 .. ~ aaem.components.biomass_pellet.preprocessing module
-.. ~ -------------------------------------------------
+.. ~ ---------------------------------------------------
 
 .. automodule:: aaem.components.biomass_pellet.preprocessing
     :members:

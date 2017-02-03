@@ -1,5 +1,5 @@
 """
-Biomass Pellet Outputs
+Biomass Pellet outputs
 ----------------------
 
 output functions for Biomass Pellet component
@@ -31,15 +31,16 @@ def component_summary (results, res_dir):
     save_regional_summary(create_regional_summary (results), res_dir)
 
 def communities_summary (coms, res_dir):
-    """Saves the summary by region:  __regional_biomass_pellet_summary.csv
+    """Saves the summary by: community residential_ashp_summary.csv
     
     Parameters
     ----------
-    summary : Dataframe
-        compiled regional results
-    res_dir :  path
+    coms : dictionay
+        results from the model, dictionay with each community or project as key
+            
+    res_dir : path
         location to save file
-
+    
     """
     out = []
     for c in sorted(coms.keys()):
@@ -129,21 +130,18 @@ def communities_summary (coms, res_dir):
     data.to_csv(f_name, mode='w')
     
 def create_regional_summary (results):
-    """generate html summary for a community. 
-    generates web_object.directory/community/ashp_non_residential.html and 
-    associated csv files.
+    """Creates the regional summary
     
     Parameters
     ----------
-    web_object: WebSummary
-        a WebSummary object
-    community: str
-        community name
+    results : dictionay
+        results from the model, dictionay with each community or project 
+        as key
             
-    See also
-    --------
-    aaem.web : 
-        WebSummary object definition
+    Returns
+    -------
+        pandas DataFrame containg regional results
+    
     """
     regions = {}
     for c in results:
@@ -203,7 +201,7 @@ def create_regional_summary (results):
     return summary
     
 def save_regional_summary (summary, res_dir):
-    """Saves the summary by region:  __regional_non_residential_ashp_summary.csv
+    """Saves the summary by region:  __regional_biomass_pellet_summary.csv
     
     Parameters
     ----------
@@ -220,7 +218,7 @@ def save_regional_summary (summary, res_dir):
     
 def generate_web_summary (web_object, community):
     """generate html summary for a community. 
-    generates web_object.directory/community/ashp_non_residential.html and 
+    generates web_object.directory/community/biomass_pellet.html and 
     associated csv files.
     
     Parameters
