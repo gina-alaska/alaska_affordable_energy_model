@@ -61,14 +61,20 @@ class ASHPResidential (ashp_base.ASHPBase):
     """
     def __init__ (self, community_data, forecast, 
                         diag = None, prerequisites = {}):
-        """
-        Class initialiser
+        """Class initialiser
+        
+        Parameters
+        ----------
+        commnity_data : CommunityData
+            CommintyData Object for a community
+        forecast : Forecast
+            forcast for a community 
+        diagnostics : diagnostics, optional
+            diagnostics for tracking error/warining messeges
+        prerequisites : dictionary of components, optional
+            prerequisite component data, 
+            'Non-residential Energy Efficiency' component
 
-        pre:
-            community_data is a CommunityData object. diag (if provided) should 
-        be a Diagnostics object
-        post:
-            the model can be run
         """
         self.component_name = COMPONENT_NAME
         super(ASHPResidential, self).__init__(community_data, forecast,

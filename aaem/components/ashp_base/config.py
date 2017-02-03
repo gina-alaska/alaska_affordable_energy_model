@@ -1,7 +1,18 @@
 """
-config.py
-
-    Air Source Heat Pumps Base config info for community data yaml file
+Air Sorce Heat Pump Base Configuration 
+--------------------------------------
+    
+    Contains Air Sorce Heat Pump Residential configuration info for community
+    data yaml file, and other set-up requirements
+    
+    **Unique Configuration keys**
+    
+        perfromance data: data on ASHP prefromance in community
+        
+        data: general data on stsyem
+        
+        o&m per year: cost of maintainence
+        
 """
 COMPONENT_NAME = "air source heat pumps base"
 IMPORT = "IMPORT"

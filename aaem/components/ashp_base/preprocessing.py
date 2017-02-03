@@ -1,7 +1,9 @@
 """
-preprocessing.py
+Air Source Heat Pump preprocessing 
+----------------------------------
 
-    preprocessing functions for Air Source Heat Pumps Base component  
+    preprocessing functions for Air Source Heat Pump Base Component
+
 """
 import os.path
 from pandas import read_csv
@@ -12,13 +14,29 @@ raw_data_files = ['ashp_climate_data.csv',"ashp_perfromance_data.csv"]
 
 ## preprocessing functons 
 def preprocess_header (ppo):
-    """
+    """generate the header for the preprocessed file
+    
+    Parameters
+    ----------
+    ppo: preprocessor.Proprocessor
+        a preprocessor object
+        
+    Returns
+    -------
+    retruns a comment for the start of the file
+    
     """
     return  "# " + ppo.com_id + "ashp data\n"+ \
             ppo.comments_dataframe_divide
             
 def preprocess (ppo):
-    """"""
+    """Preprocess air source heat pump data.
+    
+    Parameters
+    ----------
+    ppo: preprocessor.Proprocessor
+        a preprocessor object
+    """
     data = read_csv(os.path.join(ppo.data_dir,"ashp_climate_data.csv"),
                         comment = '#',index_col = 0)#.ix[ppo.com_id]
 
