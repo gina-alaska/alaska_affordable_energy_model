@@ -1,7 +1,9 @@
 """
-preprocessing.py
+Diesel Efficiency preprocessing 
+-------------------------------
 
-    prporcessing for this component is elsewhere 
+preprocessing functions for Diesel Efficiency component  
+
 """
 ## List of raw data files required for wind power preproecssing 
 raw_data_files = ['project_development_timeframes.csv']

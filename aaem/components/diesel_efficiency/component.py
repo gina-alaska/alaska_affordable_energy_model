@@ -1,7 +1,7 @@
 """
-component.py
+Diesel Efficiency component body
+--------------------------------
 
-diesel_efficiency component
 """
 import numpy as np
 from pandas import DataFrame
@@ -16,28 +16,60 @@ import aaem.constants as constants
 from config import COMPONENT_NAME, UNKNOWN
 
 class DieselEfficiency(AnnualSavings):
-    """
-    diesel efficieny component
+    """Diesel Efficiency component of the Alaska Affordable Eenergy Model
+
+    Parameters
+    ----------
+    commnity_data : CommunityData
+        CommintyData Object for a community
+    forecast : Forecast
+        forcast for a community 
+    diagnostics : diagnostics, optional
+        diagnostics for tracking error/warining messeges
+    prerequisites : dictionary of components, optional
+        prerequisite component data this component has no prerequisites 
+        leave empty
+        
+    Attributes
+    ----------
+    diagnostics : diagnostics
+        for tracking error/warining messeges
+        initial value: diag or new diagnostics object
+    forecast : forecast
+        community forcast for estimating future values
+        initial value: forecast
+    cd : dictionary
+        general data for a community.
+        Initial value: 'community' section of community_data
+    comp_specs : dictionary
+        component specific data for a community.
+        Initial value: 'heat recovery' section of community_data
+        
+    See also
+    --------
+    aaem.community_data : 
+        community data module, see for information on CommintyData Object
+    aaem.forecast : 
+        forecast module, see for information on Forecast Object
+    aaem.diagnostics :
+        diagnostics module, see for information on diagnostics Object
+
     """
     def __init__ (self, community_data, forecast, 
                         diag = None, prerequisites = {}):
-        """
-        Class initialiser
-
-        input:
-            community_data: a CommunityData object
-            forecast: a Forecast object
-            diag: diagnostics object (optional)
-            prerequisites: dictionay of prerequisit componentes
+        """Class initialiser
         
-        output:
-            None
+        Parameters
+        ----------
+        commnity_data : CommunityData
+            CommintyData Object for a community
+        forecast : Forecast
+            forcast for a community 
+        diagnostics : diagnostics, optional
+            diagnostics for tracking error/warining messeges
+        prerequisites : dictionary of components, optional
+            prerequisite component data
 
-        peconditions: 
-            None
-        
-        postconditions:
-            the model can be run
         """
         self.diagnostics = diag
         if self.diagnostics == None:
@@ -57,13 +89,28 @@ class DieselEfficiency(AnnualSavings):
         
         
     def run (self, scalers = {'capital costs':1.0}):
-        """
-        run the forecast model
-
-        postconditions:
-            the component will have been run. If run was completed 
-        self.run == True, otherwise self.reason will indcate where failure 
-        occured
+        """runs the component. The Annual Total Savings,Annual Costs, 
+        Annual Net Benefit, NPV Benefits, NPV Costs, NPV Net Benefits, 
+        Benefit Cost Ratio, Levelized Cost of Energy, 
+        and Internal Rate of Return will all be calculated. There must be a 
+        known Heat Recovery project for this component to run.
+        
+        Parameters
+        ----------
+        scalers: dictionay of valid scalers, optional
+            Scalers to adjust normal run variables. 
+            See note on accepted  scalers
+        
+        Attributes
+        ----------
+        run : bool
+            True in the component runs to completion, False otherwise
+        reason : string
+            lists reason for failure if run == False
+            
+        Notes
+        -----
+            Accepted scalers: capital costs.
         """
         self.run = True
         self.reason = "OK"
@@ -107,16 +154,8 @@ class DieselEfficiency(AnnualSavings):
             self.calc_levelized_costs(0)
         
     def calc_average_load (self):
-        """
-            calculate the average load of the system
+        """calculate the average load of the system
             
-        preconditions:
-            self.forecast: the forecast for this component should be run prior
-                to calling this function
-        
-        postconditions:
-            self.generation: generation per year (kWh) [np.array][floats]
-            self.average_load: averge load on system year 1 (kW/yr) [float]
         """
         self.generation = self.forecast.generation_by_type['generation diesel']\
                                 .ix[self.start_year:self.end_year-1].values

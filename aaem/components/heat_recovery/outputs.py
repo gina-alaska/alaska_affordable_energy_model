@@ -393,7 +393,8 @@ def create_project_details_list (project):
             
     Returns
     -------
-        A dictionary with values used by summary
+    dict
+        with values used by summary
     """
     try:
         costs = '${:,.0f}'.format(project.get_NPV_costs())

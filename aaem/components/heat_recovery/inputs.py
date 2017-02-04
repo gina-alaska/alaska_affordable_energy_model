@@ -17,11 +17,12 @@ def process_data_import(data_dir):
     
     Parameters
     ----------
-        data_dir : path
-            the path to the input data directory
-            
+    data_dir : path
+        the path to the input data directory
+        
     Returns
     -------
+    dict
         heat recovery project data as a dictonary
     
     """

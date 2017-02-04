@@ -1,7 +1,17 @@
 """
-config.py
-
-    config info for cd yaml file
+Diesel Efficiency Configuration 
+-------------------------------
+    
+    Contains configuration info for community data yaml file, and 
+     other set-up requirements
+    
+    **Unique Configuration keys**
+    
+        'efficiency improvments' : 
+        
+        'o&m costs': operation and maintainence cost per yer
+    
+    
 """
 COMPONENT_NAME = "Diesel Efficiency"
 IMPORT = "IMPORT"
