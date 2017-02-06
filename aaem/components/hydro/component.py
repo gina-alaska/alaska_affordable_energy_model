@@ -94,7 +94,7 @@ class Hydropower (AnnualSavings):
         self.load_prerequisite_variables(prerequisites)
         
     def run (self, scalers = {'capital costs':1.0}):
-        """runs the component. The Annual Total Savings,Annual Costs, 
+        """Runs the component. The Annual Total Savings,Annual Costs, 
         Annual Net Benefit, NPV Benefits, NPV Costs, NPV Net Benefits, 
         Benefit Cost Ratio, Levelized Cost of Energy, 
         and Internal Rate of Return will all be calculated. There must be a 
@@ -179,7 +179,7 @@ class Hydropower (AnnualSavings):
             self.calc_levelized_costs(o_m)
             
     def calc_average_load (self):
-        """calculate the average load of the system
+        """Calculate the average load of the system.
             
         Attributes
         ----------
@@ -196,7 +196,7 @@ class Hydropower (AnnualSavings):
         #~ print 'self.average_load',self.average_load
  
     def calc_generation_proposed (self):
-        """calulate the proposed generation for Hydropower
+        """Calulate the proposed generation for Hydropower.
         
         Attributes
         ----------
@@ -239,7 +239,7 @@ class Hydropower (AnnualSavings):
 
 
     def calc_heat_recovery (self):
-        """caclulate heat recovery values used by component
+        """Caclulate heat recovery values used by component.
         
         Attributes
         ----------
@@ -287,7 +287,7 @@ class Hydropower (AnnualSavings):
 
     # Make this do stuff
     def calc_capital_costs (self):
-        """calculate the capital costs
+        """Calculate the capital costs.
             
         Attributes
         ----------

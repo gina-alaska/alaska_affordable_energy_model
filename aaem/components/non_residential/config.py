@@ -1,7 +1,20 @@
 """
-config.py
-
-    Non-Residential Building Efficiency config info for community data yaml file
+Non-residential Efficiency configuration 
+----------------------------------------
+    
+    Contains configuration info for community data yaml file, and 
+     other set-up requirements
+    
+    **Unique Configuration keys**
+    
+        'average refit cost' 
+        'cohort savings multiplier'
+        'com building data'
+        'number buildings'
+        'com building estimates'
+        'heating cost precent'
+        'HW District price %'
+    
 """
 COMPONENT_NAME = "Non-residential Energy Efficiency"
 IMPORT = "IMPORT"

@@ -1,51 +1,26 @@
-aaem.components.non_residential package
-=======================================
+Non-residential Efficiency Component
+------------------------------------
 
-Submodules
-----------
-
-aaem.components.non_residential.community_buildings module
-----------------------------------------------------------
-
-.. automodule:: aaem.components.non_residential.community_buildings
+.. autoclass:: aaem.components.non_residential.component.CommunityBuildings
     :members:
     :undoc-members:
     :show-inheritance:
-
-aaem.components.non_residential.component module
-------------------------------------------------
-
-.. automodule:: aaem.components.non_residential.component
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-aaem.components.non_residential.config module
----------------------------------------------
 
 .. automodule:: aaem.components.non_residential.config
     :members:
     :undoc-members:
     :show-inheritance:
 
-aaem.components.non_residential.inputs module
----------------------------------------------
 
 .. automodule:: aaem.components.non_residential.inputs
     :members:
     :undoc-members:
     :show-inheritance:
 
-aaem.components.non_residential.outputs module
-----------------------------------------------
-
 .. automodule:: aaem.components.non_residential.outputs
     :members:
     :undoc-members:
     :show-inheritance:
-
-aaem.components.non_residential.preprocessing module
-----------------------------------------------------
 
 .. automodule:: aaem.components.non_residential.preprocessing
     :members:
@@ -53,10 +28,3 @@ aaem.components.non_residential.preprocessing module
     :show-inheritance:
 
 
-Module contents
----------------
-
-.. automodule:: aaem.components.non_residential
-    :members:
-    :undoc-members:
-    :show-inheritance:

@@ -1,7 +1,7 @@
 """
-component.py
+Non-residential Efficiency component body
+-----------------------------------------
 
-    Non-Residential Building Efficiency component body
 """
 import numpy as np
 from pandas import DataFrame, concat
@@ -21,20 +21,62 @@ from inputs import load_building_estimates
 
 
 class CommunityBuildings (AnnualSavings):
-    """
-    for forecasting community building consumption/savings  
+    """Non-residential Efficiency component of the Alaska Affordable Eenergy 
+    Model
+
+    Parameters
+    ----------
+    commnity_data : CommunityData
+        CommintyData Object for a community
+    forecast : Forecast
+        forcast for a community 
+    diagnostics : diagnostics, optional
+        diagnostics for tracking error/warining messeges
+    prerequisites : dictionary of components, optional
+        prerequisite component data this component has no prerequisites 
+        leave empty
+        
+    Attributes
+    ----------
+    diagnostics : diagnostics
+        for tracking error/warining messeges
+        initial value: diag or new diagnostics object
+    forecast : forecast
+        community forcast for estimating future values
+        initial value: forecast
+    cd : dictionary
+        general data for a community.
+        Initial value: 'community' section of community_data
+    comp_specs : dictionary
+        component specific data for a community.
+        Initial value: 'heat recovery' section of community_data
+        
+    See also
+    --------
+    aaem.community_data : 
+        community data module, see for information on CommintyData Object
+    aaem.forecast : 
+        forecast module, see for information on Forecast Object
+    aaem.diagnostics :
+        diagnostics module, see for information on diagnostics Object
+
     """
     
     def __init__ (self, community_data, forecast, 
                         diag = None, prerequisites = {}):
-        """
-        Class initialiser
+        """Class initialiser
+        
+        Parameters
+        ----------
+        commnity_data : CommunityData
+            CommintyData Object for a community
+        forecast : Forecast
+            forcast for a community 
+        diagnostics : diagnostics, optional
+            diagnostics for tracking error/warining messeges
+        prerequisites : dictionary of components, optional
+            prerequisite component data
 
-        pre:
-            community_data is a CommunityData object. diag (if provided) should 
-        be a Diagnostics object
-        post:
-            the model can be run
         """
         self.diagnostics = diag
         if self.diagnostics == None:
@@ -78,8 +120,17 @@ class CommunityBuildings (AnnualSavings):
         self.buildings_df = concat([df,self.buildings_df],axis=1)
         
     def get_intertie_builing_inventory(self, community_data):
-        """
-        for interties we need to load the entire building inventory
+        """load building inventory for interties
+        
+        Parameters
+        ----------
+        commnity_data : CommunityData
+            CommintyData Object for a community
+        
+        Attributes
+        ----------
+        intertie_inventory : DataFrame
+            builing inventory for the intertie
         """
         data_dir = os.path.split(community_data.data_dir)[0]
         parent = community_data.parent
@@ -136,7 +187,12 @@ class CommunityBuildings (AnnualSavings):
         
         
     def save_building_summay(self, file_name):
-        """
+        """save builing summary for community
+        
+        Parameters
+        ----------
+        file_name: path
+            name of file to save (.csv)
         """
         if not self.run:
             return
@@ -182,7 +238,12 @@ class CommunityBuildings (AnnualSavings):
         
     
     def save_additional_output(self, path):
-        """
+        """save additional out put for component
+        
+        Parameters
+        ----------
+        path : path 
+            location to save files at
         """
         if not self.run:
             return
@@ -192,14 +253,28 @@ class CommunityBuildings (AnnualSavings):
         
     
     def run (self, scalers = {'capital costs':1.0}):
-        """
-        run the forecast model
+        """runs the component. The Annual Total Savings,Annual Costs, 
+        Annual Net Benefit, NPV Benefits, NPV Costs, NPV Net Benefits, 
+        Benefit Cost Ratio, Levelized Cost of Energy, 
+        and Internal Rate of Return will all be calculated. There must be a 
+        known Heat Recovery project for this component to run.
         
-        pre:
-            self.cd should be the community library from a community data object
-        post:
-            TODO: define output values. 
-            the model is run and the output values are available
+        Parameters
+        ----------
+        scalers: dictionay of valid scalers, optional
+            Scalers to adjust normal run variables. 
+            See note on accepted  scalers
+        
+        Attributes
+        ----------
+        run : bool
+            True in the component runs to completion, False otherwise
+        reason : string
+            lists reason for failure if run == False
+            
+        Notes
+        -----
+            Accepted scalers: capital costs.
         """
         self.run = True
         self.reason = "OK"
@@ -272,15 +347,16 @@ class CommunityBuildings (AnnualSavings):
             self.break_even_cost *= heating_cost_percent
 
     def update_num_buildings (self):
-        """
-            This function compares the counted buildings with the estimated 
+        """ This function compares the counted buildings with the estimated 
         buildings
         
-        pre:
-            'com building data' is a DataFrame, and "number buildings" is 
-        an integer 
-        post:
-            a warning may be added to self.diagnostics 
+        Attributes
+        ----------
+        num_buildings : int 
+            # buildings estimated
+        additional_buildings : int 
+            difference in estimated buildings as # in iventory
+            
         """
         self.num_buildings = self.comp_specs["number buildings"]
         self.additional_buildings = self.comp_specs["number buildings"] - \
@@ -299,16 +375,9 @@ class CommunityBuildings (AnnualSavings):
                 self.add_additional_buildings()
             
     def add_additional_buildings (self, num_not_heated = 0):
-        """
-            adds additional buildings to the building dataframe 
-        (self.comp_specs['com building data'])
+        """adds additional buildings to the building dataframe 
+        (self.comp_specs['com building data']) if needed.
         
-        pre:
-            self.additional_buildings and num_not_heated are integers
-        where self.additional_buildings > num_not_heated
-        post:
-            self.comp_specs['com building data'] extra buildings,
-            a diagnostic message is added
         """
         l = []
         if self.additional_buildings <= num_not_heated:
@@ -343,18 +412,13 @@ class CommunityBuildings (AnnualSavings):
         
         
     def calc_total_sqft_to_retrofit (self):
-        """ 
-        calc refit square feet 
+        """estimates(updates values for each building) building squarefootage 
+        were needed, and total calulate retrofit square feet.
           
-        pre:
-            self.comp_specs["com building estimates"]["Sqft"] is a Pandas series
-        indexed by building type of sqft. estimates for the community. 
-        self.comp_specs['com building data'] is a Pandas DataFrame containing 
-        the actual data on buildings in the community, indexed by building type
-        post:
-            self.total_sqft_to_retrofit is the total sqft. that can retrofitted in
-        the community. self.comp_specs['com building data']['Square Feet'] has
-        been updated with square footage estimates. 
+        Attributes
+        ----------
+        total_sqft_to_retrofit : float
+            sum of all building square footage 
         """
         sqft_ests = self.comp_specs["com building estimates"]["Sqft"]
         data = self.comp_specs['com building data']
@@ -388,19 +452,13 @@ class CommunityBuildings (AnnualSavings):
         
     
     def calc_capital_costs (self):
-        """ 
-        calc refit cost 
-          
-        pre:
-            self.comp_specs['com building data'] is a Pandas DataFrame 
-        containing the actual data on buildings in the community, indexed by 
-        building type. self.refit_cost_rate is the $$/sqft. for preforming a 
-        refit to the building. 
-        post:
-            self.refit_cost_total is the total cost to refit buildings in the 
-        community ($$). 
-        self.comp_specs['com building data']['implementation cost'] has been 
-        updated with  cost estimates. 
+        """Calculate the capital costs. Taken as sum of known building refit 
+        costs and estimated refit costs (updates values for each building).
+            
+        Attributes
+        ----------
+        capital_costs : float
+             total cost of improvments ($)
         """
         measure = "implementation cost"
         data = self.comp_specs['com building data']
@@ -419,21 +477,25 @@ class CommunityBuildings (AnnualSavings):
         self.capital_costs = data[measure].sum()
         
     def calc_baseline_HF_consumption (self):
-        """ 
-        calculate pre refit kWh use
+        """Calculate base line heating fuel consumptions by type from known
+        values and estimates(updates values for each building). 
+        Estimates are assumed to be from heating oil, except where natural gas
+        is used.
         
-        pre:
-            self.comp_specs["com building estimates"]["HDD"] is a Pandas
-        series of heating degree day values (deg. C/day) with the building 
-        types as keys. self.comp_specs["com building estimates"]["Gal/sf"] is
-        a Pandas series of Gal/sqft. values building types as keys. 
-        self.comp_specs['com building data'] is a Pandas DataFrame containing 
-        the actual data on buildings in the community, indexed by building type
-        post: 
-            self.baseline_HF_consumption is the base line heating fuel 
-        consumption for the community (pre-refit). 
-        self.comp_specs['com building data']['Fuel Oil'] has been updated with 
-        square fuel oil use estimates (gal/yr). 
+        Attributes
+        ----------
+        baseline_HF_consumption : float
+            total heating consumption (mmbtu/year)
+        baseline_fuel_Hoil_consumption : float
+            heaitng oil consumption for heating (gal/year)
+        baseline_fuel_hr_consumption : float
+            heat recovery consumption for heating (gal/year)
+        baseline_fuel_lng_consumption : float
+            natural gas consumption for heating (Mcf/year)
+        baseline_fuel_propane_consumption : float
+            propane consumption for heating (gal/year)
+        baseline_fuel_biomass_consumption : float
+            biomass consumption for heating (cords/year)
         """
         HDD_ests = self.comp_specs["com building estimates"]["HDD"]
         gal_sf_ests = self.comp_specs["com building estimates"]["Gal/sf"]
@@ -488,19 +550,14 @@ class CommunityBuildings (AnnualSavings):
             
         
     def calc_baseline_kWh_consumption (self):
-        """ 
-        calculate pre refit kWh use
+        """calculate baseline electricity use from all buildings in community
+        (or intertie) from measured values and 
+        estimates(updates values for each building)
         
-        pre:
-            self.comp_specs["com building estimates"]["kWh/sf"] is a Pandas 
-        series of kWh/sqft. values building types as keys. 
-        self.comp_specs['com building data'] is a Pandas DataFrame containing 
-        the actual data on buildings in the community, indexed by building type
-        post: 
-            self.baseline_kWh_consumption is the base line electricity
-        consumption for the community (pre-refit). 
-        self.comp_specs['com building data']['Electric'] has been updated with 
-        square fuel oil use estimates (kWh/yr). 
+        Attributes
+        ----------
+        baseline_kWh_consumption : float
+            baseline electricity consumption (kWh/year). 
         """
         kwh_sf_ests = self.comp_specs["com building estimates"]["kWh/sf"]
         
@@ -590,7 +647,23 @@ class CommunityBuildings (AnnualSavings):
         #~ print self.baseline_kWh_consumption
         
     def calc_proposed_HF_consumption (self):
-        """ 
+        """Calculate proposed HF  consumption from known values and 
+        estimates(updates values for each building)
+        
+        Attributes
+        ----------
+        proposed_HF_consumption : float
+            total heating consumption (mmbtu/year)
+        proposed_fuel_Hoil_consumption : float
+            heaitng oil consumption for heating (gal/year)
+        proposed_fuel_hr_consumption : float
+            heat recovery consumption for heating (gal/year)
+        proposed_fuel_lng_consumption : float
+            natural gas consumption for heating (Mcf/year)
+        proposed_fuel_propane_consumption : float
+            propane consumption for heating (gal/year)
+        proposed_fuel_biomass_consumption : float
+            biomass consumption for heating (cords/year)
         """
         building_data = self.comp_specs['com building data']
         percent_savings = self.comp_specs['cohort savings multiplier']
@@ -639,14 +712,13 @@ class CommunityBuildings (AnnualSavings):
             self.proposed_fuel_biomass_consumption/constants.mmbtu_to_cords              
         
     def calc_proposed_kWh_consumption (self):
-        """ 
-        calculate refit kWh savings
+        """Calculate proposed electric  consumption from known values and 
+        estimates(updates values for each building)
         
-        pre:
-            tbd
-        post: 
-            self.refit_savings_kWh, self.benchmark_savings_kWh,
-        self.additional_savings_kWh, are floating-point kWh values
+        Attributes
+        ----------
+        proposed_kWh_consumption : float
+            (kWh/year)
         """
         building_data = self.comp_specs['com building data']
         percent_savings = self.comp_specs['cohort savings multiplier']
@@ -658,29 +730,14 @@ class CommunityBuildings (AnnualSavings):
         #kWh
         
         self.proposed_kWh_consumption = elec_vals.sum()
-        
-    #~ def calc_post_refit_use (self):
-        #~ """ 
-        #~ calculate post refit HF and kWh use
-        
-        #~ pre:
-            #~ pre refit and savigns values should be calculated
-        #~ post: 
-            #~ refit_pre_kWh_total is the total number of kWh used after a 
-        #~ refit(float)
-            #~ same  for self.refit_HF_consumption but with HF
-        #~ """
-        
-        #~ self.refit_HF_consumption = self.baseline_HF_consumption - \
-                                                #~ self.refit_savings_HF_total
-        #~ self.refit_fuel_Hoil_consumption = \
-                #~ self.refit_HF_consumption*constants.mmbtu_to_gal_HF
-        #~ self.refit_kWh_consumption = self.baseline_kWh_consumption - \
-                                                #~ self.refit_savings_kWh_total
                                                 
     def get_fuel_total_saved (self):
-        """
-        returns the total fuel saved in gallons
+        """get total fuel saved
+        
+        Returns 
+        -------
+        float
+            the total fuel saved in gallons
         """
         #~ gen_eff = self.cd["diesel generation efficiency"]
         
@@ -691,8 +748,13 @@ class CommunityBuildings (AnnualSavings):
                 #~ self.refit_savings_kWh_total / gen_eff
                                 
     def get_total_enery_produced (self):
-        """
-        returns the total energy saved 
+        """get total energy produced
+        
+        Returns
+        ------- 
+        dict
+            electric 'kWh', and heating 'MMBtu' savings keys with tuple 
+        (savings, % of energy used) values
         """
         kWh_savings = self.baseline_kWh_consumption - \
                         self.proposed_kWh_consumption
@@ -702,26 +764,19 @@ class CommunityBuildings (AnnualSavings):
         return {'kWh': (kWh_savings, 1 - heating_cost_percent), 
                 'MMBtu': (HF_savings, heating_cost_percent)
                }
-        
-    #~ def calc_capital_costs (self):
-        #~ """
-        #~ pre:
-            #~ self.refit_cost_total is a dollar value
-        #~ post:
-            #~ self.capital_costs is the refit cost
-        #~ """
-        #~ self.capital_costs = self.refit_cost_total
     
     def calc_annual_electric_savings (self):
-        """
-        forecast the electric savings
-        
-        pre:
-            self.refit_savings_kWh_total, self.diesel_prices, should be
-        available 
-            AEAA.diesel_generation_eff: TODO
-        post:
-            self.annual_electric_savings containt the projected savings
+        """calculate annual electric savings created by the project
+            
+        Attributes
+        ----------
+        baseline_kWh_cost : np.array
+            baseline cost ($/year)
+        proposed_kWh_cost : np.array
+            proposed cost ($/year)
+        annual_electric_savings : np.array
+            electric savings ($/year) are the difference in the base 
+        and proposed fuel costs
         """
         elec_price = self.electricity_prices.ix[self.start_year:\
                                                     self.end_year-1]
@@ -746,15 +801,16 @@ class CommunityBuildings (AnnualSavings):
                                         self.proposed_kWh_cost
         
     def calc_annual_heating_savings (self):
-        """
-        forecast the electric savings
-        
-        pre:
-            self.refit_savings_HF_total, self.diesel_prices, should be
-        available 
-            AEAA.diesel_generation_eff: TODO
-        post:
-            self.annual_heating_savings containt the projected savings
+        """calculate annual heating savings created by the project
+            
+        Attributes
+        ----------
+        baseline_HF_cost : np.array
+            baseline heating cost ($/year)
+        proposed_HF_cost : np.array
+            proposed heating cost ($/year)
+        annual_heating_savings : np.array
+            heating savings ($/year) 
         """
         self.hoil_price = (self.diesel_prices + self.cd['heating fuel premium'])
         
