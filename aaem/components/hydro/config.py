@@ -1,7 +1,17 @@
 """
-config.py
-
-    Hydropower config info for community data yaml file
+Hydropower configuration 
+------------------------
+    
+    Contains configuration info for community data yaml file, and 
+     other set-up requirements
+    
+    **Unique Configuration keys**
+    
+        'percent heat recovered' : percent heat recovered
+        
+        'percent o&m': percent of captial costs for o&m
+    
+    
 """
 COMPONENT_NAME = "Hydropower"
 IMPORT = "IMPORT"

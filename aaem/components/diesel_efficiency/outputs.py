@@ -248,7 +248,7 @@ def save_regional_summary (summary, res_dir):
 
 def generate_web_summary (web_object, community):
     """generate html summary for a community. 
-    generates web_object.directory/community/heat_recovery.html and 
+    generates web_object.directory/community/diesel_efficiency.html and 
     associated csv files.
     
     Parameters
@@ -354,8 +354,16 @@ def generate_web_summary (web_object, community):
                                     ))
                                                                         
 def create_project_details_list (project):
-    """
-    makes a projects details section for the html
+    """makes a projects details section for the html
+    
+    Parameters
+    ----------
+    projcet: DieselEfficiency
+        A DieselEfficiency object thats run function has been called
+            
+    Returns
+    -------
+        A dictionary with values used by summary
     """
     return [
        {'words':'Capital cost', 

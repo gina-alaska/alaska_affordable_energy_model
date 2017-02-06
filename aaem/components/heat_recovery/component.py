@@ -188,6 +188,7 @@ class HeatRecovery (AnnualSavings):
         """
         Returns 
         -------
+        float
             the total fuel saved in gallons
         """
         return self.proposed_heat_recovery
@@ -196,6 +197,7 @@ class HeatRecovery (AnnualSavings):
         """
         Returns
         ------- 
+        flaot
             the total energy produced
         """
         return self.proposed_heat_recovery/ constants.mmbtu_to_gal_HF

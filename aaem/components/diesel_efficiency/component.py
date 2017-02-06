@@ -156,6 +156,13 @@ class DieselEfficiency(AnnualSavings):
     def calc_average_load (self):
         """calculate the average load of the system
             
+        Attributes
+        ----------
+        generation: array
+            array of diesel generation values per year (kWh/year)
+        average_load: float
+            averge diesel generation load in first year of project (kW)
+        
         """
         self.generation = self.forecast.generation_by_type['generation diesel']\
                                 .ix[self.start_year:self.end_year-1].values
@@ -165,19 +172,15 @@ class DieselEfficiency(AnnualSavings):
  
 
     def calc_baseline_generation_fuel_use (self):
-        """
-            calculates baseline generation fuel use
+        """calculates baseline generation fuel use
         
-        preconditions:
-            self.cd: "diesel generation efficiency" should get the 
-                diesel generation efficiency (Gal/kWh) [float]
-            self.generation:  generation per year (kWh) [np.array][floats]
-       
-        postcondtions:
-            self.baseline_diesel_efficiency will be the diesel generation 
-                efficiency before any imporvements are made (Gal/kWh) [float]
-            self.baseline_generation_fuel_use: fuel used per year (gal) 
-                [np.array][floats]
+        Attributes
+        ----------
+        baseline_diesel_efficiency : float
+            the diesel generation efficiency before any imporvements
+            are made (Gal/kWh) [
+        baseline_generation_fuel_use : np.array
+            fuel used per year before improvements (gal) 
         """
         self.baseline_diesel_efficiency = \
                         self.cd["diesel generation efficiency"]
@@ -185,21 +188,15 @@ class DieselEfficiency(AnnualSavings):
                                         self.baseline_diesel_efficiency 
     
     def calc_proposed_generation_fuel_use (self):
-        """
-            calculates proposed generation fuel use
-        
-        preconditions:
-            self.cd: "diesel generation efficiency" should get the 
-                diesel generation efficiency (Gal/kWh) [float]
-            self.comp_specs: 'efficiency improvment' key should get the 
-                improvement factor (float)
-            self.generation:  generation per year (kWh) [np.array][floats]
+        """calculates proposed generation fuel use
        
-        postcondtions:
-            self.proposed_diesel_efficiency will be the diesel generation 
-                efficiency before any imporvements are made (Gal/kWh) [float]
-            self.proposed_generation_fuel_use: fuel used per year (gal) 
-                [np.array][floats]
+        Attributes
+        ----------
+        proposed_diesel_efficiency : float
+            the diesel generation efficiency before any imporvements 
+            are made (Gal/kWh) 
+        proposed_generation_fuel_use : np.array
+            fuel used per year after improvments (gal) 
         """
         self.proposed_diesel_efficiency = \
                         self.cd["diesel generation efficiency"] * \
@@ -208,44 +205,36 @@ class DieselEfficiency(AnnualSavings):
                                         self.proposed_diesel_efficiency 
                                         
     def calc_max_capacity (self):
-        """
-            calculate max load and capacity
-            
-        preconditions:
-            self.generation:  generation per year (kWh) [np.array][floats]
-            
-        postconditions: 
-            self.max_load: maximum load over project lifetime (KWh) [float]
-            self.max_capacity: proposed max capacity (KWh) [float]
+        """calculate max load and capacity
+        
+        Attributes
+        ---------- 
+        max_load : float
+            maximum load over project lifetime (KWh)
+        max_capacity: float
+            proposed max capacity (KWh)
         """
         self.max_load = self.generation[:self.actual_project_life].max() / \
                                                     constants.hours_per_year
         self.max_capacity = 13.416 * self.max_load ** (1 - 0.146)  
     
     def calc_capital_costs (self):
-        """
-            calculate the capital costs
+        """calculate the capital costs
             
-        preconditions:
-            self.max_capacity: proposed max capacity (KWh) [float]
-        
-        postconditions:
-            self.capital_costs: total cost of imporvments ($) [float] 
+        Attributes
+        ----------
+        capital_costs : float
+             total cost of improvments ($), calculated from max_capacity
         """
         self.capital_costs = (1.8 + .001 * self.max_capacity) * 1000000
     
     def calc_oppex (self):
-        """
-            calculate the operational costs
-            
-        preconditions:
-            self.average_load: average load (KWh) [float]
-            self.comp_specs: 'o&m costs' is a dictionary with keys as the 
-                cielings for the costs, and a key 'else' for anything greater 
-                than the last cieling
-        
-        postconditions:
-            self.oppex: operational costs per year ($) [float] 
+        """calculate the operational costs
+
+        Attributes
+        ----------
+        oppex : float 
+            operational costs per year ($) read from o&m costs table 
         """
         key = 'else'
         for max_load in sorted(self.comp_specs['o&m costs'].keys())[:-1]:
@@ -257,21 +246,13 @@ class DieselEfficiency(AnnualSavings):
         
         
     def calc_annual_electric_savings (self):
-        """
-            calculate annual electric savings created by the project
-        
-        precodtions:
-            Note: for the arrays in this function index 0 should represent the 
-                start year self.start year and each subsequent index the 
-                next year 
-            self.diesel_prices: diesel prices ($/gal) [np.array][floats]
-            self.baseline_generation_fuel_use: (gal) [np.array][floats]
-            self.proposed_generation_fuel_use (gal) [np.array][floats]
-            self.oppex: ($) [float]
+        """calculate annual electric savings created by the project
             
-        postconditions:
-            self.annual_electric_savings: electric savings ($/year) 
-                [np.array][floats]
+        Attributes
+        ----------
+        annual_electric_savings : np.array
+            electric savings ($/year) are the difference in the base 
+        and proposed fuel costs
         """
         price = self.diesel_prices
         
@@ -281,42 +262,44 @@ class DieselEfficiency(AnnualSavings):
         self.annual_electric_savings = base - proposed
         
     def calc_annual_heating_savings (self):
-        """
-            calculate annual heating savings created by the project
+        """calculate annual heating savings created by the project
             
-        postconditions:
-            self.annual_heating_savings are 0
+        Attributes
+        ----------
+        annual_heating_savings : flaot
+            no savings from heating
         """
         self.annual_heating_savings = 0
         
     def get_fuel_total_saved (self):
-        """
-        preconditions:
-            self.baseline_generation_fuel_use: [np.array][floats]
-            self.proposed_generation_fuel_use: [np.array][floats]
+        """get total fuel saved
         
-        ouptut:
-            returns the total fuel saved in gallons
+        Returns 
+        -------
+        float
+            the total fuel saved in gallons
         """
         return self.baseline_generation_fuel_use - \
                 self.proposed_generation_fuel_use
     
     def get_total_enery_produced (self):
-        """
-        ouptut:
-            returns the total energy produced
+        """get total energy produced
+        
+        Returns
+        ------- 
+        float
+            the total energy produced
         """
         return self.get_fuel_total_saved() / constants.mmbtu_to_gal_HF
         
     def save_component_csv (self, directory):
-        """
-            save the output from the component.
-        
-        precondtitions:
-            self.run: True for the output to be saved
-            
-        output:
-            saves "<community>_diesel_efficienct_output.csv"
+        """Save the component output csv in directory
+
+        Parameters
+        ----------
+        directory : path
+            output directory
+
         """
         if not self.run:
             return
