@@ -1,7 +1,16 @@
 """
-config.py
-
-    Residential Building Efficiency config info for community data yaml file
+Residential Efficiency configuration 
+------------------------------------
+    
+    Contains configuration info for community data yaml file, and 
+     other set-up requirements
+    
+    **Unique Configuration keys**
+    
+        'min kWh per household'
+        'average refit cost'
+        'data'
+    
 """
 COMPONENT_NAME = "Residential Energy Efficiency"
 IMPORT = "IMPORT"

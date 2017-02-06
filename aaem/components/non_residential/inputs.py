@@ -1,8 +1,8 @@
 """
-Hydropower inputs
------------------
+Non-Residential Efficiency inputs
+---------------------------------
 
-input functions for Hydropower component
+input functions for Non-Residential Efficiency component
     
 """
 import os.path
