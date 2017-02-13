@@ -1,7 +1,8 @@
 """
-inputs.py
+Template Components inputs
+--------------------------
 
-    input functions for <ADD COMP NAME/DESCRIPTION HERE> component
+input functions for <ADD COMP NAME/DESCRIPTION HERE> component
 """
 import os.path
 from pandas import read_csv
@@ -11,20 +12,32 @@ from config import UNKNOWN
 
 ## Functions for CommunityData IMPORT keys
 def process_data_import(data_dir):
-    """
+    """Load data from <FILES>
+    
+    Parameters
+    ----------
+    data_dir: path
+        path to data directory for community
+        
+    Returns
+    -------
+    dict
+        data for technology
     """
     pass
     
 def load_project_details (data_dir):
-    """
-    load details related to exitign projects
+    """load details related to exitign projects
     
-    pre:
-        data_dir is a directory with  'project_development_timeframes.csv',
-        and "project_name_projects.yaml" in it 
+    Parameters
+    ----------
+    data_dir: path
+        path to data directory for community
     
-    post:
-        retunrns a dictonary wht the keys 'phase'(str), 
+    Returns
+    -------
+    Dict
+         a dictonary with the keys 'phase'(str), 
         'proposed capacity'(float), 'proposed generation'(float),
         'distance to resource'(float), 'generation capital cost'(float),
         'transmission capital cost'(float), 'operational costs'(float),

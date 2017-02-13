@@ -1,7 +1,9 @@
 """
-preprocessing.py
+Wind power Preprocessing 
+------------------------
 
-    preprocessing functions for Wind Power component  
+preprocessing functions for The Wind Power component  
+
 """
 import os.path
 from pandas import DataFrame, read_csv
@@ -23,29 +25,30 @@ raw_data_files = ['wind_class_cf_assumptions.csv',
 
 ## wind preprocessing functons 
 def wind_preprocess_header (ppo):
-    """
-    wind preporcess header
+    """Generate preprocesed data file header
     
-    pre:
-        ppo: a Preprocessor object
-    post:
-        returns the header for the wind data preprocessed csv file
+    Parameters
+    ----------
+        ppo: aaem.prerocessor.Preprocessor
+            a preprocessing object
+            
+    Returns
+    ------- 
+        String of header info
     """
     ## TODO Expand
     return  "# " + ppo.com_id + " wind data\n"+ \
             ppo.comments_dataframe_divide
     
 def wind_preprocess (ppo):
-    """
-    Reprocesses the wind data
+    """Preprocess data wind power data in wind_existing_systems.csv,
+    wind_intertie_wind_classes.csv, and wind_class_cf_assumptions.csv
     
-    pre:
-        ppo is a Preprocessor object. wind_class_cf_assumptions, 
-    wind_existing_systems.csv and wind_resource_data.csv file exist at 
-    ppo.data_dir's location 
+    Parameters
+    ----------
+    ppo: preprocessor.Proprocessor
+        a preprocessor object
     
-    post:
-        preprocessed wind data is saved at ppo.out_dir as wind_power_data.csv
     """
     try:
         existing = read_csv(os.path.join(ppo.data_dir,"wind_existing_systems.csv"),
@@ -123,13 +126,12 @@ def wind_preprocess (ppo):
     ppo.MODEL_FILES['WIND_DATA'] = "wind_power_data.csv"
     
 def copy_wind_cost_table(ppo):
-    """
-    copies wind cost table file to each community
+    """Copies wind cost table file to each community.
     
-    pre:
-        ppo is a Preprocessor object. wind_kw_costs.csv exists at ppo.data_dir
-    post:
-        wind_kw_costs.csv is copied from ppo.data_dir to ppo.out_dir 
+    Parameters
+    ----------
+    ppo: preprocessor.Proprocessor
+        a preprocessor object
     """
     data_dir = ppo.data_dir
     out_dir = ppo.out_dir
@@ -138,14 +140,18 @@ def copy_wind_cost_table(ppo):
 ## end wind preprocessing functions
 
 def preprocess_existing_projects (ppo):
-    """
-    preprocess data related to existing projects
+    """Preprocess data related to existing projects
     
-    pre:
-        ppo is a is a Preprocessor object. "wind_projects_potential.csv" and 
-        'project_development_timeframes.csv' exist in the ppo.data_dir 
-    post:
-        data for existing projets is usable by model
+    Parameters
+    ----------
+    ppo: preprocessor.Proprocessor
+        a preprocessor object
+        
+    Returns
+    -------
+    list
+        project names
+    
     """
     projects = []
     p_data = {}

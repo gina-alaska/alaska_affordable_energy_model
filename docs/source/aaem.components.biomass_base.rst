@@ -1,10 +1,6 @@
-************************************
-aaem.components.biomass_base package
-************************************
-
-
+**********************
 Biomass Base Component
-----------------------
+**********************
 
 .. autoclass:: aaem.components.biomass_base.component.BiomassBase
     :members:

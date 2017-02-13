@@ -47,7 +47,7 @@ class Hydropower (AnnualSavings):
         Initial value: 'community' section of community_data
     comp_specs : dictionary
         component specific data for a community.
-        Initial value: 'heat recovery' section of community_data
+        Initial value: 'Hydropower' section of community_data
         
     See also
     --------
@@ -90,8 +90,6 @@ class Hydropower (AnnualSavings):
         self.set_project_life_details(self.comp_specs["start year"],
                                       self.comp_specs["lifetime"],
                         self.forecast.end_year - self.comp_specs["start year"])
-        
-        self.load_prerequisite_variables(prerequisites)
         
     def run (self, scalers = {'capital costs':1.0}):
         """Runs the component. The Annual Total Savings,Annual Costs, 
@@ -305,7 +303,7 @@ class Hydropower (AnnualSavings):
     
     # Make this do stuff
     def calc_annual_electric_savings (self):
-        """calculate annual electric savings created by the project
+        """Calculate annual electric savings created by the project.
             
         Attributes
         ----------
@@ -333,7 +331,7 @@ class Hydropower (AnnualSavings):
         
     # Make this do sruff. Remember the different fuel type prices if using
     def calc_annual_heating_savings (self):
-        """calculate annual heating savings created by the project
+        """Calculate annual heating savings created by the project.
             
         Attributes
         ----------
@@ -348,7 +346,7 @@ class Hydropower (AnnualSavings):
         #~ print 'self.annual_heating_savings', self.annual_heating_savings
         
     def get_fuel_total_saved (self):
-        """get total fuel saved
+        """Get total fuel saved.
         
         Returns 
         -------
@@ -360,7 +358,7 @@ class Hydropower (AnnualSavings):
                 self.generation_diesel_reduction
     
     def get_total_enery_produced (self):
-        """get total energy produced
+        """Get total energy produced.
         
         Returns
         ------- 
@@ -370,7 +368,7 @@ class Hydropower (AnnualSavings):
         return self.net_generation_proposed
         
     def save_component_csv (self, directory):
-        """Save the component output csv in directory
+        """Save the component output csv in directory.
 
         Parameters
         ----------

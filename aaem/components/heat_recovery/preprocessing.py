@@ -28,7 +28,7 @@ def preprocess_header (ppo):
             
     Returns
     ------- 
-        Sting of header info
+        String of header info
     """
     return  "# " + ppo.com_id + " heat recovery data\n"+ \
             ppo.comments_dataframe_divide

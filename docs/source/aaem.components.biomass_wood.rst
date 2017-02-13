@@ -1,10 +1,6 @@
-****************
-Biomass Cordwood
-****************
-
-
+**************************
 Biomass Cordwood Component
---------------------------
+**************************
 
 .. autoclass:: aaem.components.biomass_wood.component.BiomassCordwood
     :members:

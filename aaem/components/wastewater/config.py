@@ -1,7 +1,20 @@
 """
-config.py
-
-    Water/Waste Water efficiency config info for community data yaml file
+Water Wastewater Configuration 
+------------------------------
+    
+    Contains Water Wastewater configuration info for community
+    data yaml file, and other set-up requirements
+    
+    **Unique Configuration keys**
+    
+        'audit cost'
+        'average refit cost'
+        'data'
+        'electricity refit reduction'
+        'heating fuel refit reduction'
+        'heat recovery multiplier'
+        'heating cost precent'
+    
 """
 COMPONENT_NAME = 'Water and Wastewater Efficiency'
 IMPORT = "IMPORT"

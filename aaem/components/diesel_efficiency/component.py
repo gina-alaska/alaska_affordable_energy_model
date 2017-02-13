@@ -43,7 +43,7 @@ class DieselEfficiency(AnnualSavings):
         Initial value: 'community' section of community_data
     comp_specs : dictionary
         component specific data for a community.
-        Initial value: 'heat recovery' section of community_data
+        Initial value: 'Disel Efficiency' section of community_data
         
     See also
     --------

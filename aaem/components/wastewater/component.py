@@ -1,7 +1,7 @@
 """
-component.py
+Water Wastewater Component Body
+-------------------------------
 
-    Water/Waste Water efficiency component body
 """
 import numpy as np
 from pandas import DataFrame
@@ -17,35 +17,61 @@ from config import COMPONENT_NAME, UNKNOWN
 
 
 class WaterWastewaterSystems (AnnualSavings):
-    """
-    AAEM Water & Wastewater Systems component
+    """Water wastewater of the Alaska Affordable Eenergy Model
+
+    Parameters
+    ----------
+    commnity_data : CommunityData
+        CommintyData Object for a community
+    forecast : Forecast
+        forcast for a community 
+    diagnostics : diagnostics, optional
+        diagnostics for tracking error/warining messeges
+    prerequisites : dictionary of components, optional
+        prerequisite component data this component has no prerequisites 
+        leave empty
+        
+    Attributes
+    ----------
+    diagnostics : diagnostics
+        for tracking error/warining messeges
+        initial value: diag or new diagnostics object
+    forecast : forecast
+        community forcast for estimating future values
+        initial value: forecast
+    cd : dictionary
+        general data for a community.
+        Initial value: 'community' section of community_data
+    comp_specs : dictionary
+        component specific data for a community.
+        Initial value: 'water wastewater' section of community_data
+        
+    See also
+    --------
+    aaem.community_data : 
+        community data module, see for information on CommintyData Object
+    aaem.forecast : 
+        forecast module, see for information on Forecast Object
+    aaem.diagnostics :
+        diagnostics module, see for information on diagnostics Object
+
     """
     
     def __init__ (self, community_data, forecast, 
                         diag = None, prerequisites = {}):
-        """ 
-        Class initialiser 
+        """Class initialiser.
         
-        pre-conditions:
-            community_data is a community data object as defied in 
-        community_data.py
-            forecast is a forecast object as defined as in forecast.py
-            diag (if provided) should be a diagnostics as defined in 
-        diagnostics.py
-        
-        Post-conditions: 
-            self.component is the component name (string)
-            self.diagnostics is a diagnostics object
-            self.cd is the community section of the input community_data object
-            self.comp_specs is the wastewater specific part of the 
-        community_data object 
-            self.cost_per_person $/person to refit (float) for the communities 
-        region
-            self.forecast is the input forecast object
-            self.hdd heating degree days (float)
-            self.pop population in year used in estimates (float)
-            self.population_fc is the forecast population over the project life 
-        time
+        Parameters
+        ----------
+        commnity_data : CommunityData
+            CommintyData Object for a community
+        forecast : Forecast
+            forcast for a community 
+        diagnostics : diagnostics, optional
+            diagnostics for tracking error/warining messeges
+        prerequisites : dictionary of components, optional
+            prerequisite component data
+
         """
         self.component_name = COMPONENT_NAME
         
@@ -78,12 +104,13 @@ class WaterWastewaterSystems (AnnualSavings):
                                                                  self.end_year)
 
     def calc_annual_electric_savings (self):
-        """
-        calculate the annual electric savings
-        pre:
-             none
-        post:
-            self.annual_electric_savings is an np.array of $/year values 
+        """Calculate annual electric savings created by the project.
+            
+        Attributes
+        ----------
+        annual_electric_savings : np.array
+            electric savings ($/year) are the difference in the base 
+        and proposed fuel costs
         """
         self.calc_baseline_kWh_cost()
         self.calc_proposed_kWh_cost ()
@@ -91,16 +118,12 @@ class WaterWastewaterSystems (AnnualSavings):
                                        self.proposed_kWh_cost
     
     def calc_baseline_kWh_cost (self):
-        """
-        calcualte the savings for the base electric savings
-        pre:
-            "elec non-fuel cost" is a dollar value (float).
-            self.diesel_prices is an array of dollar values over the project 
-        lifetime (floats)
-            'diesel generation efficiency' is in Gal/kWh (float)
-        post:
-           self.baseline_kWh_cost is an np.array of $/year values (floats) over
-        the project lifetime
+        """Calculate Baseline electric cost.
+            
+        Attributes
+        ----------
+        baseline_generation_cost : np.array
+            current cost of generation ($/year)
         """
         kWh_cost = self.cd["electric non-fuel prices"].\
                                             ix[self.start_year:self.end_year-1]
@@ -110,16 +133,12 @@ class WaterWastewaterSystems (AnnualSavings):
         self.baseline_kWh_cost = self.baseline_kWh_consumption * kWh_cost
         
     def calc_proposed_kWh_cost (self):
-        """
-        calcualte the savings for the base electric savings
-        pre:
-            "elec non-fuel cost" is a dollar value (float).
-            self.diesel_prices is an array of dollar values over the project 
-        lifetime (floats)
-            'diesel generation efficiency' is in Gal/kWh (float)
-        post:
-           self.baseline_kWh_cost is an np.array of $/year values (floats) over
-        the project lifetime
+        """Calculate Proposed electric cost.
+            
+        Attributes
+        ----------
+        proposed_generation_cost : np.array
+            current cost of generation ($/year)
         """
         kWh_cost = self.cd["electric non-fuel prices"].\
                                             ix[self.start_year:self.end_year-1]
@@ -128,29 +147,26 @@ class WaterWastewaterSystems (AnnualSavings):
         self.proposed_kWh_cost = self.proposed_kWh_consumption * kWh_cost
     
     def calc_annual_heating_savings (self):
-        """
-        calculate the annual heating savings 
-        pre:
-            none
-        post:
-            self.annual_heating_savings is an np.array of $/year values (floats) 
-        over the project lifetime
+        """Calculate annual heating savings created by the project.
+            
+        Attributes
+        ----------
+        annual_heating_savings : np.array
+            heating savings ($/year) 
         """
         self.calc_proposed_HF_cost()
         self.calc_baseline_HF_cost()
         # $ / yr
-        self.annual_heating_savings = self.baseline_HF_cost - self.proposed_HF_cost
+        self.annual_heating_savings = self.baseline_HF_cost - \
+            self.proposed_HF_cost
         
     def calc_proposed_HF_cost (self):
-        """
-        calcualte the savings for the proposed heating savings
-        pre:
-            self.diesel_prices is an array of dollar values over the project 
-        lifetime (floats)
-            'heating fuel premium' $/gal (float)
-        post:
-           self.proposed_HF_cost is an np.array of $/year values (floats) over the
-        project lifetime
+        """Calculate proposed HF cost.
+            
+        Attributes
+        ----------
+        proposed_HF_cost : np.array
+            heating savings ($/year) 
         """
         self.proposed_HF_cost = np.zeros(self.project_life)
         fuel_cost = self.diesel_prices + self.cd['heating fuel premium']# $/gal
@@ -162,15 +178,12 @@ class WaterWastewaterSystems (AnnualSavings):
                 self.proposed_fuel_biomass_consumption * wood_price
         
     def calc_baseline_HF_cost (self):
-        """
-        calcualte the savings for the base heating savings
-        pre:
-            self.diesel_prices is an array of dollar values over the project 
-        lifetime (floats)
-            'heating fuel premium' $/gal (float)
-        post:
-           self.baseline_HF_cost is an np.array of $/year values (floats) over 
-        the project lifetime
+        """Calculate baseline HF cost.
+            
+        Attributes
+        ----------
+        baselline_HF_cost : np.array
+            heating savings ($/year) 
         """
         self.baseline_HF_cost = np.zeros(self.project_life)
         fuel_cost = self.diesel_prices + self.cd['heating fuel premium'] #$/gal
@@ -182,12 +195,28 @@ class WaterWastewaterSystems (AnnualSavings):
                 self.baseline_fuel_biomass_consumption * wood_price
         
     def run (self, scalers = {'capital costs':1.0}):
-        """
-        runs the model for the inputs section of the wastewater tab
-        pre-conditions:
-            None
-        post-conditions:
-            The model component is run
+        """Runs the component. The Annual Total Savings,Annual Costs, 
+        Annual Net Benefit, NPV Benefits, NPV Costs, NPV Net Benefits, 
+        Benefit Cost Ratio, Levelized Cost of Energy, 
+        and Internal Rate of Return will all be calculated. There must be a 
+        known Heat Recovery project for this component to run.
+        
+        Parameters
+        ----------
+        scalers: dictionay of valid scalers, optional
+            Scalers to adjust normal run variables. 
+            See note on accepted  scalers
+        
+        Attributes
+        ----------
+        run : bool
+            True in the component runs to completion, False otherwise
+        reason : string
+            lists reason for failure if run == False
+            
+        Notes
+        -----
+            Accepted scalers: capital costs.
         """
         tag = self.cd['name'].split('+')
         
@@ -240,19 +269,12 @@ class WaterWastewaterSystems (AnnualSavings):
 
     
     def calc_baseline_kWh_consumption (self):
-        """
-        calculate electric savings
-        pre:
-            self.hdd, self.pop, self.population_fc should be as defined in 
-        __init__
-            self.comp_specs['data'] should have 'kWh/yr', 'HDD kWh', 
-        and 'pop kWh' as values (floats) with the units kWh/yr, kWh/HDD,
-         and KWh/person 
+        """Calculate the baseline electric consumption.
         
-            NOTE: If known 'kWh/yr' is NaN or 0 an estimate will be created.
-        post:
-            self.baseline_kWh_consumption array of kWh/year values(floats) over
-        the project lifetime
+        Attributes
+        ----------
+        baseline_kWh_consumption : np.array 
+            kWh/year values(floats) over the project lifetime
         """
         hdd_coeff = np.float64(self.comp_specs['data'].ix['HDD kWh'])
         pop_coeff = np.float64(self.comp_specs['data'].ix['pop kWh'])
@@ -269,19 +291,16 @@ class WaterWastewaterSystems (AnnualSavings):
                             ((self.population_fc - self.pop) * pop_coeff)
                             
     def calc_baseline_HF_consumption (self):
-        """
-        calculate heating fuel savings
-        pre:
-            self.hdd, self.pop, self.population_fc should be as defined in 
-        __init__
-            self.comp_specs['data'] should have 'HF Used',
-        'heat recovery multiplier', 'HDD HF', and 'pop HF' as values (floats) 
-        with the units gal/yr, unitless, Gal/HDD, and Gal/person 
-            self.comp_specs['data']'s 'HR Installed' is (True or False)(String)
-            NOTE: If known 'gal/yr' is NaN or 0 an estimate will be created.
-        post:
-            self.baseline_kWh_consumption array of kWh/year values(floats) over
-        the project lifetime
+        """Calculate the baseline Heating consumption.
+        
+        Attributes
+        ----------
+        baseline_fuel_biomass_consumption : np.array 
+            coord/year values(floats) over the project lifetime
+        baseline_fuel_Hoil_consumption : np.array 
+            gal/year values(floats) over the project lifetime
+        baseline_HF_consumption : np.array 
+            mmbtu/year values(floats) over the project lifetime
         """
         hdd_coeff = np.float64(self.comp_specs['data'].ix['HDD HF'])
         pop_coeff = np.float64(self.comp_specs['data'].ix['pop HF'])
@@ -315,17 +334,12 @@ class WaterWastewaterSystems (AnnualSavings):
             self.baseline_fuel_biomass_consumption/constants.mmbtu_to_cords
             
     def calc_proposed_kWh_consumption (self):
-        """
-        calculate post refit kWh use
-        pre:
-            self.comp_specs['electricity refit reduction'] < 1, > 0 (float) 
-            self.comp_specs['data'].ix['kWh/yr'] is a price (kWh/yr) (float)
-            self.comp_specs['data'].ix['kWh/yr w/ retro'] is a price (kWh/yr) 
-        (float)
-            NOTE: if the prices are Nan or 0 they are not used
-        post:
-            self.proposed_kWh_consumption is an array of kWh/yr (floats) over 
-        the project lifetime 
+        """Calculate the proposed electric consumption.
+        
+        Attributes
+        ----------
+        proposed_kWh_consumption : np.array 
+            kWh/year values(floats) over the project lifetime
         """
         percent = 1 - self.comp_specs['electricity refit reduction']
         con = np.float64(self.comp_specs['data'].ix['kWh/yr'])
@@ -337,16 +351,16 @@ class WaterWastewaterSystems (AnnualSavings):
         self.proposed_kWh_consumption = consumption 
 
     def calc_proposed_HF_consumption (self):
-        """
-        calculate post refit HF use
-        pre:
-            self.comp_specs['heating fuel refit reduction'] < 1, > 0 (float) 
-            self.comp_specs['data'].ix['HF Used'] is a price (gal/yr) (float)
-            self.comp_specs['data'].ix['HF w/retro'] is a price (gal/yr) (float)
-            NOTE: if the prices are Nan or 0 they are not used
-        post:
-            self.proposed_HF_consumption is an array of gal/yr values (floats) over 
-        the project lifetime 
+        """Calculate the proposed Heating consumption.
+        
+        Attributes
+        ----------
+        proposed_fuel_biomass_consumption : np.array 
+            coord/year values(floats) over the project lifetime
+        proposed_fuel_Hoil_consumption : np.array 
+            gal/year values(floats) over the project lifetime
+        proposed_HF_consumption : np.array 
+            mmbtu/year values(floats) over the project lifetime
         """
         percent = 1 - self.comp_specs['heating fuel refit reduction']
         if (not (np.isnan(np.float64(self.comp_specs['data'].ix['HF w/Retro']))\
@@ -365,27 +379,27 @@ class WaterWastewaterSystems (AnnualSavings):
                 self.proposed_fuel_biomass_consumption/constants.mmbtu_to_cords
         
     def calc_savings_kWh_consumption (self):
-        """
-        calculate the savings in kWh use
-        pre:
-            self.baseline_kWh_consumption, self.proposed_kWh_consumption are
-        arrays of kWh/year (floats) over the project lifetime
-        post:
-            self.savings_kWh_consumption arrays of kWh/year savings(floats) 
-        over the project lifetime
+        """calculate the savings in kWh use
+        
+        Attributes
+        ----------
+        savings_kWh_consumption : np.array
+            electric savings
         """
         self.savings_kWh_consumption = self.baseline_kWh_consumption -\
                                        self.proposed_kWh_consumption
                                        
     def calc_savings_HF_consumption (self):
-        """
-        calculate the savings in HF use
-        pre:
-            self.baseline_HF_consumption, self.proposed_HF_consumption are
-        arrays of gal/year (floats) over the project lifetime
-        post:
-            self.savings_HF_consumption arrays of gal/year savings(floats) 
-        over the project lifetime
+        """calculate the savings in HF use
+        
+        Attributes
+        ----------
+        savings_fuel_Hoil_consumption : np.array
+            heating oil savings (gal/year)
+        savings_fuel_biomass_consumption : np.array
+            heating oil savings (cord/year)
+        savings_HF_consumption : np.array
+            heating oil savings (mmbtu/year)
         """
         
         self.savings_fuel_Hoil_consumption = \
@@ -399,17 +413,13 @@ class WaterWastewaterSystems (AnnualSavings):
                 self.proposed_HF_consumption
             
     def calc_capital_costs (self, cost_per_person = 450):
-        """
-        calculate the capital costs
-        
-        pre:
-            self.comp_specs['data'].ix["Implementation Cost"] is the actual
-        cost of refit (float), if it is NAN or 0 its not used.
-            "audit_cost" is a dollar value (float)
-            self.cost_per_person is a dollar value per person > 0
-            self.pop is a population value (floats) > 0
-        post:
-            self.capital_costs is $ value (float)
+        """Calculate the capital costs.
+            
+        Attributes
+        ----------
+        capital_costs : float
+             total cost of improvments ($), calculated from audit cost and
+             population size
         """
         cc = self.comp_specs['data'].ix["Implementation Cost"]
         self.capital_costs = np.float64(cc)
@@ -418,8 +428,12 @@ class WaterWastewaterSystems (AnnualSavings):
                                         self.pop *  self.cost_per_person
                                         
     def get_fuel_total_saved (self):
-        """
-        returns the total fuel saved in gallons
+        """Get total fuel saved.
+        
+        Returns 
+        -------
+        float
+            the total fuel saved in gallons
         """
         base_heat = \
             self.baseline_HF_consumption[:self.actual_project_life] *\
@@ -440,8 +454,12 @@ class WaterWastewaterSystems (AnnualSavings):
         return (base_heat - proposed_heat) + (base_elec - proposed_elec)
                                 
     def get_total_enery_produced (self):
-        """
-        returns the total energy produced
+        """Get total energy produced.
+        
+        Returns
+        ------- 
+        float
+            the total energy produced
         """
         kWh_savings = self.savings_kWh_consumption[:self.actual_project_life]
         HF_savings = self.savings_HF_consumption[:self.actual_project_life]

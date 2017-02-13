@@ -1,7 +1,26 @@
 """
-config.py
-
-    Solar Power config info for community data yaml file
+Solar Power Configuration 
+-------------------------
+    
+    Contains Solar Power configuration info for community
+    data yaml file, and other set-up requirements
+    
+    **Unique Configuration keys**
+    
+        'average load limit': (KW) lower limit on the current average load for 
+            running this component
+        'data' 
+        'cost'
+        'cost per kW'
+        'road needed'
+        'road needed for transmission line'
+        'transmission line distance'
+        'percent o&m'
+        'percent generation to offset'
+        'switch gear needed for solar'
+        'percent solar degradation'
+        'o&m cost per kWh'
+        
 """
 COMPONENT_NAME = "Solar Power"
 IMPORT = "IMPORT"

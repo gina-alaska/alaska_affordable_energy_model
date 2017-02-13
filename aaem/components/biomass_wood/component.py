@@ -44,7 +44,7 @@ class BiomassCordwood (bmb.BiomassBase):
         Initial value: 'community' section of community_data
     comp_specs : dictionary
         component specific data for a community.
-        Initial value: 'Biomass Base' section of community_data
+        Initial value: 'Biomass Cordwood' section of community_data
         
     See also
     --------

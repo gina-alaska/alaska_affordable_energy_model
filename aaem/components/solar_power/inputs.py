@@ -1,14 +1,26 @@
 """
-inputs.py
+Solar Power inputs
+------------------
 
-    input functions for Solar Power component
+input functions for Solar Power component
+    
 """
 import os.path
 from pandas import read_csv
 
 ## Functions for CommunityData IMPORT keys
 def process_data_import(data_dir):
-    """
+    """Load data from solar_power_data.csv
+    
+    Parameters
+    ----------
+    data_dir: path
+        path to data directory for community
+        
+    Returns
+    -------
+    dict
+        solar data
     """
     data_file = os.path.join(data_dir, "solar_power_data.csv")
     data = read_csv(data_file, comment = '#', index_col=0, header=0)

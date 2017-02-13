@@ -1,5 +1,6 @@
+********************
 Hydropower Component
---------------------
+********************
 
 .. autoclass:: aaem.components.hydro.component.Hydropower
     :members:

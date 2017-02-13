@@ -1,12 +1,14 @@
-aaem.components package
-=======================
+Model Components
+================
 
-Subpackages
------------
+Components
+----------
+
+.. ~     aaem.components.annual_savings
 
 .. toctree::
 
-    aaem.components.annual_savings
+
     aaem.components.ashp_base
     aaem.components.ashp_non_res
     aaem.components.ashp_res
@@ -24,10 +26,10 @@ Subpackages
     aaem.components.wastewater
     aaem.components.wind_power
 
-Module contents
----------------
+.. ~ Module contents
+.. ~ ---------------
 
-.. automodule:: aaem.components
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. ~ .. automodule:: aaem.components
+.. ~     :members:
+.. ~     :undoc-members:
+.. ~     :show-inheritance:

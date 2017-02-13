@@ -1,5 +1,6 @@
+************************************
 Non-residential Efficiency Component
-------------------------------------
+************************************
 
 .. autoclass:: aaem.components.non_residential.component.CommunityBuildings
     :members:

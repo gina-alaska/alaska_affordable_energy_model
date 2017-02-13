@@ -49,7 +49,7 @@ class CommunityBuildings (AnnualSavings):
         Initial value: 'community' section of community_data
     comp_specs : dictionary
         component specific data for a community.
-        Initial value: 'heat recovery' section of community_data
+        Initial value: 'Non-Residential Buildings' section of community_data
         
     See also
     --------

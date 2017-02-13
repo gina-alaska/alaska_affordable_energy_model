@@ -31,7 +31,7 @@ def component_summary (results, res_dir):
     save_regional_summary(create_regional_summary (results), res_dir)
 
 def communities_summary (coms, res_dir):
-    """Saves the summary by: community residentail_building_summary.csv
+    """Saves the summary by: community residential_building_summary.csv
     
     Parameters
     ----------
@@ -317,8 +317,8 @@ def create_project_details_list (project):
     
     Parameters
     ----------
-    projcet: CommunityBuildings
-        A CommunityBuildings object thats run function has been called
+    projcet: ResidentialBuildings
+        A ResidentialBuildings object thats run function has been called
             
     Returns
     -------

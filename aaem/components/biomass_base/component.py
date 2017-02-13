@@ -42,7 +42,7 @@ class BiomassBase (AnnualSavings):
         Initial value: 'community' section of community_data
     comp_specs : dictionary
         component specific data for a community.
-        Initial value: 'Non-Residential ASHP' section of community_data
+        Initial value: 'Biomass Base' section of community_data
         
     See also
     --------

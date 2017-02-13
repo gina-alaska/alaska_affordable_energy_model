@@ -1,5 +1,6 @@
+***************************
 Diesel Efficiency Component
----------------------------
+***************************
 
 .. autoclass:: aaem.components.diesel_efficiency.component.DieselEfficiency
     :members:

@@ -1,7 +1,13 @@
 """
-config.py
-
-    <ADD COMP NAME/DESCRIPTION HERE> config info for community data yaml file
+Template Component Configuration 
+--------------------------------
+    
+    Contains <Template> configuration info for community
+    data yaml file, and other set-up requirements
+    
+    **Unique Configuration keys**
+        
+   
 """
 # change <component name>
 COMPONENT_NAME = "<component name>"

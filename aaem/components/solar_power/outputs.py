@@ -1,7 +1,9 @@
 """
-outputs.py
+Solar Power Outputs
+-------------------
 
-    ouputs functions for Solar Power component
+output functions for Solar Power component
+
 """
 import os.path
 import numpy as np
@@ -14,21 +16,33 @@ import aaem.web_lib as wl
 
 ## component summary
 def component_summary (results, res_dir):
-    """ 
-    creats the regional and communites summary for the component 
+    """Creates the regional and communites summary for the component in provided 
+    directory
     
-    inputs:
-        results: results from the model
-        res_dir: location to save file
+    Parameters
+    ----------
+    results : dictionay
+        results from the model, dictionay with each community or project 
+        as key
+    res_dir :  path
+        location to save file
     
-    outputs:
-        saves a summaries in res-dir
     """
     communities_summary (results, res_dir)
     save_regional_summary(create_regional_summary (results), res_dir)
 
 def communities_summary (coms, res_dir):
-    """
+    """Saves the summary by: community Solar_power_summary.csv
+    
+    Parameters
+    ----------
+    coms : dictionay
+        results from the model, dictionay with each community or project 
+        as key
+    res_dir :  path
+        location to save file
+    
+
     """
     out = []
     for c in sorted(coms.keys()):
@@ -132,14 +146,19 @@ def communities_summary (coms, res_dir):
     data.to_csv(f_name, mode='w')
     
 def create_regional_summary (results):
-    """
-    create the regional summary for this component
+    """Creates the regional summary
     
-    inputs:
-        results: results from the model
-       
-    outputs:
-        returns summary as a data frame
+    Parameters
+    ----------
+    results : dictionay
+        results from the model, dictionay with each community or project 
+        as key
+            
+    Returns
+    -------
+    DataFrame 
+        containg regional results
+    
     """
     #~ print "start"
     regions = {}
@@ -204,13 +223,15 @@ def create_regional_summary (results):
     return summary
     
 def save_regional_summary (summary, res_dir):
-    """ 
-    inputs:
-        summary: summary dataframe
-        res_dir: location to save file
+    """Saves the summary by region
     
-    outputs:
-        save a regional summary in res-dir
+    Parameters
+    ----------
+    summary : Dataframe
+        compiled regional results
+    res_dir :  path
+        location to save file
+
     """
     f_name = os.path.join(res_dir, '__regional_' +
                 COMPONENT_NAME.lower().replace(' ','_').\
@@ -218,7 +239,21 @@ def save_regional_summary (summary, res_dir):
     summary.to_csv(f_name, mode='w', index_label='region')
     
 def generate_web_summary (web_object, community):
-    """
+    """generate html summary for a community. 
+    generates web_object.directory/community/<component>.html and 
+    associated csv files.
+    
+    Parameters
+    ----------
+    web_object: WebSummary
+        a WebSummary object
+    community: str
+        community name
+            
+    See also
+    --------
+    aaem.web : 
+        WebSummary object definition
     """
     ## get the template
     template = web_object.component_html
@@ -310,14 +345,17 @@ def generate_web_summary (web_object, community):
                                     message = msg
                                     ))
     
-
-
-
-
-
 def create_project_details_list (project):
-    """
-    makes a projects details section for the html
+    """makes a projects details section for the html
+    
+    Parameters
+    ----------
+    projcet: SolarPower
+        A SolarPower object thats run function has been called
+            
+    Returns
+    -------
+        A dictionary with values used by summary
     """
     pen = project.generation_proposed/\
           float(project.forecast.cd.get_item('community',
