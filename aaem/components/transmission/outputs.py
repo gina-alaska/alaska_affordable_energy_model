@@ -54,7 +54,7 @@ def communities_summary (coms, res_dir):
             connect_to = it.comp_specs['nearest community']\
                         ['Nearest Community with Lower Price Power']
                 
-            if it.reason == 'Not a transmission project':
+            if it.reason == 'Not a transmission project.':
                 continue
             try:
                 if it.connect_to_intertie:
