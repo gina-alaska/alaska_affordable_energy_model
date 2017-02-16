@@ -55,7 +55,3 @@ yaml_not_to_save = ['nearest community']
     
 ## list of prerequisites for module
 prereq_comps = [] 
-
-DESCRIPTION = """
-    This component calculates the potential electricity generation from diesel offset by connecting it to annother community via transmission line. 
-"""

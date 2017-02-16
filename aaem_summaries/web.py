@@ -6,8 +6,9 @@ import shutil
 
 from importlib import import_module
 from aaem.components import comp_lib, comp_order
+comp_order = ['Wind Power']
 from aaem.constants import *
-from aaem import __file__, __version__
+from aaem_summaries import __file__, __version__
 from datetime import datetime
 
 import numpy as np
@@ -67,7 +68,7 @@ class WebSummary(object):
             #~ print e
             pass
         #~ print "fine"
-        self.env = Environment(loader=PackageLoader('aaem','templates/'))
+        self.env = Environment(loader=PackageLoader('aaem_summaries','templates/'))
         
         self.component_html = self.env.get_template('component.html')
         self.general_summaries_html = self.env.get_template('demo.html')
@@ -275,41 +276,41 @@ class WebSummary(object):
     def generate_tech_summaries (self):
         
         for comp in comp_order:
-            try:
-                coms = str(list(self.viable_communities[comp])).replace('_', ' ')
-                #~ coms = coms.decode('unicode_escape').encode('ascii','ignore')
-                clean = comp.replace('(','').replace(')','').replace(' ','_')
-                cols = self.get_tech_summary(comp_lib[comp]).columns
-                
-                regions = self.get_tech_summary(comp_lib[comp]).index
-                
-                data = []
-                for row in regions:
-                    d = self.get_tech_summary(comp_lib[comp]).ix[row].values
-                    
-                    
-                    r = [row] 
-                    for i in d:
-                        r.append(int(i))
-                    data.append(r)
+            #~ try:
+            coms = str(list(self.viable_communities[comp])).replace('_', ' ')
+            #~ coms = coms.decode('unicode_escape').encode('ascii','ignore')
+            clean = comp.replace('(','').replace(')','').replace(' ','_')
+            cols = self.get_tech_summary(comp_lib[comp]).columns
+            
+            regions = self.get_tech_summary(comp_lib[comp]).index
+            
+            data = []
+            for row in regions:
+                d = self.get_tech_summary(comp_lib[comp]).ix[row].values
                 
                 
+                r = [row] 
+                for i in d:
+                    r.append(int(i))
+                data.append(r)
+            
+            
+            
+            template = self.tech_html
+            with open(os.path.join(self.directory,
+                                    clean+'.html'), 'w') as html:
+                html.write(template.render(coms=coms,
+                                    metadata = self.metadata,
+                                    columns = ['Region'] + list(cols),
+                                    data = data,
+                                    tech = comp,
+                                    bc_limit = 1.0,
+                                    in_root=True))
                 
-                template = self.tech_html
-                with open(os.path.join(self.directory,
-                                        clean+'.html'), 'w') as html:
-                    html.write(template.render(coms=coms,
-                                        metadata = self.metadata,
-                                        columns = ['Region'] + list(cols),
-                                        data = data,
-                                        tech = comp,
-                                        bc_limit = 1.0,
-                                        in_root=True))
                 
                 
-                
-            except StandardError as e:
-                print e
+            #~ except StandardError as e:
+                #~ print e
             
             
             
@@ -326,7 +327,8 @@ class WebSummary(object):
         except KeyError as e:
             #~ print e
             pass
-            
+
+        ## get regional summaries from main component
         self.tech_summaries[component] = \
                     import_module("aaem.components." + component).create_regional_summary(self.results)
         return self.tech_summaries[component]
@@ -345,7 +347,7 @@ class WebSummary(object):
             pass
             
         self.imported_summaries[component] = \
-                    import_module("aaem.components." + component).outputs
+                    import_module("aaem_summaries.components." + component).outputs
         return self.imported_summaries[component].generate_web_summary
     
     

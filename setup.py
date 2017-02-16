@@ -16,7 +16,7 @@ config = {
     'author_email': 'TODO',
     'version': aaem.__version__,
     'install_requires': ['numpy','scipy','pandas','pyyaml'],
-    'packages': ['aaem', 'aaem.components'],
+    'packages': ['aaem', 'aaem.components', 'aaem_summaries'],
     'scripts': [],
     'name': 'Alaska_Affordable_Energy_Model'
 }

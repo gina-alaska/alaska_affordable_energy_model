@@ -55,7 +55,3 @@ yaml_not_to_save = []
 ## list of prerequisites for module
 prereq_comps = [] ## FILL in if needed
 
-DESCRIPTION = """
-    This component calculates the potential electricity generation from diesel offset by improving diesel efficiency in a community.
-"""
-

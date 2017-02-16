@@ -67,7 +67,3 @@ raw_data_files = []
 
 ## list of data keys not to save when writing the CommunityData output
 yaml_not_to_save = []
-
-DESCRIPTION = """
-    This component calculates the potential reduction in Electricty and Heating Oil by improving the efficiency of the Water-Wastewater system
-"""

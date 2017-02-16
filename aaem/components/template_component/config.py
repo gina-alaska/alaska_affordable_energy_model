@@ -40,7 +40,3 @@ yaml_not_to_save = []
     
 ## list of prerequisites for module
 prereq_comps = [] ## FILL in if needed
-
-DESCRIPTION = """
-    This component calculates the potential
-"""

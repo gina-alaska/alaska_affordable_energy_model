@@ -90,8 +90,3 @@ yaml_not_to_save = ['costs']
 ## list of prerequisites for module
 prereq_comps = []
 
-
-
-DESCRIPTION = """
-   This component calculates the potential electricity generation from diesel offset by installing new wind power infrastructure. 
-"""
