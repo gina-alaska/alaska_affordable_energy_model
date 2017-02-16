@@ -1,7 +1,7 @@
 """
 __init__.py
 
-    model component for findng economic benefits related to improving 
+    summary for 
 Water/Waste Water efficiency in a community
 """
-from outputs import *
+from summary import *

@@ -6,7 +6,6 @@ import shutil
 
 from importlib import import_module
 from aaem.components import comp_lib, comp_order
-comp_order = ['Wind Power']
 from aaem.constants import *
 from aaem_summaries import __file__, __version__
 from datetime import datetime
