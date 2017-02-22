@@ -1,5 +1,10 @@
 #Change Log
 
+## [0.25.0]
+### updated
+- split out html summary code
+- updated all comments based on numpydoc format
+
 ## [0.24.6]
 ### updated 
 - added google analytics code to docs and summaries

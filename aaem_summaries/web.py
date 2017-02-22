@@ -7,7 +7,9 @@ import shutil
 from importlib import import_module
 from aaem.components import comp_lib, comp_order
 from aaem.constants import *
+from aaem import  __version__ as model_version
 from aaem_summaries import __file__, __version__
+
 from datetime import datetime
 
 import numpy as np
@@ -52,13 +54,15 @@ class WebSummary(object):
         except:
             print "Could not analyze bad commuities"
             pass
-        self.version = __version__
+        self.version = model_version
+        self.version_summary = __version__
         with open(os.path.join(self.model_root,'input_files',
                     '__metadata','input_files_metadata.yaml'), 'r') as md:
             self.data_version = yaml.load(md)['data version']
         self.metadata = {"date": datetime.strftime(datetime.now(),'%Y-%m-%d'),
                          "version": self.version, 
-                         "data_version": self.data_version}
+                         "data_version": self.data_version,
+                         "summary_version": self.version_summary}
         
         self.directory = directory
         try:
