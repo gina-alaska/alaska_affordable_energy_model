@@ -1,7 +1,9 @@
 """
-preprocessing.py
+Solar Power Preprocessing 
+-------------------------
 
-    preprocessing functions for Solar Power component  
+preprocessing functions for Solar Power component  
+
 """
 import os.path
 from pandas import read_csv
@@ -13,21 +15,39 @@ raw_data_files = ['solar_resource_data.csv', 'solar_existing_systems.csv',
 
 ## preprocessing functons 
 def preprocess_header (ppo):
-    """
+    """Generate preprocesed data file header
+    
+    Parameters
+    ----------
+        ppo: aaem.prerocessor.Preprocessor
+            a preprocessing object
+            
+    Returns
+    ------- 
+        String of header info
     """
     return  "# " + ppo.com_id + " solar power data\n"+ \
             ppo.comments_dataframe_divide
     
 
 def preprocess (ppo):
-    """"""
+    """preprocess data solar power data in solar_resource_data.csv, and
+    solar_existing_systems.csv
+    
+    Parameters
+    ----------
+    ppo: preprocessor.Proprocessor
+        a preprocessor object
+    
+    """
     data = read_csv(os.path.join(ppo.data_dir,"solar_resource_data.csv"),
                         comment = '#',index_col = 0)#.ix[ppo.com_id]
 
     data = ppo.get_communities_data(data).T
 
     try:
-        existing = read_csv(os.path.join(ppo.data_dir,"solar_existing_systems.csv"),
+        existing = read_csv(os.path.join(ppo.data_dir,
+            "solar_existing_systems.csv"),
                         comment = '#',index_col = 0).ix[ppo.com_id]
         existing = existing['Installed Capacity (kW)']
         if np.isnan(existing):

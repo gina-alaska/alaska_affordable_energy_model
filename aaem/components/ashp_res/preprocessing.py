@@ -1,7 +1,12 @@
 """
-preprocessing.py
+Air Source Heat Pump Residential preprocessing 
+----------------------------------------------
 
-    preprocessing functions for Air Source Heat Pumps - Residential component  
+    preprocessing functions for Air Source Heat Pump Residential component
+    
+    .. note::
+        Uses ASHP Base preprocessor functions  
+
 """
 import aaem.components.ashp_base as ashp_base
 from copy import deepcopy

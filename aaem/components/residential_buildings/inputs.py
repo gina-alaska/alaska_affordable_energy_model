@@ -1,14 +1,26 @@
 """
-inputs.py
+Residential Efficiency inputs
+-----------------------------
 
-    input functions for Residential Building Efficiency component
+input functions for Residential Efficiency component
+    
 """
 import os.path
 import numpy as np
 from pandas import read_csv
 
 def process_data_import(data_dir):
-    """
+    """Load building inventory data from residential_data.csv
+    
+    Parameters
+    ----------
+    data_dir: path
+        path to data directory for community
+        
+    Returns
+    -------
+    DataFrame
+        residential data
     """
     data_file = os.path.join(data_dir, "residential_data.csv")
     

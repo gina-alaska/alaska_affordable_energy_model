@@ -1,7 +1,7 @@
 """
-component.py
+Hydropower component body
+-------------------------
 
-    Hydropower component body
 """
 import numpy as np
 from pandas import DataFrame
@@ -15,18 +15,65 @@ import aaem.constants as constants
 from config import COMPONENT_NAME, UNKNOWN
 
 class Hydropower (AnnualSavings):
-    """
+    """Hydropower component of the Alaska Affordable Eenergy Model
+    
+    .. note::
+
+       Component Requires an existing project for a communty to be run to 
+       completion.
+
+    Parameters
+    ----------
+    commnity_data : CommunityData
+        CommintyData Object for a community
+    forecast : Forecast
+        forcast for a community 
+    diagnostics : diagnostics, optional
+        diagnostics for tracking error/warining messeges
+    prerequisites : dictionary of components, optional
+        prerequisite component data this component has no prerequisites 
+        leave empty
+        
+    Attributes
+    ----------
+    diagnostics : diagnostics
+        for tracking error/warining messeges
+        initial value: diag or new diagnostics object
+    forecast : forecast
+        community forcast for estimating future values
+        initial value: forecast
+    cd : dictionary
+        general data for a community.
+        Initial value: 'community' section of community_data
+    comp_specs : dictionary
+        component specific data for a community.
+        Initial value: 'Hydropower' section of community_data
+        
+    See also
+    --------
+    aaem.community_data : 
+        community data module, see for information on CommintyData Object
+    aaem.forecast : 
+        forecast module, see for information on Forecast Object
+    aaem.diagnostics :
+        diagnostics module, see for information on diagnostics Object
+
     """
     def __init__ (self, community_data, forecast, 
                         diag = None, prerequisites = {}):
-        """
-        Class initialiser
+        """Class initialiser
+        
+        Parameters
+        ----------
+        commnity_data : CommunityData
+            CommintyData Object for a community
+        forecast : Forecast
+            forcast for a community 
+        diagnostics : diagnostics, optional
+            diagnostics for tracking error/warining messeges
+        prerequisites : dictionary of components, optional
+            prerequisite component data
 
-        pre:
-            community_data is a CommunityData object. diag (if provided) should 
-        be a Diagnostics object
-        post:
-            the model can be run
         """
         self.diagnostics = diag
         if self.diagnostics == None:
@@ -44,27 +91,29 @@ class Hydropower (AnnualSavings):
                                       self.comp_specs["lifetime"],
                         self.forecast.end_year - self.comp_specs["start year"])
         
-        self.load_prerequisite_variables(prerequisites)
-        
-    def load_prerequisite_variables (self, comps):
-        """
-        load variables from prerequisites
-        
-        pre:
-             prerequisites: dictonary of componentes
-        """
-        # not used here
-        pass
-        
     def run (self, scalers = {'capital costs':1.0}):
-        """
-        run the forecast model
+        """Runs the component. The Annual Total Savings,Annual Costs, 
+        Annual Net Benefit, NPV Benefits, NPV Costs, NPV Net Benefits, 
+        Benefit Cost Ratio, Levelized Cost of Energy, 
+        and Internal Rate of Return will all be calculated. There must be a 
+        known Heat Recovery project for this component to run.
         
-        pre:
-            self.cd should be the community library from a community data object
-        post:
-            TODO: define output values. 
-            the model is run and the output values are available
+        Parameters
+        ----------
+        scalers: dictionay of valid scalers, optional
+            Scalers to adjust normal run variables. 
+            See note on accepted  scalers
+        
+        Attributes
+        ----------
+        run : bool
+            True in the component runs to completion, False otherwise
+        reason : string
+            lists reason for failure if run == False
+            
+        Notes
+        -----
+            Accepted scalers: capital costs.
         """
         self.run = True
         self.reason = "OK"
@@ -72,18 +121,18 @@ class Hydropower (AnnualSavings):
         tag = self.cd['name'].split('+')
         if len(tag) > 1 and tag[1] != 'hydro':
             self.run = False
-            self.reason = "Not a Hydropower project"
+            self.reason = "Not a hydropower project."
             return 
         
         if self.comp_specs["project details"] is None:
             self.run = False
-            self.reason = "No Project Data"
+            self.reason = "No project data."
             return 
         
         if not self.cd["model electricity"]:
             self.run = False
-            self.reason = "Electricty must be modeled to analyze hydropower." +\
-                                " It was not for this community"
+            self.reason = "Electricity must be modeled to analyze hydropower."+\
+                                " It was not for this community."
             return 
             
         try:
@@ -93,13 +142,13 @@ class Hydropower (AnnualSavings):
             self.diagnostics.add_warning(self.component_name, 
                             "could not be run")
             self.run = False
-            self.reason = "Could not calculate average load or " + \
-                            "proposed generation"
+            self.reason = "Could not calculate average load, or " + \
+                            "proposed generation."
             return
             
         if self.load_offset_proposed is None:
             self.run = False
-            self.reason = "No project data provided"
+            self.reason = "No project data provided."
             return
             
         if self.cd["model heating fuel"]:
@@ -128,14 +177,15 @@ class Hydropower (AnnualSavings):
             self.calc_levelized_costs(o_m)
             
     def calc_average_load (self):
-        """
-            calculate the average load of the system
+        """Calculate the average load of the system.
             
-        pre: 
-            self.generation should be a number (kWh/yr)
-            
-        post:
-            self.average_load is a number (kW/yr)
+        Attributes
+        ----------
+        generation: float
+            generation values in first year of project (kWh)
+        average_load: float
+            averge diesel generation load in first year of project (kW)
+        
         """
         self.generation = self.forecast.generation_by_type['generation diesel']\
                                                             [self.start_year]
@@ -144,18 +194,16 @@ class Hydropower (AnnualSavings):
         #~ print 'self.average_load',self.average_load
  
     def calc_generation_proposed (self):
-        """
-            calulate the proposed generation for wind
-        pre:
-            self.generation should be a number (kWh/yr), 
-            'percent generation to offset' is a decimal %
-            'resource data' is a wind data object
-            'assumed capacity factor' is a decimal %
+        """Calulate the proposed generation for Hydropower.
         
-        post:
-            self.load_offest_proposed is a number (kW)
-            self.gross_generation_proposed is a number (kWh/yr)
-            self.net_generation_proposed is a number (kWh/yr)
+        Attributes
+        ----------
+        load_offest_proposed : float
+            hydropower load offset (kW)
+        gross_generation_proposed : float
+            hydropower generation proposed (kWh/yr)
+        net_generation_proposed : float
+            net hydropower generation(kWh/yr)
         """
         if self.comp_specs["project details"]['proposed capacity'] == UNKNOWN:
             self.load_offset_proposed = None
@@ -189,16 +237,16 @@ class Hydropower (AnnualSavings):
 
 
     def calc_heat_recovery (self):
-        """
-        caclulate heat recovery values used by component
-        pre:
-            self.percent_excess_energy is the precentage of excess energy
-        created in generation
-            self.gross_generation_proposed is a floating point value
-        post:
-            self.generation_diesel_reduction, self.lost_heat_recovery, 
-        and self.generation_diesel_reduction
-            
+        """Caclulate heat recovery values used by component.
+        
+        Attributes
+        ----------
+        generation_diesel_reduction : float
+            (gal)
+        lost_heat_recovery : float
+            (gal)
+        generation_diesel_reduction : float
+            (gal)
         """
         # %
        
@@ -237,14 +285,13 @@ class Hydropower (AnnualSavings):
 
     # Make this do stuff
     def calc_capital_costs (self):
-        """
-        calculate the capital costs
-        
-        pre:
-            the project details section of the hydro section is initlized
-        according to structure shown in load project detials
-        post:
-            self.capital_costs is the total cost of the project in dollars
+        """Calculate the capital costs.
+            
+        Attributes
+        ----------
+        capital_costs : float
+             total cost of improvments ($), calculated from transmission and
+             generagion costs
         """
         transmission_cost = \
             self.comp_specs['project details']['transmission capital cost']
@@ -256,16 +303,13 @@ class Hydropower (AnnualSavings):
     
     # Make this do stuff
     def calc_annual_electric_savings (self):
-        """
-        calculates the annual electric savings
-        pre:
-            self.capital_costs should be caclulated
-            self.comp_specs and self.cd should have all values nessary for 
-        this component.
-            self.diesel_prices should be intilized
-        post:
-            self.annual_electric_savings is the annual elctric savings in 
-        dollars
+        """Calculate annual electric savings created by the project.
+            
+        Attributes
+        ----------
+        annual_electric_savings : np.array
+            electric savings ($/year) are the difference in the base 
+        and proposed fuel costs
         """
         proposed_generation_cost = self.capital_costs * \
                                 self.comp_specs['percent o&m']
@@ -287,16 +331,12 @@ class Hydropower (AnnualSavings):
         
     # Make this do sruff. Remember the different fuel type prices if using
     def calc_annual_heating_savings (self):
-        """
-        calcualte the annual heating savings
-        pre:
-            self.diesel_prices should be initilzed as a np.array of 
-        floats ($/gal)
-            self.cd should have all values initilzed as designed
-            self.captured_energy and self.lost_heat_recovery are [gallons]
-        post:
-            self.annual_heating_savings is an array or scaler in dollars
-        
+        """Calculate annual heating savings created by the project.
+            
+        Attributes
+        ----------
+        annual_heating_savings : np.array
+            heating savings ($/year) 
         """
         price = (self.diesel_prices + self.cd['heating fuel premium'])
         
@@ -306,22 +346,35 @@ class Hydropower (AnnualSavings):
         #~ print 'self.annual_heating_savings', self.annual_heating_savings
         
     def get_fuel_total_saved (self):
-        """
-        returns the total fuel saved in gallons
+        """Get total fuel saved.
+        
+        Returns 
+        -------
+        float
+            the total fuel saved in gallons
         """
     
         return (self.captured_energy - self.lost_heat_recovery) + \
                 self.generation_diesel_reduction
     
     def get_total_enery_produced (self):
-        """
-        returns the total energy produced
+        """Get total energy produced.
+        
+        Returns
+        ------- 
+        float
+            the total energy produced
         """
         return self.net_generation_proposed
         
     def save_component_csv (self, directory):
-        """
-        save the output from the component.
+        """Save the component output csv in directory.
+
+        Parameters
+        ----------
+        directory : path
+            output directory
+
         """
         #~ return
         if not self.run:

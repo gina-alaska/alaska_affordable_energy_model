@@ -1,7 +1,9 @@
 """
-outputs.py
+Biomass Base Outputs
+--------------------
 
-    ouputs functions for Biomass - Base component
+No output functions for Biomass component.
+
 """
 import os.path
 import numpy as np

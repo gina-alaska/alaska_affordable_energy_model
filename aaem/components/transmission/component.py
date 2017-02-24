@@ -1,7 +1,7 @@
 """
-component.py
+Transmission Component Body
+---------------------------
 
-    Transmission Line component body
 """
 import numpy as np
 from pandas import DataFrame, read_csv
@@ -16,18 +16,60 @@ from config import COMPONENT_NAME, UNKNOWN
 from aaem.diesel_prices import DieselProjections
 
 class Transmission (AnnualSavings):
-    """
+    """Transmission of the Alaska Affordable Eenergy Model
+
+    Parameters
+    ----------
+    commnity_data : CommunityData
+        CommintyData Object for a community
+    forecast : Forecast
+        forcast for a community 
+    diagnostics : diagnostics, optional
+        diagnostics for tracking error/warining messeges
+    prerequisites : dictionary of components, optional
+        prerequisite component data this component has no prerequisites 
+        leave empty
+        
+    Attributes
+    ----------
+    diagnostics : diagnostics
+        for tracking error/warining messeges
+        initial value: diag or new diagnostics object
+    forecast : forecast
+        community forcast for estimating future values
+        initial value: forecast
+    cd : dictionary
+        general data for a community.
+        Initial value: 'community' section of community_data
+    comp_specs : dictionary
+        component specific data for a community.
+        Initial value: 'Transsmission' section of community_data
+        
+    See also
+    --------
+    aaem.community_data : 
+        community data module, see for information on CommintyData Object
+    aaem.forecast : 
+        forecast module, see for information on Forecast Object
+    aaem.diagnostics :
+        diagnostics module, see for information on diagnostics Object
+
     """
     def __init__ (self, community_data, forecast, 
                         diag = None, prerequisites = {}):
-        """
-        Class initialiser
+        """Class initialiser.
+        
+        Parameters
+        ----------
+        commnity_data : CommunityData
+            CommintyData Object for a community
+        forecast : Forecast
+            forcast for a community 
+        diagnostics : diagnostics, optional
+            diagnostics for tracking error/warining messeges
+        prerequisites : dictionary of components, optional
+            prerequisite component data
 
-        pre:
-            community_data is a CommunityData object. diag (if provided) should 
-        be a Diagnostics object
-        post:
-            the model can be run
         """
         self.diagnostics = diag
         if self.diagnostics == None:
@@ -47,51 +89,48 @@ class Transmission (AnnualSavings):
                                       self.comp_specs["lifetime"],
                         self.forecast.end_year - self.comp_specs["start year"])
         
-        ### ADD other intiatzation stuff  
-        ### load prerequisites in the following function
-        ### if there are no prerequisites you can delete this and the 
-        ### load_prerequisite_variables function
-        self.load_prerequisite_variables(prerequisites)
-        
-    def load_prerequisite_variables (self, comps):
-        """
-        load variables from prerequisites
-        
-        pre:
-             prerequisites: dictonary of componentes
-        """
-        # LOAD anything needed from the components passed as input
-        # WRITE this
-        pass
-        
     def run (self, scalers = {'capital costs':1.0}):
-        """
-        run the forecast model
+        """Runs the component. The Annual Total Savings,Annual Costs, 
+        Annual Net Benefit, NPV Benefits, NPV Costs, NPV Net Benefits, 
+        Benefit Cost Ratio, Levelized Cost of Energy, 
+        and Internal Rate of Return will all be calculated. There must be a 
+        known Heat Recovery project for this component to run.
         
-        pre:
-            self.cd should be the community library from a community data object
-        post:
-            TODO: define output values. 
-            the model is run and the output values are available
+        Parameters
+        ----------
+        scalers: dictionay of valid scalers, optional
+            Scalers to adjust normal run variables. 
+            See note on accepted  scalers
+        
+        Attributes
+        ----------
+        run : bool
+            True in the component runs to completion, False otherwise
+        reason : string
+            lists reason for failure if run == False
+            
+        Notes
+        -----
+            Accepted scalers: capital costs.
         """
         self.run = True
         self.reason = "OK"
         tag = self.cd['name'].split('+')
         if len(tag) > 1 and tag[1] != 'transmission':
             self.run = False
-            self.reason = "Not a transmission project"
+            self.reason = "Not a transmission project."
             return 
             
         if not self.cd["model electricity"]:
             self.run = False
-            self.reason = "Electricty must be modeled to analyze "+\
-                                "transmission. It was not for this community"
+            self.reason = "Electricity must be modeled to analyze "+\
+                                "transmission. It was not for this community."
             return 
         if np.isnan(self.comp_specs['nearest community']\
                                     ['Distance to Community']):
             self.run = False
-            self.reason = ("There is no viable nearby communities"
-                                " for building a transmission line")
+            self.reason = ("There are no communities within 30 miles with"
+                            " lower cost of electricity.")
             return 
         
         self.calc_average_load()
@@ -99,7 +138,7 @@ class Transmission (AnnualSavings):
             self.get_intertie_values()
         except IOError:
             self.run = False
-            self.reason = ("Could not find data on community to Intertie to")
+            self.reason = ("Could not find data on community to intertie to.")
             return 
         self.calc_pre_intertie_generation()
         self.calc_intertie_offset_generation()
@@ -132,14 +171,12 @@ class Transmission (AnnualSavings):
 
             
     def calc_average_load (self):
-        """
-        calculate the average diesel load
-        pre:
-            self.forecast must have the genneration_by_type table
-        post:
-            self.generation is the total generation of the first year 
-        a kWh value
-            self.average_load is the average load for the firest year in kW
+        """Caclulate the Average Diesel load of the current system
+        
+        Attributes
+        ----------
+        average_load : float 
+            average disel load of current system
         """
         #~ self.generation = self.forecast.generation_by_type['generation diesel']\
                                                             #~ [self.start_year]
@@ -147,14 +184,17 @@ class Transmission (AnnualSavings):
                 self.forecast.yearly_average_diesel_load.ix[self.start_year]
         
     def get_intertie_values (self):
-        """
-        get values from the community being connected to (second community)
-        pre:
+        """Get values from the community being connected to (second community)
+        
+        .. Note::
             the input_data for the second communty shoud exist 
-        post:
-            self.intertie_generation_efficiency is the efficiency kWh/gal
-            self.intertie_diesel_prices is an array of prices over the project
-        life time
+        
+        Attributes
+        ----------
+        intertie_generation_efficiency : float 
+            the generator efficiency kWh/gal
+        intertie_diesel_prices : np.array
+            diesel prices over the project lifetime
         """
         com = self.comp_specs['nearest community']\
                 ['Nearest Community with Lower Price Power'].replace(' ','_')
@@ -176,18 +216,17 @@ class Transmission (AnnualSavings):
                                                         self.end_year)
 
     def calc_intertie_offset_generation (self):
-        """
-            calculate the generation offset by connecting a transmission line 
+        """Calculate the generation offset by connecting a transmission line 
         to the community to connect to.
-        pre:
-            self.forecast needs to have the consumpton forecasted
-            self.intertie_generation_efficiency must exist
-        post:
-            self.annual_tranmission_loss is the percent electrcity lost by
-        transmission
-            self.intertie_offset_generation is the genneration off set in kWh
-            self.intertie_offset_generation_fuel_used is the fuel used 
-        in generation gallons
+        
+        Attributes
+        ----------
+        annual_tranmission_loss : float
+            the percent electrcity lost through transmission
+        intertie_offset_generation : float
+            the genneration offset in kWh
+        intertie_offset_generation_fuel_used : float
+            is the fuel used in generation gallons
         """
         self.generation = \
                 self.forecast.get_generation(self.start_year,self.end_year)
@@ -204,15 +243,14 @@ class Transmission (AnnualSavings):
         #~ print con
         
     def calc_pre_intertie_generation (self):
-        """
-        calculate the status quo generation in the community 
+        """Calculate the status quo generation in the community .
         
-        pre:
-            self.forecast needs to have the generation forecasted 
-        post:
-            self.pre_intertie_generation is the generaty per year in kWh
-            self.pre_intertie_generation_fuel_used is the fuel used 
-        in generation gallons
+        Attributes
+        ----------
+        pre_intertie_generatio : float
+            current generation per year in kWh
+        pre_intertie_generation_fuel_used : float
+            the fuel used in generation (gallons)
         """
         
         self.pre_intertie_generation = \
@@ -225,13 +263,11 @@ class Transmission (AnnualSavings):
         #~ print 'self.baseline_generatio',self.baseline_generation
         
     def calc_lost_heat_recovery (self):
-        """
-        calculate the heat recovery
-        pre:
-            self.cd is ready
-        post:
-            self.lost_heat_recovery is an array of the heat recovry lost per 
-        year in gallons heating fuel
+        """Calculate the heat recovery
+        
+        Attributes:
+        lost_heat_recovery : np.array 
+            the heat recovry lost per year (gal of heating fuel)
         """
         if not self.cd['heat recovery operational']:
 
@@ -242,13 +278,13 @@ class Transmission (AnnualSavings):
                 (self.generation / gen_eff )* .10
     
     def calc_capital_costs (self):
-        """ 
-        calculate the capital costs
-        
-        pre:
-            self.comp_specs set up
-        post:
-            self.capital costs is the total cost of the project $
+        """Calculate the capital costs.
+            
+        Attributes
+        ----------
+        capital_costs : float
+             total cost of improvments ($), calculated from transmission and
+             generagion costs
         """
         road_needed = 'road needed'
         if self.cd['on road system']:
@@ -262,15 +298,17 @@ class Transmission (AnnualSavings):
     
     # Make this do stuff
     def calc_annual_electric_savings (self):
-        """
-        calcualte the annual elctric savings in dollars
-        pre:
-            self.intertie_offset_generation_fuel_used, 
-            self.intertie_diesel_prices, 
-            self.pre_intertie_generation_fuel_used, 
-            self.diesel_prices should exist
-        post:
-            self.annual_electric_savings is the savings in dollars per year
+        """Calculate annual electric savings created by the project.
+            
+        Attributes
+        ----------
+        baseline_generation_cost : np.array
+            current cost of generation ($/year)
+        proposed_generation_cost : np.array
+            proposed cost of generation ($/year)
+        annual_electric_savings : np.array
+            electric savings ($/year) are the difference in the base 
+        and proposed fuel costs
         """
         costs = self.comp_specs['diesel generator o&m']
             
@@ -296,12 +334,12 @@ class Transmission (AnnualSavings):
         
     # Make this do sruff. Remember the different fuel type prices if using
     def calc_annual_heating_savings (self):
-        """
-        calculate the annual heating savings
-        pre:
-            self.diesel_prices, self.lost_heat_recovery should exist
-        post:
-            self.annual_heating_savings is the savings in dollars per year
+        """Calculate annual heating savings created by the project.
+            
+        Attributes
+        ----------
+        annual_heating_savings : np.array
+            heating savings ($/year) 
         """
         price = self.diesel_prices + self.cd['heating fuel premium']
         maintenance = self.comp_specs['heat recovery o&m']
@@ -309,8 +347,12 @@ class Transmission (AnnualSavings):
                             (maintenance + (self.lost_heat_recovery * price))
                                     
     def get_fuel_total_saved (self):
-        """
-        returns the total fuel saved in gallons
+        """Get total fuel saved.
+        
+        Returns 
+        -------
+        float
+            the total fuel saved in gallons
         """
         #~ print self.lost_heat_recovery
         #~ print self.intertie_offset_generation_fuel_used
@@ -325,7 +367,11 @@ class Transmission (AnnualSavings):
                         generation_diesel_reduction
     
     def get_total_enery_produced (self):
-        """
-        returns the total energy produced
+        """Get total energy produced.
+        
+        Returns
+        ------- 
+        float
+            the total energy produced
         """
         return self.pre_intertie_generation[:self.actual_project_life]

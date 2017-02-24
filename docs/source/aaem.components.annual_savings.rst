@@ -1,8 +1,8 @@
 aaem.components.annual_savings package
 ======================================
 
-Submodules
-----------
+.. ~ Submodules
+.. ~ ----------
 
 aaem.components.annual_savings.annual_savings module
 ----------------------------------------------------
@@ -13,10 +13,10 @@ aaem.components.annual_savings.annual_savings module
     :show-inheritance:
 
 
-Module contents
----------------
+.. ~ Module contents
+.. ~ ---------------
 
-.. automodule:: aaem.components.annual_savings
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. ~ .. automodule:: aaem.components.annual_savings
+.. ~     :members:
+.. ~     :undoc-members:
+.. ~     :show-inheritance:

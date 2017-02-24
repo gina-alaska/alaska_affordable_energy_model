@@ -1,5 +1,92 @@
 #Change Log
 
+## [0.25.0]
+### updated
+- split out html summary code
+- updated all comments based on numpydoc format
+
+## [0.24.6]
+### updated 
+- added google analytics code to docs and summaries
+
+## [0.24.5]
+### updated 
+- Html: updated disclaimer
+
+## [0.24.4]
+### updated
+- Docs: cli and installation documentation
+- Docs: listed software used
+- Docs: added intro text
+- html footer updated with disclaimer, contact, and copyright info.
+
+## [0.24.3]
+### fixed
+- bug with regional creating summaries if there were no communites for a given  project amoung the communites run 
+
+## [0.24.2]
+### fixed
+- interties on tech maps
+
+## [0.24.1]
+### added
+- html: technology nav
+- html: tech summaries
+- cli: run use * after a single community to run all it and it's projects (i.e. aaem run <model> Adak* will run Adak, Adak+hydo+project_1, ...)
+
+### changed 
+- html: potential projects b/c ratio < 0 projets are red
+- html: added not on b/c ratio to potential projets page
+- html: potential projets table header
+
+### fixes:
+- html: typos on potential projets page
+
+## [0.24.0]
+### changed
+- changed preprocessor for new diesel_fuel_price data format
+
+### fixed
+- preporcessor bug where diesel generation was not being summed properly with purchased diesel 
+- cli code for changing barrow's name is ignored if barrow is not called
+- cli run: Utqiagvik can be used as individual community 
+
+## [0.23.3]
+### changed
+- Barrow output name is Utqiagvik
+
+## [0.23.2]
+### fixed
+- HTML: footer formating
+- HTML: fix heat recovery links
+
+## [0.23.1]
+### added 
+- HTML: 'report errors' messege in footer
+- HTML: notes for wind power projects
+
+## fixed
+- HTML: fixes conversion factor for lcoe on potential projects page
+
+## [0.23.0]
+### updated
+- heat recovery: only runs for projects
+
+## [0.22.2]
+### added
+- html: links to sources for hydro and wind
+
+### fixed
+- missing data in forecast_component_consumption_comparison_summary.csv 
+
+## [0.22.1]
+### fixed
+- summaries bug with house district
+
+## [0.22.0]
+### added
+- html: election divisions to navbar
+
 ## [0.21.11]
 ### fixed
 - preprocessor: fixes the purchasesed power lib use

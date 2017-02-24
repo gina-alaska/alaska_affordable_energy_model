@@ -1,7 +1,9 @@
 """
-preprocessing.py
+Hydropower preprocessing 
+------------------------
 
-    preprocessing functions for Hydropower component  
+preprocessing functions for Diesel Efficiency component  
+
 """
 import os.path
 from pandas import DataFrame, read_csv
@@ -18,21 +20,26 @@ preprocess_funcs = []
 
 ## preprocess the existing projects
 def preprocess_existing_projects (ppo):
-    """
-    preprocess data related to existing projects
+    """preprocess data related to existing projects
     
-    pre:
-        ppo is a is a Preprocessor object. "wind_projects_potential.csv" and 
-        'project_development_timeframes.csv' exist in the ppo.data_dir 
-    post:
-        data for existing projets is usable by model
+    Parameters
+    ----------
+    ppo: preprocessor.Proprocessor
+        a preprocessor object
+        
+    Returns
+    -------
+    list
+        project names
+    
     """
     projects = []
     p_data = {}
     
     ## CHANGE THIS
-    project_data = read_csv(os.path.join(ppo.data_dir,"hydro_projects_potential.csv"),
-                           comment = '#',index_col = 0)
+    project_data = read_csv(os.path.join(ppo.data_dir,
+        "hydro_projects_potential.csv"),
+        comment = '#',index_col = 0)
     
     try:
         project_data = DataFrame(project_data.ix[ppo.com_id])
@@ -45,11 +52,17 @@ def preprocess_existing_projects (ppo):
     names = []
     for p_idx in range(len(project_data)):
         cp = project_data.ix[p_idx]
-        p_name = 'hydro+project_' + str(p_idx) #+ str(cp['Project']).replace(' ','_').replace('/','-').replace(';','').replace('.','').replace("'",'').replace('_-_','_').replace(',','').replace('(','').replace(')','')
+        p_name = 'hydro+project_' + str(p_idx) #+ str(cp['Project']).\
+            # replace(' ','_').replace('/','-').replace(';','').\
+            # replace('.','').replace("'",'').replace('_-_','_').\
+            # replace(',','').replace('(','').replace(')','')
         #~ i = 1
         #~ i = 1
         #~ while (p_name in names):
-            #~ p_name = 'hydro+' + str(cp['Project']).replace(' ','_').replace('/','-').replace(';','').replace('.','').replace("'",'').replace('_-_','_').replace(',','').replace('(','').replace(')','') + '_' + str(i)
+            #~ p_name = 'hydro+' + str(cp['Project']).replace(' ','_').\
+            #~ replace('/','-').replace(';','').replace('.','').\
+            #~ replace("'",'').replace('_-_','_').replace(',','').\
+            #~ replace('(','').replace(')','') + '_' + str(i)
             #~ i += 1
         #~ names.append(p_name)
 
@@ -66,6 +79,7 @@ def preprocess_existing_projects (ppo):
         #~ distance_to_resource = float(cp['Distance'])
         generation_capital_cost = float(cp['Construction Cost (2014$)'])
         transmission_capital_cost = float(cp['Transmission Cost (current)'])
+        source = cp['Source']
         expected_years_to_operation = UNKNOWN
         if phase == "0":
             ppo.diagnostics.add_note('Hydropower Projects', 
@@ -86,7 +100,8 @@ def preprocess_existing_projects (ppo):
                     #~ 'distance to resource': distance_to_resource,
                     'generation capital cost': generation_capital_cost,
                     'transmission capital cost': transmission_capital_cost,
-                    'expected years to operation': expected_years_to_operation
+                    'expected years to operation': expected_years_to_operation,
+                    'source':source
                         }
     
     with open(os.path.join(ppo.out_dir,"hydro_projects.yaml"),'w') as fd:

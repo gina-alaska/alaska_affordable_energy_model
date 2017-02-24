@@ -1,7 +1,9 @@
 """
-preprocessing.py
+Template Component Preprocessing 
+--------------------------------
 
-    preprocessing functions for <ADD COMP NAME/DESCRIPTION HERE> component  
+Example preprocessing functions.
+
 """
 import os.path
 from pandas import read_csv
@@ -15,14 +17,33 @@ raw_data_files = ["COMPONENT_PROJECTS.csv",
 
 ## preprocessing functons 
 def preprocess_header (ppo):
-    """
+    """Generate preprocesed data file header
+    
+    Parameters
+    ----------
+        ppo: aaem.prerocessor.Preprocessor
+            a preprocessing object
+            
+    Returns
+    ------- 
+        String of header info
     """
     return  "# " + ppo.com_id + " compdata data\n"+ \
             ppo.comments_dataframe_divide
     
 ## UPADTE
 def preprocess (ppo):
-    """
+    """preprocess  data in <FILES>
+    
+    Parameters
+    ----------
+    ppo: preprocessor.Proprocessor
+        a preprocessor object
+        
+    Returns
+    -------
+    list
+        project names
     
     """
     #CHANGE THIS
@@ -46,14 +67,18 @@ preprocess_funcs = [preprocess]
 ### This function is called differently from the other preprocessor functions,
 ### so it does not need to be added to preprocess_funcs
 def preprocess_existing_projects (ppo):
-    """
-    preprocess data related to existing projects
+    """preprocess data related to existing projects
     
-    pre:
-        ppo is a is a Preprocessor object. "wind_projects_potential.csv" and 
-        'project_development_timeframes.csv' exist in the ppo.data_dir 
-    post:
-        data for existing projets is usable by model
+    Parameters
+    ----------
+    ppo: preprocessor.Proprocessor
+        a preprocessor object
+        
+    Returns
+    -------
+    list
+        project names
+    
     """
     projects = []
     p_data = {}

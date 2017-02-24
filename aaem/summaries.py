@@ -122,8 +122,10 @@ def building_log(coms, res_dir):
             if np.isnan(percent2):
                 percent2 = 0.0
             
-            
-            out.append([c,percent*100,percent2*100]+ count+act+est+elec+hf)
+            name = c
+            if name == 'Barrow':
+                name = 'Utqiagvik'
+            out.append([name,percent*100,percent2*100]+ count+act+est+elec+hf)
             
         except (KeyError,AttributeError, ZeroDivisionError)as e :
             #~ print c +":"+ str(e)
@@ -218,7 +220,11 @@ def village_log (coms, res_dir):
             except KeyError:
                 ww_con = [np.nan, np.nan]
                 ww_cost = [np.nan, np.nan]
-            t = [c, consumption, population, 
+                
+            name = c
+            if name == 'Barrow':
+                name = 'Utqiagvik'
+            t = [name, consumption, population, 
                  coms[c]['community data'].get_item('community','region')] +\
                  res_con + com_con + ww_con + res_cost + com_cost + ww_cost 
             out.append(t)
@@ -294,8 +300,10 @@ def fuel_oil_log (coms, res_dir):
             wat = wat.baseline_fuel_Hoil_consumption [0] 
             
             total = res + com + wat + elec
-            
-            out.append([c,elec,res,com,wat,total])
+            name = c
+            if name == 'Barrow':
+                name = 'Utqiagvik'
+            out.append([name,elec,res,com,wat,total])
             
         except (KeyError,AttributeError) as e:
             #~ print e
@@ -379,15 +387,16 @@ def forecast_comparison_log (coms, res_dir):
             comp_total = float(com_kwh + wat_kwh + res_kwh)
             
             #~ print fc.consumption_to_save.ix[first_year]
+            #~ print ""
             fc_res = float(fc.consumption_to_save.ix[first_year]\
-                                ['residential_electricity_consumed [kWh/year]'])
+                                ['residential kWh'])
             fc_non_res = float(fc.consumption_to_save.ix[first_year]\
-                            ['non-residential_electricity_consumed [kWh/year]'])
+                            ['non-residential kWh'])
             if np.isnan(fc_non_res):
                 fc_non_res = 0
             
             fc_total = float(fc.consumption_to_save.ix[first_year]\
-                                    ['total_electricity_consumed [kWh/year]'])
+                                    ['consumption kWh'])
             
             if np.isnan(fc_total):
                 fc_total = 0
@@ -400,7 +409,11 @@ def forecast_comparison_log (coms, res_dir):
             non_res_per = (abs(non_res_diff)/ (fc_non_res + comp_non_res))*100.0
             total_per = (abs(total_diff)/ (fc_total + comp_total))*100.0
             
-            out.append([c,fc_res,comp_res,res_diff,res_per,
+            name = c
+            if name == 'Barrow':
+                name = 'Utqiagvik'
+            
+            out.append([name,fc_res,comp_res,res_diff,res_per,
                           fc_non_res,comp_com,comp_wat,comp_non_res,
                           non_res_diff,non_res_per,
                           fc_total,comp_total,total_diff,total_per])
@@ -450,7 +463,11 @@ def electric_price_summary (coms, res_dir):
             prices = deepcopy(coms[c]['community data'].get_item("community",
                                             "electric non-fuel prices"))
             #~ print prices
-            prices[c] = prices['price']
+            
+            name = c
+            if name == 'Barrow':
+                name = 'Utqiagvik'
+            prices[name] = prices['price']
             del prices['price']
             prices = prices.T
             prices["base cost"] = base_cost
@@ -459,7 +476,7 @@ def electric_price_summary (coms, res_dir):
             else:
                 out = concat([out,prices])
             
-            
+            #~ print out
         except (KeyError, TypeError) as e:
             #~ print e
             continue
@@ -505,6 +522,10 @@ def genterate_npv_summary (coms, res_dir):
             except AttributeError:
                 pass
 
+        name = community
+        if name == 'Barrow':
+            name = 'Utqiagvik'
+
         f_name = os.path.join(res_dir,community.replace(' ','_'),
                                 community.replace(' ','_') + '_npv_summary.csv')
         cols = ['Component', 
@@ -530,8 +551,12 @@ def consumption_summary (coms, res_dir):
             continue
         fc = coms[community]['forecast']
         try:
+            
+            name = community
+            if name == 'Barrow':
+                name = 'Utqiagvik'
             con = fc.consumption.ix[2010:2040].values.T[0].tolist()
-            consumption.append([community, region] + con)
+            consumption.append([name, region] + con)
         except AttributeError as e:
             #~ print community, e
             continue

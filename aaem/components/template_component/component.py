@@ -1,7 +1,7 @@
 """
-component.py
+Template component body
+-----------------------
 
-    <ADD COMP NAME/DESCRIPTION HERE> component body
 """
 import numpy as np
 from pandas import DataFrame
@@ -17,18 +17,60 @@ from config import COMPONENT_NAME, PROJECT_TYPE, UNKNOWN
 #   do a find and replace on ComponentName to name of component 
 # (i.e. 'ResidentialBuildings')
 class ComponentName (AnnualSavings):
-    """
+    """<TEMPLATE> of the Alaska Affordable Eenergy Model
+
+    Parameters
+    ----------
+    commnity_data : CommunityData
+        CommintyData Object for a community
+    forecast : Forecast
+        forcast for a community 
+    diagnostics : diagnostics, optional
+        diagnostics for tracking error/warining messeges
+    prerequisites : dictionary of components, optional
+        prerequisite component data this component has no prerequisites 
+        leave empty
+        
+    Attributes
+    ----------
+    diagnostics : diagnostics
+        for tracking error/warining messeges
+        initial value: diag or new diagnostics object
+    forecast : forecast
+        community forcast for estimating future values
+        initial value: forecast
+    cd : dictionary
+        general data for a community.
+        Initial value: 'community' section of community_data
+    comp_specs : dictionary
+        component specific data for a community.
+        Initial value: 'Template' section of community_data
+        
+    See also
+    --------
+    aaem.community_data : 
+        community data module, see for information on CommintyData Object
+    aaem.forecast : 
+        forecast module, see for information on Forecast Object
+    aaem.diagnostics :
+        diagnostics module, see for information on diagnostics Object
+
     """
     def __init__ (self, community_data, forecast, 
                         diag = None, prerequisites = {}):
-        """
-        Class initialiser
+        """Class initialiser.
+        
+        Parameters
+        ----------
+        commnity_data : CommunityData
+            CommintyData Object for a community
+        forecast : Forecast
+            forcast for a community 
+        diagnostics : diagnostics, optional
+            diagnostics for tracking error/warining messeges
+        prerequisites : dictionary of components, optional
+            prerequisite component data
 
-        pre:
-            community_data is a CommunityData object. diag (if provided) should 
-        be a Diagnostics object
-        post:
-            the model can be run
         """
         self.diagnostics = diag
         if self.diagnostics == None:
@@ -53,25 +95,40 @@ class ComponentName (AnnualSavings):
         self.load_prerequisite_variables(prerequisites)
         
     def load_prerequisite_variables (self, comps):
-        """
-        load variables from prerequisites
+        """load variables from prerequisites
         
-        pre:
-             prerequisites: dictonary of componentes
+        Parameters
+        ----------
+        comps : dict
+            dictionary of prerequisite components
         """
         # LOAD anything needed from the components passed as input
         # WRITE this
         pass
         
     def run (self, scalers = {'capital costs':1.0}):
-        """
-        run the forecast model
+        """Runs the component. The Annual Total Savings,Annual Costs, 
+        Annual Net Benefit, NPV Benefits, NPV Costs, NPV Net Benefits, 
+        Benefit Cost Ratio, Levelized Cost of Energy, 
+        and Internal Rate of Return will all be calculated. There must be a 
+        known Heat Recovery project for this component to run.
         
-        pre:
-            self.cd should be the community library from a community data object
-        post:
-            TODO: define output values. 
-            the model is run and the output values are available
+        Parameters
+        ----------
+        scalers: dictionay of valid scalers, optional
+            Scalers to adjust normal run variables. 
+            See note on accepted  scalers
+        
+        Attributes
+        ----------
+        run : bool
+            True in the component runs to completion, False otherwise
+        reason : string
+            lists reason for failure if run == False
+            
+        Notes
+        -----
+            Accepted scalers: capital costs.
         """
         self.run = True
         self.reason = "OK"
@@ -111,35 +168,62 @@ class ComponentName (AnnualSavings):
     
     # Make this do stuff
     def calc_capital_costs (self):
-        """ Function Doc"""
+        """Calculate the capital costs.
+            
+        Attributes
+        ----------
+        capital_costs : float
+             total cost of improvments ($), calculated from transmission and
+             generagion costs
+        """
         self.capital_costs = np.nan
         
     
     # Make this do stuff
     def calc_annual_electric_savings (self):
-        """
+        """Calculate annual electric savings created by the project.
+            
+        Attributes
+        ----------
+        annual_electric_savings : np.array
+            electric savings ($/year) are the difference in the base 
+        and proposed fuel costs
         """
         self.annual_electric_savings = 0
         
         
     # Make this do sruff. Remember the different fuel type prices if using
     def calc_annual_heating_savings (self):
-        """
+        """Calculate annual heating savings created by the project.
+            
+        Attributes
+        ----------
+        annual_heating_savings : np.array
+            heating savings ($/year) 
         """
         self.annual_heating_savings = 0
         
     # return savings in gallons
     def get_fuel_total_saved (self):
-        """
-        returns the total fuel saved in gallons
+        """Get total fuel saved.
+        
+        Returns 
+        -------
+        float
+            the total fuel saved in gallons
         """
         return 0
         #~ return <savings>
     
     # return savings mmbtu
     def get_total_enery_produced (self):
-        """
-        returns the total energy produced
+        """Save the component output csv in directory.
+
+        Parameters
+        ----------
+        directory : path
+            output directory
+
         """
         return 0 
         #~ return <savings>

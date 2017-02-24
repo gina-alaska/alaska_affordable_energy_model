@@ -1,7 +1,7 @@
 """
-component.py
+Residential Efficiency component body
+-------------------------------------
 
-    Residential Building Efficiency component body
 """
 import numpy as np
 from pandas import DataFrame
@@ -15,19 +15,62 @@ import aaem.constants as constants
 from config import COMPONENT_NAME, UNKNOWN
 
 class ResidentialBuildings(AnnualSavings):
-    """
-    for forecasting residential building consumption/savings   
+    """Residential Efficiency component of the Alaska Affordable Eenergy 
+    Model
+
+    Parameters
+    ----------
+    commnity_data : CommunityData
+        CommintyData Object for a community
+    forecast : Forecast
+        forcast for a community 
+    diagnostics : diagnostics, optional
+        diagnostics for tracking error/warining messeges
+    prerequisites : dictionary of components, optional
+        prerequisite component data this component has no prerequisites 
+        leave empty
+        
+    Attributes
+    ----------
+    diagnostics : diagnostics
+        for tracking error/warining messeges
+        initial value: diag or new diagnostics object
+    forecast : forecast
+        community forcast for estimating future values
+        initial value: forecast
+    cd : dictionary
+        general data for a community.
+        Initial value: 'community' section of community_data
+    comp_specs : dictionary
+        component specific data for a community.
+        Initial value: 'Residential Buildings' section of community_data
+        
+    See also
+    --------
+    aaem.community_data : 
+        community data module, see for information on CommintyData Object
+    aaem.forecast : 
+        forecast module, see for information on Forecast Object
+    aaem.diagnostics :
+        diagnostics module, see for information on diagnostics Object
+
     """
     
     def __init__ (self, community_data, forecast, 
                         diag = None, prerequisites = {}):
-        """
-        Class initialiser
+        """Class initialiser
+        
+        Parameters
+        ----------
+        commnity_data : CommunityData
+            CommintyData Object for a community
+        forecast : Forecast
+            forcast for a community 
+        diagnostics : diagnostics, optional
+            diagnostics for tracking error/warining messeges
+        prerequisites : dictionary of components, optional
+            prerequisite component data
 
-        pre:
-            community_data is a CommunityData object
-        post:
-            the model can be run
         """
         self.diagnostics = diag
         if self.diagnostics == None:
@@ -63,17 +106,28 @@ class ResidentialBuildings(AnnualSavings):
         self.init_HH = int(round(HH*(val / self.base_pop)))
         
     def run (self, scalers = {'capital costs':1.0}):
-        """ 
+        """Runs the component. The Annual Total Savings,Annual Costs, 
+        Annual Net Benefit, NPV Benefits, NPV Costs, NPV Net Benefits, 
+        Benefit Cost Ratio, Levelized Cost of Energy, 
+        and Internal Rate of Return will all be calculated. There must be a 
+        known Heat Recovery project for this component to run.
         
-        run the forecast model
+        Parameters
+        ----------
+        scalers: dictionay of valid scalers, optional
+            Scalers to adjust normal run variables. 
+            See note on accepted  scalers
         
-        pre:
-            AEAA should provide interest and discount rates as floats 0<rate<=1
-            self.cd should be a community data object 
-        post:
-            TODO: define output values. 
-            the model is run and the output values are available
-        
+        Attributes
+        ----------
+        run : bool
+            True in the component runs to completion, False otherwise
+        reason : string
+            lists reason for failure if run == False
+            
+        Notes
+        -----
+            Accepted scalers: capital costs.
         """
         self.run = True
         self.reason = "OK"
@@ -81,7 +135,7 @@ class ResidentialBuildings(AnnualSavings):
         tag = self.cd['name'].split('+')
         if len(tag) > 1 and tag[1] != 'residential':
             self.run = False
-            self.reason = "Not a residential project"
+            self.reason = "Not a residential project."
             return 
             
         # needed for electric or HF component and has a default value
@@ -121,8 +175,12 @@ class ResidentialBuildings(AnnualSavings):
             self.calc_levelized_costs(0)
             
     def get_fuel_total_saved (self):
-        """
-        returns the total fuel saved in gallons
+        """Get total fuel saved.
+        
+        Returns 
+        -------
+        float
+            the total fuel saved in gallons
         """
         base_heat = \
             self.baseline_HF_consumption[:self.actual_project_life]
@@ -132,8 +190,12 @@ class ResidentialBuildings(AnnualSavings):
         return (base_heat - post_heat) * constants.mmbtu_to_gal_HF
                                 
     def get_total_enery_produced (self):
-        """
-        returns the total energy produced saved
+        """Get total energy produced.
+        
+        Returns
+        ------- 
+        float
+            the total energy produced
         """
         # no electric
 
@@ -142,12 +204,12 @@ class ResidentialBuildings(AnnualSavings):
 
     
     def calc_avg_consumption (self):
-        """ 
-        get the average monthly consumption of electricity for a house
-        
-        pre:
-        
-        post: 
+        """Get the average monthly consumption of electricity for a house.
+
+        Attributes
+        ----------
+        avg_kWh_consumption_per_HH : float
+            avergae electric consumption per household (kWh/year). >= 6000
         """
         #   500 average energy use, 12 months in a year. That's whrer the 6000.0
         # comes from.
@@ -169,14 +231,12 @@ class ResidentialBuildings(AnnualSavings):
         
     
     def calc_init_HH (self):
-        """
-        estimate the # Households for the first year of the project 
-        pre:
-            self.forecast should be able to return a population for a given
-            year. 
-            self.cd should be a properly loaded Community Data object 
-        post:
-            self.init_HH is an integer # of houses.
+        """Estimate the # Households for the first year of the project 
+        
+        Attributes
+        ----------
+        init_HH : int
+            estimated households for first year of project
         """
         val = self.forecast.get_population(self.start_year)
         HH =self.comp_specs['data'].ix['Total Occupied']
@@ -185,12 +245,27 @@ class ResidentialBuildings(AnnualSavings):
         self.init_HH = int(round(HH*(val / pop)))
 
     def calc_init_consumption (self):
-        """
+        """Calculate the initial consumption for each fuel type.
+        
+        Attributes
+        ----------
+        init_HF : float
+            initial heating oil consumption
+        init_wood : float
+            initial heating cordwood consumption
+        init_gas : float
+            initial natural gas fuel consumption
+        init_LP : float
+            initial propane consumption
+        init_kWh : float
+            initial electric consumption
         """
         rd = self.comp_specs['data'].T
         ## total consumption
-        total = rd["Total Consumption (MMBtu)"] + rd["BEES Total Consumption (MMBtu)"] + \
-                rd["Pre-Retrofit Avg Area (SF)"] * rd["Pre-Retrofit Avg EUI (MMBtu/sf)"] * self.opportunity_HH
+        total = rd["Total Consumption (MMBtu)"] + \
+            rd["BEES Total Consumption (MMBtu)"] + \
+            rd["Pre-Retrofit Avg Area (SF)"] * \
+            rd["Pre-Retrofit Avg EUI (MMBtu/sf)"] * self.opportunity_HH
         HH = self.init_HH
         
         percent_acconuted = 0
@@ -227,7 +302,24 @@ class ResidentialBuildings(AnnualSavings):
         self.diagnostics.add_note(self.component_name, msg)
         
     def calc_savings_opportunities (self):
-        """ 
+        """Calculate savings opertunities 
+        
+        Attributes
+        ----------
+        opportunity_HH  : int
+            Houses that can be retrofit
+        savings_HF : float
+            savings in heating oil consumption
+        savings_wood : float
+            savings in heating cordwood consumption
+        savings_gas : float
+            savings in natural gas fuel consumption
+        savings_LP : float
+            savings in propane consumption
+        savings_kWh : float
+            savings in electric consumption
+        savings_mmbtu: float
+            total savings in mmbtu
         """
         rd = self.comp_specs['data'].T
         ##  #HH
@@ -290,14 +382,45 @@ class ResidentialBuildings(AnnualSavings):
         
         
     def calc_consumption_by_fuel (self, fuel_amnt, total_consumption, HH, cf):
-        """ Function doc """
-  
+        """calc consumption by fuel ftom the total consumption
+        
+        Parameters
+        ----------
+        fuel_amnt: float
+            % of fuel used
+        total_consumption : float
+            toatl consumption for residnetial buildings
+        HH : float
+            a # of houses
+        cf: float
+            conversion factor
+            
+        Returns
+        -------
+        float:
+            fuel consumed for a type of fuel
+        
+        """
         HH_consumption = HH * self.avg_kWh_consumption_per_HH * \
                                                     constants.kWh_to_mmbtu
         return np.float64(fuel_amnt * (total_consumption - HH_consumption) * cf)
                             
     def calc_baseline_fuel_consumption (self):
-        """
+        """Caclulate baseline fuel consumption
+        
+        Attributes:
+        baseline_fuel_Hoil_consumption : np.array
+            baseline heating fuel consumption
+        baseline_fuel_wood_consumption : np.array
+            baseline cordwood consumption
+        baseline_fuel_gas_consumption : np.array
+            baseline natural gas consumption
+        baseline_fuel_LP_consumption : np.array
+            baseline propane consumption
+        baseline_fuel_kWh_consumption : np.array
+            baseline electricity consumption
+        baseline_HF_consumption : np.array
+            baseline total heating fuel consumption
         """
         rd = self.comp_specs['data'].T
         self.fuel_oil_percent = rd["Fuel Oil"]
@@ -338,15 +461,23 @@ class ResidentialBuildings(AnnualSavings):
             self.baseline_fuel_LP_consumption * (1/constants.mmbtu_to_gal_LP)
     
     def calc_baseline_kWh_consumption (self):
-        """
-        calculate the baseline kWh consumption for a community 
+        """Calculate the baseline kWh consumption for a community 
+        
+        Attributes
+        ----------
+        baseline_kWh_consumption : np.array
+            electric consumption per yer
         """
         HH = self.households
         self.baseline_kWh_consumption = self.avg_kWh_consumption_per_HH * HH 
         
     def calc_baseline_fuel_cost (self):
-        """
-        caclulat base line heating fuel costs
+        """caclulat base line heating fuel costs
+        
+        Attributes
+        ----------
+        baseline_HF_cost : np.array
+            baseline cost of heating fuels per year
         """
         HF_price = (self.diesel_prices + self.cd['heating fuel premium'])
         self.hoil_price = HF_price
@@ -366,8 +497,12 @@ class ResidentialBuildings(AnnualSavings):
         # coal,solar, other
         
     def calc_baseline_kWh_cost (self):
-        """
-        calculate base line electricity costs
+        """calculate baseline electricity costs
+        
+        Attributes
+        ----------
+        baseline_kWh_cost : np.array
+            baseline cost of electricity per year
         """
         kWh_cost = self.cd["electric non-fuel prices"].\
                                             ix[self.start_year:self.end_year-1]
@@ -376,7 +511,22 @@ class ResidentialBuildings(AnnualSavings):
         self.baseline_kWh_cost = self.baseline_kWh_consumption * kWh_cost
 
     def calc_proposed_fuel_consumption (self):
-        """
+        """Calculate the proposed heating fuel consumption
+        
+        Attributes
+        ----------
+        proposed_fuel_Hoil_consumption : np.array
+            proposed heating oil consumption
+        proposed_fuel_wood_consumption : np.array
+            proposed cordwood consumption 
+        proposed_fuel_LP_consumption : np.array
+            proposed LP consumption
+        proposed_fuel_gas_consumption : np.array
+            proposed natural gas consumption
+        proposed_fuel_kWh_consumption : np.array
+            propoed electric consumption
+        proposed_HF_consumption : np.array
+            proposed total electric consumption
         """
         self.proposed_fuel_Hoil_consumption = \
             self.baseline_fuel_Hoil_consumption - self.savings_HF 
@@ -397,13 +547,22 @@ class ResidentialBuildings(AnnualSavings):
         # coal,solar, other
         
     def calc_proposed_kWh_consumption (self):
-        """
-        calculate the baseline kWh consumption for a community 
+        """calculate the proposed kWh consumption for a community 
+        
+        Attributes
+        ----------
+        proposed_kWh_consumption : np.array
+            set to baseline values
         """
         self.proposed_kWh_consumption = self.baseline_kWh_consumption 
         
     def calc_proposed_fuel_cost (self):
-        """
+        """Calculate proposed heating cost
+        
+        Attributes
+        ----------
+        proposed_HF_cost : np.array
+            proposed heating fuel cost
         """
         HF_price = (self.diesel_prices + self.cd['heating fuel premium'])
         wood_price = self.cd['cordwood price'] 
@@ -413,15 +572,20 @@ class ResidentialBuildings(AnnualSavings):
         gas_price = self.cd['natural gas price'] 
         
         
-        self.proposed_HF_cost = self.proposed_fuel_Hoil_consumption * HF_price + \
-                             self.proposed_fuel_wood_consumption * wood_price + \
-                             self.proposed_fuel_gas_consumption * gas_price + \
-                             self.proposed_fuel_LP_consumption * LP_price + \
-                             self.proposed_fuel_kWh_consumption * gas_price
+        self.proposed_HF_cost = \
+            self.proposed_fuel_Hoil_consumption * HF_price + \
+            self.proposed_fuel_wood_consumption * wood_price + \
+            self.proposed_fuel_gas_consumption * gas_price + \
+            self.proposed_fuel_LP_consumption * LP_price + \
+            self.proposed_fuel_kWh_consumption * gas_price
         
     def calc_proposed_kWh_cost (self):
-        """
-        calculate post retrofit electricity costs
+        """Calculate post retrofit electricity costs
+        
+        Attributes
+        ----------
+        proposed_kWh_cost: np.array
+            proposed electricity cost
         """
         kWh_cost = self.cd["electric non-fuel prices"].\
                                             ix[self.start_year:self.end_year-1]
@@ -430,41 +594,41 @@ class ResidentialBuildings(AnnualSavings):
         self.proposed_kWh_cost = self.proposed_kWh_consumption * kWh_cost
     
     def calc_capital_costs (self):
-        """
-        caclulate the total cost of the project
-        
-        Pre:
-            self.opportunity_HH, # occupied of houses  
-            self.proposed_fuel_cost_rate, cost / refit
-        post:
-            self.capital_costs the total cost of the project
+        """Calculate the capital costs.
+            
+        Attributes
+        ----------
+        capital_costs : float
+             total cost of improvments ($)
         """
         self.capital_costs = self.opportunity_HH * self.refit_cost_rate
         
     def calc_annual_electric_savings (self):
-        """
-        calculate the savings in electricity cost
-        
-        post: 
-            self.annual_electric_savings array of zeros dollar values
+        """calculate annual electric savings created by the project
+            
+        Attributes
+        ----------
+        annual_electric_savings : np.array
+            electric savings ($/year) are the difference in the base 
+        and proposed fuel costs
         """
         self.annual_electric_savings = np.zeros(self.project_life)
         
     def calc_annual_heating_savings (self):
-        """
-        calculate the savings in HF cost
-        
-        pre: 
-            self.baseline_fuel_HF_cost, self.proposed_HF_cost should be dollar 
-        value  arrays over the project life time
-        post: 
-            self.annual_heating_savings array savings in HF cost
+        """calculate annual heating savings created by the project
+            
+        Attributes
+        ----------
+        annual_heating_savings : np.array
+            heating savings ($/year) 
         """
         self.annual_heating_savings = self.baseline_HF_cost - \
                                       self.proposed_HF_cost
                                       
     def set_forecast_columns (self):
-        """ Function doc """
+        """Set columns in the the forcast to values caclulated in this 
+        component
+        """
         years = range(self.start_year,self.end_year)
         self.forecast.add_heating_fuel_column(\
                             "heating_fuel_residential_consumed [gallons/year]",
@@ -507,9 +671,13 @@ class ResidentialBuildings(AnnualSavings):
                                  years, self.baseline_HF_consumption)
                                  
     def save_component_csv (self, directory):
-        """
-            save the output from the component. Override the default version 
-        because of the extra-fuel sources.
+        """Save the component output csv in directory
+
+        Parameters
+        ----------
+        directory : path
+            output directory
+
         """
         if not self.run:
             return

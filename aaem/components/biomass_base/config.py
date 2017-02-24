@@ -1,7 +1,16 @@
 """
-config.py
-
-    Biomass - Base config info for community data yaml file
+Biomass Base Configuration 
+--------------------------
+    
+    Contains Biomass Base configuration info for community
+    data yaml file, and other set-up requirements
+    
+    **Unique Configuration keys**
+    
+        energy density: energy density of  fuel
+        
+        data: data on biomass related items
+        
 """
 COMPONENT_NAME = "biomass base"
 IMPORT = "IMPORT"

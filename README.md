@@ -35,20 +35,18 @@ Dependencies for the Alask Affordable Energy Model can be installed using [pip](
     or more generally:
     
     sphinx-build  -b html [path to docs/source/] [path to output folder]
+
+## Seting up the model for the first time
+
+    use the program bin/aaem.
     
-## development python examples:
-from an interactive python prompt (can be done from any where if installed using python setup.py develop)
-
-general example:
-
-    >>> from aaem import driver
-    >>> driver.setup("Community", "path to aaem data repo", "path model testing directory")
-    >>> driver.run("path model testing directory/Community_driver.yaml")
-
-Manley example:
-
-    >>> from aaem import driver
-    >>> driver.setup("Manley Hot Springs", "Desktop/alaska_affordable_energy_model-data", "./test")
-    >>> driver.run("./test/Manley_Hot_Springs_driver.yaml")
+    from the alaska affordiable_energy-model_repo
     
-input data, config info, and results will be in the directory specified as the last argument to setup
+    ./bin/aaem <path to location to setup> <path to data repo>
+    
+    
+## Running the model 
+
+    see the documentaion for andvanced instructions on installation and running
+    
+    

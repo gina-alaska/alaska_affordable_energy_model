@@ -1,7 +1,12 @@
 """
-preprocessing.py
+Biomass Pellet preprocessing 
+----------------------------
 
-    preprocessing functions for Biomass - Pellet component  
+    preprocessing functions for Biomass Pellet component
+    
+    .. note::
+        Uses Biomass Base preprocessor functions  
+
 """
 import os.path
 from pandas import read_csv

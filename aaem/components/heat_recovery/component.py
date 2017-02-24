@@ -1,7 +1,7 @@
 """
-component.py
+Heat Recovery component body
+----------------------------
 
-    Heat Recovery component body
 """
 import numpy as np
 from pandas import DataFrame
@@ -14,19 +14,67 @@ from aaem.diagnostics import diagnostics
 import aaem.constants as constants
 from config import COMPONENT_NAME, PROJECT_TYPE, UNKNOWN
 
+
 class HeatRecovery (AnnualSavings):
-    """
+    """Heat Recovery of the Alaska Affordable Eenergy Model
+
+    .. note::
+
+       Component Requires an existing project for a communty to be run to 
+       completion.
+
+    Parameters
+    ----------
+    commnity_data : CommunityData
+        CommintyData Object for a community
+    forecast : Forecast
+        forcast for a community 
+    diagnostics : diagnostics, optional
+        diagnostics for tracking error/warining messeges
+    prerequisites : dictionary of components, optional
+        prerequisite component data this component has no prerequisites 
+        leave empty
+        
+    Attributes
+    ----------
+    diagnostics : diagnostics
+        for tracking error/warining messeges
+        initial value: diag or new diagnostics object
+    forecast : forecast
+        community forcast for estimating future values
+        initial value: forecast
+    cd : dictionary
+        general data for a community.
+        Initial value: 'community' section of community_data
+    comp_specs : dictionary
+        component specific data for a community.
+        Initial value: 'heat recovery' section of community_data
+        
+    See also
+    --------
+    aaem.community_data : 
+        community data module, see for information on CommintyData Object
+    aaem.forecast : 
+        forecast module, see for information on Forecast Object
+    aaem.diagnostics :
+        diagnostics module, see for information on diagnostics Object
+
     """
     def __init__ (self, community_data, forecast, 
                         diag = None, prerequisites = {}):
-        """
-        Class initialiser
+        """Class initialiser
+        
+        Parameters
+        ----------
+        commnity_data : CommunityData
+            CommintyData Object for a community
+        forecast : Forecast
+            forcast for a community 
+        diagnostics : diagnostics, optional
+            diagnostics for tracking error/warining messeges
+        prerequisites : dictionary of components, optional
+            prerequisite component data
 
-        pre:
-            community_data is a CommunityData object. diag (if provided) should 
-        be a Diagnostics object
-        post:
-            the model can be run
         """
         self.diagnostics = diag
         if self.diagnostics == None:
@@ -49,35 +97,55 @@ class HeatRecovery (AnnualSavings):
         ### load prerequisites in the following function
         ### if there are no prerequisites you can delete this and the 
         ### load_prerequisite_variables function
-        self.load_prerequisite_variables(prerequisites)
+        ##### no prerequisites needed here commend out loading functionality
+        #~ self.load_prerequisite_variables(prerequisites)
         
-    def load_prerequisite_variables (self, comps):
-        """
-        load variables from prerequisites
-        
-        pre:
-             prerequisites: dictonary of componentes
-        """
-        # LOAD anything needed from the components passed as input
-        # WRITE this
-        pass
+    #~ def load_prerequisite_variables (self, comps):
+        #~ """
+        #~ Parameters
+        #~ ----------
+        #~ comps : 
+        #~ """
+        #~ # LOAD anything needed from the components passed as input
+        #~ pass
         
     def run (self, scalers = {'capital costs':1.0}):
-        """
-        run the forecast model
+        """runs the component. The Annual Total Savings,Annual Costs, 
+        Annual Net Benefit, NPV Benefits, NPV Costs, NPV Net Benefits, 
+        Benefit Cost Ratio, Levelized Cost of Energy, 
+        and Internal Rate of Return will all be calculated. There must be a 
+        known Heat Recovery project for this component to run.
         
-        pre:
-            self.cd should be the community library from a community data object
-        post:
-            TODO: define output values. 
-            the model is run and the output values are available
+        Parameters
+        ----------
+        scalers: dictionay of valid scalers, optional
+            Scalers to adjust normal run variables. 
+            See note on accepted  scalers
+        
+        Attributes
+        ----------
+        run : bool
+            True in the component runs to completion, False otherwise
+        reason : string
+            lists reason for failure if run == False
+            
+        Notes
+        -----
+            Accepted scalers: capital costs.
         """
         self.run = True
         self.reason = "OK"
+        if self.cd['name'].find('+') == -1:
+            self.run = False
+            self.reason = "Heat recovery" + \
+                " component requires a known project to run."
+            self.diagnostics.add_note(self.component_name, self.reason)
+            return 
+        
         tag = self.cd['name'].split('+')
         if len(tag) > 1 and tag[1] != PROJECT_TYPE:
             self.run = False
-            self.reason = "Not a " + PROJECT_TYPE + " project"
+            self.reason = "Not a " + "Heat recovery" + " project."
             self.diagnostics.add_note(self.component_name, self.reason)
             return 
         
@@ -86,14 +154,14 @@ class HeatRecovery (AnnualSavings):
                 self.calc_proposed_heat_recovery()
             except AttributeError:
                 self.run = False
-                self.reason = "Could not caclulate proposed heat recovery"
+                self.reason = "Could not caclulate proposed heat recovery."
                 self.diagnostics.add_note(self.component_name, self.reason)
                 return 
                 
         if np.isnan(self.proposed_heat_recovery) or \
                 self.proposed_heat_recovery == 0:
             self.run = False
-            self.reason = "No proposed heat recovery"
+            self.reason = "No proposed heat recovery."
             self.diagnostics.add_note(self.component_name, self.reason)
             return 
         
@@ -118,36 +186,52 @@ class HeatRecovery (AnnualSavings):
     
     def get_fuel_total_saved (self):
         """
-        returns the total fuel saved in gallons
+        Returns 
+        -------
+        float
+            the total fuel saved in gallons
         """
         return self.proposed_heat_recovery
     
     def get_total_enery_produced (self):
         """
-        returns the total energy produced
+        Returns
+        ------- 
+        flaot
+            the total energy produced
         """
         return self.proposed_heat_recovery/ constants.mmbtu_to_gal_HF
  
     def calc_proposed_heat_recovery (self):
-        """
-        calculate the proposed heat recovery 
+        """calculate the proposed heat recovery 
         
-        if Project details exist:
-            proposed_heat_recovery = projects 'proposed gallons diesel offset'
+        Attributes
+        ----------
+        proposed_heat_recovery : float
+            caclulated or loaded proposed heat recovery
             
-        hr_available = %hr * diesel_for_generation
-        potential_hr = 'Est. potential annual heating fuel gallons displaced'
-        if hr_opp and waste_heat_available:
-            if potential_hr  unknown:
-                proposed_heat_recovery = (hr_available * .3) / 
-                                          'heating conversion efficiency'
-            else:
-                proposed_heat_recovery = potential_hr/
-                                         'heating conversion efficiency'
-        else:
-            proposed_heat_recovery = 0
+        Notes
+        -----
+        Proposed_heat_recovery currently is only set if there a project for 
+        heat recovery in a community.
         
         """
+        ### OLD COMMENTS
+        ## if Project details exist:
+        ##    proposed_heat_recovery = projects 'proposed gallons diesel offset'
+            
+        ##hr_available = %hr * diesel_for_generation
+        ##potential_hr = 'Est. potential annual heating fuel gallons displaced'
+        ##if hr_opp and waste_heat_available:
+        ##    if potential_hr  unknown:
+        ##        proposed_heat_recovery = (hr_available * .3) / 
+        ##                                  'heating conversion efficiency'
+        ##    else:
+        ##        proposed_heat_recovery = potential_hr/
+        ##                                 'heating conversion efficiency'
+        ##else:
+        ##    proposed_heat_recovery = 0
+        
         p_gallons = self.comp_specs["project details"]\
                             ['proposed gallons diesel offset']
         p_btu = self.comp_specs["project details"]\
@@ -157,6 +241,9 @@ class HeatRecovery (AnnualSavings):
         if p_gallons != UNKNOWN and p_btu != UNKNOWN:
             self.proposed_heat_recovery = p_gallons
             return
+            
+        ## not currently estmaing unknown proposed heat recovery
+        return
         # else:
         hr_opp = self.comp_specs['estimate data']\
                     ['Waste Heat Recovery Opperational']
@@ -195,7 +282,13 @@ class HeatRecovery (AnnualSavings):
     
     # Make this do stuff
     def calc_capital_costs (self):
-        """ Function Doc"""
+        """Calculate or Load the project Captial Costs.
+        
+        Attributes
+        ----------
+        capital_costs : float
+            caclulated or loaded captial costs for heat recovery
+        """
         capital_costs = self.comp_specs["project details"]['capital costs']
         if capital_costs == UNKNOWN:
 
@@ -215,14 +308,26 @@ class HeatRecovery (AnnualSavings):
         
     
     def calc_annual_electric_savings (self):
-        """
+        """Set annual electric savings to zero as this component is for 
+        improving heating fuel use
+        
+        Attributes
+        ----------
+        annual_electric_savings : float, dollars per year
+            set to zero
         """
         self.annual_electric_savings = 0
         
-    # Make this do sruff. Remember the different fuel type prices if using
     def calc_annual_heating_savings (self):
+        """Calculate Annual Heating Savings, from proposed Heat recovery and 
+        Heating Fuel Price.
+        
+        Attributes
+        ----------
+        annual_heating_savings : float, dollars per year
+            Savings gained by Heat Recovey improvments
         """
-        """
+        self.annual_electric_savings = 0
         price = (self.diesel_prices + self.cd['heating fuel premium'])
         
         self.annual_heating_savings = self.proposed_heat_recovery * price + \

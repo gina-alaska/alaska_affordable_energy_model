@@ -1,7 +1,9 @@
 """
-preprocessing.py
+Heat Recovery preprocessing 
+---------------------------
 
-    preprocessing functions for Heat Recovery component  
+preprocessing functions for Heat Recovery component  
+
 """
 import os.path
 import numpy as np
@@ -17,27 +19,50 @@ raw_data_files = ["heat_recovery_projects_potential.csv",
 
 ## preprocessing functons 
 def preprocess_header (ppo):
-    """
+    """Generate preprocesed data file header
+    
+    Parameters
+    ----------
+        ppo: aaem.prerocessor.Preprocessor
+            a preprocessing object
+            
+    Returns
+    ------- 
+        String of header info
     """
     return  "# " + ppo.com_id + " heat recovery data\n"+ \
             ppo.comments_dataframe_divide
     
 def preprocess (ppo):
-    """
+    """preprocess heat recovery data into heat_recovery_projects_potential.csv
     
+    Parameters
+    ----------
+        ppo: aaem.prerocessor.Preprocessor
+            a preprocessing object
     """
     #CHANGE THIS
+    #~ return
     out_file = os.path.join(ppo.out_dir,"heat_recovery_projects_potential.csv")
 
     data = read_csv(os.path.join(ppo.data_dir,"heat_recovery_projects_potential.csv"), 
                                     comment = '#',index_col = 0)
                                     
     data = ppo.get_communities_data(data)
-    data_cols = ['Waste Heat Recovery Opperational','Add waste heat Avail',
+    
+    
+    
+    data_cols = ['Waste Heat Recovery Opperational',
+                'Identified as priority by HR working group',
                  'Est. current annual heating fuel gallons displaced',
                  'Est. potential annual heating fuel gallons displaced']
-    data =  data[data_cols]
-    
+    data_cols_in = ['HR Functioning as of November 2016 (Yes/No)',
+                    'Identified as priority by HR working group',
+                 'Est. current annual heating fuel gallons displaced',
+                 'Proposed Gallons of Diesel Offset']
+    data =  data[data_cols_in]
+    data.columns = data_cols
+    #~ data = []
     # if no data add defaults
     if len(data) == 0:
         data = DataFrame([['No','No', np.nan, np.nan],],columns = data_cols)
@@ -49,7 +74,7 @@ def preprocess (ppo):
 
     data['Waste Heat Recovery Opperational'] = \
         data['Waste Heat Recovery Opperational'].fillna('No')
-    data['Add waste heat Avail'] = data['Add waste heat Avail'].fillna('No')
+    data['Identified as priority by HR working group'] = data['Identified as priority by HR working group'].fillna('No')
     
     data = data.T
 
@@ -73,25 +98,25 @@ preprocess_funcs = [preprocess]
 ### This function is called differently from the other preprocessor functions,
 ### so it does not need to be added to preprocess_funcs
 def preprocess_existing_projects (ppo):
-    """
-    preprocess data related to existing projects
+    """preprocess heat_recovery_projects_potential.csv into 
+    heat_recovery_projects.yaml, copy 'project_development_timeframes.csv'
     
-    pre:
-        ppo is a is a Preprocessor object. "wind_projects_potential.csv" and 
-        'project_development_timeframes.csv' exist in the ppo.data_dir 
-    post:
-        data for existing projets is usable by model
+    Parameters
+    ----------
+        ppo: aaem.prerocessor.Preprocessor
+            a preprocessing object
     """
     projects = []
     p_data = {}
     
-    proj_cols = ['Project Name','Year','Phase Completed',
+    proj_cols = ['Project Name','Year of Feasibility Study Completion','Phase Completed',
                  'New/Repair/Extension',
                  'Total Round-trip Distance of Piping (feet)',
                  'Number of Buildings/Facilities',
                  'Buildings/Facilities to be Served',
                  'Proposed Gallons of Diesel Offset',
-                 'Proposed Maximum Btu/hr','Total CAPEX','Source']
+                 'Proposed Maximum Btu/hr','Total CAPEX','Source',
+                 'Link','Notes']
     project_data = read_csv(os.path.join(ppo.data_dir,
                                 "heat_recovery_projects_potential.csv"),
                             comment = '#',index_col = 0)[proj_cols]
@@ -133,7 +158,9 @@ def preprocess_existing_projects (ppo):
                           'proposed Maximum btu/hr': max_btu_per_hr, 
                           'capital costs':capex,
                           'expected years to operation':
-                                                expected_years_to_operation
+                                                expected_years_to_operation,
+                          'link':cp['Link'],
+                          'notes':cp['Notes'],
                         }
         
         

@@ -32,6 +32,7 @@ sys.path.insert(0, os.path.abspath('../../aaem'))
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
+    'numpydoc'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -52,7 +53,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Alaska Affordable Energy Model'
-copyright = u'2016, GINA'
+copyright = u'2017, AEA, GINA'
 author = u'GINA'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -339,3 +340,5 @@ texinfo_documents = [
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #
 # texinfo_no_detailmenu = False
+
+html_show_sourcelink = False

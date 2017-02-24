@@ -1,7 +1,9 @@
 """
-inputs.py
+Hydropower inputs
+-----------------
 
-    input functions for Hydropower component
+input functions for Hydropower component
+    
 """
 import os.path
 from pandas import read_csv
@@ -10,24 +12,31 @@ from yaml import load
 
 ## Functions for CommunityData IMPORT keys
 def process_data_import(data_dir):
-    """
+    """does nothing
+    
+    Parameters
+    ----------
+    data_dir: path
+        path to data directory for community
     """
     pass
     
 def load_project_details (data_dir):
-    """
-    load details related to exitign projects
+    """load details related to exitign projects
     
-    pre:
-        data_dir is a directory with  'project_development_timeframes.csv',
+    Parameters
+    ----------
+    data_dir : path
+        is a directory with  'project_development_timeframes.csv',
         and "project_name_projects.yaml" in it 
     
-    post:
-        retunrns a dictonary wht the keys 'phase'(str), 
-        'proposed capacity'(float), 'proposed generation'(float),
-        'distance to resource'(float), 'generation capital cost'(float),
-        'transmission capital cost'(float), 'operational costs'(float),
-        'expected years to operation'(int),
+    Returns
+    -------
+    dict
+        has the keys 'phase'(str), 'proposed capacity'(float),
+        'proposed generation'(float),'distance to resource'(float), 
+        'generation capital cost'(float), 'transmission capital cost'(float), 
+        'operational costs'(float), 'expected years to operation'(int),
     """
     tag = os.path.split(data_dir)[1].split('+')
     data_dir = os.path.join(os.path.split(data_dir)[0],tag[0])

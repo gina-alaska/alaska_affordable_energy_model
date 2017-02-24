@@ -1,7 +1,19 @@
 """
-config.py
-
-    Transmission Line config info for community data yaml file
+Transmission Configuration 
+--------------------------
+    
+    Contains Transmission configuration info for community
+    data yaml file, and other set-up requirements
+    
+    **Unique Configuration keys**
+    
+        'transmission loss per mile'
+        'nearest community'
+        'heat recovery o&m' 
+        'est. intertie cost per mile'
+        'percent o&m'
+        'diesel generator o&m'
+    
 """
 COMPONENT_NAME = "Transmission and Interties"
 IMPORT = "IMPORT"
@@ -43,7 +55,3 @@ yaml_not_to_save = ['nearest community']
     
 ## list of prerequisites for module
 prereq_comps = [] 
-
-DESCRIPTION = """
-    This component calculates the potential electricity generation from diesel that could be offset by connecting it to annother community via transmission line. 
-"""

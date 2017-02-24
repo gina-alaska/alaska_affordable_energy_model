@@ -1,7 +1,16 @@
 """
-config.py
-
-    Air Source Heat Pumps - Residential config info for community data yaml file
+Air Sorce Heat Pump Residential Configuration 
+---------------------------------------------
+    
+    Contains Air Sorce Heat Pump Residential configuration info for community
+    data yaml file, and other set-up requirements
+    
+    **Unique Configuration keys**
+    
+        btu/hrs: btu/hrs
+        
+        cost per btu/hrs: cost of heating $/btu/hr
+        
 """
 import aaem.components.ashp_base as ashp_base
 from copy import deepcopy
@@ -30,7 +39,3 @@ yaml_not_to_save = deepcopy(ashp_base.yaml_not_to_save)
 
 ## list of prerequisites for module
 prereq_comps = ['Residential Energy Efficiency']
-
-DESCRIPTION = """
-    This component calculates the potential Heating Oil that could be offset by installing new Air Source Heat Pumps for Residential buildings . 
-"""

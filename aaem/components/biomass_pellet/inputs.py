@@ -1,7 +1,12 @@
 """
-inputs.py
+Biomass Pellet inputs
+---------------------
 
-    input functions for Biomass - Pellet component
+    input functions for Biomass Pellet component
+    
+    .. note::
+        Uses Biomass Base input functions
+    
 """
 import os.path
 from pandas import read_csv

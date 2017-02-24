@@ -1,7 +1,17 @@
 """
-config.py
-
-    config info for cd yaml file
+Diesel Efficiency Configuration 
+-------------------------------
+    
+    Contains configuration info for community data yaml file, and 
+     other set-up requirements
+    
+    **Unique Configuration keys**
+    
+        'efficiency improvments' : 
+        
+        'o&m costs': operation and maintainence cost per yer
+    
+    
 """
 COMPONENT_NAME = "Diesel Efficiency"
 IMPORT = "IMPORT"
@@ -44,9 +54,4 @@ yaml_not_to_save = []
 
 ## list of prerequisites for module
 prereq_comps = [] ## FILL in if needed
-
-DESCRIPTION = """
-    This component calculates the potential Heating Oil that could be offset by installing a new Biomass Cordwood Boiler
-"""
-
 
