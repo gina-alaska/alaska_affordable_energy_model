@@ -350,7 +350,7 @@ class WebSummary(object):
             pass
             
         self.imported_summaries[component] = \
-                    import_module("aaem_summaries.components." + component).outputs
+                    import_module("aaem_summaries.components." + component).summary
         return self.imported_summaries[component].generate_web_summary
     
     

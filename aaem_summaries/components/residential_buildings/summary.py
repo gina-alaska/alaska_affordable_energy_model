@@ -10,6 +10,8 @@ import aaem.constants as constants
 from aaem.components import comp_order
 import aaem.web_lib as wl
 
+from pandas import DataFrame
+
 COMPONENT_NAME = "Residential Energy Efficiency"
 DESCRIPTION = """
     This component calculates the potential reduction heating oil by improving the efficiency residential buildings

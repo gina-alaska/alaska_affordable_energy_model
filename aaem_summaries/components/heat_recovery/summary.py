@@ -10,6 +10,10 @@ import aaem.constants as constants
 from aaem.components import comp_order
 import aaem.web_lib as wl
 
+import numpy as np
+
+COMPONENT_NAME = "Heat Recovery"
+
 DESCRIPTION = """
     This component calculates the potential heating oil offset by installing a new heat recovery System. Requires a known project exists to be run.
 """

@@ -10,6 +10,8 @@ import aaem.constants as constants
 from aaem.components import comp_order
 import aaem.web_lib as wl
 
+from pandas import DataFrame
+
 COMPONENT_NAME = "Non-residential Energy Efficiency"
 
 DESCRIPTION = """

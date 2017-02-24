@@ -10,7 +10,13 @@ import aaem.constants as constants
 from aaem.components import comp_order
 import aaem.web_lib as wl
 
+import numpy as np
+
 COMPONENT_NAME = "Hydropower"
+
+DESCRIPTION = """
+    This component calculates the potential electricity generation from diesel that could be offset by installing new Hydropower generation infrastructure. This component only uses existing proposed projects to base its calculations on, and does not attempt to model values
+"""
 
 def generate_web_summary (web_object, community):
     """generate html summary for a community. 
