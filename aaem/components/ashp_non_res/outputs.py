@@ -10,7 +10,7 @@ import numpy as np
 from pandas import DataFrame
 from config import COMPONENT_NAME
 import aaem.constants as constants
-from aaem.components import comp_order
+from aaem.components import comp_order, definitions
 
 
 ## component summary
@@ -140,10 +140,41 @@ def communities_summary (coms, res_dir):
     data = DataFrame(out,columns = cols).set_index('Community')#.round(2)
     f_name = os.path.join(res_dir,
                 COMPONENT_NAME.lower().replace(" ","_") + '_summary.csv')
-    #~ fd = open(f_name,'w')
-    #~ fd.write(("# " + COMPONENT_NAME + " summary\n"))
-    #~ fd.close()
-    data.to_csv(f_name, mode='w')
+    fd = open(f_name,'w')
+    fd.write(("# " + COMPONENT_NAME + " summary by community\n"
+        '# Community: name of community/project.\n'
+        '# ASHP Non-Residential Average Coefficient of Performance (COP): '
+            'ratio of useful heating provided to work required\n'
+        '# Heat Displacement square footage [Sqft]: '
+            'estimated square footage that would be heated by ASHP\n'
+        '# ASHP Non-Residential Total Nameplate Capacity Needed: \n'
+        '# Electricity Price [$/kWh]: electricity price in the community '
+            'durning the frist year of project operation\n'
+        '# ASHP Non-Residential kWh consumed per year: electricity consumed '
+            'TODO: fininsh \n'
+        '# ASHP Non-Residential Excess Generation Capacity '
+            ' Needed for Peak Monthly Load (kW): \n'
+        '# ASHP Non-Residential Displaced Heating Oil [Gal]:'
+            ' Fuel that would be displaced by ASHP\n'
+        '# Diesel Price - year 1 [$/gal]: diesel price in the community '
+            'durning the frist year of project operation\n'
+        '# Heating Fuel Price - year 1 [$/gal]: Heating Fuel price in the '
+            'community durning the frist year of project operation\n'
+        '# Break Even Heating Fuel Price [$/gal]: Average heating fuel price '
+            'where project would become cost effictive\n'
+        '# Levelized Cost Of Energy [$/MMBtu]: is the net present value of'
+            ' the unit-cost of energy over the lifetime of an asset\n'
+        '# ASHP Non-Residential NPV benefits [$]: '+ definitions.NPV_BENEFITS + '\n'
+        '# ASHP Non-Residential NPV Costs [$]: ' + definitions.NPV_COSTS + '\n'
+        '# ASHP Non-Residential NPV Net benefit [$]: ' + definitions.NPV_NET_BENEFITS + '\n'
+        '# ASHP Non-Residential Internal Rate of Return: ' + definitions.IRR +'\n'
+        '# ASHP Non-Residential Benefit-cost ratio: ' + definitions.NPV_BC_RATIO +'\n'
+        '# Intertie'
+        '# notes: '+ definitions.NOTES +'\n'
+    ))
+    
+    fd.close()
+    data.to_csv(f_name, mode='a')
     
 def create_regional_summary (results):
     """Creates the regional summary

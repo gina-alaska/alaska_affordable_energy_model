@@ -1,4 +1,6 @@
 from importlib import import_module
+import definitions as definitions
+
 
 comp_lib = {
     "Residential Energy Efficiency": "residential_buildings",
@@ -39,3 +41,5 @@ def get_raw_data_files():
         except AttributeError:
             pass
     return raw_data_files
+    
+
