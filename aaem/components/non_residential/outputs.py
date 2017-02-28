@@ -11,7 +11,7 @@ from pandas import DataFrame
 from config import COMPONENT_NAME
 import aaem.constants as constants
 
-from aaem.components import comp_order
+from aaem.components import comp_order, definitions
 
 ## component summary
 def component_summary (results, res_dir):
@@ -73,30 +73,47 @@ def communities_summary (coms, res_dir):
             
             
     cols = ['community',
-            'Nonresidential Efficiency NPV Benefit',
-            'Nonresidential Efficiency NPV Cost',
-            'Nonresidential Efficiency NPV Net Benefit',
+            'Non-residential Efficiency NPV Benefit',
+            'Non-residential Efficiency NPV Cost',
+            'Non-residential Efficiency NPV Net Benefit',
             
-            'Nonresidential Internal Rate of Return',
-            'Nonresidential Efficiency B/C Ratio',
+            'Non-residential Internal Rate of Return',
+            'Non-residential Efficiency B/C Ratio',
             'Heating Oil Price - year 1',
             '$ per kWh - year 1',
-            'Number Nonresidential Buildings',
-            'Nonresidential Total Square Footage',
+            'Number Non-residential Buildings',
+            'Non-residential Total Square Footage',
             'Break Even Heating Fuel Price [$/gal heating oil equiv.]',
             'Levelized Cost of Energy [$/MMBtu]',
             'Levelized Cost of Energy [$/kWh]',
-            'Nonresidential Heating Oil  oil equiv. Consumed(gal) - year 1',
-            'Nonresidential Electricity Consumed(kWh) - year 1',
-            'Nonresidential Efficiency Heating Oil  oil equiv. Saved[gal/year]',
-            'Nonresidential Efficiency Electricity Saved[kWh/year]']
+            'Non-residential Heating Oil  oil equiv. Consumed(gal) - year 1',
+            'Non-residential Electricity Consumed(kWh) - year 1',
+            'Non-residential Efficiency Heating Oil  oil equiv. Saved[gal/year]',
+            'Non-residential Efficiency Electricity Saved[kWh/year]']
             
     data = DataFrame(out,columns = cols).set_index('community').round(2)
     f_name = os.path.join(res_dir, COMPONENT_NAME.lower().replace(' ','_') + '_summary.csv')
-    ##fd = open(f_name,'w')
-    ##fd.write("# non residental building component summary by community\n")
-    ##fd.close()
-    data.to_csv(f_name, mode='w')
+    fd = open(f_name,'w')
+    fd.write(("# non residental building component summary by community\n"
+            '# community: '+ definitions.COMMUNITY + '\n'
+            '# Non-residential Efficiency NPV Benefit: ' + definitions.NPV_BENEFITS + '\n'
+            '# Non-residential Efficiency NPV Cost: ' + definitions.NPV_COSTS + '\n'
+            '# Non-residential Efficiency NPV Net Benefit: ' + definitions.NPV_NET_BENEFITS + '\n'
+            '# Non-residential Internal Rate of Return: ' + definitions.IRR +'\n'
+            '# Non-residential Efficiency B/C Ratio: ' + definitions.NPV_BC_RATIO + '\n'
+            '# Heating Oil Price - year 1: ' + definitions.PRICE_HF + '\n'
+            '# $ per kWh - year 1: ' + definitions.PRICE_ELECTRICITY + '\n'
+            '# Number Non-residential Buildings: Number of buildings in the community.\n'
+            '# Non-residential Total Square Footage: Total Square footage from buildings.\n'
+            '# Break Even Heating Fuel Price [$/gal heating oil equiv.]: ' + definitions.BREAK_EVEN_COST_HF + '\n'
+            '# Levelized Cost of Energy [$/MMBtu]: ' + definitions.LCOE + '\n'
+            '# Levelized Cost of Energy [$/kWh]: ' + definitions.LCOE + '\n'
+            '# Non-residential Heating Oil  oil equiv. Consumed(gal) - year 1: Heating energy consumed in a community with out improvments.\n'
+            '# Non-residential Electricity Consumed(kWh) - year 1: Electricity consumed in a community with out improvments.\n'
+            '# Non-residential Efficiency Heating Oil  oil equiv. Saved[gal/year]: Heating energy saved in a community with improvments.\n'
+            '# Non-residential Efficiency Electricity Saved[kWh/year]: Electricity consumed in a community with improvments.\n'))
+    fd.close()
+    data.to_csv(f_name, mode='a')
     
 def create_regional_summary (results):
     """Creates the regional summary

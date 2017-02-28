@@ -10,7 +10,7 @@ import numpy as np
 from pandas import DataFrame
 from config import COMPONENT_NAME
 import aaem.constants as constants
-from aaem.components import comp_order
+from aaem.components import comp_order, definitions
 
 
 ## component summary
@@ -92,10 +92,27 @@ def communities_summary (coms, res_dir):
     data = DataFrame(out,columns = cols).set_index('community').round(2)
     f_name = os.path.join(res_dir,
                 COMPONENT_NAME.lower().replace(' ','_') + '_summary.csv')
-    #~ fd = open(f_name,'w')
-    #~ fd.write("# residental building component summary by community\n")
-    #~ fd.close()
-    data.to_csv(f_name, mode='w')
+    fd = open(f_name,'w')
+    fd.write(("# residental building component summary by community\n"
+           '# community: '+ definitions.COMMUNITY + '\n'
+           '# Residential Efficiency NPV Benefit: ' + definitions.NPV_BENEFITS + '\n'
+           '# Residential Efficiency NPV Cost: ' + definitions.NPV_COSTS + '\n'
+           '# Residential Efficiency NPV Net Benefit: ' + definitions.NPV_NET_BENEFITS + '\n'
+           '# Residential Internal Rate of Return: ' + definitions.IRR +'\n'
+           '# Residential Efficiency B/C Ratio: ' + definitions.NPV_BC_RATIO + '\n'
+           '# Heating Oil Price - year 1: ' + definitions.PRICE_HF + '\n'
+           '# Occupied Houses: Occupied homes in communities.\n' 
+           '# Houses to Retrofit: Houses that are to be retrofit.\n' 
+           '# Break Even Heating Fuel Price [$/gal heating oil equiv.]: ' + definitions.BREAK_EVEN_COST_HF + '\n'
+           '# Levelized Cost of Energy [$/MMBtu]: ' + definitions.LCOE + '\n'
+           '# Residential Heating Oil Consumed(mmbtu) - year 1: Heating oil consumed by current systems.\n'
+           '# Residential Efficiency Heating Oil Saved(mmbtu/year): Heating oil saved by retrofit systems.\n'
+           '# Residential Heating Oil as percent of Total Heating Fuels: Precentage of heating oil that is heating oil.\n'
+           '# Total Residentital Heating Fuels (mmbtu) - year 1: Heating fuel consumed by current systems.\n'
+           '# Residential Efficiency Total Heating Fuels Saved (mmbtu/year): Heating fuel consumed by current systems.\n'
+        ))
+    fd.close()
+    data.to_csv(f_name, mode='a')
     
 def create_regional_summary (results):
     """Creates the regional summary
