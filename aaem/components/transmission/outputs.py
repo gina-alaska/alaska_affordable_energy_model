@@ -10,7 +10,7 @@ import numpy as np
 from pandas import DataFrame
 from config import COMPONENT_NAME
 import aaem.constants as constants
-from aaem.components import comp_order
+from aaem.components import comp_order, definitions
 
 
 ## component summary
@@ -223,33 +223,39 @@ def communities_summary (coms, res_dir):
     fd.write(("# Transmission component summary by community\n"
         '# Community to connect: name of main community.\n'
         '# Community/Intertie to connect to: name of secondary community.\n'
-        '# Start Year: year the project is pojected to start operation.\n'
-        '# Project Phase: current phase of project.\n'
+        '# Start Year: ' + definitions.START_YEAR + '\n'
+        '# project phase: '+ definitions.PHASE + '\n'
         '# Miles of Transmission Line:'
             ' Distance transmission line needs to be.\n'
-        '# Generation Displaced in community to connect [kWh]: \n'
+        '# Generation Displaced in community to connect [kWh]: Diesel '
+            'generation displaced in community\n'
         '# Electricity Generated, Conserved, or transmitted [kWh]: \n'
         '# Loss of Recovered Heat from Genset in community to connect [gal]: \n'
         '# Heat Recovery Operational in community to connect: \n'
-        '# Diesel Generator Efficiency in community to connect: \n'
-        '# Diesel Generator Efficiency in community to connect to: \n'
-        '# Diesel Price - year 1 [$/gal] in community to connect: \n'
-        '# Diesel Price - year 1 [$/gal] in community to connect to: \n'
-        '# Break Even Diesel Price [$/gal]: \n'
-        '# Annual Transmission loss percentage: \n'
-        '# Levelized Cost Of Energy [$/kWh]: \n'
-        '# Status Quo generation Cost (Year 1): \n'
-        '# Proposed generation cost (Year 1): \n'
-        '# Benefit from reduced generation cost (year 1): \n'
-        '# Transmission NPV benefits [$]:'
-            ' Net Present Value benefits (savings)\n'
-        '# Transmission NPV Costs [$]:'
-            ' Net Present Value costs\n'
-        '# Transmission NPV Net benefit [$]:'
-            ' Net Present Value (savings - costs)\n'
-        '# Transmission Internal Rate of Return: \n'
-        '# Transmission Benefit Cost Ratio: NPV Benefits over NPV costs\n'
-        '# notes: notes on why model may not have run for community\n'))
+        '# Diesel Generator Efficiency in community to connect: Estimated '
+            'efficiency of diesel generator in community in killowatt '
+            'hours per gallon.\n'
+        '# Diesel Generator Efficiency in community to connect to: Estimated'
+            ' efficiency of diesel generator in community connected '
+            'to in killowatt hours per gallon.\n'
+        '# Diesel Price - year 1 [$/gal] in community to connect: '
+            'Diesel fuel price in the community durning the frist year'
+            ' of project operation.\n'
+        '# Diesel Price - year 1 [$/gal] in community to connect to: '
+            'Diesel fuel price in the community to connect to'
+            ' durning the frist year of project operation.\n'
+        '# Break Even Diesel Price [$/gal]: ' + definitions.BREAK_EVEN_COST_DIESEL + '\n'
+        '# Annual Transmission loss percentage: Estimated transmission loss pecent.\n'
+        '# Levelized Cost Of Energy [$/kWh]:' + definitions.LCOE + '\n'
+        '# Status Quo generation Cost (Year 1): Estimated cost of generation in community if nothing changes\n'
+        '# Proposed generation cost (Year 1):  Estimated cost of generation in community with improvments\n'
+        '# Benefit from reduced generation cost (year 1): Difference in base and proposed cost of generation \n'
+        '# Transmission NPV benefits [$]: '+ definitions.NPV_BENEFITS + '\n'
+        '# Transmission NPV Costs [$]: ' + definitions.NPV_COSTS + '\n'
+        '# Transmission NPV Net benefit [$]: ' + definitions.NPV_NET_BENEFITS + '\n'
+        '# Transmission Internal Rate of Return: ' + definitions.IRR +'\n'
+        '# vTransmission Benefit-cost ratio: ' + definitions.NPV_BC_RATIO +'\n'
+        '# notes: '+ definitions.NOTES +'\n'))
     fd.close()
 
     data.to_csv(f_name, mode='a')

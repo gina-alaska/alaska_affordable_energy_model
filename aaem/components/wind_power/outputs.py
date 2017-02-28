@@ -10,7 +10,7 @@ import numpy as np
 from pandas import DataFrame
 from config import COMPONENT_NAME
 import aaem.constants as constants
-from aaem.components import comp_order
+from aaem.components import comp_order, definitions
 
 
 from datetime import datetime
@@ -169,12 +169,11 @@ def communities_summary (coms, res_dir):
     fd.write(("# wind summary\n" 
         '# Breakdown by community of potential wind power improvements'
         '# \n'
-        '# Community: name of community/project.\n'
-        '# Start Year: year the project is pojected to start operation.\n'
-        '# project phase: current phase of project.\n'
+        '# Community: ' + definitions.COMMUNITY + '\n'
+        '# Start Year: ' + definitions.START_YEAR + '\n'
+        '# project phase: '+ definitions.PHASE + '\n'
         '# Assumed Wind Class: Wind power density class\n'
-        '# Average Diesel Load [kw]: Current average load '
-            'from diesel generation in community in kilowatts.\n'
+        '# Average Diesel Load [kw]: ' + definitions.DIESEL_LOAD +'\n'
         '# Wind Capacity Proposed [kW]: Proposed additional capacity for wind'
             ' generation in kilowatts.\n'
         '# Existing Wind Capacity [kW]: Existing wind generation capacity'
@@ -192,19 +191,17 @@ def communities_summary (coms, res_dir):
         '# Wind Power Reduction in Utility Diesel Consumed per year: Estimated '
             'Reduction in utility diesel if wind power system is '
             'installed/upgraded. In gallons per year\n'
-        '# Diesel Denerator Efficiency: estimated efficiency of diesel '
-            'generator in killowatt hours per gallon. \n '
-        '# Diesel Price - year 1 [$\gal]: Estimated diesle price in '
-            'start year.\n'
-        '# Break Even Diesel Price [$/gal]: Diesel price where project'
-            ' would become cost effective. Dollars per gallon\n'
-        '# Levelized Cost Of Energy [$/kWh]:\n'
-        '# Wind NPV benefits [$]: Net Present Value benefits (savings)\n'
-        '# Wind NPV Costs [$]: Net Present Value costs\n'
-        '# Wind NPV Net benefit [$]: Net Present Value (savings - costs)\n'
-        '# Wind Internal Rate of Return: \n'
-        '# Wind Benefit Cost Ratio: NPV Benefits over NPV costs\n'
-        '# notes: notes on why model may not have run for community\n'))
+        '# Diesel Denerator Efficiency: '+ definitions.GEN_EFF + ' \n '
+        '# Diesel Price - year 1 [$\gal]: ' + definitions.PRICE_DIESEL + '\n'
+        '# Break Even Diesel Price [$/gal]: ' + definitions.BREAK_EVEN_COST_DIESEL + '\n'
+        '# Levelized Cost Of Energy [$/kWh]:' + definitions.LCOE + '\n'
+        '# Wind power NPV benefits [$]: '+ definitions.NPV_BENEFITS + '\n'
+        '# Wind power NPV Costs [$]: ' + definitions.NPV_COSTS + '\n'
+        '# Wind power NPV Net benefit [$]: ' + definitions.NPV_NET_BENEFITS + '\n'
+        '# Wind power Internal Rate of Return: ' + definitions.IRR +'\n'
+        '# Wind power Benefit-cost ratio: ' + definitions.NPV_BC_RATIO +'\n'
+        '# notes: '+ definitions.NOTES +'\n'))
+        
     fd.close()
     data.to_csv(f_name, mode='a')
     
