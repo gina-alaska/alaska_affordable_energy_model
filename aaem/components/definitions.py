@@ -24,3 +24,4 @@ START_YEAR = "Year the project is pojected to start operation."
 PHASE = "Current phase of project."
 DIESEL_LOAD = "Current average load from diesel generation in community in kilowatts."
 GEN_EFF = 'Estimated efficiency of diesel generator in killowatt hours per gallon.'
+HR_OP = "Boolean indcating if heat recovey is operational in community."
