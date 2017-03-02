@@ -10,7 +10,7 @@ import numpy as np
 from pandas import DataFrame
 from config import COMPONENT_NAME
 import aaem.constants as constants
-from aaem.components import comp_order
+from aaem.components import comp_order, definitions
 
 
 ## component summary
@@ -100,21 +100,21 @@ def communities_summary (coms, res_dir):
             pass
     try:
         cols = ['Community',
-            'Biomass Pellet Maximum Boiler Output [Btu/hr]',
-            'Biomass Pellet Heat Displacement square footage [Sqft]',
-            'Proposed ' + biomass.biomass_type + " Consumed [" + \
-                                                    biomass.units +"]",
+            'Maximum Biomass Boiler Output [Btu/hr]',
+            'Biomass Heat Displacement square footage [Sqft]',
+            'Proposed ' + biomass.biomass_type + \
+                            " Consumed [" + biomass.units +"]",
             'Price [$/' + biomass.units + ']',
             "Energy Density [Btu/" + biomass.units + "]",
-            'Biomass Pellet Displaced Heating Oil [Gal]',
+            'Displaced Heating Oil by Biomass [Gal]',
             "Heating Fuel Price - year 1 [$/gal]",
             'Break Even Heating Fuel Price [$/gal]',
             'Levelized Cost Of Energy [$/MMBtu]',
-            'biomass Pellet NPV benefits [$]',
-            'Biomass Pellet NPV Costs [$]',
-            'Biomass Pellet NPV Net benefit [$]',
-            'Biomass Cordwood Internal Rate of Return',
-            'Biomass Pellet Benefit-cost ratio',
+            'Bioimass pellet NPV benefits [$]',
+            'Biomass pellet NPV Costs [$]',
+            'Biomass pellet NPV Net benefit [$]',
+            'Biomass pellet Internal Rate of Return',
+            'Biomass pellet Benefit-cost ratio',
             'notes'
             ]
     except UnboundLocalError:
@@ -124,9 +124,25 @@ def communities_summary (coms, res_dir):
     f_name = os.path.join(res_dir,
                 COMPONENT_NAME.lower().replace(' ','_').\
                     replace('(','').replace(')','') + '_summary.csv')
-    #~ fd = open(f_name,'w')
-    #~ fd.write(("# " + COMPONENT_NAME + " summary\n"))
-    #~ fd.close()
+    fd = open(f_name,'w')
+    fd.write(("# " + COMPONENT_NAME + " summary by community\n"
+            '# Maximum Biomass Boiler Output [Btu/hr]:\n'
+            '# Biomass Heat Displacement square footage [Sqft]: Non-residential area to heat with biomass\n'
+            '# Proposed ' + biomass.biomass_type + ""
+                "Consumed [" + biomass.units +"]: Proposed biomas fuel consumed\n"
+            '# Price [$/' + biomass.units + ']: Price of biomass fuel\n'
+            "# Energy Density [Btu/" + biomass.units + "]: Energy Density of fuel\n"
+            '# Displaced Heating Oil by Biomass [Gal]: Estimated heating fuel displace by biomass heating\n'
+            '# Heating Fuel Price - year 1 [$/gal]: ' + definitions.PRICE_HF + '\n'
+            '# Break Even Heating Fuel Price [$/gal]: ' + definitions.BREAK_EVEN_COST_HF + '\n'
+            '# Levelized Cost Of Energy [$/kWh]:' + definitions.LCOE + '\n'
+            '# '+ COMPONENT_NAME +' NPV benefits [$]: '+ definitions.NPV_BENEFITS + '\n'
+            '# '+ COMPONENT_NAME +' NPV Costs [$]: ' + definitions.NPV_COSTS + '\n'
+            '# '+ COMPONENT_NAME +' NPV Net benefit [$]: ' + definitions.NPV_NET_BENEFITS + '\n'
+            '# '+ COMPONENT_NAME +' Internal Rate of Return: ' + definitions.IRR +'\n'
+            '# '+ COMPONENT_NAME +' Benefit-cost ratio: ' + definitions.NPV_BC_RATIO +'\n'
+            '# notes: '+ definitions.NOTES +'\n'))
+    fd.close()
     data.to_csv(f_name, mode='a')
     
 def create_regional_summary (results):

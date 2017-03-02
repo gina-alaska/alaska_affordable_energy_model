@@ -161,7 +161,7 @@ def communities_summary (coms, res_dir):
             '# Baseline Generation Fuel Consumption [Gal]: Current diesel used for generation\n'
             '# Proposed Generation Fuel Consumption [Gal]: Proposed diesel used for generation\n'
             '# Diesel price - year 1 [$/gal]: ' + definitions.PRICE_DIESEL + '\n' 
-            '# Break Even Heating Fuel Price [$/gal]: ' + definitions.BREAK_EVEN_COST_HF + '\n'
+            '# Break Even Diesel Price [$/gal]: ' + definitions.BREAK_EVEN_COST_HF + '\n'
             '# Levelized Cost Of Energy [$/kWh]:' + definitions.LCOE + '\n'
             '# Diesel Efficiency NPV benefits [$]: '+ definitions.NPV_BENEFITS + '\n'
             '# Diesel Efficiency NPV Costs [$]: ' + definitions.NPV_COSTS + '\n'
