@@ -11,7 +11,7 @@ from pandas import DataFrame
 from config import COMPONENT_NAME
 import aaem.constants as constants
 
-from aaem.components import comp_order
+from aaem.components import comp_order, definitions
 
 ## component summary
 def component_summary (results, res_dir):
@@ -166,8 +166,36 @@ def communities_summary (coms, res_dir):
     data = DataFrame(out,columns = cols).set_index('Community')#.round(2)
     f_name = os.path.join(res_dir,
                 COMPONENT_NAME.replace(" ","_").lower() + '_summary.csv')
+    with open(f_name,'w') as summary:
+        summary.write(('# Hydropower summary by community.\n'
+            '# Community: ' + definitions.COMMUNITY + '\n'
+            '# Project Name: Name of proposed hydropower project \n'
+            '# Start Year: ' + definitions.START_YEAR + '\n'
+            '# project phase: '+ definitions.PHASE + '\n'
+            '# Average Diesel Load [kw]: ' + definitions.DIESEL_LOAD +'\n'
+            '# Wind Capacity Proposed [kW]: Existing generation capacity form Hydropower.\n'
+            '# Net Proposed Hydro Generation [kWh]: Net generation from proposed hydropower system.\n'
+            '# Heating Oil Equivalent Captured by Secondary Load [gal]: \n'
+            '# Loss of Recovered Heat from Genset [gal]: \n'
+            '# Heat Recovery Operational' + definitions.HR_OP + '\n'
+            '# Net Reduction in Heating Oil Consumption [gal]: Change in '
+                'heating oil consumed between base and proposed systems\n'
+            '# Hydro Power Reduction in Utility Diesel Consumed per year: '
+                'Reduction in diesel used from generation from hydropower'
+                ' project\n'
+            '# Diesel Denerator Efficiency: '+ definitions.GEN_EFF + ' \n'
+            '# Diesel Price - year 1 [$\gal]: ' + definitions.PRICE_DIESEL + '\n'
+            '# Break Even Diesel Price [$/gal]: ' + definitions.BREAK_EVEN_COST_DIESEL + '\n'
+            '# Levelized Cost Of Energy [$/kWh]:' + definitions.LCOE + '\n'
+            '# Hydropower NPV benefits [$]: '+ definitions.NPV_BENEFITS + '\n'
+            '# Hydropower NPV Costs [$]: ' + definitions.NPV_COSTS + '\n'
+            '# Hydropower NPV Net benefit [$]: ' + definitions.NPV_NET_BENEFITS + '\n'
+            '# Hydropower Internal Rate of Return: ' + definitions.IRR +'\n'
+            '# Hydropower Benefit-cost ratio: ' + definitions.NPV_BC_RATIO +'\n'
+            '# notes: '+ definitions.NOTES +'\n'))
+            
 
-    data.to_csv(f_name, mode='w')
+    data.to_csv(f_name, mode='a')
 
 def create_regional_summary (results):
     """Creates the regional summary

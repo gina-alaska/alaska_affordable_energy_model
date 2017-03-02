@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.25.1]
+### added
+- headers to component csv files
+
 ## [0.25.0]
 ### updated
 - split out html summary code

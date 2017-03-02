@@ -10,7 +10,7 @@ import numpy as np
 from pandas import DataFrame
 from config import COMPONENT_NAME
 import aaem.constants as constants
-from aaem.components import comp_order
+from aaem.components import comp_order, definitions
 
 
 
@@ -140,10 +140,41 @@ def communities_summary (coms, res_dir):
     f_name = os.path.join(res_dir,
                 COMPONENT_NAME.lower().replace(' ','_').\
                     replace('&','and') + '_summary.csv')
-    #~ fd = open(f_name,'w')
-    #~ fd.write(("# solar summary\n"))
-    #~ fd.close()
-    data.to_csv(f_name, mode='w')
+    fd = open(f_name,'w')
+    fd.write(("# solar summary\n"
+        '# Community: name of community/project.\n'
+        '# Assumed  Output per 10kW Solar PV Array: '
+            'Assumed power out put of solar pannel\n'
+        '# Average Diesel Load [kw]: '
+            'Average diesel generation load in a community\n'
+        '# Solar Capacity Proposed [kW]: ' 
+            'Proposed generation offset by solar system\n'
+        '# Existing Solar Capacity [kW]: '
+            'Generation capacity of existing solar systems in community\n'
+        '# Existing Wind Capacity [kW]: '
+            'Generation capacity of existing wind systems in community\n'
+        '# Net Proposed Solar Generation [kWh]: '
+            'Net electric generation from new systems in kilowatt hours\n'
+        '# Loss of Recovered Heat from Proposed Solar [gal]: '
+            'Loss in heat recovery cauesd by new solar systems.\n'
+        '# Heat Recovery Operational: ' + definitions.HR_OP + '\n'
+        '# Net Change in Heating Oil Consumption from Proposed Solar [gal]:'
+            ' Change in heating oil consumption that would be caused by '
+            'improvments\n'
+        '# Proposed Solar Reduction in Utility Diesel Consumed per year: '
+            'Reduction in generation diesel from proposed solar system.\n'
+        '# Diesel Denerator Efficiency: '+ definitions.GEN_EFF + ' \n '
+        '# Diesel Price - year 1 [$\gal]: ' + definitions.PRICE_DIESEL + '\n'
+        '# Break Even Diesel Price [$/gal]: ' + definitions.BREAK_EVEN_COST_DIESEL + '\n'
+        '# Levelized Cost Of Energy [$/kWh]:' + definitions.LCOE + '\n'
+        '# Wind power NPV benefits [$]: '+ definitions.NPV_BENEFITS + '\n'
+        '# Wind power NPV Costs [$]: ' + definitions.NPV_COSTS + '\n'
+        '# Wind power NPV Net benefit [$]: ' + definitions.NPV_NET_BENEFITS + '\n'
+        '# Wind power Internal Rate of Return: ' + definitions.IRR +'\n'
+        '# Wind power Benefit-cost ratio: ' + definitions.NPV_BC_RATIO +'\n'
+        '# notes: '+ definitions.NOTES +'\n'))
+    fd.close()
+    data.to_csv(f_name, mode='a')
     
 def create_regional_summary (results):
     """Creates the regional summary

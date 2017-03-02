@@ -10,7 +10,7 @@ import numpy as np
 from pandas import DataFrame
 from config import COMPONENT_NAME
 import aaem.constants as constants
-from aaem.components import comp_order
+from aaem.components import comp_order, definitions
 
 
 ## component summary
@@ -149,10 +149,28 @@ def communities_summary (coms, res_dir):
     data = DataFrame(out,columns = cols).set_index('Community')#.round(2)
     f_name = os.path.join(res_dir,
                 COMPONENT_NAME.replace(" ","_").lower() + '_summary.csv')
-    #~ fd = open(f_name,'w')
-    #~ fd.write(("# " + COMPONENT_NAME + " summary\n"))
-    #~ fd.close()
-    data.to_csv(f_name, mode='w')
+    fd = open(f_name,'w')
+    fd.write(("# " + COMPONENT_NAME + " summary by community\n"
+            '# Community: ' + definitions.COMMUNITY + '\n' 
+            '# Average Load [kW]: ' + definitions.DIESEL_LOAD + '\n'
+            '# Current Capacity [kW]: \n'
+            '# Proposed Capacity [kW]: \n'
+            '# Generation - year 1[kWh]: \n'
+            '# Baseline Diesel Generator Efficiency [Gal/kWh]: Current diesel generator efficiency\n'
+            '# Proposed Diesel Generator Efficiency [Gal/kWh]: Proposed diesel generator efficiency\n'
+            '# Baseline Generation Fuel Consumption [Gal]: Current diesel used for generation\n'
+            '# Proposed Generation Fuel Consumption [Gal]: Proposed diesel used for generation\n'
+            '# Diesel price - year 1 [$/gal]: ' + definitions.PRICE_DIESEL + '\n' 
+            '# Break Even Diesel Price [$/gal]: ' + definitions.BREAK_EVEN_COST_HF + '\n'
+            '# Levelized Cost Of Energy [$/kWh]:' + definitions.LCOE + '\n'
+            '# Diesel Efficiency NPV benefits [$]: '+ definitions.NPV_BENEFITS + '\n'
+            '# Diesel Efficiency NPV Costs [$]: ' + definitions.NPV_COSTS + '\n'
+            '# Diesel Efficiency NPV Net benefit [$]: ' + definitions.NPV_NET_BENEFITS + '\n'
+            '# Diesel Efficiency Internal Rate of Return: ' + definitions.IRR +'\n'
+            '# Diesel Efficiency Benefit-cost ratio: ' + definitions.NPV_BC_RATIO +'\n'
+            '# notes: '+ definitions.NOTES +'\n'))
+    fd.close()
+    data.to_csv(f_name, mode='a')
 
 def create_regional_summary (results):
     """Creates the regional summary

@@ -99,10 +99,33 @@ def communities_summary (coms, res_dir):
     f_name = os.path.join(res_dir,
                     COMPONENT_NAME.lower().replace(' ','_').\
                     replace('&','and') + '_summary.csv')
-    #~ fd = open(f_name,'w')
-    #~ fd.write("# non residental building component summary by community\n")
-    #~ fd.close()
-    data.to_csv(f_name, mode='w')
+    fd = open(f_name,'w')
+    fd.write(("# non residental building component summary by community\n"
+        '# \n'
+        '# community: \n'
+        '# Water/Wastewater Efficiency NPV Benefit:'
+            ' Net Present Value benefits (savings)\n'
+        '# Water/Wastewater Efficiency NPV Cost: Net Present Value costs\n'
+        '# Water/Wastewater Efficiency NPV Net Benefit:'
+            ' Net Present Value (savings - costs)\n'
+        '# Water/Wastewater Internal Rate of Return: \n'
+        '# Water/Wastewater Efficiency B/C Ratio: NPV Benefits over NPV costs\n'
+        '# Heating Oil Price - year 1:'
+            ' Heating Oil Price year one of project\n'
+        '# $ per kWh - year 1: Electricity Price year one of project\n'
+        '# Break Even Diesel Price [$/gal heating oil equiv.]:' 
+            ' Diesel price where project'
+            ' would become cost effective. Dollars per gallon\n'
+        '# Levelized Cost of Energy [$/MMBtu]: \n'
+        '# Levelized Cost of Energy [$/kWh]: \n'
+        '# Water/Wastewater Heating Oil Equiv. Consumed(gal) - year 1:'
+            ' heating oil equilivent consumed by water wastewater system\n'
+        '# Water/Wastewater Electricity Consumed(kWh) - year 1:'
+            ' Eletricity consumed by water wastewater system\n'
+        '# Water/Wastewater Efficiency Heating Oil Equiv. Saved[gal/year]:\n'
+        '# Water/Wastewater Efficiency Electricity Saved[kWh/year]:\n'))
+    fd.close()
+    data.to_csv(f_name, mode='a')
 
 def create_regional_summary (results):
     """Creates the regional summary

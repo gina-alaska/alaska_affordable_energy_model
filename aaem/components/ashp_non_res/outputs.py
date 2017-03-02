@@ -10,7 +10,7 @@ import numpy as np
 from pandas import DataFrame
 from config import COMPONENT_NAME
 import aaem.constants as constants
-from aaem.components import comp_order
+from aaem.components import comp_order, definitions
 
 
 ## component summary
@@ -140,10 +140,35 @@ def communities_summary (coms, res_dir):
     data = DataFrame(out,columns = cols).set_index('Community')#.round(2)
     f_name = os.path.join(res_dir,
                 COMPONENT_NAME.lower().replace(" ","_") + '_summary.csv')
-    #~ fd = open(f_name,'w')
-    #~ fd.write(("# " + COMPONENT_NAME + " summary\n"))
-    #~ fd.close()
-    data.to_csv(f_name, mode='w')
+    fd = open(f_name,'w')
+    fd.write(("# " + COMPONENT_NAME + " summary by community\n"
+        '# Community: ' + definitions.COMMUNITY + '\n'
+        '# ASHP Non-Residential Average Coefficient of Performance (COP): '
+            'ratio of useful heating provided to work required\n'
+        '# Heat Displacement square footage [Sqft]: '
+            'estimated square footage that would be heated by ASHP\n'
+        '# ASHP Non-Residential Total Nameplate Capacity Needed: \n'
+        '# Electricity Price [$/kWh]: '+ definitions.PRICE_ELECTRICITY + '\n'
+        '# ASHP Non-Residential kWh consumed per year: electricity consumed '
+            'TODO: fininsh \n'
+        '# ASHP Non-Residential Excess Generation Capacity '
+            ' Needed for Peak Monthly Load (kW): \n'
+        '# ASHP Non-Residential Displaced Heating Oil [Gal]:'
+            ' Fuel that would be displaced by ASHP\n'
+        '# Diesel Price - year 1 [$/gal]: ' + definitions.PRICE_DIESEL + '\n'
+        '# Heating Fuel Price - year 1 [$/gal]:' + definitions.PRICE_HF + '\n'
+        '# Break Even Heating Fuel Price [$/gal]: ' + definitions.BREAK_EVEN_COST_HF + '\n'
+        '# Levelized Cost Of Energy [$/kWh]:' + definitions.LCOE + '\n'
+        '# '+ COMPONENT_NAME +' NPV benefits [$]: '+ definitions.NPV_BENEFITS + '\n'
+        '# '+ COMPONENT_NAME +' NPV Costs [$]: ' + definitions.NPV_COSTS + '\n'
+        '# '+ COMPONENT_NAME +' NPV Net benefit [$]: ' + definitions.NPV_NET_BENEFITS + '\n'
+        '# '+ COMPONENT_NAME +' Internal Rate of Return: ' + definitions.IRR +'\n'
+        '# '+ COMPONENT_NAME +' Benefit-cost ratio: ' + definitions.NPV_BC_RATIO +'\n'
+        '# Intertie: Interie community is part of \n'
+        '# notes: '+ definitions.NOTES +'\n'))
+    
+    fd.close()
+    data.to_csv(f_name, mode='a')
     
 def create_regional_summary (results):
     """Creates the regional summary
