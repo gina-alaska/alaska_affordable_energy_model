@@ -183,7 +183,7 @@ def communities_summary (coms, res_dir):
             '# Hydro Power Reduction in Utility Diesel Consumed per year: '
                 'Reduction in diesel used from generation from hydropower'
                 ' project\n'
-            '# Diesel Denerator Efficiency: '+ definitions.GEN_EFF + ' \n '
+            '# Diesel Denerator Efficiency: '+ definitions.GEN_EFF + ' \n'
             '# Diesel Price - year 1 [$\gal]: ' + definitions.PRICE_DIESEL + '\n'
             '# Break Even Diesel Price [$/gal]: ' + definitions.BREAK_EVEN_COST_DIESEL + '\n'
             '# Levelized Cost Of Energy [$/kWh]:' + definitions.LCOE + '\n'
