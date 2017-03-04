@@ -214,26 +214,32 @@ class RunCommand(pycommand.CommandBase):
             try:
                 name =  'Utqiagvik'
                 os.rename(os.path.join(base, rd, 'Barrow'),
-                            os.path.join(base, rd, 'Utqiagvik'))
-                for f_name in os.listdir(os.path.join(base, rd, 'Utqiagvik')):
+                            os.path.join(base, rd, 'Utqiagvik_Barrow'))
+                for f_name in os.listdir(os.path.join(base, rd, 
+                                                        'Utqiagvik_Barrow')):
                     if f_name.find('.csv') != -1:
-                        f = os.path.join(base, rd, 'Utqiagvik',f_name)
+                        f = os.path.join(base, rd, 'Utqiagvik_Barrow',f_name)
                         with open(f,'r') as in_f:
                             text = in_f.read()
                         with open(f,'w') as out_f:
-                            out_f.write(text.replace('Barrow','Utqiagvik'))
-                
-                        os.rename(f,f.replace('Barrow','Utqiagvik'))
-                for f_name in os.listdir(os.path.join(base, rd, 'Utqiagvik','component_outputs')):
+                            out_f.write(text.replace('Barrow',
+                                                            'Utqiagvik (Barrow)'))
+                        #~ print f
+                        os.rename(f,
+                            os.path.join(base, rd, 'Utqiagvik_Barrow',
+                                f_name.replace('Barrow','Utqiagvik_Barrow')))
+                for f_name in os.listdir(os.path.join(base, rd, 'Utqiagvik_Barrow','component_outputs')):
                     #~ print f_name
                     if f_name.find('.csv') != -1:
-                        f = os.path.join(base, rd, 'Utqiagvik','component_outputs',f_name)
+                        f = os.path.join(base, rd, 'Utqiagvik_Barrow','component_outputs',f_name)
                         with open(f,'r') as in_f:
                             text = in_f.read()
                         with open(f,'w') as out_f:
-                            out_f.write(text.replace('Barrow','Utqiagvik'))
+                            out_f.write(text.replace('Barrow','Utqiagvik (Barrow)'))
                         #~ print f
-                        os.rename(f,f.replace('Barrow','Utqiagvik'))
+                        os.rename(f,
+                            os.path.join(base, rd, 'Utqiagvik_Barrow','component_outputs',
+                                f_name.replace('Barrow','Utqiagvik_Barrow')))
             except StandardError as e:
                 # no need to do any thing if 'Barrow','Utqiagvik' not nessary
                 #~ print e

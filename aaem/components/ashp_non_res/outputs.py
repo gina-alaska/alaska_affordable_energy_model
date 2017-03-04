@@ -88,7 +88,7 @@ def communities_summary (coms, res_dir):
             
             name = c
             if name == 'Barrow':
-                name = 'Utqiagvik'
+                name = 'Utqiagvik (Barrow)'
             l = [name, 
                  ashp.average_cop,
                  ashp.heat_displaced_sqft,
