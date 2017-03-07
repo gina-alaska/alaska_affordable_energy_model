@@ -407,7 +407,14 @@ class Preprocessor (object):
         pop_source = "ICER's population forecast"
         
         pops = self.get_communities_data(pop_data)
-        pops = DataFrame(pops.iloc[0]["2003":])
+        pops = pops[pops.columns[1:]].iloc[0]
+        if pops[ pops.isnull()].size != 0:
+            self.diagnostics.add_warning("Population",
+                ("Missing values were found, if they were between good values"
+                " inteprolation may have occured"))
+        
+        pops= pops.interpolate()
+        pops = DataFrame(pops["2003":])
         #~ try:
             #~ pops = DataFrame(pop_data.ix[self.com_id]["2003":str(end_year)])
         #~ except KeyError:
