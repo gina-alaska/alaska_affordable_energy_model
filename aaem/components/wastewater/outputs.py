@@ -96,7 +96,7 @@ def communities_summary (coms, res_dir):
             'Water/Wastewater Efficiency Heating Oil Equiv. Saved [gal/year]',
             '# Water/Wastewater Efficiency Electricity Saved [kWh/year]']
             
-    data = DataFrame(out,columns = cols).set_index('community').round(2)
+    data = DataFrame(out,columns = cols).set_index('Community').round(2)
     f_name = os.path.join(res_dir,
                     COMPONENT_NAME.lower().replace(' ','_').\
                     replace('&','and') + '_summary.csv')

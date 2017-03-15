@@ -91,7 +91,7 @@ def communities_summary (coms, res_dir):
             'Non-residential Efficiency Heating oil equiv. Saved[gal/year]',
             'Non-residential Efficiency Electricity Saved [kWh/year]']
             
-    data = DataFrame(out,columns = cols).set_index('community').round(2)
+    data = DataFrame(out,columns = cols).set_index('Community').round(2)
     f_name = os.path.join(res_dir, COMPONENT_NAME.lower().replace(' ','_') + '_summary.csv')
     fd = open(f_name,'w')
     fd.write(("# non residental building component summary by community\n"

@@ -71,7 +71,7 @@ def communities_summary (coms, res_dir):
             #~ print e
             pass
             
-    cols = ['community',
+    cols = ['Community',
            'Residential Efficiency NPV Benefit',
            'Residential Efficiency NPV Cost', 
            'Residential Efficiency NPV Net Benefit',
@@ -89,7 +89,7 @@ def communities_summary (coms, res_dir):
            'Total Residentital Heating Fuels (MMBtu) - year 1',
            'Residential Efficiency Total Heating Fuels Saved (MMBtu/year)',
             ]
-    data = DataFrame(out,columns = cols).set_index('community').round(2)
+    data = DataFrame(out,columns = cols).set_index('Community').round(2)
     f_name = os.path.join(res_dir,
                 COMPONENT_NAME.lower().replace(' ','_') + '_summary.csv')
     fd = open(f_name,'w')
