@@ -141,14 +141,14 @@ def communities_summary (coms, res_dir):
             'project phase',
             
             'Average Diesel Load [kw]',
-            'Wind Capacity Proposed [kW]',
+            'Hydro Capacity Proposed [kW]:',
             'Net Proposed Hydro Generation [kWh]',
             
             'Heating Oil Equivalent Captured by Secondary Load [gal]',
             'Loss of Recovered Heat from Genset [gal]',
             'Heat Recovery Operational',
             'Net Reduction in Heating Oil Consumption [gal]',
-            'Hydro Power Reduction in Utility Diesel Consumed per year',
+            'Hydropower Reduction in Utility Diesel Consumed per year',
             'Diesel Generator Efficiency',
             'Diesel Price - year 1 [$/gal]',
             'Break Even Diesel Price [$/gal]',
@@ -173,16 +173,15 @@ def communities_summary (coms, res_dir):
             '# Start Year: ' + definitions.START_YEAR + '\n'
             '# project phase: '+ definitions.PHASE + '\n'
             '# Average Diesel Load [kw]: ' + definitions.DIESEL_LOAD +'\n'
-            '# Wind Capacity Proposed [kW]: Existing generation capacity form Hydropower.\n'
+            '# Hydro Capacity Proposed [kW]: Proposed generation capacity from Hydropower.\n'
             '# Net Proposed Hydro Generation [kWh]: Net generation from proposed hydropower system.\n'
             '# Heating Oil Equivalent Captured by Secondary Load [gal]: \n'
             '# Loss of Recovered Heat from Genset [gal]: \n'
             '# Heat Recovery Operational' + definitions.HR_OP + '\n'
             '# Net Reduction in Heating Oil Consumption [gal]: Change in '
                 'heating oil consumed between base and proposed systems\n'
-            '# Hydro Power Reduction in Utility Diesel Consumed per year: '
-                'Reduction in diesel used from generation from hydropower'
-                ' project\n'
+            '# Hydropower Reduction in Utility Diesel Consumed per year: '
+                'Reduction in diesel used from generation from hydropower project\n'
             '# Diesel Denerator Efficiency: '+ definitions.GEN_EFF + ' \n'
             '# Diesel Price - year 1 [$\gal]: ' + definitions.PRICE_DIESEL + '\n'
             '# Break Even Diesel Price [$/gal]: ' + definitions.BREAK_EVEN_COST_DIESEL + '\n'

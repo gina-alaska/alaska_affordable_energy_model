@@ -81,13 +81,13 @@ def communities_summary (coms, res_dir):
            'Heating Oil Price - year 1',
            'Occupied Houses', 
            'Houses to Retrofit', 
-           'Break Even Heating Fuel Price [$/gal heating oil equiv.]',
+           'Breakeven Heating Fuel Price [$/gal heating oil equiv.]',
            'Levelized Cost of Energy [$/MMBtu]',
-           'Residential Heating Oil Consumed(mmbtu) - year 1',
-           'Residential Efficiency Heating Oil Saved(mmbtu/year)',
+           'Residential Heating Oil Consumed (MMBtu) - year 1',
+           'Residential Efficiency Heating Oil Saved (MMBtu/year)',
            'Residential Heating Oil as percent of Total Heating Fuels',
-           'Total Residentital Heating Fuels (mmbtu) - year 1',
-           'Residential Efficiency Total Heating Fuels Saved (mmbtu/year)',
+           'Total Residentital Heating Fuels (MMBtu) - year 1',
+           'Residential Efficiency Total Heating Fuels Saved (MMBtu/year)',
             ]
     data = DataFrame(out,columns = cols).set_index('community').round(2)
     f_name = os.path.join(res_dir,
@@ -103,13 +103,13 @@ def communities_summary (coms, res_dir):
            '# Heating Oil Price - year 1: ' + definitions.PRICE_HF + '\n'
            '# Occupied Houses: Occupied homes in communities.\n' 
            '# Houses to Retrofit: Houses that are to be retrofit.\n' 
-           '# Break Even Heating Fuel Price [$/gal heating oil equiv.]: ' + definitions.BREAK_EVEN_COST_HF + '\n'
+           '# Breakeven Heating Fuel Price [$/gal heating oil equiv.]: ' + definitions.BREAK_EVEN_COST_HF + '\n'
            '# Levelized Cost of Energy [$/MMBtu]: ' + definitions.LCOE + '\n'
-           '# Residential Heating Oil Consumed(mmbtu) - year 1: Heating oil consumed by current systems.\n'
-           '# Residential Efficiency Heating Oil Saved(mmbtu/year): Heating oil saved by retrofit systems.\n'
-           '# Residential Heating Oil as percent of Total Heating Fuels: Precentage of heating oil that is heating oil.\n'
-           '# Total Residentital Heating Fuels (mmbtu) - year 1: Heating fuel consumed by current systems.\n'
-           '# Residential Efficiency Total Heating Fuels Saved (mmbtu/year): Heating fuel consumed by current systems.\n'
+           '# Residential Heating Oil Consumed (MMBtu) - year 1: Heating oil consumed by current systems.\n'
+           '# Residential Efficiency Heating Oil Saved (MMBtu/year): Heating oil saved by retrofit systems.\n'
+           '# Residential Heating Oil as percent of Total Heating Fuels: Percentage of heating fuels that is heating oil.\n'
+           '# Total Residentital Heating Fuels (MMBtu) - year 1: Heating fuel consumed by current systems.\n'
+           '# Residential Efficiency Total Heating Fuels Saved (MMBtu/year): Heating fuel consumed by current systems.\n'
         ))
     fd.close()
     data.to_csv(f_name, mode='a')

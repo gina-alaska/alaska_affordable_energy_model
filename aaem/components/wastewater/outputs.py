@@ -10,7 +10,8 @@ import numpy as np
 from pandas import DataFrame
 from config import COMPONENT_NAME
 import aaem.constants as constants
-from aaem.components import comp_order
+from aaem.components import comp_order, definitions
+
 
 
 ## component summary
@@ -77,7 +78,7 @@ def communities_summary (coms, res_dir):
             pass
             
             
-    cols = ['community',
+    cols = ['Community',
             'Water/Wastewater Efficiency NPV Benefit',
             'Water/Wastewater Efficiency NPV Cost',
             'Water/Wastewater Efficiency NPV Net Benefit',
@@ -90,10 +91,10 @@ def communities_summary (coms, res_dir):
             'Break Even Diesel Price [$/gal heating oil equiv.]',
             'Levelized Cost of Energy [$/MMBtu]',
             'Levelized Cost of Energy [$/kWh]',
-            'Water/Wastewater Heating Oil Equiv. Consumed(gal) - year 1',
-            'Water/Wastewater Electricity Consumed(kWh) - year 1',
-            'Water/Wastewater Efficiency Heating Oil Equiv. Saved[gal/year]',
-            'Water/Wastewater Efficiency Electricity Saved[kWh/year]']
+            'Water/Wastewater Heating Oil Equiv. Consumed (gal) - year 1',
+            'Water/Wastewater Electricity Consumed (kWh) - year 1',
+            'Water/Wastewater Efficiency Heating Oil Equiv. Saved [gal/year]',
+            '# Water/Wastewater Efficiency Electricity Saved [kWh/year]']
             
     data = DataFrame(out,columns = cols).set_index('community').round(2)
     f_name = os.path.join(res_dir,
@@ -102,28 +103,24 @@ def communities_summary (coms, res_dir):
     fd = open(f_name,'w')
     fd.write(("# non residental building component summary by community\n"
         '# \n'
-        '# community: \n'
-        '# Water/Wastewater Efficiency NPV Benefit:'
-            ' Net Present Value benefits (savings)\n'
-        '# Water/Wastewater Efficiency NPV Cost: Net Present Value costs\n'
-        '# Water/Wastewater Efficiency NPV Net Benefit:'
-            ' Net Present Value (savings - costs)\n'
-        '# Water/Wastewater Internal Rate of Return: \n'
-        '# Water/Wastewater Efficiency B/C Ratio: NPV Benefits over NPV costs\n'
+        '# Community: '+definitions.COMMUNITY+'\n'
+        '# Water/Wastewater Efficiency NPV Benefit: '+definitions.NPV_BENEFITS+'\n'
+        '# Water/Wastewater Efficiency NPV Cost: '+definitions.NPV_COSTS+'\n'
+        '# Water/Wastewater Efficiency NPV Net Benefit: '+definitions.NPV_NET_BENEFITS+'\n'
+        '# Water/Wastewater Internal Rate of Return: '+definitions.IRR+'\n'
+        '# Water/Wastewater Efficiency B/C Ratio: '+definitions.NPV_BC_RATIO+'\n'
         '# Heating Oil Price - year 1:'
             ' Heating Oil Price year one of project\n'
         '# $ per kWh - year 1: Electricity Price year one of project\n'
-        '# Break Even Diesel Price [$/gal heating oil equiv.]:' 
-            ' Diesel price where project'
-            ' would become cost effective. Dollars per gallon\n'
+        '# Break Even Diesel Price [$/gal heating oil equiv.]: '+definitions.BREAK_EVEN_COST_DIESEL+'\n'
         '# Levelized Cost of Energy [$/MMBtu]: \n'
         '# Levelized Cost of Energy [$/kWh]: \n'
-        '# Water/Wastewater Heating Oil Equiv. Consumed(gal) - year 1:'
+        '# Water/Wastewater Heating Oil Equiv. Consumed (gal) - year 1:'
             ' heating oil equilivent consumed by water wastewater system\n'
-        '# Water/Wastewater Electricity Consumed(kWh) - year 1:'
+        '# Water/Wastewater Electricity Consumed (kWh) - year 1:'
             ' Eletricity consumed by water wastewater system\n'
-        '# Water/Wastewater Efficiency Heating Oil Equiv. Saved[gal/year]:\n'
-        '# Water/Wastewater Efficiency Electricity Saved[kWh/year]:\n'))
+        '# Water/Wastewater Efficiency Heating Oil Equiv. Saved [gal/year]:\n'
+        '# Water/Wastewater Efficiency Electricity Saved [kWh/year]:\n'))
     fd.close()
     data.to_csv(f_name, mode='a')
 
