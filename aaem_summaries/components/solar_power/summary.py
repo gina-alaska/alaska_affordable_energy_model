@@ -149,12 +149,11 @@ def create_project_details_list (project):
             'value': '${:,.0f}'.format(project.get_NPV_net_benefit())},
         {'words':'Benefit-cost ratio', 
             'value': '{:,.1f}'.format(project.get_BC_ratio())},
-        {'words':'Proposed cameplate Capacity', 
+        {'words':'Proposed nameplate Capacity', 
             'value': '{:,.0f} kW'.format(project.proposed_load)},
         {'words':'Expected Yearly Generation', 
          'value': 
-                '{:,.0f} kWh/year'.format(project.proposed_load *\
-                                 constants.hours_per_year)},
+                '{:,.0f} kWh/year'.format(project.generation_proposed[0])},
 
         {'words':'Output per 10kW Solar PV', 
             'value': '{:,.0f} kWh/year'.format(project.comp_specs['data']\

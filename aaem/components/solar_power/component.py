@@ -138,7 +138,7 @@ class SolarPower (AnnualSavings):
             self.diagnostics.add_note(self.component_name, 
             "model did not meet minimum generation requirments")
             self.run = False
-            
+            #~ print self.proposed_load, self.average_load, self.comp_specs['average load limit']
             if self.average_load < self.comp_specs['average load limit']:
                 self.reason = "Average load too small for viable solar power."
             else: 
@@ -202,10 +202,10 @@ class SolarPower (AnnualSavings):
         """
         self.proposed_load = self.average_load * \
                         self.comp_specs['percent generation to offset']
-                        
+        #~ print self.proposed_load
         existing_RE = self.comp_specs['data']['Installed Capacity'] + \
                       self.comp_specs['data']['Wind Capacity']
-        
+        #~ print existing_RE, self.comp_specs['data']['Installed Capacity'], self.comp_specs['data']['Wind Capacity']
         self.proposed_load = max(self.proposed_load - existing_RE, 0)
         
         #~ self.total_load = self.proposed_load + \
