@@ -15,7 +15,7 @@ from pandas import DataFrame
 COMPONENT_NAME = 'Water and Wastewater Efficiency'
 
 DESCRIPTION = """
-    This component calculates the potential reduction in Electricty and Heating Oil by improving the efficiency of the Water-Wastewater system
+    This component calculates the potential reduction in Electricty and Heating Oil by improving the efficiency of the water-wastewater system
 """
 
 def generate_web_summary (web_object, community):
@@ -106,13 +106,13 @@ def generate_web_summary (web_object, community):
     ## create list of charts
     charts = [
         {'name':'costs', 'data': str(table1).replace('nan','null'), 
-         'title': 'Estimated Heating Fuel + Electricity Costs',
+         'title': 'Estimated Heating Fuel + Electricity Costs for water/wastewater sector',
          'type': "'$'",'plot': True,},
         {'name':'E_consumption', 'data': str(table2).replace('nan','null'), 
-         'title':'Electricity Consumed',
+         'title':'Electricity Consumed by water/wastewater sector',
          'type': "'other'",'plot': True,},
         {'name':'H_consumption', 'data': str(table3).replace('nan','null'), 
-         'title':'Heating Oil Consumed',
+         'title':'Heating Oil Consumed by water/wastewater sector',
          'type': "'other'",'plot': True,}
             ]
         

@@ -14,7 +14,7 @@ from pandas import DataFrame
 
 COMPONENT_NAME = "Residential Energy Efficiency"
 DESCRIPTION = """
-    This component calculates the potential reduction heating oil by improving the efficiency residential buildings
+    This component calculates the potential reduction heating oil by improving the efficiency of residential buildings
 """
 
 def generate_web_summary (web_object, community):
@@ -90,10 +90,10 @@ def generate_web_summary (web_object, community):
     year = modeled.comp_specs['data'].ix['Year']
     current = [{'words':'Households '+ str(int(year)) ,
                 'value': int(modeled.comp_specs['data'].ix['Total Occupied'])},
-        {'words':'Estimated Total Households '+ str(int(modeled.start_year)),
+        {'words':'Estimated Total Households ('+ str(int(modeled.start_year)) +')',
         'value': modeled.init_HH},
         {'words':
-            'Estimated Households to be retofit '+ str(int(modeled.start_year)),
+            'Estimated Households to be retofit ('+ str(int(modeled.start_year)) +')' ,
         'value': int(modeled.opportunity_HH)},
                 ]
                 
@@ -109,13 +109,13 @@ def generate_web_summary (web_object, community):
     ## create list of charts
     charts = [
         {'name':'costs', 'data': str(table1).replace('nan','null'), 
-         'title': 'Estimated Heating Fuel + Electricity Costs',
+         'title': 'Estimated Heating Fuel + Electricity Costs for residential sector',
          'type': "'$'", 'plot': True,},
         #~ {'name':'E_consumption', 'data': str(table2).replace('nan','null'), 
          #~ 'title':'Electricity Consumed',
          #~ 'type': "'other'",'plot': True,},
         {'name':'H_consumption', 'data': str(table3).replace('nan','null'), 
-         'title':'Heating Oil Consumed',
+         'title':'Heating Oil Consumed by residential sector',
          'type': "'other'", 'plot': True,}
             ]
         

@@ -15,7 +15,7 @@ from pandas import DataFrame
 COMPONENT_NAME = "Non-residential Energy Efficiency"
 
 DESCRIPTION = """
-    This component calculates the potential reduction in electricty and heating oil by improving the efficiency of Non-residential buildings
+    This component calculates the potential reduction in electricty and heating oil by improving the efficiency of non-residential buildings
 """
 
 def generate_web_summary (web_object, community):
@@ -94,7 +94,7 @@ def generate_web_summary (web_object, community):
     
     buildings =  modeled.comp_specs['com building data']
     sqft = buildings['Square Feet'].sum()
-    current = [{'words':"Esitmated Square Feet", 
+    current = [{'words':"Esitmated square feet", 
                 'value':'{:,.0f}'.format(sqft)}]
     
     ## info for modeled
@@ -109,13 +109,13 @@ def generate_web_summary (web_object, community):
     ## create list of charts
     charts = [
         {'name':'costs', 'data': str(table1).replace('nan','null'), 
-         'title': 'Estimated Heating Fuel + Electricity Costs',
+         'title': 'Estimated Heating Fuel + Electricity Costs for non-residential sector',
          'type': "'$'",'plot': True,},
         {'name':'E_consumption', 'data': str(table2).replace('nan','null'), 
-         'title':'Electricity Consumed',
+         'title':'Electricity Consumed by non-residential sector',
          'type': "'other'",'plot': True,},
         {'name':'H_consumption', 'data': str(table3).replace('nan','null'), 
-         'title':'Heating Oil Consumed',
+         'title':'Heating Oil Consumed by non-residential sector',
          'type': "'other'",'plot': True,}
             ]
         
