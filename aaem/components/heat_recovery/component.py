@@ -138,7 +138,8 @@ class HeatRecovery (AnnualSavings):
         if self.cd['name'].find('+') == -1:
             self.run = False
             self.reason = "Heat recovery" + \
-                " component requires a known project to run."
+                " requires that at least a reconnaissance-level heat recovery"+\
+                " study has been completed for the community."
             self.diagnostics.add_note(self.component_name, self.reason)
             return 
         

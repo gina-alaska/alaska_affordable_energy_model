@@ -12,7 +12,7 @@ import aaem.web_lib as wl
 
 COMPONENT_NAME = "Non-Residential ASHP"
 DESCRIPTION = """
-    This component calculates the potential heating oil offset by installing new air source heat pumps for non-residential buildings . 
+    This component calculates the potential heating oil offset by installing new air source heat pumps for 30% of non-residential square footage 
 """
 
 def generate_web_summary (web_object, community):
@@ -92,10 +92,10 @@ def generate_web_summary (web_object, community):
     ## create list of charts
     charts = [
         {'name':'costs', 'data': str(table1).replace('nan','null'), 
-         'title': 'Estimated Heating Costs',
+         'title': 'Estimated Heating Costs for non-residential sector',
          'type': "'$'",'plot': True,},
         {'name':'consumption', 'data': str(table2).replace('nan','null'), 
-         'title':'Heating Fuel Consumed for non-residential heating',
+         'title':'Heating Fuel Consumed by non-residential sector',
          'type': "'other'",'plot': True,}
             ]
         
@@ -170,7 +170,7 @@ def create_project_details_list (project):
             'value': net_benefits},
         {'words':'Benefit-cost ratio', 
             'value': BC},
-        {'words': 'Square feet heated by ASHP systems',
+        {'words': 'Estimated square feet heated by ASHP systems',
             'value':  sqft}
         #~ {'words':"btu/hrs", 
             #~ 'value': project.comp_specs['btu/hrs'] },

@@ -18,7 +18,7 @@
         {% for chart in charts %}
             {% if chart.plot %}
             // data
-            var {{ chart.name }} = google.visualization.arrayToDataTable({{ chart.data.replace('"','') }})
+            var {{ chart.name }} = google.visualization.arrayToDataTable({{ chart.data.replace('"','').replace('ashp', 'ASHP') }})
             year_fmat.format({{ chart.name }},0)
             
             

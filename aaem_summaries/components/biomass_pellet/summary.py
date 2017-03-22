@@ -13,7 +13,7 @@ import aaem.web_lib as wl
 COMPONENT_NAME = "Biomass for Heat (Pellet)"
 
 DESCRIPTION = """
-    This component calculates the potential Heating Oil offset by installing a new Biomass Pellet Boiler for 30% of non-residential square footage
+    This component calculates the potential heating oil offset by installing a new biomass pellet boiler for 30% of non-residential square footage
 """
 
 def generate_web_summary (web_object, community):
@@ -88,16 +88,16 @@ def generate_web_summary (web_object, community):
         
          
     ## info table (list to send to template)
-    info_for_projects = [{'name':'Modeled biomass Project','info':info}]
+    info_for_projects = [{'name':'Modeled biomass pellet project','info':info}]
             
     
     ## create list of charts
     charts = [
         {'name':'costs', 'data': str(table1).replace('nan','null'), 
-         'title': 'Estimated Heating Fuel Costs',
+         'title': 'Estimated Heating Fuel Costs for non-residential sector',
          'type': "'$'",'plot': True,},
         {'name':'consumption', 'data': str(table2).replace('nan','null'), 
-         'title':'Heating Fuel Consumed for non-residential buildings',
+         'title':'Heating Fuel Consumed for non-residential sector',
          'type': "'other'",'plot': True,}
             ]
         
@@ -170,7 +170,7 @@ def create_project_details_list (project):
             'value': net_benefits},
         {'words':'Benefit-cost ratio', 
             'value': BC},
-        {'words':"Energy Density [Btu/" + project.units + "]", 
+        {'words':"Energy Density [Btu/ton]", 
             'value': project.comp_specs['energy density'] },
         {'words':"Capacity factor", 
             'value': project.comp_specs['data']['Capacity Factor'] },

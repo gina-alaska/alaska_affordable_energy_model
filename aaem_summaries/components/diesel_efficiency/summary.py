@@ -12,7 +12,7 @@ import aaem.web_lib as wl
 
 COMPONENT_NAME = "Diesel Efficiency"
 DESCRIPTION = """
-    This component calculates the potential electricity generation from diesel offset by improving diesel efficiency in a community.
+    This component calculates the potential electricity generation from diesel offset by replacing the powerhouse in a community .
 """
 
 def generate_web_summary (web_object, community):
@@ -94,7 +94,7 @@ def generate_web_summary (web_object, community):
     ## create list of charts
     charts = [
         {'name':'costs', 'data': str(table1).replace('nan','null'), 
-         'title': 'Estimated electricity generation costs',
+         'title': 'Estimated fuel costs for generating electricity',
          'type': "'$'",'plot': True,},
         {'name':'consumption', 'data': str(table2).replace('nan','null'), 
          'title':'Diesel consumed for electricity generation ',
@@ -144,7 +144,7 @@ def create_project_details_list (project):
         {'words':'Benefit-cost ratio', 
             'value': '{:,.1f}'.format(project.get_BC_ratio())},
         {'words':'Improvment in generation efficiency', 
-            'value': '{:,.0f}%'.format(project.comp_specs\
-            ['efficiency improvment'] * 100)},
+            'value': '{:,.0f}%'.format((project.comp_specs\
+            ['efficiency improvment'] - 1 )* 100)},
         
             ]

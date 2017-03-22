@@ -15,7 +15,7 @@ import numpy as np
 COMPONENT_NAME = "Heat Recovery"
 
 DESCRIPTION = """
-    This component calculates the potential heating oil offset by installing a new heat recovery System. Requires a known project exists to be run.
+    This component calculates the potential heating oil offset by installing a new heat recovery System. Requires that at least a reconnaissance-level heat recovery study has been completed for the community to be run.
 """
 
 def generate_web_summary (web_object, community):

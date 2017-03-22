@@ -93,10 +93,10 @@ def generate_web_summary (web_object, community):
     ## create list of charts
     charts = [
         {'name':'costs', 'data': str(table1).replace('nan','null'), 
-         'title': 'Estimated Heating Fuel Costs',
+         'title': 'Estimated Heating Fuel Costs for residential sector',
          'type': "'$'",'plot': True,},
         {'name':'consumption', 'data': str(table2).replace('nan','null'), 
-         'title':'Heating Fuel Consumed for residential buildings',
+         'title':'Heating Fuel Consumed by residential sector',
          'type': "'other'",'plot': True,}
             ]
         
@@ -167,7 +167,7 @@ def create_project_details_list (project):
             'value': net_benefits},
         {'words':'Benefit-cost ratio', 
             'value': BC},
-        {'words': 'Number of Homes',
+        {'words': 'Number of homes',
             'value': int(project.num_houses)}
         #~ {'words':"Btu/hrs", 
             #~ 'value': project.comp_specs['btu/hrs'] },

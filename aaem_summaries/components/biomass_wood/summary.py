@@ -295,16 +295,16 @@ def generate_web_summary (web_object, community):
         
          
     ## info table (list to send to template)
-    info_for_projects = [{'name':'Modeled biomass Project','info':info}]
+    info_for_projects = [{'name':'Modeled biomass cordwood Project','info':info}]
             
     
     ## create list of charts
     charts = [
         {'name':'costs', 'data': str(table1).replace('nan','null'), 
-         'title': 'Estimated Heating Fuel Costs',
+         'title': 'Estimated Heating Fuel Costs by non-residential sector',
          'type': "'$'",'plot': True,},
         {'name':'consumption', 'data': str(table2).replace('nan','null'), 
-         'title':'Heating Fuel Consumed for non-residential buildings',
+         'title':'Heating Fuel Consumed for non-residential sector',
          'type': "'other'",'plot': True,}
             ]
         
@@ -377,7 +377,7 @@ def create_project_details_list (project):
             'value': BC},
         #~ {'words':"Energy density [Btu/" + project.units + "]", 
             #~ 'value': project.comp_specs['energy density'] },
-        {'words':"Capacity factor", 
-            'value': 
-            '{:,.2f}%'.format(project.comp_specs['data']['Capacity Factor']) },
+        #~ {'words':"Capacity factor", 
+            #~ 'value': 
+            #~ '{:,.2f}%'.format(project.comp_specs['data']['Capacity Factor']) },
             ]
