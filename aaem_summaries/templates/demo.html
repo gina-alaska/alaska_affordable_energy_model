@@ -43,7 +43,7 @@
                         <div id="{{chart.name}}_chart"></div>
                         {% endif %}
                     {% elif chart.table %}
-                        <table class="table table-striped table-condensed" >
+                        <table class="table table-striped table-condensed" style="float:right; width:70%" >
                         <tbody>
                             {% for row in chart.data %}<tr>
                                 {% for col in row[1:] %}

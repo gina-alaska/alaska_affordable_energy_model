@@ -627,7 +627,7 @@ class WebSummary(object):
             diesel['annotation'][start_year] = 'start of forecast'
         except StandardError as e:
             diesel['annotation'] = np.nan 
-            diesel['annotation'][start_year] = 'start of forecast'
+            diesel['annotation'][2016.0] = 'start of forecast'
             #~ print diesel
             #~ print str(e), '<-------------------->', com
         
