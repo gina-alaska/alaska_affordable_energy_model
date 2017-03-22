@@ -137,9 +137,9 @@ def communities_summary (coms, res_dir):
     
     cols = ['Community',
             'Start Year',
-            'project phase',
+            'Project phase',
             'Assumed Wind Class',
-            'Average Diesel Load [kw]',
+            'Average Diesel Load [kW]',
             'Wind Capacity Proposed [kW]',
             'Existing Wind Capacity [kW]',
             'Existing Solar Capacity [kW]',
@@ -149,9 +149,9 @@ def communities_summary (coms, res_dir):
             'Loss of Recovered Heat from Genset [gal]',
             'Heat Recovery Operational',
             'Net in Heating Oil Consumption [gal]',
-            'Wind Power Reduction in Utility Diesel Consumed per year',
-            'Diesel Denerator Efficiency','Diesel Price - year 1 [$\gal]',
-            'Break Even Diesel Price [$/gal]',
+            'Wind Power Reduction in Utility Diesel Consumed per year [gal]',
+            'Diesel Generator Efficiency','Diesel Price - year 1 [$/gal]',
+            'Breakeven Diesel Price [$/gal]',
             'Levelized Cost Of Energy [$/kWh]',
             'Wind NPV benefits [$]',
             'Wind NPV Costs [$]',
@@ -171,9 +171,9 @@ def communities_summary (coms, res_dir):
         '# \n'
         '# Community: ' + definitions.COMMUNITY + '\n'
         '# Start Year: ' + definitions.START_YEAR + '\n'
-        '# project phase: '+ definitions.PHASE + '\n'
+        '# Project phase: '+ definitions.PHASE + '\n'
         '# Assumed Wind Class: Wind power density class\n'
-        '# Average Diesel Load [kw]: ' + definitions.DIESEL_LOAD +'\n'
+        '# Average Diesel Load [kW]: ' + definitions.DIESEL_LOAD +'\n'
         '# Wind Capacity Proposed [kW]: Proposed additional capacity for wind'
             ' generation in kilowatts.\n'
         '# Existing Wind Capacity [kW]: Existing wind generation capacity'
@@ -182,18 +182,17 @@ def communities_summary (coms, res_dir):
             ' in kilowatts.\n'
         '# Assumed Wind Class Capacity Factor [%]:\n'
         '# Net Proposed Wind Generation [kWh]: Proposed wind net generation'
-            ' in kilowatt hours.\n'
+            ' in kilowatt-hours.\n'
         '# Heating Oil Equivalent Captured by Secondary Load [gal]: \n'
         '# Loss of Recovered Heat from Genset [gal]: \n'
-        '# Heat Recovery Operational: Indicates if heat recovery is operational'
-            ' in a community'
+        '# Heat Recovery Operational: ' + definitions.HR_OP + '\n'
         '# Net in Heating Oil Consumption [gal]: \n'
-        '# Wind Power Reduction in Utility Diesel Consumed per year: Estimated '
+        '# Wind Power Reduction in Utility Diesel Consumed per year [gal]: Estimated '
             'Reduction in utility diesel if wind power system is '
             'installed/upgraded. In gallons per year\n'
-        '# Diesel Denerator Efficiency: '+ definitions.GEN_EFF + ' \n '
+        '# Diesel Generator Efficiency: '+ definitions.GEN_EFF + ' \n'
         '# Diesel Price - year 1 [$\gal]: ' + definitions.PRICE_DIESEL + '\n'
-        '# Break Even Diesel Price [$/gal]: ' + definitions.BREAK_EVEN_COST_DIESEL + '\n'
+        '# Breakeven Diesel Price [$/gal]: ' + definitions.BREAK_EVEN_COST_DIESEL + '\n'
         '# Levelized Cost Of Energy [$/kWh]:' + definitions.LCOE + '\n'
         '# Wind power NPV benefits [$]: '+ definitions.NPV_BENEFITS + '\n'
         '# Wind power NPV Costs [$]: ' + definitions.NPV_COSTS + '\n'

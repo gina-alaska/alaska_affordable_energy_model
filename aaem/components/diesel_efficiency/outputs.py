@@ -130,8 +130,8 @@ def communities_summary (coms, res_dir):
     cols = ['Community', 'Average Load [kW]', 'Current Capacity [kW]',
             'Proposed Capacity [kW]', 'Generation - year 1[kWh]',
             
-            'Baseline Diesel Generator Efficiency [Gal/kWh]',
-            'Proposed Diesel Generator Efficiency [Gal/kWh]',
+            'Baseline Diesel Generator Efficiency [kWh/gal]',
+            'Proposed Diesel Generator Efficiency [kWh/gal]',
             'Baseline Generation Fuel Consumption [Gal]',
             'Proposed Generation Fuel Consumption [Gal]',
             'Diesel price - year 1 [$/gal]',
@@ -156,8 +156,8 @@ def communities_summary (coms, res_dir):
             '# Current Capacity [kW]: \n'
             '# Proposed Capacity [kW]: \n'
             '# Generation - year 1[kWh]: \n'
-            '# Baseline Diesel Generator Efficiency [Gal/kWh]: Current diesel generator efficiency\n'
-            '# Proposed Diesel Generator Efficiency [Gal/kWh]: Proposed diesel generator efficiency\n'
+            '# Baseline Diesel Generator Efficiency [kWh/gal]: Current diesel generator efficiency\n'
+            '# Proposed Diesel Generator Efficiency [kWh/gal]: Proposed diesel generator efficiency\n'
             '# Baseline Generation Fuel Consumption [Gal]: Current diesel used for generation\n'
             '# Proposed Generation Fuel Consumption [Gal]: Proposed diesel used for generation\n'
             '# Diesel price - year 1 [$/gal]: ' + definitions.PRICE_DIESEL + '\n' 

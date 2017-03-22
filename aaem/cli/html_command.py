@@ -27,7 +27,7 @@ class HtmlCommand(pycommand.CommandBase):
                    "  " + str([o[0] + ': ' + o[1][2] + '. Use: --' +\
                    o[0] + ' (-'+o[1][0]+') ' +  (o[1][1] if o[1][1] else "")  +\
                    '' for o in optionList]).replace('[','').\
-                   replace(']','').replace(',','\n ') 
+                   replace(']','').replace(',','\n') 
                 )
                 
     def run(self):

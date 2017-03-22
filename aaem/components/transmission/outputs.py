@@ -196,7 +196,7 @@ def communities_summary (coms, res_dir):
             'Diesel Generator Efficiency in community to connect to',
             'Diesel Price - year 1 [$/gal] in community to connect',
             'Diesel Price - year 1 [$/gal] in community to connect to',
-            'Break Even Diesel Price [$/gal]',
+            'Breakeven Diesel Price [$/gal]',
             'Annual Transmission loss percentage',
             
 
@@ -233,28 +233,28 @@ def communities_summary (coms, res_dir):
         '# Loss of Recovered Heat from Genset in community to connect [gal]: \n'
         '# Heat Recovery Operational in community to connect: \n'
         '# Diesel Generator Efficiency in community to connect: Estimated '
-            'efficiency of diesel generator in community in killowatt '
+            'efficiency of diesel generator in community in killowatt-'
             'hours per gallon.\n'
-        '# Diesel Generator Efficiency in community to connect to: Estimated'
-            ' efficiency of diesel generator in community connected '
-            'to in killowatt hours per gallon.\n'
+        '# Diesel Generator Efficiency in community to connect to: Estimated '
+            'efficiency of diesel generator in community connected to in '
+            'killowatt-hours per gallon.\n'
         '# Diesel Price - year 1 [$/gal] in community to connect: '
-            'Diesel fuel price in the community durning the frist year'
-            ' of project operation.\n'
+            'Diesel fuel price in the community during the first year of'
+            ' project operation.\n'
         '# Diesel Price - year 1 [$/gal] in community to connect to: '
-            'Diesel fuel price in the community to connect to'
-            ' durning the frist year of project operation.\n'
-        '# Break Even Diesel Price [$/gal]: ' + definitions.BREAK_EVEN_COST_DIESEL + '\n'
+            'Diesel fuel price in the community to connect to during the'
+            ' first year of project operation.\n'
+        '# Breakeven Diesel Price [$/gal]: ' + definitions.BREAK_EVEN_COST_DIESEL + '\n'
         '# Annual Transmission loss percentage: Estimated transmission loss pecent.\n'
         '# Levelized Cost Of Energy [$/kWh]:' + definitions.LCOE + '\n'
         '# Status Quo generation Cost (Year 1): Estimated cost of generation in community if nothing changes\n'
-        '# Proposed generation cost (Year 1):  Estimated cost of generation in community with improvments\n'
+        '# Proposed generation cost (Year 1): Estimated cost of generation in community with improvements.\n'
         '# Benefit from reduced generation cost (year 1): Difference in base and proposed cost of generation \n'
         '# Transmission NPV benefits [$]: '+ definitions.NPV_BENEFITS + '\n'
         '# Transmission NPV Costs [$]: ' + definitions.NPV_COSTS + '\n'
         '# Transmission NPV Net benefit [$]: ' + definitions.NPV_NET_BENEFITS + '\n'
         '# Transmission Internal Rate of Return: ' + definitions.IRR +'\n'
-        '# vTransmission Benefit-cost ratio: ' + definitions.NPV_BC_RATIO +'\n'
+        '# Transmission Benefit-cost ratio: ' + definitions.NPV_BC_RATIO +'\n'
         '# notes: '+ definitions.NOTES +'\n'))
     fd.close()
 
