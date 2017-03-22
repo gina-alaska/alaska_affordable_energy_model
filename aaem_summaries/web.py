@@ -554,6 +554,7 @@ class WebSummary(object):
         elec_price = res['community data'].get_item('community','electric non-fuel prices')
         if not type(elec_price) is str:
             elec_price ['year'] = elec_price.index
+            start_year = elec_price.index[0]
             try:
                 f_data = read_csv(os.path.join(self.model_root,
                                             'input_files',com,
@@ -575,7 +576,7 @@ class WebSummary(object):
                 pass
             #~ print ly
             elec_price['annotation'] = np.nan 
-            elec_price['annotation'][2015] = 'start of forecast'
+            elec_price['annotation'][start_year] = 'start of forecast'
             elec_price = elec_price[['year','annotation','price']]
             elec_price.columns = ['year','annotation','Electricity price ($/kwh)']
             #~ print elec_price
@@ -597,6 +598,8 @@ class WebSummary(object):
         
         #~ print diesel
         diesel['Heating Fuel ($/gal)'] = diesel['Diesel Price ($/gal)'] + res['community data'].get_item('community','heating fuel premium')
+        
+        start_year = diesel.index[0]
         try:
             m_data = read_csv(os.path.join(self.model_root,
                 'input_files', com,'measured_heating_fuel_prices.csv'),
@@ -621,10 +624,10 @@ class WebSummary(object):
         #~ print diesel
         try:
             diesel['annotation'] = np.nan 
-            diesel['annotation'][2015] = 'start of forecast'
+            diesel['annotation'][start_year] = 'start of forecast'
         except StandardError as e:
             diesel['annotation'] = np.nan 
-            diesel['annotation'][2015.0] = 'start of forecast'
+            diesel['annotation'][start_year] = 'start of forecast'
             #~ print diesel
             #~ print str(e), '<-------------------->', com
         
@@ -1575,7 +1578,7 @@ class WebSummary(object):
                  [ False, "Total generation " + str(gen_year), gen],
                  [ False, "Average load " + str(gen_year), al],
                  [ False, "Generation from diesel " + str(g_year), g_diesel],
-                 [ False, "Generation from hydropowe r" + str(g_year), g_hydro],
+                 [ False, "Generation from hydropower " + str(g_year), g_hydro],
                  #~ [ False, "Generation natural gas kWh " + str(g_year), g_ng],
                  [ False, "Generation from wind " + str(g_year), g_wind],
                  #~ [ False, "Generation solar kWh " + str(g_year), g_solar],
