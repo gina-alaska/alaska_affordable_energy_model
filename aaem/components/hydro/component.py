@@ -148,7 +148,7 @@ class Hydropower (AnnualSavings):
             
         if self.load_offset_proposed is None:
             self.run = False
-            self.reason = .reason = "Hydropower" + \
+            self.reason = "Hydropower" + \
                 " requires that at least a reconnaissance-level heat recovery"+\
                 " study has been completed for the community."
             return
