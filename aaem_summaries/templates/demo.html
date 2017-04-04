@@ -48,7 +48,7 @@
                         <tbody>
                             {% for row in chart.data %}<tr>
                                 {% for col in row[1:] %}
-                                    {% if row[0] %}<th> {{col}} </th>{% elif col == "[DIVIDER]" %} <td style="border-right:1px solid gray;"></td> {% else %}<td> {{col}} </td>  {% endif %}
+                                    {% if row[0] %}<th> {{col}} </th>{% elif col == "[DIVIDER]" %} <td style="border-right:1px solid #ddd;"></td> {% else %}<td> {{col}} </td>  {% endif %}
                                 {% endfor %}
                             </tr>{% endfor %}
                         </tbody>
