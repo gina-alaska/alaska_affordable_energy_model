@@ -966,6 +966,9 @@ class WebSummary(object):
                                 'generation solar [kWh/year]',
                                 'generation biomass [kWh/year]']
               
+             
+            generation["Generation total [kWh/year]"] =  generation.sum(1)
+            #~ print generation
                                                                     
             generation['year']=generation.index
             generation = generation[['year'] + list(generation.columns)[:-1][::-1]]
