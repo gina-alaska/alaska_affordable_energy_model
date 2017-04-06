@@ -202,7 +202,7 @@ def correct_dates (start, s1, end, e1):
     #~ print start_year,end_year
     return start_year, end_year
 
-def create_electric_system_summary (community_results):
+def create_electric_system_summary (web_object, community ):
     """
     creates a summary of the corrent electrical systems
     
@@ -211,10 +211,20 @@ def create_electric_system_summary (community_results):
         
     returns a list of items to use with the html template
     """
+    community_results = web_object.results[community]
     fc = community_results['forecast']
     hydro = community_results['Hydropower']
     solar = community_results['Solar Power']
     wind = community_results['Wind Power']
+    
+    expected_wind_total = wind.cd['wind generation limit']
+    expected_hydro_total = hydro.cd['hydro generation limit']
+                                        
+                                        
+    expected_solar_total = \
+        '{:,.0f} kWh/year'.format(solar.generation_proposed[0])
+    
+    
     
     total_gen = fc.cd.get_item('community','generation').iloc[-1:]
     total_load = float(total_gen)/constants.hours_per_year
@@ -240,17 +250,23 @@ def create_electric_system_summary (community_results):
              float(wind.comp_specs['resource data']['existing wind']))},
         {'words':'Existing wind generation (' + str(year) +')',
          'value': '{:,.0f} kWh/year'.format(w_gen).replace('nan','0')},
+        {'words':'Estimated proposed wind generation',
+         'value': '{:,.0f} kWh/year'.format(expected_wind_total)},
         {'words':'Existing nameplate solar capacity', 
          'value': 
              '{:,.0f} kW'.format(
              float(solar.comp_specs['data']['Installed Capacity']))},
         {'words':'Existing solar generation (' + str(year) +')', 
          'value': '{:,.0f} kWh/year'.format(s_gen).replace('nan','0')},
+        {'words':'Estimated proposed solar generation',
+         'value': expected_solar_total},
         {'words':'Existing nameplate hydro capacity ', 
          'value': 
              '{:,.0f} kW'.format(
              float(fc.cd.get_item('community','hydro generation capacity')))},
         {'words':'Existing hydro generation (' + str(year) +')', 
          'value': '{:,.0f} kWh/year'.format(h_gen).replace('nan','0')},
+        {'words':'Estimated proposed hydro generation',
+         'value': '{:,.0f} kWh/year'.format(expected_hydro_total)}
     ]
     return current

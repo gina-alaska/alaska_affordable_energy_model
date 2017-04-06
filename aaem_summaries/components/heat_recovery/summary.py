@@ -8,7 +8,7 @@ output functions for Heat Recovery component
 import os.path
 import aaem.constants as constants
 from aaem.components import comp_order
-import aaem.web_lib as wl
+import aaem_summaries.web_lib as wl
 
 import numpy as np
 
@@ -74,10 +74,14 @@ def generate_web_summary (web_object, community):
     ## get forecast stuff (consumption, generation, etc)
     fc = modeled.forecast
 
-    fuel_consumed = \
-        fc.heating_fuel_dataframe['heating_fuel_total_consumed [gallons/year]']\
+    try:
+        fuel_consumed = \
+        fc.heating_fuel_dataframe['heating_fuel_non-residential_consumed [gallons/year]']\
         .ix[start_year:end_year]
-
+    except:
+        fuel_consumed = \
+        fc.heating_fuel_dataframe['heating_fuel_total_consumed [gallons/year]']\
+        .ix[start_year:end_year] 
     
     ## get the diesel prices
     diesel_price = web_object.results[community]['community data'].\

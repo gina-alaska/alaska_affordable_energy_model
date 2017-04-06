@@ -46,7 +46,7 @@
                                                     title: 'year'},
                                             vAxis: dollar,
                                             {% if chart.stacked %} isStacked: 'relative', {% endif %}
-                                            
+                                            {{ chart.dashed }}
                                             annotations:{style:'line'},
                                             
                                             };

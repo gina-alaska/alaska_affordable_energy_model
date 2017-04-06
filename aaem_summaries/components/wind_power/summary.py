@@ -8,7 +8,7 @@ output functions for Wind Power component
 import os.path
 import aaem.constants as constants
 from aaem.components import comp_order
-import aaem.web_lib as wl
+import aaem_summaries.web_lib as wl
 
 COMPONENT_NAME = "Wind Power"
 
@@ -93,9 +93,8 @@ def generate_web_summary (web_object, community):
                                     'electric_diesel_reduction')
     ## info for modeled
    
-        
-    
-    current = wl.create_electric_system_summary(web_object.results[community])
+    #~ print web_object.results[community]
+    current = wl.create_electric_system_summary(web_object, community)
 
         
     

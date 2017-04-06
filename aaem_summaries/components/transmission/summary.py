@@ -8,7 +8,7 @@ output functions for Transmission component
 import os.path
 import aaem.constants as constants
 from aaem.components import comp_order
-import aaem.web_lib as wl
+import aaem_summaries.web_lib as wl
 
 COMPONENT_NAME = "Transmission and Interties"
 DESCRIPTION = """
@@ -79,7 +79,7 @@ def generate_web_summary (web_object, community):
     
     
     
-    current = wl.create_electric_system_summary (web_object.results[community])
+    current = wl.create_electric_system_summary(web_object, community)
     
     ## info for modeled
     info = create_project_details_list (modeled)

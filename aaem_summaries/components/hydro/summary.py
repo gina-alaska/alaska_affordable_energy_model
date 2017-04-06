@@ -8,7 +8,7 @@ output functions for Hydropower component
 import os.path
 import aaem.constants as constants
 from aaem.components import comp_order
-import aaem.web_lib as wl
+import aaem_summaries.web_lib as wl
 
 import numpy as np
 
@@ -93,7 +93,7 @@ def generate_web_summary (web_object, community):
    
         
     
-    current = wl.create_electric_system_summary(web_object.results[community])
+    current = wl.create_electric_system_summary(web_object, community)
 
         
     

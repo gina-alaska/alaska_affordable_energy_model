@@ -8,7 +8,7 @@ output functions for Biomass Pellet component
 import os.path
 import aaem.constants as constants
 from aaem.components import comp_order
-import aaem.web_lib as wl
+import aaem_summaries.web_lib as wl
 
 COMPONENT_NAME = "Biomass for Heat (Pellet)"
 

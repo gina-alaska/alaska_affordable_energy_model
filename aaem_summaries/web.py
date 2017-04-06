@@ -969,6 +969,20 @@ class WebSummary(object):
              
             generation["Generation total [kWh/year]"] =  generation.sum(1)
             #~ print generation
+            
+            try:
+                generation["Maximum expected generation solar [kWh/year]"] = \
+                    res['Solar Power'].generation_proposed[0]
+            except AttributeError:
+                generation["Maximum expected generation solar [kWh/year]"] = 0
+                
+            generation["Maximum expected generation wind [kWh/year]"] = \
+                res['community data'].get_item('community',
+                'wind generation limit')
+            generation["Maximum expected generation hydro [kWh/year]"] = \
+                res['community data'].get_item('community',
+                'hydro generation limit')
+            
                                                                     
             generation['year']=generation.index
             generation = generation[['year'] + list(generation.columns)[:-1][::-1]]
@@ -985,7 +999,10 @@ class WebSummary(object):
             charts.append({'name':'generation', 'data': 
                            str(generation_table).replace('nan','null'), 
                                 'title':'generation',
-                                'type': "'kWh'",'plot': True,})  
+                                'type': "'kWh'",'plot': True,
+                            'dashed': ("series: {0: { lineDashStyle: [4, 2] },"
+                                         "1: { lineDashStyle: [4, 2] },"
+                                        "2: { lineDashStyle: [4, 2] },},"),})  
         else:
             charts.append({'name':'generation',
                             'data': "No generation data available.",

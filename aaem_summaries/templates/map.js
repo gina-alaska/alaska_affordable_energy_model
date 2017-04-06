@@ -289,7 +289,20 @@ layer = L.geoJson(geojson, {
 })
 layer.addTo(mymap);
 
+var geojsonLayer = new L.GeoJSON.AJAX("https://raw.githubusercontent.com/gina-alaska/aea-rendr/master/geojson/renewable_energy_development_regions_4326.geojson");       
 
+
+//~ L.geoJSON(geojsonLayer, {
+    //~ style: function(feature) {
+        //~ switch (feature.properties.NAME) {
+            //~ case 'Aleutians': return {color: "#ff0000"};
+            //~ default: return {color: "#0000ff"};
+        //~ }
+    //~ }
+//~ }).addTo(mymap);
+
+
+geojsonLayer.addTo(mymap);
 
 // add list of region with color key
 for (r in region_colors){

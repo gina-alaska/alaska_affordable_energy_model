@@ -8,7 +8,7 @@ output functions for Air Source Heat Pump Non-residential component
 import os.path
 import aaem.constants as constants
 from aaem.components import comp_order
-import aaem.web_lib as wl
+import aaem_summaries.web_lib as wl
 
 COMPONENT_NAME = "Non-Residential ASHP"
 DESCRIPTION = """
@@ -47,7 +47,12 @@ def generate_web_summary (web_object, community):
     ## get forecast stuff (consumption, generation, etc)
     fc = modeled.forecast
 
-    fuel_consumed = \
+    try:
+        fuel_consumed = \
+        fc.heating_fuel_dataframe['heating_fuel_non-residential_consumed [gallons/year]']\
+        .ix[start_year:end_year]
+    except:
+        fuel_consumed = \
         fc.heating_fuel_dataframe['heating_fuel_total_consumed [gallons/year]']\
         .ix[start_year:end_year]
     
@@ -75,6 +80,7 @@ def generate_web_summary (web_object, community):
     ## get generation fule used (modeled)
     base_con = fuel_consumed
     base_con.name = 'Base Consumption'
+
     table2 = wl.make_consumption_table(community, COMPONENT_NAME, 
                                     projects, base_con,
                                     web_object.directory,

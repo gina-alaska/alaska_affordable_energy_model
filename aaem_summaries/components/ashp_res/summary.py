@@ -8,7 +8,7 @@ output functions for Air Source Heat Pump Residential component
 import os.path
 import aaem.constants as constants
 from aaem.components import comp_order
-import aaem.web_lib as wl
+import aaem_summaries.web_lib as wl
 
 COMPONENT_NAME = "Residential ASHP"
 
@@ -49,7 +49,7 @@ def generate_web_summary (web_object, community):
     fc = modeled.forecast
 
     fuel_consumed = \
-        fc.heating_fuel_dataframe['heating_fuel_total_consumed [gallons/year]']\
+        fc.heating_fuel_dataframe['heating_fuel_residential_consumed [gallons/year]']\
         .ix[start_year:end_year]
     
     ## get the diesel prices
