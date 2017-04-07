@@ -102,7 +102,7 @@ def communities_summary (coms, res_dir):
             
             name = c
             if name == 'Barrow':
-                name = 'Utqiagvik'
+                name = 'Utqiagvik (Barrow)'
             l = [name,  
                 name,
                 start_yr,

@@ -58,7 +58,7 @@ def communities_summary (coms, res_dir):
             
             name = c
             if name == 'Barrow':
-                name = 'Utqiagvik'
+                name = 'Utqiagvik (Barrow)'
             
             out.append([name,
                 www.get_NPV_benefits(),www.get_NPV_costs(),

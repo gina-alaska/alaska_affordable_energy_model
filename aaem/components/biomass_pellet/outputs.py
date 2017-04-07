@@ -75,7 +75,7 @@ def communities_summary (coms, res_dir):
             
             name = c
             if name == 'Barrow':
-                name = 'Utqiagvik'
+                name = 'Utqiagvik (Barrow)'
             l = [name,  
                  biomass.max_boiler_output,
                  biomass.heat_displaced_sqft,
