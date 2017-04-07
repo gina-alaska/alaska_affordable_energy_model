@@ -289,7 +289,7 @@ layer = L.geoJson(geojson, {
 })
 layer.addTo(mymap);
 
-var geojsonLayer = new L.GeoJSON.AJAX("https://raw.githubusercontent.com/gina-alaska/aea-rendr/master/geojson/renewable_energy_development_regions_4326.geojson");       
+//~ var geojsonLayer = new L.GeoJSON.AJAX("https://raw.githubusercontent.com/gina-alaska/aea-rendr/master/geojson/renewable_energy_development_regions_4326.geojson");       
 
 
 //~ L.geoJSON(geojsonLayer, {
