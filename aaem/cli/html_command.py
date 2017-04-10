@@ -93,8 +93,8 @@ class HtmlCommand(pycommand.CommandBase):
                     with open(f,'r') as in_f:
                         text = in_f.read()
                     with open(f,'w') as out_f:
-                        out_f.write(text.replace('Barrow','Utqiagvik'))
-            
+                        out_f.write(text.replace('Barrow','Utqiagvik').replace('ctobrw','Barrow'))
+                        #~ out_f.write()
             
             f = os.path.join(out,'map.js')
             with open(f,'r') as in_f:

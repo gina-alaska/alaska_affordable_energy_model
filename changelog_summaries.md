@@ -1,5 +1,10 @@
 #Change Log
 
+## [0.25.2]
+### updated
+- updates described in Model 25 notes.pptx have been applied
+- barrow is listed as a alternate name for Utqiagvik
+
 ## [0.25.1]
 ### updated
 - fixes missing imports

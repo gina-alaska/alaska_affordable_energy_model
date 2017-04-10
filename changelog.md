@@ -1,5 +1,10 @@
 #Change Log
 
+## [0.25.2]
+### changes
+- barrow is listed as a alternate name for Utqiagvik
+
+
 ## [0.25.1]
 ### added
 - headers to component csv files
