@@ -16,9 +16,10 @@ from config import UNKNOWN
 raw_data_files = ['wind_class_cf_assumptions.csv',
                   'wind_kw_costs.csv',
                   "wind_existing_systems.csv",
-                  "wind_resource_data.csv",
+                  #~ "wind_resource_data.csv",
                   "diesel_powerhouse_data.csv",
-                  'wind_intertie_wind_classes.csv',
+                  #~ 'wind_intertie_wind_classes.csv',
+                  'wind_classes.csv',
                   "solar_existing_systems.csv",
                   "wind_projects_potential.csv",
                   'project_development_timeframes.csv']
@@ -57,31 +58,42 @@ def wind_preprocess (ppo):
     except KeyError:
         existing = 0
     #~ #~ print existing
+    wind_classes = read_csv(os.path.join(ppo.data_dir, "wind_classes.csv"),
+                            comment = '#',index_col = 0)
     try:
-        potential = read_csv(os.path.join(ppo.data_dir,
-                                "wind_resource_data.csv"),
-                            comment = '#',index_col = 0).ix[ppo.com_id]
+        potential = wind_classes.ix[ppo.com_id]['Assumed Wind Class']
     except KeyError:
-        potential = DataFrame(index = ['Wind Potential','Wind-Resource',
-                                       'Assumed Wind Class',
-                                       'Wind Developability','Site Accessible ',
-                                       'Permittability','Site Availability',
-                                       'Load','Certainty',
-                                       'Estimated Generation','Estimated Cost',
-                                       'Note','Resource Note'])
-                                       
+        potential = 0
     try:
-        intertie = read_csv(os.path.join(ppo.data_dir,
-                            "wind_intertie_wind_classes.csv"),
-                            comment = '#',
-                            index_col = 0).ix[ppo.com_id+"_intertie"]
-        intertie = int(intertie['Highest Wind Class on Intertie'])
+        intertie = wind_classes.ix[ppo.com_id+"_intertie"]['Assumed Wind Class']
     except KeyError:
         intertie = 0
+        
+    #~ try:
+        #~ potential = read_csv(os.path.join(ppo.data_dir,
+                                #~ "wind_resource_data.csv"),
+                            #~ comment = '#',index_col = 0).ix[ppo.com_id]
+    #~ except KeyError:
+        #~ potential = DataFrame(index = ['Wind Potential','Wind-Resource',
+                                       #~ 'Assumed Wind Class',
+                                       #~ 'Wind Developability','Site Accessible ',
+                                       #~ 'Permittability','Site Availability',
+                                       #~ 'Load','Certainty',
+                                       #~ 'Estimated Generation','Estimated Cost',
+                                       #~ 'Note','Resource Note'])
+                                       
+    #~ try:
+        #~ intertie = read_csv(os.path.join(ppo.data_dir,
+                            #~ "wind_intertie_wind_classes.csv"),
+                            #~ comment = '#',
+                            #~ index_col = 0).ix[ppo.com_id+"_intertie"]
+        #~ intertie = int(intertie['Highest Wind Class on Intertie'])
+    #~ except KeyError:
+        #~ intertie = 0
 
     try:
-        if intertie > int(potential['Assumed Wind Class']):
-            potential.ix['Assumed Wind Class'] = intertie
+        if intertie > int(potential):
+            potential = intertie
             ppo.diagnostics.add_note("wind", 
                     "Wind class updated to max on intertie")
         
@@ -103,7 +115,7 @@ def wind_preprocess (ppo):
         solar_cap = 0 
     
     try:
-        capa = assumptions.ix[int(float(potential.ix['Assumed Wind Class']))]
+        capa = assumptions.ix[int(float(potential))]
         capa = capa.ix['REF V-VI Net CF']
     except (TypeError,KeyError):
         capa = 0
@@ -118,10 +130,12 @@ def wind_preprocess (ppo):
     fd.write("existing wind," + str(existing) +'\n')
     fd.write("existing solar," + str(solar_cap) + '\n')
     fd.write('assumed capacity factor,' +str(capa) +'\n')
+    fd.write('Assumed Wind Class,' +str(potential) +'\n')
+    
     fd.close()
 
     #~ df = concat([ww_d,ww_a])
-    potential.to_csv(out_file, mode = 'a',header=False)
+    #~ potential.to_csv(out_file, mode = 'a',header=False)
     #~ self.wastewater_data = df
     ppo.MODEL_FILES['WIND_DATA'] = "wind_power_data.csv"
     
