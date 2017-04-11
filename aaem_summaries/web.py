@@ -947,62 +947,84 @@ class WebSummary(object):
         res = self.results[com]
         charts = []
         
+        
+        #~ print res['community data'].intertie
+            
         if hasattr(res['forecast'], 'generation_by_type'):
             if not hasattr(res['forecast'], 'generation_forecast_dataframe'):
                 res['forecast'].generate_generation_forecast_dataframe()
             
-            generation = res['forecast'].generation_forecast_dataframe[['generation_diesel [kWh/year]',
-                                                                        'generation_hydro [kWh/year]',
-                                                                        'generation_natural_gas [kWh/year]',
-                                                                        'generation_wind [kWh/year]',
-                                                                        'generation_solar [kWh/year]',
-                                                                        'generation_biomass [kWh/year]']]
+            if res['community data'].intertie != 'child':
+                generation = res['forecast'].\
+                    generation_forecast_dataframe[
+                        ['generation_diesel [kWh/year]',
+                        'generation_hydro [kWh/year]',
+                        'generation_natural_gas [kWh/year]',
+                        'generation_wind [kWh/year]',
+                        'generation_solar [kWh/year]',
+                        'generation_biomass [kWh/year]']]
             
                      
-            generation.columns = ['generation diesel [kWh/year]',
-                                'generation hydro [kWh/year]',
-                                'generation natural gas [kWh/year]',
-                                'generation wind [kWh/year]',
-                                'generation solar [kWh/year]',
-                                'generation biomass [kWh/year]']
-              
-             
-            generation["Generation total [kWh/year]"] =  generation.sum(1)
-            #~ print generation
-            
-            try:
-                generation["Maximum expected generation solar [kWh/year]"] = \
-                    res['Solar Power'].generation_proposed[0]
-            except AttributeError:
-                generation["Maximum expected generation solar [kWh/year]"] = 0
+                generation.columns = ['generation diesel [kWh/year]',
+                                    'generation hydro [kWh/year]',
+                                    'generation natural gas [kWh/year]',
+                                    'generation wind [kWh/year]',
+                                    'generation solar [kWh/year]',
+                                    'generation biomass [kWh/year]']
+                  
+                 
+                generation["Generation total [kWh/year]"] =  generation.sum(1)
+                #~ print generation
                 
-            generation["Maximum expected generation wind [kWh/year]"] = \
-                res['community data'].get_item('community',
-                'wind generation limit')
-            generation["Maximum expected generation hydro [kWh/year]"] = \
-                res['community data'].get_item('community',
-                'hydro generation limit')
+                try:
+                    generation\
+                        ["Maximum expected generation solar [kWh/year]"] = \
+                        res['Solar Power'].generation_proposed[0]
+                except AttributeError:
+                    generation["Maximum expected generation solar [kWh/year]"]\
+                        = 0
+                    
+                generation["Maximum expected generation wind [kWh/year]"] = \
+                    res['community data'].get_item('community',
+                    'wind generation limit')
+                generation["Maximum expected generation hydro [kWh/year]"] = \
+                    res['community data'].get_item('community',
+                    'hydro generation limit')
+                
+                                                                        
+                generation['year']=generation.index
+                generation = generation[['year'] + \
+                    list(generation.columns)[:-1][::-1]]
+                
+                c_map = res['forecast'].c_map
+                annotation = c_map[c_map['consumption_qualifier']\
+                                                        == 'M'].index.max() + 1
+                generation['annotation'] = np.nan 
+                generation['annotation'][annotation] = 'start of forecast'
             
-                                                                    
-            generation['year']=generation.index
-            generation = generation[['year'] + list(generation.columns)[:-1][::-1]]
-            
-            c_map = res['forecast'].c_map
-            annotation = c_map[c_map['consumption_qualifier']\
-                                                    == 'M'].index.max() + 1
-            generation['annotation'] = np.nan 
-            generation['annotation'][annotation] = 'start of forecast'
-        
-            generation = generation[['year','annotation'] + list(generation.columns[1:-1])]
-            
-            generation_table = self.make_plot_table(generation, sigfig = 2, community = com, fname = com+"_generation.csv")
-            charts.append({'name':'generation', 'data': 
+                generation = generation[['year','annotation'] +\
+                    list(generation.columns[1:-1])]
+                
+                generation_table = self.make_plot_table(generation, sigfig = 2,
+                                                community = com, 
+                                                fname = com+"_generation.csv")
+                charts.append({'name':'generation', 'data': 
                            str(generation_table).replace('nan','null'), 
                                 'title':'generation',
                                 'type': "'kWh'",'plot': True,
                             'dashed': ("series: {0: { lineDashStyle: [4, 2] },"
                                          "1: { lineDashStyle: [4, 2] },"
                                         "2: { lineDashStyle: [4, 2] },},"),})  
+            else:
+                url = '../' + res['community data'].parent.lower() + "_intertie/generation.html#generation"
+                #~ print url
+                charts.append({'name':'generation', 'data': 
+                                [{'url': url, 
+                                    'text': "See intertie for generation plot"}
+                                    ],
+                                'title':'generation',
+                                'links_list': True,})
+                             
         else:
             charts.append({'name':'generation',
                             'data': "No generation data available.",
