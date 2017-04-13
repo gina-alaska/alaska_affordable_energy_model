@@ -1424,8 +1424,12 @@ class WebSummary(object):
                 name = name.decode('unicode_escape').encode('ascii','ignore')
                 
                 #~ print name
+                try:
+                    success = True if ratio > 1.0 and ratio != 'N/A' else False
+                except TypeError:
+                    success = True if ratio > 1.0 else False
                 cats[comp].append({'name': name,
-                              'sucess': True if ratio > 1.0 else False,
+                              'sucess': success,
                               'negitive': True if ratio < 0 else False,
                               'comp':comp,
                               'benefits': '${:,.0f}'.format(benefit) if benefit != 'N/A' else benefit,
