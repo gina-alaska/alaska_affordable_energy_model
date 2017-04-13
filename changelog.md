@@ -1,5 +1,10 @@
 #Change Log
 
+## [0.26.0]
+### changes
+- the source files and format for wind classes has changed in the preprocessor
+
+
 ## [0.25.2]
 ### changes
 - barrow is listed as a alternate name for Utqiagvik

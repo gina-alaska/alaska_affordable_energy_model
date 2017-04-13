@@ -1,5 +1,13 @@
 #Change Log
 
+## [0.26.0]
+### changed
+- costs by sector plot is now a pie chart and has been moved to end of consumption page
+- energy consumption chart is a pie chart
+- generation data in interied community summary pages now directs viewer to intertie page
+- no duplicates on potential project pages for communities with similar names
+- removes green highlight  N/A projects/technoogies on potential projects page 
+
 ## [0.25.2]
 ### updated
 - updates described in Model 25 notes.pptx have been applied
