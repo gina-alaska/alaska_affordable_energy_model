@@ -949,12 +949,11 @@ class WebSummary(object):
         
         
         #~ print res['community data'].intertie
-            
-        if hasattr(res['forecast'], 'generation_by_type'):
-            if not hasattr(res['forecast'], 'generation_forecast_dataframe'):
-                res['forecast'].generate_generation_forecast_dataframe()
-            
-            if res['community data'].intertie != 'child':
+        if res['community data'].intertie != 'child':    
+            if hasattr(res['forecast'], 'generation_by_type'):
+                if not hasattr(res['forecast'], 'generation_forecast_dataframe'):
+                    res['forecast'].generate_generation_forecast_dataframe()
+                
                 generation = res['forecast'].\
                     generation_forecast_dataframe[
                         ['generation_diesel [kWh/year]',
@@ -1015,233 +1014,238 @@ class WebSummary(object):
                             'dashed': ("series: {0: { lineDashStyle: [4, 2] },"
                                          "1: { lineDashStyle: [4, 2] },"
                                         "2: { lineDashStyle: [4, 2] },},"),})  
+            
+                    
+                                 
             else:
-                url = '../' + res['community data'].parent.lower() + "_intertie/generation.html#generation"
+                charts.append({'name':'generation',
+                                'data': "No generation data available.",
+                                    'title':'generation',
+                                    'type': "'kWh'",})
+            
+            #~ hh = DataFrame(costs['year'])
+            #~ hh['households']=res['Residential Energy Efficiency'].households
+            #~ print hh
+            #~ hh_table = self.make_plot_table(hh)
+            #~ charts.append({'name':'hh', 'data': str(hh_table).replace('nan','null'), 
+                                #~ 'title':'housholds',
+                                #~ 'type': "'households'"}) 
+                
+                
+            if hasattr(res['forecast'], 'consumption_to_save') or \
+               hasattr(res['forecast'], 'consumption'):
+                if hasattr(res['forecast'], 'consumption_to_save'):
+                    avg_load = res['forecast'].consumption_to_save
+                else:    
+                    avg_load = res['forecast'].consumption
+                
+                names = ['Year', 'annotation', 'Average Load']
+                avg_load = avg_load
+                avg_load['year'] = avg_load.index
+                
+                c_map = res['forecast'].c_map
+                annotation = c_map[c_map['consumption_qualifier']\
+                                                        == 'M'].index.max() + 1
+                avg_load['annotation'] = np.nan 
+                avg_load['annotation'][annotation] = 'start of forecast'
+                
+                
+                avg_load['Average Load'] = avg_load["consumption kWh"]/hours_per_year
+            
+                avg_load_table = self.make_plot_table(avg_load[['year', 'annotation', 'Average Load']], names = names, community = com, fname = com+"_avg_load.csv")
+            
+                charts.append({'name':'avg_load', 'data': str(avg_load_table).replace('nan','null'), 
+                        'title':'Average Load',
+                        'type': "'kW'",'plot': True,})
+            else:
+                charts.append({'name':'avg_load', 
+                        'data': "No Consumption available to calculate average load", 
+                        'title':'Average Load',
+                        'type': "'kW'",})
+            
+            #~ print os.path.join(self.model_root,'input_files', com, 'yearly_electricity_summary.csv')
+            
+            try:
+                yes = read_csv(os.path.join(self.model_root,'input_files', com, 'yearly_electricity_summary.csv'),comment='#')
+                #~ print yes.columns
+            except IOError: 
+                yes = None
+                
+            if not yes is None:
+                yes_years = yes[yes.columns[0]].values
+            
+            if not yes is None:
+                start = min(yes_years)
+            else:
+                start = res['community data'].get_item('community','current year')
+            
+            end = res['community data'].get_item('forecast','end year')
+            years = range(int(start),int(end))
+            
+            line_loss = DataFrame(years, columns = ['year'], index = years)
+            line_loss['line losses'] = res['community data'].get_item('community','line losses')
+            line_loss['diesel generation efficiency'] = res['community data'].get_item('community','diesel generation efficiency')
+             
+            if not yes is None:
+                line_loss['line losses'].ix[ range(int(min(yes_years)),int(max(yes_years)))] = np.nan
+                line_loss['line losses'].ix[ yes_years ] = yes['line loss'].values
+                line_loss['diesel generation efficiency'].ix[ range(int(min(yes_years)),int(max(yes_years))) ] = np.nan
+                line_loss['diesel generation efficiency'].ix[ yes_years ] = yes['efficiency'].values
+            #~ print line_losxs
+    
+            
+            try:
+                line_loss['annotation'] = np.nan 
+                line_loss['annotation'][int(max(yes_years)) + 1] = 'start of forecast'
+            except:
+                line_loss['annotation'] = np.nan 
+                line_loss['annotation'][start] = 'start of forecast'
+    
+            line_loss = line_loss.replace([np.inf, -np.inf], np.nan)
+            line_loss_table = self.make_plot_table(line_loss[['year', 'annotation', "line losses"]],sigfig = 2,  community = com, fname = com+"_line_loss.csv")
+            charts.append({'name':'line_loss', 'data': str(line_loss_table).replace('nan','null').replace('None','null'), 
+                    'title':'line losses',
+                    'type': "'percent'",'plot': True,})
+    
+            gen_eff_table = self.make_plot_table(line_loss[['year', 'annotation', 'diesel generation efficiency']],sigfig = 2, community = com, fname = com+"_generation_efficiency.csv")
+            charts.append({'name':'generation_efficiency', 'data': str(gen_eff_table).replace('nan','null'), 
+                    'title':'Diesel Generation Efficiency',
+                    'type': "'gal/kWh'",'plot': True,})
+                    
+                    
+            eff = res['community data'].get_item('community',
+                                                'diesel generation efficiency')
+            ph_data = res['community data'].get_item('Diesel Efficiency', 'data')
+            try:
+                num_gens = int(float(ph_data['Total Number of generators']))
+            except ValueError:
+                num_gens = ph_data['Total Number of generators']
+            
+            try:
+                cap = '{:,.0f} kW'.format(float(ph_data['Total Capacity (in kW)']))
+                c2 = float(ph_data['Total Capacity (in kW)'])
+            except ValueError:
+                c2 = 0
+                cap = ph_data['Total Capacity (in kW)']
+            try:
+                largest = '{:,.0f} kW'.format(\
+                                        float(ph_data['Largest generator (in kW)']))
+            except ValueError:
+                largest = ph_data['Largest generator (in kW)']
+            
+            size = ph_data['Sizing']
+            
+            try:
+                ratio = float(c2)/ \
+                            float(avg_load['Average Load']\
+                            [avg_load['annotation'] == 'start of forecast']) 
+            except (ValueError, UnboundLocalError):
+                ratio = 0
+                             
+            hr_data = res['community data'].get_item('Heat Recovery', 
+                                                      'estimate data')
+            hr_opp = hr_data['Waste Heat Recovery Opperational']
+            #~ hr_opp = "TBD"
+            hr_ava = hr_data['Est. current annual heating fuel gallons displaced']
+            #~ hr_ava = 0
+            if type(hr_ava) is str or np.isnan(hr_ava):
+                hr_ava = 0
+                
+            wind = res['community data'].get_item('Wind Power', 
+                                                      'resource data')
+                                                      
+            w_cap = float(wind['existing wind'])
+            
+            w_fac = float(wind['assumed capacity factor'])
+            
+            
+                
+            solar = res['community data'].get_item('Solar Power', 
+                                                      'data')
+                                                      
+            s_cap = float(solar['Installed Capacity'])
+            s_pv = solar['Output per 10kW Solar PV']
+            
+            
+            h_cap = float(res['community data'].get_item('community',
+                                                    'hydro generation capacity'))
+                                            
+            
+            
+            try:
+                w_gen = float(res['community data'].get_item('community',
+                    'generation numbers')['generation wind'].iloc[-1:])
+                s_gen = float(res['community data'].get_item('community',
+                    'generation numbers')['generation solar'].iloc[-1:])
+                    
+                h_gen = float(res['community data'].get_item('community',
+                    'generation numbers')['generation hydro'].iloc[-1:])
+                
+                if  np.isnan(w_gen):
+                    w_gen = 0
+                    
+                if  np.isnan(s_gen):
+                    s_gen = 0
+                    
+                if  np.isnan(h_gen):
+                    h_gen = 0
+                    
+                w_gen = '{:,.0f} kWh'.format(w_gen)
+                h_gen = '{:,.0f} kWh'.format(h_gen)
+                s_gen = '{:,.0f} kWh'.format(s_gen)
+            except TypeError:
+                w_gen = "unknown"
+                s_gen = "unknown"
+                h_gen = "unknown"
+                
+                
+            
+                                                
+            table = [
+                [True, "Power House", ""],
+                [False, "Efficiency", '{:,.2f} kWh/gallon'.format(eff)],
+                [False, "Total number of generators", num_gens],
+                [False, "Total capacity", cap], 
+                [False, "Largest generator", largest],
+                [False, "Sizing", size],
+                [False, "Ratio of total capacity to average load", 
+                                                        '{:,.2f}'.format(ratio)],
+                [True, "Heat Recovery", ""],
+                [False, "Operational",  hr_opp],
+                [False, 
+                    "Estimated number of gallons of heating oil displaced", 
+                                                '{:,.0f} gallons'.format(hr_ava)],
+                [True, "Wind Power", ""],
+                [False, "Current wind capacity",  '{:,.0f} kW'.format(w_cap)],
+                [False, "Current wind generation", w_gen],
+                [False, "Current wind capacity factor",  '{:,.2f}'.format(w_fac)],
+                [True, "Solar Power", ""],
+                [False, "Current solar capacity",  '{:,.0f} kW'.format(s_cap)],
+                [False, "Current solar generation",  s_gen],
+                [False, "Current output per 10kW Solar PV", '{:,.0f}'.format(s_pv)],
+                [True, "Hydropower", ""],
+                [False, "Current hydro capacity",  '{:,.0f} kW'.format(h_cap)],
+                [False, "Current hydro generation",  h_gen],
+                
+                ]
+    
+                
+            charts.insert(0,{'name':'gen_summary', 'data':table, 
+                    'title':'Generation Overview',
+                    'table': True,})
+        else:
+            url = '../' + res['community data'].parent.lower() +\
+                "_intertie/generation.html"
                 #~ print url
-                charts.append({'name':'generation', 'data': 
+            charts.append({'name':'generation', 'data': 
                                 [{'url': url, 
-                                    'text': "See intertie for generation plot"}
+                                    'text': "See " +\
+                                     res['community data'].parent + \
+                                     " intertie for generation plot for" + \
+                                     " all communities on the intertie."}
                                     ],
                                 'title':'generation',
                                 'links_list': True,})
-                             
-        else:
-            charts.append({'name':'generation',
-                            'data': "No generation data available.",
-                                'title':'generation',
-                                'type': "'kWh'",})
-        
-        #~ hh = DataFrame(costs['year'])
-        #~ hh['households']=res['Residential Energy Efficiency'].households
-        #~ print hh
-        #~ hh_table = self.make_plot_table(hh)
-        #~ charts.append({'name':'hh', 'data': str(hh_table).replace('nan','null'), 
-                            #~ 'title':'housholds',
-                            #~ 'type': "'households'"}) 
-            
-            
-        if hasattr(res['forecast'], 'consumption_to_save') or \
-           hasattr(res['forecast'], 'consumption'):
-            if hasattr(res['forecast'], 'consumption_to_save'):
-                avg_load = res['forecast'].consumption_to_save
-            else:    
-                avg_load = res['forecast'].consumption
-            
-            names = ['Year', 'annotation', 'Average Load']
-            avg_load = avg_load
-            avg_load['year'] = avg_load.index
-            
-            c_map = res['forecast'].c_map
-            annotation = c_map[c_map['consumption_qualifier']\
-                                                    == 'M'].index.max() + 1
-            avg_load['annotation'] = np.nan 
-            avg_load['annotation'][annotation] = 'start of forecast'
-            
-            
-            avg_load['Average Load'] = avg_load["consumption kWh"]/hours_per_year
-        
-            avg_load_table = self.make_plot_table(avg_load[['year', 'annotation', 'Average Load']], names = names, community = com, fname = com+"_avg_load.csv")
-        
-            charts.append({'name':'avg_load', 'data': str(avg_load_table).replace('nan','null'), 
-                    'title':'Average Load',
-                    'type': "'kW'",'plot': True,})
-        else:
-            charts.append({'name':'avg_load', 
-                    'data': "No Consumption available to calculate average load", 
-                    'title':'Average Load',
-                    'type': "'kW'",})
-        
-        #~ print os.path.join(self.model_root,'input_files', com, 'yearly_electricity_summary.csv')
-        
-        try:
-            yes = read_csv(os.path.join(self.model_root,'input_files', com, 'yearly_electricity_summary.csv'),comment='#')
-            #~ print yes.columns
-        except IOError: 
-            yes = None
-            
-        if not yes is None:
-            yes_years = yes[yes.columns[0]].values
-        
-        if not yes is None:
-            start = min(yes_years)
-        else:
-            start = res['community data'].get_item('community','current year')
-        
-        end = res['community data'].get_item('forecast','end year')
-        years = range(int(start),int(end))
-        
-        line_loss = DataFrame(years, columns = ['year'], index = years)
-        line_loss['line losses'] = res['community data'].get_item('community','line losses')
-        line_loss['diesel generation efficiency'] = res['community data'].get_item('community','diesel generation efficiency')
-         
-        if not yes is None:
-            line_loss['line losses'].ix[ range(int(min(yes_years)),int(max(yes_years)))] = np.nan
-            line_loss['line losses'].ix[ yes_years ] = yes['line loss'].values
-            line_loss['diesel generation efficiency'].ix[ range(int(min(yes_years)),int(max(yes_years))) ] = np.nan
-            line_loss['diesel generation efficiency'].ix[ yes_years ] = yes['efficiency'].values
-        #~ print line_losxs
-
-        
-        try:
-            line_loss['annotation'] = np.nan 
-            line_loss['annotation'][int(max(yes_years)) + 1] = 'start of forecast'
-        except:
-            line_loss['annotation'] = np.nan 
-            line_loss['annotation'][start] = 'start of forecast'
-
-        line_loss = line_loss.replace([np.inf, -np.inf], np.nan)
-        line_loss_table = self.make_plot_table(line_loss[['year', 'annotation', "line losses"]],sigfig = 2,  community = com, fname = com+"_line_loss.csv")
-        charts.append({'name':'line_loss', 'data': str(line_loss_table).replace('nan','null').replace('None','null'), 
-                'title':'line losses',
-                'type': "'percent'",'plot': True,})
-
-        gen_eff_table = self.make_plot_table(line_loss[['year', 'annotation', 'diesel generation efficiency']],sigfig = 2, community = com, fname = com+"_generation_efficiency.csv")
-        charts.append({'name':'generation_efficiency', 'data': str(gen_eff_table).replace('nan','null'), 
-                'title':'Diesel Generation Efficiency',
-                'type': "'gal/kWh'",'plot': True,})
-                
-                
-        eff = res['community data'].get_item('community',
-                                            'diesel generation efficiency')
-        ph_data = res['community data'].get_item('Diesel Efficiency', 'data')
-        try:
-            num_gens = int(float(ph_data['Total Number of generators']))
-        except ValueError:
-            num_gens = ph_data['Total Number of generators']
-        
-        try:
-            cap = '{:,.0f} kW'.format(float(ph_data['Total Capacity (in kW)']))
-            c2 = float(ph_data['Total Capacity (in kW)'])
-        except ValueError:
-            c2 = 0
-            cap = ph_data['Total Capacity (in kW)']
-        try:
-            largest = '{:,.0f} kW'.format(\
-                                    float(ph_data['Largest generator (in kW)']))
-        except ValueError:
-            largest = ph_data['Largest generator (in kW)']
-        
-        size = ph_data['Sizing']
-        
-        try:
-            ratio = float(c2)/ \
-                        float(avg_load['Average Load']\
-                        [avg_load['annotation'] == 'start of forecast']) 
-        except (ValueError, UnboundLocalError):
-            ratio = 0
-                         
-        hr_data = res['community data'].get_item('Heat Recovery', 
-                                                  'estimate data')
-        hr_opp = hr_data['Waste Heat Recovery Opperational']
-        #~ hr_opp = "TBD"
-        hr_ava = hr_data['Est. current annual heating fuel gallons displaced']
-        #~ hr_ava = 0
-        if type(hr_ava) is str or np.isnan(hr_ava):
-            hr_ava = 0
-            
-        wind = res['community data'].get_item('Wind Power', 
-                                                  'resource data')
-                                                  
-        w_cap = float(wind['existing wind'])
-        
-        w_fac = float(wind['assumed capacity factor'])
-        
-        
-            
-        solar = res['community data'].get_item('Solar Power', 
-                                                  'data')
-                                                  
-        s_cap = float(solar['Installed Capacity'])
-        s_pv = solar['Output per 10kW Solar PV']
-        
-        
-        h_cap = float(res['community data'].get_item('community',
-                                                'hydro generation capacity'))
-                                        
-        
-        
-        try:
-            w_gen = float(res['community data'].get_item('community',
-                'generation numbers')['generation wind'].iloc[-1:])
-            s_gen = float(res['community data'].get_item('community',
-                'generation numbers')['generation solar'].iloc[-1:])
-                
-            h_gen = float(res['community data'].get_item('community',
-                'generation numbers')['generation hydro'].iloc[-1:])
-            
-            if  np.isnan(w_gen):
-                w_gen = 0
-                
-            if  np.isnan(s_gen):
-                s_gen = 0
-                
-            if  np.isnan(h_gen):
-                h_gen = 0
-                
-            w_gen = '{:,.0f} kWh'.format(w_gen)
-            h_gen = '{:,.0f} kWh'.format(h_gen)
-            s_gen = '{:,.0f} kWh'.format(s_gen)
-        except TypeError:
-            w_gen = "unknown"
-            s_gen = "unknown"
-            h_gen = "unknown"
-            
-            
-        
-                                            
-        table = [
-            [True, "Power House", ""],
-            [False, "Efficiency", '{:,.2f} kWh/gallon'.format(eff)],
-            [False, "Total number of generators", num_gens],
-            [False, "Total capacity", cap], 
-            [False, "Largest generator", largest],
-            [False, "Sizing", size],
-            [False, "Ratio of total capacity to average load", 
-                                                    '{:,.2f}'.format(ratio)],
-            [True, "Heat Recovery", ""],
-            [False, "Operational",  hr_opp],
-            [False, 
-                "Estimated number of gallons of heating oil displaced", 
-                                            '{:,.0f} gallons'.format(hr_ava)],
-            [True, "Wind Power", ""],
-            [False, "Current wind capacity",  '{:,.0f} kW'.format(w_cap)],
-            [False, "Current wind generation", w_gen],
-            [False, "Current wind capacity factor",  '{:,.2f}'.format(w_fac)],
-            [True, "Solar Power", ""],
-            [False, "Current solar capacity",  '{:,.0f} kW'.format(s_cap)],
-            [False, "Current solar generation",  s_gen],
-            [False, "Current output per 10kW Solar PV", '{:,.0f}'.format(s_pv)],
-            [True, "Hydropower", ""],
-            [False, "Current hydro capacity",  '{:,.0f} kW'.format(h_cap)],
-            [False, "Current hydro generation",  h_gen],
-            
-            ]
-
-            
-        charts.insert(0,{'name':'gen_summary', 'data':table, 
-                'title':'Generation Overview',
-                'table': True,})
-                
         try:
             if res['community data'].intertie_list[0] != "''":
                 table = [
@@ -1258,6 +1262,7 @@ class WebSummary(object):
                 charts.insert(0,{'name':'it_l', 'data':table, 
                     'title':'Intertied Communities',
                     'table': True,})
+            
         except AttributeError:
             pass
         #~ else:
