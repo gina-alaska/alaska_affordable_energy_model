@@ -632,62 +632,13 @@ class WebSummary(object):
             #~ print str(e), '<-------------------->', com
         
         d_table = self.make_plot_table(diesel[['year','annotation','Diesel Price ($/gal)','Heating Fuel ($/gal)']], sigfig = 2,  community = com, fname = com+"_d_price.csv")
-        charts.append({'name':'d_price', 'data': str(d_table).replace('nan','null'), 
+        charts.insert(-1,{'name':'d_price', 'data': str(d_table).replace('nan','null'), 
                         'title':'Fuel Price',
                         'type': "'currency'",
                         'plot': True,})  
                         
         
-        costs = DataFrame(index=range(res['Residential Energy Efficiency'].start_year,
-                                    res['forecast'].end_year))
-                            
-        costs['year']=costs.index
-        #~ costs_data = False
-        if hasattr(res['Residential Energy Efficiency'], 'baseline_kWh_cost'):
-            costs['Residential Electricity'] = res['Residential Energy Efficiency'].baseline_kWh_cost
-        else:
-            costs['Residential Electricity'] = np.nan
-                              
-        if hasattr(res['Non-residential Energy Efficiency'], 'baseline_kWh_cost'):
-            costs['Non-residential Electricity'] = res['Non-residential Energy Efficiency'].baseline_kWh_cost
-        else:
-            costs['Non-residential Electricity'] = np.nan
         
-        if hasattr(res['Water and Wastewater Efficiency'], 'baseline_kWh_cost'):
-            costs['Water/Wastewater Electricity'] = res['Water and Wastewater Efficiency'].baseline_kWh_cost
-        else: 
-            costs['Water/Wastewater Electricity'] =  np.nan
-            
-        if hasattr(res['Residential Energy Efficiency'], 'baseline_HF_cost'):
-            costs['Residential Heating Fuel'] = res['Residential Energy Efficiency'].baseline_HF_cost
-        else:
-            costs['Residential Heating Fuel'] = np.nan
-            
-        if hasattr(res['Non-residential Energy Efficiency'], 'baseline_HF_cost'):
-            costs['Non-residential Heating Fuel'] = res['Non-residential Energy Efficiency'].baseline_HF_cost
-        else:
-            costs['Non-residential Heating Fuel'] = np.nan
-            
-        if hasattr(res['Water and Wastewater Efficiency'], 'baseline_HF_cost'):
-            costs['Water/Wastewater Heating Fuel'] = res['Water and Wastewater Efficiency'].baseline_HF_cost
-        else:
-            costs['Water/Wastewater Heating Fuel'] = np.nan
-            
-
-        costs = costs[['year'] + list(costs.columns)[1:][::-1]]
-        #~ print costs
-        costs_table = self.make_plot_table(costs, sigfig = 2,  community = com, fname = com+"_costs.csv")
-        
-        #~ if costs_data:
-        charts.append({'name':'costs', 'data': str(costs_table).replace('nan','null'), 
-                            'title':'Energy by Sector',
-                            'type': "'percent'",
-                            'stacked': True,
-                            'plot': True,})  
-        #~ else:
-            #~ charts.append({'name':'e_price', 'data': str(e), 
-                        #~ 'title':'Electricity Price ($/kWh)',
-                        #~ 'type': "'currency'",})
 
         msg = None
         if com in self.bad_data_coms:
@@ -820,7 +771,7 @@ class WebSummary(object):
                 table.append([n,v])
                              
                           
-            
+            #~ print table
             charts.append({'name':'non_residential_buildings', 
                 'data': str(table),
                 'title':'Non-residential Buildings',
@@ -834,7 +785,23 @@ class WebSummary(object):
                 'title':'Non-residential Buildings'})
         
         
-        if hasattr(res['forecast'], 'consumption_to_save') or \
+        
+        if res['community data'].intertie == 'child': 
+            url = '../' + res['community data'].parent.lower() +\
+                "_intertie/consumption.html"
+                #~ print url
+
+            charts.append({'name':'consumption', 'data': 
+                                [{'url': url, 
+                                    'text': "See " +\
+                                     res['community data'].parent + \
+                                     " intertie for consumption plot for" + \
+                                     " all communities on the intertie."}
+                                    ],
+                                'title':'Electricity Consumed',
+                                'links_list': True,})
+                                
+        elif hasattr(res['forecast'], 'consumption_to_save') or \
            hasattr(res['forecast'], 'consumption'):
             if hasattr(res['forecast'], 'consumption_to_save'):
                 consumption = res['forecast'].consumption_to_save
@@ -914,14 +881,84 @@ class WebSummary(object):
             
         diesel_consumption = diesel_consumption[['year'] + list(diesel_consumption.columns)[1:][::-1]]
             
-
+        
         diesel_consumption_table = self.make_plot_table(diesel_consumption, sigfig = 2,  community = com, fname = com+"_diesel_consumption.csv")
-        charts.append({'name':'diesel_consumption', 'data': str(diesel_consumption_table).replace('nan','null'), 
-                        'title':'Energy Consumption',
-                        'type': "'percent'",
-                        'stacked': True,'plot': True,})  
+        
+        
+        dt2 = [[diesel_consumption_type] for diesel_consumption_type in diesel_consumption.columns]
+        for idx in range(len(dt2)):
+            dt2[idx].append(float(diesel_consumption[dt2[idx][0]].iloc[0]))
+        diesel_consumption_table = dt2[1:]
+        diesel_consumption_table.insert(0,['name','value'])
+        
+        charts.append({'name':'diesel_consumption', 'data': str(diesel_consumption_table),#.replace('nan','null'), 
+                        'title':'Energy Consumption by sector',
+                        'pie': True,
+                        'plot':True,
+                        'type': "'pie'",})  
         #~ except AttributeError:
             #~ pass
+        
+        ## ========================= Start Energy costs by Sector ==============
+        costs = DataFrame(index=range(res['Residential Energy Efficiency'].start_year,
+                                    res['forecast'].end_year))
+                            
+        costs['year']=costs.index
+        #~ costs_data = False
+        if hasattr(res['Residential Energy Efficiency'], 'baseline_kWh_cost'):
+            costs['Residential Electricity'] = res['Residential Energy Efficiency'].baseline_kWh_cost
+        else:
+            costs['Residential Electricity'] = np.nan
+                              
+        if hasattr(res['Non-residential Energy Efficiency'], 'baseline_kWh_cost'):
+            costs['Non-residential Electricity'] = res['Non-residential Energy Efficiency'].baseline_kWh_cost
+        else:
+            costs['Non-residential Electricity'] = np.nan
+        
+        if hasattr(res['Water and Wastewater Efficiency'], 'baseline_kWh_cost'):
+            costs['Water/Wastewater Electricity'] = res['Water and Wastewater Efficiency'].baseline_kWh_cost
+        else: 
+            costs['Water/Wastewater Electricity'] =  np.nan
+            
+        if hasattr(res['Residential Energy Efficiency'], 'baseline_HF_cost'):
+            costs['Residential Heating Fuel'] = res['Residential Energy Efficiency'].baseline_HF_cost
+        else:
+            costs['Residential Heating Fuel'] = np.nan
+            
+        if hasattr(res['Non-residential Energy Efficiency'], 'baseline_HF_cost'):
+            costs['Non-residential Heating Fuel'] = res['Non-residential Energy Efficiency'].baseline_HF_cost
+        else:
+            costs['Non-residential Heating Fuel'] = np.nan
+            
+        if hasattr(res['Water and Wastewater Efficiency'], 'baseline_HF_cost'):
+            costs['Water/Wastewater Heating Fuel'] = res['Water and Wastewater Efficiency'].baseline_HF_cost
+        else:
+            costs['Water/Wastewater Heating Fuel'] = np.nan
+            
+
+        costs = costs[['year'] + list(costs.columns)[1:][::-1]]
+       
+        costs_table = self.make_plot_table(costs, sigfig = 2,  community = com, fname = com+"_costs.csv")
+        
+        #~ print costs_table[0]
+        #~ costs_table
+        ct2 = [[cost_type] for cost_type in costs.columns]
+        for idx in range(len(ct2)):
+            ct2[idx].append(float(costs[ct2[idx][0]].iloc[0]))
+        costs_table = ct2[1:]
+        costs_table.insert(0,['name','value'])
+        #~ if costs_data:
+        charts.append({'name':'costs', 'data': str(costs_table),#.replace('nan','null'), 
+                            'title':'Energy costs by Sector',
+                            'type': "'percent'",
+                            'pie': True,
+                            'plot':True,
+                            'type': "'pie'",})  
+        #~ else:
+            #~ charts.append({'name':'e_price', 'data': str(e), 
+                        #~ 'title':'Electricity Price ($/kWh)',
+                        #~ 'type': "'currency'",})    
+        ## ========================= END Energy costs by Sector ================
 
         msg = None
         if com in self.bad_data_coms:
@@ -1295,6 +1332,8 @@ class WebSummary(object):
         cats = {}
         
         for i in [i for i in sorted(self.results.keys()) if i.find(com) != -1 ]:
+            if com != i.split('+')[0]:
+                continue
             #~ print cats
             #~ print i
             if com.find('_intertie') == -1 and i.find('_intertie') != -1:
@@ -1603,37 +1642,69 @@ class WebSummary(object):
         gen_year = '(' + str(gen_year) + ')'
         g_year = '(' + str(g_year) + ')'
         leff_year = '(' + str(leff_year) + ')'
-        table = [[ False, "<b>Demographics</b>", "", "[DIVIDER]", "<b>Generation</b>", ""],
-                 [ False, "Population (2010)", int(pop),"[DIVIDER]", "Total generation " + str(gen_year), gen],
-                 [ False, "Households (2010)", int(hh),"[DIVIDER]", "Average load " + str(gen_year), al],
-                 [ False, "<b>Financial</b>", "","[DIVIDER]", "Generation from diesel " + str(g_year), g_diesel],
-                 [ False, "Forecasted diesel fuel cost " + str(fuel_year), diesel_c,"[DIVIDER]",  "Generation from hydropower " + str(g_year), g_hydro],
-                 [ False, "Forecasted heating fuel cost " + str(fuel_year), HF_c, "[DIVIDER]","Generation from wind " + str(g_year), g_wind],
-                 [ False, "Forecasted electricity cost " + str(fuel_year), elec_c,"[DIVIDER]",  "Diesel generator efficiency " + str(leff_year) , eff],
-                 [ False, "<b>Consumption</b>", "", "[DIVIDER]","Line losses estimated " + str(leff_year), ll],
-                 [ False, "Total electricity consumption " + str(con_year), con, "[DIVIDER]",'',''],
-                 [ False, 
-                    "Estimated residential heating fuel " + str(oil_year),
-                    res_gal, "[DIVIDER]",'',''],
-                 [ False, 
-                    "Estimated non-residential heating fuel " + str(oil_year),
-                    nr_gal, "[DIVIDER]",'',''],
-                 [ False,
-                    "Estimated utility diesel " + str(oil_year),
-                    utility, "[DIVIDER]",'',''],
-                 #~ [ True, "Generation", ""],
-                 #~ [ False, "Total generation " + str(gen_year), gen],
-                 #~ [ False, "Average load " + str(gen_year), al],
-                 #~ [ False, "Generation from diesel " + str(g_year), g_diesel],
-                 #~ [ False, "Generation from hydropower " + str(g_year), g_hydro],
-                 ##[ False, "Generation natural gas kWh " + str(g_year), g_ng],
-                 #~ [ False, "Generation from wind " + str(g_year), g_wind],
-                 ## [ False, "Generation solar kWh " + str(g_year), g_solar],
-                 ## [ False, "Generation biomass kWh " + str(g_year), g_biomass],
-                 #~ [ False, "Diesel generator efficiency " + str(leff_year) , eff],
-                 #~ [ False, "Line losses estimated " + str(leff_year), ll],
-                ]
-                 
+        
+        if res['community data'].intertie != 'child':
+            table = [
+             [ False, "<b>Demographics</b>", "", "[DIVIDER]", "<b>Generation</b>", ""],
+             [ False, "Population (2010)", int(pop),"[DIVIDER]", "Total generation " + str(gen_year), gen],
+             [ False, "Households (2010)", int(hh),"[DIVIDER]", "Average load " + str(gen_year), al],
+             [ False, "<b>Financial</b>", "","[DIVIDER]", "Generation from diesel " + str(g_year), g_diesel],
+             [ False, "Forecasted diesel fuel cost " + str(fuel_year), diesel_c,"[DIVIDER]",  "Generation from hydropower " + str(g_year), g_hydro],
+             [ False, "Forecasted heating fuel cost " + str(fuel_year), HF_c, "[DIVIDER]","Generation from wind " + str(g_year), g_wind],
+             [ False, "Forecasted electricity cost " + str(fuel_year), elec_c,"[DIVIDER]",  "Diesel generator efficiency " + str(leff_year) , eff],
+             [ False, "<b>Consumption</b>", "", "[DIVIDER]","Line losses estimated " + str(leff_year), ll],
+             [ False, "Total electricity consumption " + str(con_year), con, "[DIVIDER]",'',''],
+             [ False, 
+                "Estimated residential heating fuel " + str(oil_year),
+                res_gal, "[DIVIDER]",'',''],
+             [ False, 
+                "Estimated non-residential heating fuel " + str(oil_year),
+                nr_gal, "[DIVIDER]",'',''],
+             [ False,
+                "Estimated utility diesel " + str(oil_year),
+                utility, "[DIVIDER]",'',''],
+        ]
+        else:
+            link = '../' + res['community data'].parent.lower() +\
+                "_intertie/overview.html"
+            link_text = "See " + res['community data'].parent + " intertie"
+            link_element = '<a href="' + link + '">' + link_text + '</a>'
+            table = [
+             [ False, "<b>Demographics</b>", "", "[DIVIDER]", "<b>Generation</b>", ""],
+             [ False, "Population (2010)", int(pop),"[DIVIDER]",
+                "Total generation " + str(gen_year), link_element],
+             [ False, "Households (2010)", int(hh),"[DIVIDER]",
+                "Average load " + str(gen_year), link_element],
+             [ False, "<b>Financial</b>", "","[DIVIDER]",
+                "Generation from diesel " + str(g_year), link_element],
+             [ False,
+                "Forecasted diesel fuel cost " + str(fuel_year),
+                diesel_c,"[DIVIDER]",
+                "Generation from hydropower " + str(g_year), link_element],
+             [ False,
+                "Forecasted heating fuel cost " + str(fuel_year),
+                 HF_c, "[DIVIDER]", "Generation from wind " + str(g_year),
+                link_element],
+             [ False, "Forecasted electricity cost " + str(fuel_year),
+                elec_c,"[DIVIDER]",
+                "Diesel generator efficiency " + str(leff_year), link_element],
+             [ False, "<b>Consumption</b>", "", "[DIVIDER]",
+                "Line losses estimated " + str(leff_year),
+                link_element],
+             [ False, "Total electricity consumption " + str(con_year), 
+                link_element, 
+                "[DIVIDER]", "",""],#,'',''],
+             [ False, 
+                "Estimated residential heating fuel " + str(oil_year),
+                res_gal, "[DIVIDER]",'',''],
+             [ False, 
+                "Estimated non-residential heating fuel " + str(oil_year),
+                nr_gal, "[DIVIDER]",'',''],
+             [ False,
+                "Estimated utility diesel " + str(oil_year),
+                link_element,
+                "[DIVIDER]",'',''],
+        ]     
                  
         
         charts.insert(0,{'name':'overview', 'data':table, 
