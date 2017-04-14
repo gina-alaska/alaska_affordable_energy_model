@@ -247,6 +247,7 @@ class WebSummary(object):
         shutil.copy(os.path.join(pth,'templates','dropdown.css'),self.directory)
         shutil.copy(os.path.join(pth,'templates','map.js'),self.directory)
         shutil.copy(os.path.join(pth,'templates','tech_map.js'),self.directory)
+        shutil.copy(os.path.join(pth,'templates','leaflet.ajax.min.js'),self.directory)
         template = self.env.get_template('navbar.js')
         
         

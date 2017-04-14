@@ -270,7 +270,7 @@ L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={
     accessToken: 'pk.eyJ1IjoiZ2luYS1hbGFza2EiLCJhIjoiN0lJVnk5QSJ9.CsQYpUUXtdCpnUdwurAYcQ'
 }).addTo(mymap);
 
-layer = L.geoJson(geojson, {
+CommunitiesLayer = L.geoJson(geojson, {
   pointToLayer: function (feature, latlng) {
     return L.circleMarker(latlng, {
       radius: 8,
@@ -281,28 +281,30 @@ layer = L.geoJson(geojson, {
       color: '#000'
     });
   },
-  onEachFeature: function(feature, layer) {
+  onEachFeature: function(feature, CommunitiesLayer) {
     if (feature.properties) {
-      layer.bindPopup("<div class=''>" + feature.properties.Community + "</div><div><a href='"+ feature.properties.Community.replace(/ /g, "_").replace('\'',"") +"/overview.html' target='_blank'>View Community Info</a></div>");
+      CommunitiesLayer.bindPopup("<div class=''>" + feature.properties.Community + "</div><div><a href='"+ feature.properties.Community.replace(/ /g, "_").replace('\'',"") +"/overview.html' target='_blank'>View Community Info</a></div>");
     }
   }
 })
-layer.addTo(mymap);
-
-//~ var geojsonLayer = new L.GeoJSON.AJAX("https://raw.githubusercontent.com/gina-alaska/aea-rendr/master/geojson/renewable_energy_development_regions_4326.geojson");       
+CommunitiesLayer.addTo(mymap);
 
 
-//~ L.geoJSON(geojsonLayer, {
-    //~ style: function(feature) {
-        //~ switch (feature.properties.NAME) {
-            //~ case 'Aleutians': return {color: "#ff0000"};
-            //~ default: return {color: "#0000ff"};
-        //~ }
-    //~ }
-//~ }).addTo(mymap);
+var RegionsLayer = new L.GeoJSON.AJAX("https://raw.githubusercontent.com/gina-alaska/aea-rendr/master/geojson/renewable_energy_development_regions_4326.geojson");       
+
+mymap.on('zoomend', function() {
+    if (mymap.getZoom() >=3){
+        mymap.removeLayer(RegionsLayer);
+        mymap.addLayer(CommunitiesLayer);
+    }
+    else {
+        mymap.removeLayer(CommunitiesLayer);
+        mymap.addLayer(RegionsLayer);
+    }
+    
+})
 
 
-geojsonLayer.addTo(mymap);
 
 // add list of region with color key
 for (r in region_colors){
