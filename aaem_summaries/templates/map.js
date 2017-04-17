@@ -249,19 +249,31 @@ var geojson = {
 ]
 }
 
+// some of the regions have more than one "spelling"
+var alt_region_names = {
+      "Copper River Chugach":"Copper River\/Chugach",
+      "Kodiak":"Kodiak Region",
+      "Lower Yukon Kuskokwim":"Lower Yukon-Kuskokwim",
+      "Yukon-Koyukuk Upper Tanana":"Yukon-Koyukuk\/Upper Tanana"};
+
 
 var region_colors = {"Aleutians":'#505',
                   "Bering Straits":'#55f',
                   "Bristol Bay":'#5f5',
                   "Copper River\/Chugach":'#5ff',
+                  //~ "Copper River Chugach":'#5ff',
                   "Kodiak Region": '#f55',
+                  //~ "Kodiak": '#f55',
                   "Lower Yukon-Kuskokwim":'#f5f',
+                  //~ "Lower Yukon Kuskokwim":'#f5f',
                   "North Slope":'#ff5',
                   "Northwest Arctic":'#f00',
                   "Southeast":'#00f',
-                  "Yukon-Koyukuk\/Upper Tanana":'#050' };
+                  "Yukon-Koyukuk\/Upper Tanana":'#050',
+                  //~ "Yukon-Koyukuk Upper Tanana":'#050',
+                  "Railbelt": "#fff"};
 
-var mymap = L.map('mapid').setView([64.5, -146.5], 3);
+var mymap = L.map('mapid').setView([64.5, -146.5], 4);
 
 L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
     attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
@@ -283,23 +295,60 @@ CommunitiesLayer = L.geoJson(geojson, {
   },
   onEachFeature: function(feature, CommunitiesLayer) {
     if (feature.properties) {
-      CommunitiesLayer.bindPopup("<div class=''>" + feature.properties.Community + "</div><div><a href='"+ feature.properties.Community.replace(/ /g, "_").replace('\'',"") +"/overview.html' target='_blank'>View Community Info</a></div>");
+      CommunitiesLayer.bindPopup("<div class=''>" + feature.properties.Community + "</div><div><a href='"+ feature.properties.Community.replace(/ /g, "_").replace('\'',"") +"/overview.html' target='_blank'>View Community Info</a></div><div class=''>Energy Region: " + feature.properties['Energy Region'] + "</div>");
     }
   }
 })
 CommunitiesLayer.addTo(mymap);
 
 
-var RegionsLayer = new L.GeoJSON.AJAX("https://raw.githubusercontent.com/gina-alaska/aea-rendr/master/geojson/renewable_energy_development_regions_4326.geojson");       
+//~ var myStyle = {
+        //~ "color": "#ff7800",
+        //~ "weight": 5,
+        //~ "opacity": 0.65
+    //~ };
+url = "https://raw.githubusercontent.com/gina-alaska/aea-rendr/master/geojson/renewable_energy_development_regions_4326.geojson"
+var RegionsLayer = new L.GeoJSON.AJAX( url , {
+         style: function (feature){
+             name = feature["properties"]["NAME"];
+             //~ console.log(region_colors[feature["properties"]["NAME"]]);
+             if (name in alt_region_names) {
+                 name = alt_region_names[name];
+             }
+             console.log(name);
+             return {"color": region_colors[name]};
+         },
+     
+     onEachFeature: function(feature, RegionsLayer) {
+        if (feature.properties) {
+            if (feature.properties.NAME == "Railbelt"){
+                RegionsLayer.bindPopup("<div class=''>" + feature.properties.NAME + "</div><div>"+ feature.properties.NAME.replace(/ /g, "_").replace('\'',"") +" not part of energy model </div>");
+
+            } else {
+                name = feature.properties.NAME;
+                if (name == "Lower Yukon Kuskokwim") { // other alt regions names work
+                    name = alt_region_names[name];
+                }
+                RegionsLayer.bindPopup("<div class=''>" + feature.properties.NAME + "</div><div><a href='"+ name.replace(/ /g, "_").replace('\'',"") +".html' target='_blank'>View Region Info</a></div>");
+            }
+    }
+  }
+
+});       
+
+    
+
+    
 
 mymap.on('zoomend', function() {
-    if (mymap.getZoom() >=3){
+    if (mymap.getZoom() >=4){
         mymap.removeLayer(RegionsLayer);
         mymap.addLayer(CommunitiesLayer);
     }
     else {
         mymap.removeLayer(CommunitiesLayer);
         mymap.addLayer(RegionsLayer);
+        
     }
     
 })
@@ -307,10 +356,11 @@ mymap.on('zoomend', function() {
 
 
 // add list of region with color key
-for (r in region_colors){
-    r2 = r;
-    if (r2 == "Kodiak Region"){
-        r2 = "Kodiak";
-    }
-    document.getElementById('colorkey').innerHTML += '<a href="'+r2.replace(' ','_').replace('/','_').toLowerCase() + '.html" class="list-group-item"><span class="label label-default" style="margin-right:10px;color:' + region_colors[r] + ';background-color:' + region_colors[r] + ';"> color </span> ' + r + '</li> ';
-}
+//~ for (r in region_colors){
+    //~ r2 = r;
+    //~ if (r2 == "Kodiak Region"){
+        //~ r2 = "Kodiak";
+    //~ }
+    //~ if (r == "Railbelt") { continue; }
+    //~ document.getElementById('colorkey').innerHTML += '<a href="'+r2.replace(' ','_').replace('/','_').toLowerCase() + '.html" class="list-group-item"><span class="label label-default" style="margin-right:10px;color:' + region_colors[r] + ';background-color:' + region_colors[r] + ';"> color </span> ' + r + '</li> ';
+//~ }
