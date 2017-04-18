@@ -153,17 +153,21 @@ def create_regional_summary (results):
         comp = results[c][COMPONENT_NAME]
         #~ print comp
         bc_ratio = comp.get_BC_ratio()
+        #~ print bc_ratio
         bc_ratio = (not type(bc_ratio) is str) and (not np.isinf(bc_ratio))\
                                               and (bc_ratio > 1)
+        #~ print bc_ratio
         #~ print bc_ratio ,comp.get_BC_ratio()
         #~ return
         capex = round(comp.get_NPV_costs(),0)  if bc_ratio else 0
         net_benefit = round(comp.get_NPV_net_benefit(),0)  if bc_ratio else 0
-        try:
-            displaced_hoil = round(comp.propsed_hr,0) if bc_ratio else 0
-        except StandardError as e:
-            displaced_hoil = 0
+        #~ try:
+        displaced_hoil = round(comp.proposed_heat_recovery,0) if bc_ratio else 0
+        #~ except AttributeError as e:
+            #~ print e
+            #~ displaced_hoil = 0
         
+        #~ print displaced_hoil
         
         if results[c]['community data'].intertie == 'parent' or \
             not c.find('heat_recovery') != -1:
