@@ -1393,6 +1393,8 @@ class WebSummary(object):
                     elif comp in ["Wind Power",'Solar Power','Hydropower',
                                   'Transmission and Interties',
                                   'Diesel Efficiency']:
+                        #~ if comp == 'Diesel Efficiency':
+                            #~ print c.levelized_cost_of_energy
                         lcoe_e = c.levelized_cost_of_energy
                     else:
                         lcoe_hf = c.levelized_cost_of_energy
