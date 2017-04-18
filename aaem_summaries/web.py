@@ -294,8 +294,12 @@ class WebSummary(object):
                 
                 
                 r = [row] 
-                for i in d:
-                    r.append(int(i))
+                for i in range(len(d)):
+                    ## cols 2 & 3 are in $
+                    if i == 2 or i == 3:
+                        r.append('${:,.0f}'.format(d[i]))
+                    else:
+                        r.append('{:,.0f}'.format(d[i]))
                 data.append(r)
             
             
