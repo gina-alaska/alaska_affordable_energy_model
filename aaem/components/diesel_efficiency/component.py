@@ -290,7 +290,7 @@ class DieselEfficiency(AnnualSavings):
         float
             the total energy produced
         """
-        return self.get_fuel_total_saved() * constants.mmbtu_to_gal_HF
+        return self.generation# / constants.mmbtu_to_gal_HF
         
     def save_component_csv (self, directory):
         """Save the component output csv in directory
