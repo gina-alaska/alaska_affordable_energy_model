@@ -1686,7 +1686,7 @@ class WebSummary(object):
                 utility, "[DIVIDER]",'',''],
         ]
         else:
-            link = '../' + res['community data'].parent.lower() +\
+            link = '../' + res['community data'].parent.replace(' ','_') +\
                 "_intertie/overview.html"
             link_text = "See " + res['community data'].parent + " intertie"
             link_element = '<a href="' + link + '">' + link_text + '</a>'
