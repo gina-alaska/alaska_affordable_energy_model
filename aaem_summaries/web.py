@@ -1583,7 +1583,8 @@ class WebSummary(object):
             
             
         try:
-            yes = read_csv(os.path.join(self.model_root,'input_files', com, 'yearly_electricity_summary.csv'),comment='#')
+            yes = read_csv(os.path.join(self.model_root,'input_files', com, 
+                'yearly_electricity_summary.csv'),comment='#')
             #~ print yes.columns
         except IOError: 
             yes = None
@@ -1623,10 +1624,13 @@ class WebSummary(object):
                                 'generation_solar [kWh/year]',
                                 'generation_biomass [kWh/year]']].loc[g_year]
                                                                 
-            g_diesel = '{:,.0f} kWh'.format(generation['generation_diesel [kWh/year]'])
-            g_hydro = '{:,.0f} kWh'.format(generation['generation_hydro [kWh/year]'])
+            g_diesel = '{:,.0f} kWh'.\
+                format(generation['generation_diesel [kWh/year]'])
+            g_hydro = '{:,.0f} kWh'.\
+                format(generation['generation_hydro [kWh/year]'])
             #~ g_ng = generation['generation_natural_gas [kWh/year]']
-            g_wind = '{:,.0f} kWh'.format(generation['generation_wind [kWh/year]'])
+            g_wind = '{:,.0f} kWh'.\
+                format(generation['generation_wind [kWh/year]'])
             #~ g_solar = generation['generation_solar [kWh/year]']
             #~ g_biomass = generation['generation_biomass [kWh/year]']
             
@@ -1652,15 +1656,27 @@ class WebSummary(object):
         
         if res['community data'].intertie != 'child':
             table = [
-             [ False, "<b>Demographics</b>", "", "[DIVIDER]", "<b>Generation</b>", ""],
-             [ False, "Population (2010)", int(pop),"[DIVIDER]", "Total generation " + str(gen_year), gen],
-             [ False, "Households (2010)", int(hh),"[DIVIDER]", "Average load " + str(gen_year), al],
-             [ False, "<b>Financial</b>", "","[DIVIDER]", "Generation from diesel " + str(g_year), g_diesel],
-             [ False, "Forecasted diesel fuel cost " + str(fuel_year), diesel_c,"[DIVIDER]",  "Generation from hydropower " + str(g_year), g_hydro],
-             [ False, "Forecasted heating fuel cost " + str(fuel_year), HF_c, "[DIVIDER]","Generation from wind " + str(g_year), g_wind],
-             [ False, "Forecasted electricity cost " + str(fuel_year), elec_c,"[DIVIDER]",  "Diesel generator efficiency " + str(leff_year) , eff],
-             [ False, "<b>Consumption</b>", "", "[DIVIDER]","Line losses estimated " + str(leff_year), ll],
-             [ False, "Total electricity consumption " + str(con_year), con, "[DIVIDER]",'',''],
+             [ False, "<b>Demographics</b>", "", "[DIVIDER]",
+                "<b>Generation</b>", ""],
+             [ False, "Population (2010)", int(pop),"[DIVIDER]", 
+                "Total generation " + str(gen_year), gen],
+             [ False, "Households (2010)", int(hh),"[DIVIDER]", 
+                "Average load " + str(gen_year), al],
+             [ False, "<b>Financial</b>", "","[DIVIDER]", 
+                "Generation from diesel " + str(g_year), g_diesel],
+             [ False, "Forecasted diesel fuel cost " + str(fuel_year),
+                diesel_c,"[DIVIDER]", 
+                "Generation from hydropower " + str(g_year), g_hydro],
+             [ False, "Forecasted heating fuel cost " + str(fuel_year),
+                HF_c, "[DIVIDER]",
+                "Generation from wind " + str(g_year), g_wind],
+             [ False, "Forecasted electricity cost " + str(fuel_year),
+                elec_c,"[DIVIDER]",  
+                "Diesel generator efficiency " + str(leff_year) , eff],
+             [ False, "<b>Consumption</b>", "", "[DIVIDER]",
+                "Line losses estimated " + str(leff_year), ll],
+             [ False, "Total electricity consumption " + str(con_year), con,
+                "[DIVIDER]",'',''],
              [ False, 
                 "Estimated residential heating fuel " + str(oil_year),
                 res_gal, "[DIVIDER]",'',''],
@@ -1672,12 +1688,13 @@ class WebSummary(object):
                 utility, "[DIVIDER]",'',''],
         ]
         else:
-            link = '../' + res['community data'].parent.lower() +\
+            link = '../' + res['community data'].parent.replace(' ','_') +\
                 "_intertie/overview.html"
             link_text = "See " + res['community data'].parent + " intertie"
             link_element = '<a href="' + link + '">' + link_text + '</a>'
             table = [
-             [ False, "<b>Demographics</b>", "", "[DIVIDER]", "<b>Generation</b>", ""],
+             [ False, "<b>Demographics</b>", "", "[DIVIDER]",
+                "<b>Generation</b>", ""],
              [ False, "Population (2010)", int(pop),"[DIVIDER]",
                 "Total generation " + str(gen_year), link_element],
              [ False, "Households (2010)", int(hh),"[DIVIDER]",
@@ -1730,6 +1747,9 @@ class WebSummary(object):
         
             goals = goals.ix[com.replace('_intertie','').\
                                  replace('_',' ')].fillna('')
+            
+            if goals['Priority 1'] == '':
+                goals = None
         except IOError: 
             goals = None
            
