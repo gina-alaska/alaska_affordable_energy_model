@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.26.1]
+### changes
+- in diesel efficiency component. the LCOE numerator is set to the generation for the community 
+
 ## [0.26.0]
 ### changes
 - the source files and format for wind classes has changed in the preprocessor

@@ -1,5 +1,18 @@
 #Change Log
 
+## [0.26.1]
+### added
+- regions layer to map
+
+### changed
+- formating to numbers on charts on tech summary page
+
+### fixed
+- fixed missing values in heat recovery tech summary
+- many typos
+- urls with missing underscores
+
+
 ## [0.26.0]
 ### changed
 - costs by sector plot is now a pie chart and has been moved to end of consumption page
