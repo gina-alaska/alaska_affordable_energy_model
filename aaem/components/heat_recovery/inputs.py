@@ -1,7 +1,10 @@
 """
-inputs.py
+Heat Recovery inputs
+--------------------
 
-    input functions for Heat Recovery component
+input functions for Heat Recovery component
+    
+    
 """
 import os.path
 from pandas import read_csv
@@ -10,7 +13,18 @@ from yaml import load
 
 ## Functions for CommunityData IMPORT keys
 def process_data_import(data_dir):
-    """
+    """convert input data to useable form
+    
+    Parameters
+    ----------
+    data_dir : path
+        the path to the input data directory
+        
+    Returns
+    -------
+    dict
+        heat recovery project data as a dictonary
+    
     """
     #~ return {}
     #~ try:
@@ -21,19 +35,20 @@ def process_data_import(data_dir):
         #~ return {}
     
 def load_project_details (data_dir):
-    """
-    load details related to exitign projects
+    """load details related to exitign projects
     
-    pre:
-        data_dir is a directory with  'project_development_timeframes.csv',
-        and "project_name_projects.yaml" in it 
+    Parameters
+    ----------
+        data_dir : path
+            the path to the input data directory
     
-    post:
+    Returns
+    -------
         retunrns a dictonary wht the keys 'phase'(str), 
         'proposed capacity'(float), 'proposed generation'(float),
         'distance to resource'(float), 'generation capital cost'(float),
         'transmission capital cost'(float), 'operational costs'(float),
-        'expected years to operation'(int),
+        'expected years to operation'(int)
     """
     tag = os.path.split(data_dir)[1].split('+')
     data_dir = os.path.join(os.path.split(data_dir)[0],tag[0])

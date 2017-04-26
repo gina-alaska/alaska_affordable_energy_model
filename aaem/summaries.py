@@ -124,7 +124,7 @@ def building_log(coms, res_dir):
             
             name = c
             if name == 'Barrow':
-                name = 'Utqiagvik'
+                name = 'Utqiagvik (Barrow)'
             out.append([name,percent*100,percent2*100]+ count+act+est+elec+hf)
             
         except (KeyError,AttributeError, ZeroDivisionError)as e :
@@ -156,8 +156,8 @@ def building_log(coms, res_dir):
                     ).set_index('community').round(2)
     f_name = os.path.join(res_dir,'non-residential_building_summary.csv')
     fd = open(f_name,'w')
-    #~ fd.write(("# non residental building component building "
-             #~ "summary by community\n"))
+    fd.write(("# non residental building component building "
+             "summary by community\n"))
     fd.write(",%,%," + str(c)[1:-1].replace(" '",'').replace("'",'') + "," + \
              str(m)[1:-1].replace("' ",'').replace("'",'') + "," + \
              str(e)[1:-1].replace("' ",'').replace("'",'') + "," +\
@@ -223,7 +223,7 @@ def village_log (coms, res_dir):
                 
             name = c
             if name == 'Barrow':
-                name = 'Utqiagvik'
+                name = 'Utqiagvik (Barrow)'
             t = [name, consumption, population, 
                  coms[c]['community data'].get_item('community','region')] +\
                  res_con + com_con + ww_con + res_cost + com_cost + ww_cost 
@@ -302,7 +302,7 @@ def fuel_oil_log (coms, res_dir):
             total = res + com + wat + elec
             name = c
             if name == 'Barrow':
-                name = 'Utqiagvik'
+                name = 'Utqiagvik (Barrow)'
             out.append([name,elec,res,com,wat,total])
             
         except (KeyError,AttributeError) as e:
@@ -411,7 +411,7 @@ def forecast_comparison_log (coms, res_dir):
             
             name = c
             if name == 'Barrow':
-                name = 'Utqiagvik'
+                name = 'Utqiagvik (Barrow)'
             
             out.append([name,fc_res,comp_res,res_diff,res_per,
                           fc_non_res,comp_com,comp_wat,comp_non_res,
@@ -466,7 +466,7 @@ def electric_price_summary (coms, res_dir):
             
             name = c
             if name == 'Barrow':
-                name = 'Utqiagvik'
+                name = 'Utqiagvik (Barrow)'
             prices[name] = prices['price']
             del prices['price']
             prices = prices.T
@@ -524,7 +524,7 @@ def genterate_npv_summary (coms, res_dir):
 
         name = community
         if name == 'Barrow':
-            name = 'Utqiagvik'
+            name = 'Utqiagvik (Barrow)'
 
         f_name = os.path.join(res_dir,community.replace(' ','_'),
                                 community.replace(' ','_') + '_npv_summary.csv')
@@ -554,7 +554,7 @@ def consumption_summary (coms, res_dir):
             
             name = community
             if name == 'Barrow':
-                name = 'Utqiagvik'
+                name = 'Utqiagvik (Barrow)'
             con = fc.consumption.ix[2010:2040].values.T[0].tolist()
             consumption.append([name, region] + con)
         except AttributeError as e:

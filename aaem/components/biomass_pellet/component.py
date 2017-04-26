@@ -1,7 +1,7 @@
 """
-component.py
+Biomass Pellet component body
+-----------------------------
 
-    Biomass - Pellet component body
 """
 import numpy as np
 from pandas import DataFrame
@@ -17,18 +17,64 @@ from config import COMPONENT_NAME, UNKNOWN
 import aaem.components.biomass_base as bmb
 
 class BiomassPellet (bmb.BiomassBase):
-    """
+    """Biomass Pellet component of the Alaska Affordable Eenergy Model
+
+    Parameters
+    ----------
+    commnity_data : CommunityData
+        CommintyData Object for a community
+    forecast : Forecast
+        forcast for a community 
+    diagnostics : diagnostics, optional
+        diagnostics for tracking error/warining messeges
+    prerequisites : dictionary of components, optional
+        'Non-residential Energy Efficiency' component is a required prerequisite
+        for this component
+        
+    Attributes
+    ----------
+    diagnostics : diagnostics
+        for tracking error/warining messeges
+        initial value: diag or new diagnostics object
+    forecast : forecast
+        community forcast for estimating future values
+        initial value: forecast
+    cd : dictionary
+        general data for a community.
+        Initial value: 'community' section of community_data
+    comp_specs : dictionary
+        component specific data for a community.
+        Initial value: 'Biomass Pellet' section of community_data
+        
+    See also
+    --------
+    aaem.community_data : 
+        community data module, see for information on CommintyData Object
+    aaem.forecast : 
+        forecast module, see for information on Forecast Object
+    aaem.diagnostics :
+        diagnostics module, see for information on diagnostics Object
+    aaem.components.non_residential :
+        'Non-residential Energy Efficiency' component is a required prerequisite
+        for this component
+
     """
     def __init__ (self, community_data, forecast, 
                         diag = None, prerequisites = {}):
-        """
-        Class initialiser
+        """Class initialiser
+        
+        Parameters
+        ----------
+        commnity_data : CommunityData
+            CommintyData Object for a community
+        forecast : Forecast
+            forcast for a community 
+        diagnostics : diagnostics, optional
+            diagnostics for tracking error/warining messeges
+        prerequisites : dictionary of components, optional
+            prerequisite component data, 
+            'Non-residential Energy Efficiency' component
 
-        pre:
-            community_data is a CommunityData object. diag (if provided) should 
-        be a Diagnostics object
-        post:
-            the model can be run
         """
         self.component_name = COMPONENT_NAME
         super(BiomassPellet, self).__init__(community_data, forecast, 
@@ -38,14 +84,27 @@ class BiomassPellet (bmb.BiomassBase):
         self.reason = "OK"
         
     def run (self, scalers = {'capital costs':1.0}):
-        """
-        run the forecast model
+        """Runs the component. The Annual Total Savings,Annual Costs, 
+        Annual Net Benefit, NPV Benefits, NPV Costs, NPV Net Benefits, 
+        Benefit Cost Ratio, Levelized Cost of Energy, 
+        and Internal Rate of Return will all be calculated. 
         
-        pre:
-            self.cd should be the community library from a community data object
-        post:
-            TODO: define output values. 
-            the model is run and the output values are available
+        Parameters
+        ----------
+        scalers: dictionay of valid scalers, optional
+            Scalers to adjust normal run variables. 
+            See note on accepted  scalers
+        
+        Attributes
+        ----------
+        run : bool
+            True in the component runs to completion, False otherwise
+        reason : string
+            lists reason for failure if run == False
+            
+        Notes
+        -----
+            Accepted scalers: capital costs.
         """
         self.run = True
         self.reason = "OK"
@@ -53,7 +112,7 @@ class BiomassPellet (bmb.BiomassBase):
         tag = self.cd['name'].split('+')
         if len(tag) > 1 and tag[1] != 'biomass_pellet':
             self.run = False
-            self.reason = ("Not a biomass pellet project")
+            self.reason = ("Not a biomass pellet project.")
             return 
         
         if not self.cd["on road system"]:
@@ -65,7 +124,8 @@ class BiomassPellet (bmb.BiomassBase):
             self.fuel_price_per_unit = 0
             self.heat_diesel_displaced = 0
             self.reason = \
-                "Not on road system, so its assumed pellets cannot be deliverd."
+              "Not on road or marine highway system, so it is assumed that" +\
+              " pellets cannot be delivered cost effectively."
             return
         
         if self.cd["model heating fuel"]:
@@ -105,15 +165,23 @@ class BiomassPellet (bmb.BiomassBase):
 
             
     def calc_maintainance_cost(self):
-        """
-        calculate maitiance costs
+        """Calculate the project Maintenance costs Costs.
+        
+        Attributes
+        ----------
+        maintenance_costs : float
+            caclulated captial costs for heat recovery ($)
         """
         
         self.maintenance_cost = self.capital_costs * .01
 
     def calc_capital_costs (self):
-        """
-        calculate the capital costs
+        """Calculate the project Captial Costs.
+        
+        Attributes
+        ----------
+        capital_costs : float
+            caclulated captial costs for heat recovery ($)
         """
         self.capital_costs = self.max_boiler_output * \
                                 self.comp_specs["cost per btu/hr"]

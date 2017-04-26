@@ -1,39 +1,45 @@
 """
-outputs.py
+Transmission Outputs
+--------------------
 
-    ouputs functions for Transmission Line component
+output functions for Transmission component
+
 """
 import os.path
 import numpy as np
 from pandas import DataFrame
-from config import COMPONENT_NAME, DESCRIPTION
+from config import COMPONENT_NAME
 import aaem.constants as constants
-from aaem.components import comp_order
-import aaem.web_lib as wl
+from aaem.components import comp_order, definitions
+
 
 ## component summary
 def component_summary (results, res_dir):
-    """ 
-    creats the regional and communites summary for the component 
+    """Creates the regional and communites summary for the component in provided 
+    directory
     
-    inputs:
-        results: results from the model
-        res_dir: location to save file
+    Parameters
+    ----------
+    results : dictionay
+        results from the model, dictionay with each community or project 
+        as key
+    res_dir :  path
+        location to save file
     
-    outputs:
-        saves a summaries in res-dir
     """
     communities_summary (results, res_dir)
     save_regional_summary(create_regional_summary (results), res_dir)
 
 def communities_summary (coms, res_dir):
-    """
-    save the component summary
+    """Saves the component summary by community
     
-    pre:
-        res_dir: is a directory 
-        coms: set of results retuned from running the model.
-            component should exist for some communites in coms
+    Parameters
+    ----------
+    coms : dictionay
+        results from the model, dictionay with each community or project 
+        as key
+    res_dir :  path
+        location to save file
     """
     out = []
     for c in sorted(coms.keys()):
@@ -48,7 +54,7 @@ def communities_summary (coms, res_dir):
             connect_to = it.comp_specs['nearest community']\
                         ['Nearest Community with Lower Price Power']
                 
-            if it.reason == 'Not a transmission project':
+            if it.reason == 'Not a transmission project.':
                 continue
             try:
                 if it.connect_to_intertie:
@@ -133,7 +139,7 @@ def communities_summary (coms, res_dir):
                 
             name = c
             if name == 'Barrow':
-                name = 'Utqiagvik'
+                name = 'Utqiagvik (Barrow)'
             l = [name,  
                 connect_to,
                 start_yr,
@@ -190,7 +196,7 @@ def communities_summary (coms, res_dir):
             'Diesel Generator Efficiency in community to connect to',
             'Diesel Price - year 1 [$/gal] in community to connect',
             'Diesel Price - year 1 [$/gal] in community to connect to',
-            'Break Even Diesel Price [$/gal]',
+            'Breakeven Diesel Price [$/gal]',
             'Annual Transmission loss percentage',
             
 
@@ -204,7 +210,7 @@ def communities_summary (coms, res_dir):
             'Transmission NPV Costs [$]',
             'Transmission NPV Net benefit [$]',
             'Transmission Internal Rate of Return',
-            'Transmission Benefit Cost Ratio',
+            'Transmission Benefit-cost ratio',
             'notes'
             ]
         
@@ -212,18 +218,62 @@ def communities_summary (coms, res_dir):
     data = DataFrame(out,columns = cols).set_index('Community to connect')
     f_name = os.path.join(res_dir,
                 COMPONENT_NAME.replace(" ","_").lower() + '_summary.csv')
+   
+    fd = open(f_name, 'w')
+    fd.write(("# Transmission component summary by community\n"
+        '# Community to connect: name of main community.\n'
+        '# Community/Intertie to connect to: name of secondary community.\n'
+        '# Start Year: ' + definitions.START_YEAR + '\n'
+        '# project phase: '+ definitions.PHASE + '\n'
+        '# Miles of Transmission Line:'
+            ' Distance transmission line needs to be.\n'
+        '# Generation Displaced in community to connect [kWh]: Diesel '
+            'generation displaced in community\n'
+        '# Electricity Generated, Conserved, or transmitted [kWh]: \n'
+        '# Loss of Recovered Heat from Genset in community to connect [gal]: \n'
+        '# Heat Recovery Operational in community to connect: \n'
+        '# Diesel Generator Efficiency in community to connect: Estimated '
+            'efficiency of diesel generator in community in killowatt-'
+            'hours per gallon.\n'
+        '# Diesel Generator Efficiency in community to connect to: Estimated '
+            'efficiency of diesel generator in community connected to in '
+            'killowatt-hours per gallon.\n'
+        '# Diesel Price - year 1 [$/gal] in community to connect: '
+            'Diesel fuel price in the community during the first year of'
+            ' project operation.\n'
+        '# Diesel Price - year 1 [$/gal] in community to connect to: '
+            'Diesel fuel price in the community to connect to during the'
+            ' first year of project operation.\n'
+        '# Breakeven Diesel Price [$/gal]: ' + definitions.BREAK_EVEN_COST_DIESEL + '\n'
+        '# Annual Transmission loss percentage: Estimated transmission loss pecent.\n'
+        '# Levelized Cost Of Energy [$/kWh]:' + definitions.LCOE + '\n'
+        '# Status Quo generation Cost (Year 1): Estimated cost of generation in community if nothing changes\n'
+        '# Proposed generation cost (Year 1): Estimated cost of generation in community with improvements.\n'
+        '# Benefit from reduced generation cost (year 1): Difference in base and proposed cost of generation \n'
+        '# Transmission NPV benefits [$]: '+ definitions.NPV_BENEFITS + '\n'
+        '# Transmission NPV Costs [$]: ' + definitions.NPV_COSTS + '\n'
+        '# Transmission NPV Net benefit [$]: ' + definitions.NPV_NET_BENEFITS + '\n'
+        '# Transmission Internal Rate of Return: ' + definitions.IRR +'\n'
+        '# Transmission Benefit-cost ratio: ' + definitions.NPV_BC_RATIO +'\n'
+        '# notes: '+ definitions.NOTES +'\n'))
+    fd.close()
 
-    data.to_csv(f_name, mode='w')
+    data.to_csv(f_name, mode='a')
     
 def create_regional_summary (results):
-    """
-    create the regional summary for this component
+    """Creates the regional summary
     
-    inputs:
-        results: results from the model
-       
-    outputs:
-        returns summary as a data frame
+    Parameters
+    ----------
+    results : dictionay
+        results from the model, dictionay with each community or project 
+        as key
+            
+    Returns
+    -------
+    DataFrame 
+        containg regional results
+    
     """
     #~ print "start"
     regions = {}
@@ -285,146 +335,18 @@ def create_regional_summary (results):
     return summary
     
 def save_regional_summary (summary, res_dir):
-    """ 
-    inputs:
-        summary: summary dataframe
-        res_dir: location to save file
+    """Saves the summary by region
     
-    outputs:
-        save a regional summary in res-dir
+    Parameters
+    ----------
+    summary : Dataframe
+        compiled regional results
+    res_dir :  path
+        location to save file
+
     """
     f_name = os.path.join(res_dir, '__regional_' +
                 COMPONENT_NAME.lower().replace(' ','_').\
                     replace('(','').replace(')','') + '_summary.csv')
     summary.to_csv(f_name, mode='w', index_label='region')
     
-def generate_web_summary (web_object, community):
-    """
-    """
-    ## get the template
-    template = web_object.component_html
-    
-    ## get the component (the modelded one)
-  
-    modeled = web_object.results[community][COMPONENT_NAME]
-    start_year = modeled.start_year
-    end_year = modeled.actual_end_year
-    
-    ## for make table functions
-    projects = {'Modeled ' + COMPONENT_NAME:  modeled}
-    
-    ## get forecast stuff (consumption, generation, etc)
-    fc = modeled.forecast
-
-    generation = fc.generation_by_type['generation diesel'].\
-                                        ix[start_year:end_year]
-    
-    ## get the diesel prices
-    diesel_price = web_object.results[community]['community data'].\
-                            get_item('community','diesel prices').\
-                            get_projected_prices(start_year, end_year+1)
-           
-    ## get diesel generator efficiency
-    eff = modeled.cd['diesel generation efficiency']
-    
-    
-    
-    ## get generation fuel costs per year (modeled)
-    base_cost = generation/eff * diesel_price
-    base_cost.name = 'Base Cost'
-    
-    
-    table1 = wl.make_costs_table(community, COMPONENT_NAME, projects, base_cost,
-                              web_object.directory)
-    
-    
-    ## get generation fule used (modeled)
-    base_con = generation/eff 
-    base_con.name = 'Base Consumption'
-    table2 = wl.make_consumption_table(community, COMPONENT_NAME, 
-                                    projects, base_con,
-                                    web_object.directory,
-                                    'pre_intertie_generation_fuel_used')
-    
-    
-    
-    current = wl.create_electric_system_summary (web_object.results[community])
-    
-    ## info for modeled
-    info = create_project_details_list (modeled)
-        
-         
-    ## info table (list to send to template)
-    info_for_projects = [{'name': 'Current System', 'info':current},
-                            {'name':'Modeled Transmission Project','info':info}]
-            
-    
-    ## create list of charts
-    charts = [
-        {'name':'costs', 'data': str(table1).replace('nan','null'), 
-         'title': 'Estimated Electricity Generation Fuel Costs per Year',
-         'type': "'$'",'plot': True,},
-        {'name':'consumption', 'data': str(table2).replace('nan','null'), 
-         'title':'Diesel Consumed for Electricity Generation ',
-         'type': "'other'",'plot': True,}
-            ]
-        
-    ## generate html
-    ## generate html
-    msg = None
-    if community in web_object.bad_data_coms:
-        msg = web_object.bad_data_msg
-    
-    pth = os.path.join(web_object.directory, community.replace("'",''),
-                    COMPONENT_NAME.replace(' ','_').lower() + '.html')
-    with open(pth, 'w') as html:
-        html.write(template.render( info = info_for_projects,
-                                    type = COMPONENT_NAME, 
-                                    com = community.replace("'",'') ,
-                                    charts = charts,
-                                    summary_pages = ['Summary'] + comp_order ,
-                                    sections = web_object.get_summary_pages(),
-                                    
-                                    message = msg,
-                                    description =  DESCRIPTION,
-                                    metadata = web_object.metadata, 
-                                    ))
-    
-
-
-
-
-
-def create_project_details_list (project):
-    """
-    makes a projects details section for the html
-    """
-   
-    return [
-        {'words':'Capital Cost ($)', 
-            'value': '${:,.0f}'.format(project.get_NPV_costs())},
-        {'words':'Lifetime Savings ($)', 
-            'value': '${:,.0f}'.format(project.get_NPV_benefits())},
-        {'words':'Net Lifetime Savings ($)', 
-            'value': '${:,.0f}'.format(project.get_NPV_net_benefit())},
-        {'words':'Benefit Cost Ratio', 
-            'value': '{:,.3f}'.format(project.get_BC_ratio())},
-        {'words':'Nearest Community', 
-            'value': project.comp_specs['nearest community']\
-            ['Nearest Community with Lower Price Power'] },
-        {'words':'Distance', 
-            'value': '{:,.0f} miles'.format(project.comp_specs\
-            ['nearest community']['Distance to Community'] )},
-        {'words':'Maximum savings ($/kWh)', 
-            'value': project.comp_specs['nearest community']\
-            ['Maximum savings ($/kWh)'] },
-        #~ {'words':'Expected Yearly Generation (kWh/year)', 
-         #~ 'value': 
-                #~ '{:,.0f}'.format(project.proposed_load *\
-                                 #~ constants.hours_per_year)},
-
-        #~ {'words':'Output per 10kW Solar PV', 
-            #~ 'value': project.comp_specs['data']\
-                                         #~ ['Output per 10kW Solar PV']},
-            ]
-

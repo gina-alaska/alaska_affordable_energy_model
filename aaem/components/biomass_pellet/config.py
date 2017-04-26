@@ -1,7 +1,19 @@
 """
-config.py
+Biomass Pellet configuration 
+----------------------------
+    
+    Contains biomass pellet configuration info for 
+    community data yaml file, and other set-up requirements
+    
+    **Unique Configuration keys**
+    
+        energy density: energy density of biomass fuel (btu/ton)
+        
+        pellete efficiency: effcicieny of pellets (% as decimal)
 
-    Biomass - Pellet config info for community data yaml file
+        cost per btu/hr: cost per btu/hr ($)
+        
+        default pellete price: pellet cost per ton ($)
 """
 import aaem.components.biomass_base as bmb
 from copy import deepcopy
@@ -40,6 +52,3 @@ yaml_not_to_save = []
 ## list of prerequisites for module
 prereq_comps = deepcopy(bmb.prereq_comps)
 
-DESCRIPTION = """
-    This component calculates the potential Heating Oil that could be offset by installing a new Biomass Pellet Boiler
-"""

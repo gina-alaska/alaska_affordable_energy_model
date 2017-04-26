@@ -1,7 +1,7 @@
 """
-component.py
+Wind Power Component Body
+-------------------------
 
-    Wind Power component body
 """
 import numpy as np
 from pandas import DataFrame
@@ -15,18 +15,60 @@ import aaem.constants as constants
 from config import COMPONENT_NAME, UNKNOWN
 
 class WindPower(AnnualSavings):
-    """
+    """Transmission of the Alaska Affordable Eenergy Model
+
+    Parameters
+    ----------
+    commnity_data : CommunityData
+        CommintyData Object for a community
+    forecast : Forecast
+        forcast for a community 
+    diagnostics : diagnostics, optional
+        diagnostics for tracking error/warining messeges
+    prerequisites : dictionary of components, optional
+        prerequisite component data this component has no prerequisites 
+        leave empty
+        
+    Attributes
+    ----------
+    diagnostics : diagnostics
+        for tracking error/warining messeges
+        initial value: diag or new diagnostics object
+    forecast : forecast
+        community forcast for estimating future values
+        initial value: forecast
+    cd : dictionary
+        general data for a community.
+        Initial value: 'community' section of community_data
+    comp_specs : dictionary
+        component specific data for a community.
+        Initial value: 'wind power' section of community_data
+        
+    See also
+    --------
+    aaem.community_data : 
+        community data module, see for information on CommintyData Object
+    aaem.forecast : 
+        forecast module, see for information on Forecast Object
+    aaem.diagnostics :
+        diagnostics module, see for information on diagnostics Object
+
     """
     def __init__ (self, community_data, forecast, 
                         diag = None, prerequisites = {}):
-        """
-        Class initialiser
+        """Class initialiser.
+        
+        Parameters
+        ----------
+        commnity_data : CommunityData
+            CommintyData Object for a community
+        forecast : Forecast
+            forcast for a community 
+        diagnostics : diagnostics, optional
+            diagnostics for tracking error/warining messeges
+        prerequisites : dictionary of components, optional
+            prerequisite component data
 
-        pre:
-            community_data is a CommunityData object. diag (if provided) should 
-        be a Diagnostics object
-        post:
-            the model can be run
         """
         self.diagnostics = diag
         if self.diagnostics == None:
@@ -48,14 +90,28 @@ class WindPower(AnnualSavings):
         
     
     def run (self, scalers = {'capital costs':1.0}):
-        """
-        run the forecast model
+        """Runs the component. The Annual Total Savings,Annual Costs, 
+        Annual Net Benefit, NPV Benefits, NPV Costs, NPV Net Benefits, 
+        Benefit Cost Ratio, Levelized Cost of Energy, 
+        and Internal Rate of Return will all be calculated. There must be a 
+        known Heat Recovery project for this component to run.
         
-        pre:
-            self.cd should be the community library from a community data object
-        post:
-            TODO: define output values. 
-            the model is run and the output values are available
+        Parameters
+        ----------
+        scalers: dictionay of valid scalers, optional
+            Scalers to adjust normal run variables. 
+            See note on accepted  scalers
+        
+        Attributes
+        ----------
+        run : bool
+            True in the component runs to completion, False otherwise
+        reason : string
+            lists reason for failure if run == False
+            
+        Notes
+        -----
+            Accepted scalers: capital costs.
         """
         #~ #~ print self.comp_specs['resource data']
         #~ return
@@ -145,20 +201,20 @@ class WindPower(AnnualSavings):
                 self.reason = "Proposed load offset less than 0"
             else:
                 self.reason = \
-                    "Average load too small for viable wind generation"
+                    "Average load too small for viable wind generation."
             self.diagnostics.add_note(self.component_name, 
             "communites average load is not large enough to consider project")
         #~ print self.benefit_cost_ratio
         
     def calc_average_load (self):
-        """
-            calculate the average load of the system
-            
-        pre: 
-            self.generation should be a number (kWh/yr)
-            
-        post:
-            self.average_load is a number (kW/yr)
+        """Caclulate the Average Diesel load of the current system
+        
+        Attributes
+        ----------
+        generation: np.array
+            current diesel generation
+        average_load : float 
+            average disel load of current system
         """
         if self.comp_specs["project details"]['proposed capacity'] != UNKNOWN:
             self.average_load = None
@@ -169,17 +225,14 @@ class WindPower(AnnualSavings):
         #~ print 'self.average_load',self.average_load
         
     def calc_generation_wind_proposed (self):
-        """
-            calulate the proposed generation for wind
-        pre:
-            self.generation should be a number (kWh/yr), 
-            'percent generation to offset' is a decimal %
-            'resource data' is a wind data object
-            'assumed capacity factor' is a decimal %
+        """Calulate the proposed generation for wind.
         
-        post:
-            self.load_offest_proposed is a number (kW)
-            self.generation_wind_proposed is a number (kWh/yr)
+        Attributes
+        ----------
+        load_offset_proposed : float
+            kW capacity
+        generation_wind_proposed : float
+            kWh/year
         """
         if self.comp_specs["project details"]['proposed capacity'] != UNKNOWN:
             self.load_offset_proposed = \
@@ -229,12 +282,12 @@ class WindPower(AnnualSavings):
         #~ print 'self.generation_wind_proposed',self.generation_wind_proposed 
         
     def calc_transmission_losses (self):
-        """
-            calculate the line losses on proposed system
+        """calculate the line losses on proposed system
             
-        pre:
-            self.generation_wind_proposed is a number (kWh/yr). 
-            self.cd is a CommunityData object
+        Attributes
+        ----------
+        transmission_losses : flaot
+            transmission losses (kWh/year)
         """
         #~ print self.generation_wind_proposed, self.cd['line losses']
         self.transmission_losses = self.generation_wind_proposed * \
@@ -242,9 +295,12 @@ class WindPower(AnnualSavings):
         #~ print 'self.transmission_losses',self.transmission_losses
         
     def calc_exess_energy (self):
-        """
-            calculate the excess energy
-            TODO add more:
+        """Calculate the excess energy.
+            
+        Attributes
+        ----------
+        excess_energy : flaot
+            excess energy(kWh/year)
         """
         #~ print sorted(self.cd.keys())
         self.exess_energy = \
@@ -253,8 +309,12 @@ class WindPower(AnnualSavings):
         #~ print 'self.exess_energy',self.exess_energy
             
     def calc_net_generation_wind (self):
-        """
-            calculate the proposed net generation
+        """Calculate the proposed net generation.
+        
+        Attributes
+        ----------
+        net_wind_generation : flaot
+            net wind generation (kWh/year)
         """
         self.net_generation_wind = self.generation_wind_proposed  - \
                                     self.transmission_losses  -\
@@ -262,8 +322,12 @@ class WindPower(AnnualSavings):
         #~ print 'self.net_generation_wind',self.net_generation_wind 
             
     def calc_electric_diesel_reduction (self):
-        """ 
-            calculate the reduction in diesel due to the proposed wind
+        """Calculate the reduction in diesel due to the proposed wind.
+        
+        Attributes
+        ----------
+        electric_diesel_reduction : flaot
+            reduction in generation diesel (gal/year)
         """
         gen_eff = self.cd["diesel generation efficiency"]
             
@@ -272,14 +336,14 @@ class WindPower(AnnualSavings):
         electric_diesel = self.generation/gen_eff
         if self.electric_diesel_reduction > electric_diesel:
             self.electric_diesel_reduction = electric_diesel
-            
-        
-        
-        #~ print 'self.electric_diesel_reduction',self.electric_diesel_reduction
         
     def calc_diesel_equiv_captured (self):
-        """
-            calulate the somthing ???
+        """calcualte heat energy captured
+        
+        Attributes
+        ----------
+        diesel_equiv_captured : float
+            Gal/year
         """
         if self.generation_wind_proposed == 0:
             exess_percent = 0
@@ -303,39 +367,60 @@ class WindPower(AnnualSavings):
         #~ print 'self.diesel_equiv_captured ',self.diesel_equiv_captured 
         
     def calc_loss_heat_recovery (self):
-        """ 
-             calulate the somthing ???
+        """Calcualte heat recovery lost.
+        
+        Attributes
+        ----------
+        loss_heat_recovery : float
+            Gal/year
         """
         hr_used = self.cd['heat recovery operational']
         self.loss_heat_recovery = 0
         if hr_used:# == 'Yes': 
             self.loss_heat_recovery = self.electric_diesel_reduction * \
-            self.comp_specs['percent heat recovered']
+                self.comp_specs['percent heat recovered']
         #~ print 'self.loss_heat_recovery',self.loss_heat_recovery
         
     def calc_reduction_diesel_used (self):
-        """ 
-             calulate the somthing ???
+        """Calcualte Diesel generation reduction.
+        
+        Attributes
+        ----------
+        reduction_diesel_used : float
+            Gal/year
         """
         self.reduction_diesel_used = self.diesel_equiv_captured - \
                                      self.loss_heat_recovery
         #~ print 'self.reduction_diesel_used',self.reduction_diesel_used
         
     def get_fuel_total_saved (self):
-        """
-        returns the total fuel saved in gallons
+        """Get total fuel saved.
+        
+        Returns 
+        -------
+        float
+            the total fuel saved in gallons
         """
         return self.electric_diesel_reduction + self.reduction_diesel_used   
     
     def get_total_enery_produced (self):
-        """
-        returns the total energy produced
+        """Get total energy produced.
+        
+        Returns
+        ------- 
+        float
+            the total energy produced
         """
         return self.net_generation_wind
                                      
     def calc_maintainance_cost (self):
-        """ 
-            calculate the maintainance cost
+        """Calculate the maintenance costs.
+            
+        Attributes
+        ----------
+        maintainance_costs : float
+             total cost of improvments ($), calculated from transmission and
+             generagion costs
         """
         
         if str(self.comp_specs['project details']['operational costs']) \
@@ -352,8 +437,12 @@ class WindPower(AnnualSavings):
     
     # Make this do stuff
     def calc_capital_costs (self):
-        """
-        caclulate the progect capital costs
+        """Calculate the capital costs.
+            
+        Attributes
+        ----------
+        capital_costs : float
+             total cost of improvments ($),
         """
         powerhouse_control_cost = 0
         if not self.cd['switchgear suatable for RE']:
@@ -413,7 +502,17 @@ class WindPower(AnnualSavings):
     
     # Make this do stuff
     def calc_annual_electric_savings (self):
-        """
+        """Calculate annual electric savings created by the project.
+            
+        Attributes
+        ----------
+        baseline_generation_cost : np.array
+            current cost of generation ($/year)
+        proposed_generation_cost : np.array
+            proposed cost of generation ($/year)
+        annual_electric_savings : np.array
+            electric savings ($/year) are the difference in the base 
+        and proposed fuel costs
         """
         price = self.diesel_prices
         #TODO add rural v non rural
@@ -430,7 +529,12 @@ class WindPower(AnnualSavings):
         
     # Make this do sruff. Remember the different fuel type prices if using
     def calc_annual_heating_savings (self):
-        """
+        """Calculate annual heating savings created by the project.
+            
+        Attributes
+        ----------
+        annual_heating_savings : np.array
+            heating savings ($/year) 
         """
         price = (self.diesel_prices + self.cd['heating fuel premium'])
         
@@ -446,8 +550,12 @@ class WindPower(AnnualSavings):
 
 
     def save_component_csv (self, directory):
-        """
-        save the output from the component.
+        """Save the output from the component.
+        
+        Parameters
+        ----------
+        directory : path
+            path to save at
         """
         #~ return
         if not self.run:

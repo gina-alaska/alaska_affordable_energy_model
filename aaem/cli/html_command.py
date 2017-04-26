@@ -10,7 +10,7 @@ import shutil
 import sys
 import cli_lib
 
-from aaem import web
+from aaem_summaries import web
 
 
 class HtmlCommand(pycommand.CommandBase):
@@ -27,7 +27,7 @@ class HtmlCommand(pycommand.CommandBase):
                    "  " + str([o[0] + ': ' + o[1][2] + '. Use: --' +\
                    o[0] + ' (-'+o[1][0]+') ' +  (o[1][1] if o[1][1] else "")  +\
                    '' for o in optionList]).replace('[','').\
-                   replace(']','').replace(',','\n ') 
+                   replace(']','').replace(',','\n') 
                 )
                 
     def run(self):
@@ -74,8 +74,9 @@ class HtmlCommand(pycommand.CommandBase):
         ws = web.WebSummary(root, out, tag)
         print "Generating Summaries..."
         
+        #~ try:
+        ws.generate_all()
         try:
-            ws.generate_all()
             pth = os.path.join(out, 'Barrow')
             os.rename(pth, pth.replace('Barrow','Utqiagvik'))
             
@@ -92,8 +93,8 @@ class HtmlCommand(pycommand.CommandBase):
                     with open(f,'r') as in_f:
                         text = in_f.read()
                     with open(f,'w') as out_f:
-                        out_f.write(text.replace('Barrow','Utqiagvik'))
-            
+                        out_f.write(text.replace('Barrow','Utqiagvik').replace('ctobrw','Barrow'))
+                        #~ out_f.write()
             
             f = os.path.join(out,'map.js')
             with open(f,'r') as in_f:

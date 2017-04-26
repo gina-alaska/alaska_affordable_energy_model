@@ -1,0 +1,80 @@
+{% extends "layout.html" %}
+
+
+{% block title %}{{ com }} - {{ type }} summary{% endblock %}
+
+{% block additional_css %}
+<link href="{% if not in_root %}../{% endif %}summary.css" rel="stylesheet"> 
+<link href="{% if not in_root %}../{% endif %}footer.css" rel="stylesheet">
+<link href="{% if not in_root %}../{% endif %}dropdown.css" rel="stylesheet">
+{% endblock %}
+
+{% block JS %}
+    {% include 'plot.html' %}
+{% endblock %}
+
+{% block secondary_nav %}
+    {% include 'summary_nav.html' %}
+{% endblock %}
+
+ {% block header %} 
+
+    {{ super() }}
+ {% endblock %}
+
+    
+{% block left %}
+
+{% endblock %}
+    
+{% block full %}
+    <div class = 'charts'>
+        {% for chart in charts %}
+        <div class="panel panel-default">
+            <div class="panel-heading"> {{ chart.title[0].upper() }}{{ chart.title[1:].lower() }}  <small class="hidy" data-toggle="collapse" data-target="#{{ chart.title.replace(' ','_').replace(')','').replace('(','').replace('#','').replace('$','').replace(',','').replace('/','').lower() }}"></small> </div>
+                <div id="{{ chart.title.replace(' ','_').replace(')','').replace('(','').replace('#','').replace(',','').replace('/','').replace('$','').lower() }}" class="panel-collapse collapse in">
+                <div class="panel-body center-block">
+                    <div class="{{chart.name}}">
+                    {%if chart.plot %}
+                        {% if chart.pie %}
+                            <div style="float:left; width:30%"> <p>{{ chart.description }}</p></div>
+                            <div style="float:right; width:70%"><div id="{{chart.name}}_chart"></div></div>
+                        {% else %}
+                        <div id="{{chart.name}}_chart"></div>
+                        {% endif %}
+                    {% elif chart.table %}
+                        
+                        <table class="table table-striped table-condensed" {# style="float:right; width:70%" #} >
+                        <tbody>
+                            {% for row in chart.data %}<tr>
+                                {% for col in row[1:] %}
+                                    {% if row[0] %}<th> {{col}} </th>{% elif col == "[DIVIDER]" %} <td style="border-right:1px solid #ddd;"></td> {% else %}<td> {{col}} </td>  {% endif %}
+                                {% endfor %}
+                            </tr>{% endfor %}
+                        </tbody>
+                        </table>
+                    {% elif chart.links_list %}
+                        <div class="list-group">
+                        {% for row in chart.data %}
+                            <a href="{{ row.url }}" class="list-group-item">{{ row.text }}</a>
+                        {% endfor %}
+                        </div>
+                    {% else %}
+                        <p>This chart could not be generated. {{ chart.data }}</P>
+                    {% endif %}
+                    </div>
+                </div>
+        <div class="panel-footer">
+            {%if chart.plot %}
+            <button class="btn btn-default" type='button' id='{{ chart.name }}_button'>Plot/Table</button>
+            <div id='{{chart.name}}_png'></div>
+            <button class="btn btn-default" type='button' onclick="location.href='csv/{{ com }}_{{ chart.name }}.csv'">Table as csv</button>
+            {% endif %}
+        </div>
+        </div>
+        </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+

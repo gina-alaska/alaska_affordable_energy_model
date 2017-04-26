@@ -1,7 +1,9 @@
 """
-preprocessing.py
+Heat Recovery preprocessing 
+---------------------------
 
-    preprocessing functions for Heat Recovery component  
+preprocessing functions for Heat Recovery component  
+
 """
 import os.path
 import numpy as np
@@ -17,14 +19,27 @@ raw_data_files = ["heat_recovery_projects_potential.csv",
 
 ## preprocessing functons 
 def preprocess_header (ppo):
-    """
+    """Generate preprocesed data file header
+    
+    Parameters
+    ----------
+        ppo: aaem.prerocessor.Preprocessor
+            a preprocessing object
+            
+    Returns
+    ------- 
+        String of header info
     """
     return  "# " + ppo.com_id + " heat recovery data\n"+ \
             ppo.comments_dataframe_divide
     
 def preprocess (ppo):
-    """
+    """preprocess heat recovery data into heat_recovery_projects_potential.csv
     
+    Parameters
+    ----------
+        ppo: aaem.prerocessor.Preprocessor
+            a preprocessing object
     """
     #CHANGE THIS
     #~ return
@@ -83,14 +98,13 @@ preprocess_funcs = [preprocess]
 ### This function is called differently from the other preprocessor functions,
 ### so it does not need to be added to preprocess_funcs
 def preprocess_existing_projects (ppo):
-    """
-    preprocess data related to existing projects
+    """preprocess heat_recovery_projects_potential.csv into 
+    heat_recovery_projects.yaml, copy 'project_development_timeframes.csv'
     
-    pre:
-        ppo is a is a Preprocessor object. "wind_projects_potential.csv" and 
-        'project_development_timeframes.csv' exist in the ppo.data_dir 
-    post:
-        data for existing projets is usable by model
+    Parameters
+    ----------
+        ppo: aaem.prerocessor.Preprocessor
+            a preprocessing object
     """
     projects = []
     p_data = {}

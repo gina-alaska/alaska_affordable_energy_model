@@ -7,6 +7,7 @@ Vagrant.configure(2) do |config|
 
   config.vm.synced_folder ".", "/Users/vagrant/Desktop/aaem"
   config.vm.synced_folder "../alaska_affordable_energy_model-data", "/data"
+  config.vm.synced_folder "../omnibus-aaem", "/omnibus-aaem"
 
   config.vm.provider "virtualbox" do |vb|
     vb.gui = true

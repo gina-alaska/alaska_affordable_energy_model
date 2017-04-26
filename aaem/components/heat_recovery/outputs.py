@@ -1,33 +1,46 @@
 """
-outputs.py
+Heat Recovery Outputs
+---------------------
 
-    ouputs functions for Heat Recovery component
+output functions for Heat Recovery component
+
 """
 import os.path
 import numpy as np
 from pandas import DataFrame
-from config import COMPONENT_NAME, DESCRIPTION
+from config import COMPONENT_NAME
 import aaem.constants as constants
-from aaem.components import comp_order
-import aaem.web_lib as wl
+from aaem.components import comp_order, definitions
+
     
 ## component summary
 def component_summary (results, res_dir):
-    """ 
-    creats the regional and communites summary for the component 
+    """Creates the regional and communites summary for the component in provided 
+    directory
     
-    inputs:
-        results: results from the model
-        res_dir: location to save file
+    Parameters
+    ----------
+    results : dictionay
+        results from the model, dictionay with each community or project 
+        as key
+    res_dir :  path
+        location to save file
     
-    outputs:
-        saves a summaries in res-dir
     """
     communities_summary (results, res_dir)
     save_regional_summary(create_regional_summary (results), res_dir)
     
 def communities_summary (coms, res_dir):
-    """
+    """Saves the summary by: community heat_recovery_summary.csv
+    
+    Parameters
+    ----------
+    coms : dictionay
+        results from the model, dictionay with each community or project 
+        as key
+    res_dir :  path
+        location to save file
+    
     """
     out = []
     for c in sorted(coms.keys()):
@@ -58,7 +71,7 @@ def communities_summary (coms, res_dir):
             
             name = c
             if name == 'Barrow':
-                name = 'Utqiagvik'
+                name = 'Utqiagvik (Barrow)'
             l = [name,  
                  
                  
@@ -94,27 +107,45 @@ def communities_summary (coms, res_dir):
             'Heat Recovery NPV Costs [$]',
             'Heat Recovery NPV Net benefit [$]',
             'Heat Recovery Internal Rate of Return',
-            'Heat Recovery Benefit Cost Ratio',
+            'Heat Recovery Benefit-cost ratio',
             'notes'
             ]
     
     data = DataFrame(out,columns = cols).set_index('Community')#.round(2)
     f_name = os.path.join(res_dir,
                 COMPONENT_NAME.replace(" ","_").lower() + '_summary.csv')
-    #~ fd = open(f_name,'w')
-    #~ fd.write(("# " + COMPONENT_NAME + " summary\n"))
-    #~ fd.close()
-    data.to_csv(f_name, mode='w')
+    fd = open(f_name,'w')
+    fd.write(("# " + COMPONENT_NAME + " summary by community\n"
+            '# Community: ' + definitions.COMMUNITY + '\n'
+            '# Proposed Heat Recovery [gallons]: Proposed gallons of diesel saved \n'
+            '# Diesel price - year 1 [$/gal]: ' + definitions.PRICE_DIESEL + '\n' 
+            '# Heating Fuel Premimum [$/gal]: ' + definitions.PREMIUM + '\n'
+            '# Heating Fuel Price - year 1 [$/gal]: ' + definitions.PRICE_HF + '\n'
+            '# Break Even Heating Fuel Price [$/gal]: ' + definitions.BREAK_EVEN_COST_HF + '\n'
+            '# Levelized Cost Of Energy [$/kWh]:' + definitions.LCOE + '\n'
+            '# Heat Recovery NPV benefits [$]: '+ definitions.NPV_BENEFITS + '\n'
+            '# Heat Recovery NPV Costs [$]: ' + definitions.NPV_COSTS + '\n'
+            '# Heat Recovery NPV Net benefit [$]: ' + definitions.NPV_NET_BENEFITS + '\n'
+            '# Heat Recovery Internal Rate of Return: ' + definitions.IRR +'\n'
+            '# Heat Recovery Benefit-cost ratio: ' + definitions.NPV_BC_RATIO +'\n'
+            '# notes: '+ definitions.NOTES +'\n'))
+
+    fd.close()
+    data.to_csv(f_name, mode='a')
     
 def create_regional_summary (results):
-    """
-    create the regional summary for this component
+    """Creates the regional summary
     
-    inputs:
-        results: results from the model
-       
-    outputs:
-        returns summary as a data frame
+    Parameters
+    ----------
+    results : dictionay
+        results from the model, dictionay with each community or project 
+        as key
+            
+    Returns
+    -------
+        pandas DataFrame containg regional results
+    
     """
     regions = {}
     for c in results:
@@ -122,17 +153,21 @@ def create_regional_summary (results):
         comp = results[c][COMPONENT_NAME]
         #~ print comp
         bc_ratio = comp.get_BC_ratio()
+        #~ print bc_ratio
         bc_ratio = (not type(bc_ratio) is str) and (not np.isinf(bc_ratio))\
                                               and (bc_ratio > 1)
+        #~ print bc_ratio
         #~ print bc_ratio ,comp.get_BC_ratio()
         #~ return
         capex = round(comp.get_NPV_costs(),0)  if bc_ratio else 0
         net_benefit = round(comp.get_NPV_net_benefit(),0)  if bc_ratio else 0
-        try:
-            displaced_hoil = round(comp.propsed_hr,0) if bc_ratio else 0
-        except StandardError as e:
-            displaced_hoil = 0
+        #~ try:
+        displaced_hoil = round(comp.proposed_heat_recovery,0) if bc_ratio else 0
+        #~ except AttributeError as e:
+            #~ print e
+            #~ displaced_hoil = 0
         
+        #~ print displaced_hoil
         
         if results[c]['community data'].intertie == 'parent' or \
             not c.find('heat_recovery') != -1:
@@ -178,204 +213,18 @@ def create_regional_summary (results):
     return summary
     
 def save_regional_summary (summary, res_dir):
-    """ 
-    inputs:
-        summary: summary dataframe
-        res_dir: location to save file
+    """Saves the summary by region:  __regional_heat_recovery_summary.csv
     
-    outputs:
-        save a regional summary in res-dir
+    Parameters
+    ----------
+    summary : Dataframe
+        compiled regional results
+    res_dir :  path
+        location to save file
+
     """
     f_name = os.path.join(res_dir, '__regional_' +
                 COMPONENT_NAME.lower().replace(' ','_').\
                     replace('(','').replace(')','') + '_summary.csv')
     summary.to_csv(f_name, mode='w', index_label='region')
     
-def generate_web_summary (web_object, community):
-    """
-    """
-    ## get the template
-    template = web_object.env.get_template('component.html')
-    
-    
-    
-    ## get the component (the modelded one)
-  
-    modeled = web_object.results[community][COMPONENT_NAME]
-    
-    
-    
-    ## get the component (for projects)
-    ## also figure out the needed start/end years
-    projects = {}
-    #~ print community
-    projects, s1, e1 = wl.get_projects(web_object, community, 
-                                       COMPONENT_NAME, 'heat_recovery')
-    
-    #~ print projects
-
-    if projects == {}:
-        raise RuntimeError, "no projects or modeling info" 
-    
-    sy = modeled.start_year
-    ey = modeled.actual_end_year
-    if np.isnan(modeled.get_net_benefit()).all() :
-        sy = np.nan
-        ey = np.nan
-
-    start_year, end_year = wl.correct_dates (sy, s1, ey, e1)
-    
-    order = projects.keys()
-    if not np.isnan(modeled.get_net_benefit()).all():
-        projects['Modeled ' + COMPONENT_NAME] = modeled
-        order = ['Modeled ' + COMPONENT_NAME] + order
-
-    ## get forecast stuff (consumption, generation, etc)
-    fc = modeled.forecast
-
-    fuel_consumed = \
-        fc.heating_fuel_dataframe['heating_fuel_total_consumed [gallons/year]']\
-        .ix[start_year:end_year]
-
-    
-    ## get the diesel prices
-    diesel_price = web_object.results[community]['community data'].\
-                            get_item('community','diesel prices').\
-                            get_projected_prices(start_year, end_year+1) + \
-                        web_object.results[community]['community data'].\
-                            get_item('community','heating fuel premium')
-           
-    
-    ## get generation fuel costs per year (modeled)
-    base_cost = fuel_consumed  * diesel_price
-    base_cost.name = 'Base Cost'
-    
-    table1 = wl.make_costs_table(community, COMPONENT_NAME, projects, base_cost,
-                              web_object.directory)
-    
-    
-    #~ ## get generation fule used (modeled)
-    base_con = fuel_consumed
-    base_con.name = 'Base Consumption'
-    table2 = wl.make_consumption_table(community, COMPONENT_NAME, 
-                                    projects, base_con,
-                                    web_object.directory,
-                                    'proposed_heat_recovery')
-    
-    
-    ## info for modeled
-   
-        
-    ests = modeled.comp_specs['estimate data']
-    current = [
-        {'words':'Waste Heat Recovery Operational', 
-         'value': ests['Waste Heat Recovery Opperational']},
-        {'words':'Identified as priority by HR working group', 'value': ests['Identified as priority by HR working group']},
-        {'words':'Est. current annual heating fuel gallons displaced', 
-         'value': ests['Est. current annual heating fuel gallons displaced']},
-        {'words':'Est. potential annual heating fuel gallons displaced', 
-         'value': ests['Est. potential annual heating fuel gallons displaced']},
-    ]
-        
-    
-    info = create_project_details_list(modeled)
-         
-    ## info table (list to send to template)
-    
-    info_for_projects = [{'name': 'Current System', 'info':current}]
-    
-    if not np.isnan(modeled.get_net_benefit()).all():
-        info_for_projects.append({'name': 
-                                    'Modeled '+ COMPONENT_NAME + ' Project',
-                                  'info': info})
-    
-    ## get info for projects (updates info_for_projects )
-    for p in order:
-        project = projects[p]
-        name = project.comp_specs['project details']['name']
-        info = create_project_details_list(project)
-            
-        info_for_projects.append({'name':name,'info':info})
-            
-    
-    ## create list of charts
-    charts = [
-        {'name':'costs', 'data': str(table1).replace('nan','null'), 
-         'title': 'Estimated Heating Fuel Costs',
-         'type': "'$'",'plot': True,},
-        {'name':'consumption', 'data': str(table2).replace('nan','null'), 
-         'title':'Heating Fuel Consumed',
-         'type': "'other'",'plot': True,}
-            ]
-        
-    ## generate html
-    msg = None
-    if community in web_object.bad_data_coms:
-        msg = web_object.bad_data_msg
-    
-    pth = os.path.join(web_object.directory, community.replace("'",''),
-                    COMPONENT_NAME.replace(' ','_').lower() + '.html')
-    with open(pth, 'w') as html:
-        html.write(template.render( info = info_for_projects,
-                                    type = COMPONENT_NAME, 
-                                    com = community.replace("'",'') ,
-                                    charts = charts,
-                                    summary_pages = ['Summary'] + comp_order ,
-                                    sections = web_object.get_summary_pages(),
-                                    
-                                    description =  DESCRIPTION,
-                                    metadata = web_object.metadata,
-                                    message = msg
-                                    ))
-                                    
-                                    
-def create_project_details_list (project):
-    """
-    makes a projects details section for the html
-    """
-    try:
-        costs = '${:,.0f}'.format(project.get_NPV_costs())
-    except ValueError:
-        costs = project.get_NPV_costs()
-        
-    try:
-        benefits = '${:,.0f}'.format(project.get_NPV_benefits())
-    except ValueError:
-        benefits = project.get_NPV_benefits()
-        
-    try:
-        net_benefits = '${:,.0f}'.format(project.get_NPV_net_benefit())
-    except ValueError:
-        net_benefits = project.get_NPV_net_benefit()
-       
-    try:
-        BC = '{:,.2f}'.format(project.get_BC_ratio())
-    except ValueError:
-        BC = project.get_BC_ratio()
-        
-    try:
-        source = "<a href='" + \
-            project.comp_specs['project details']['link'] + "'> link </a>"
-    except StandardError as e:
-        source = "unknown"
-        
-    try:
-        notes = project.comp_specs['project details']['notes'] 
-    except StandardError as e:
-        notes = "N/a"
-    
-    
-    return [
-        {'words':'Capital Cost ($)', 
-            'value': costs},
-        {'words':'Lifetime Savings ($)', 
-            'value': benefits},
-        {'words':'Net Lifetime Savings ($)', 
-            'value': net_benefits},
-        {'words':'Benefit Cost Ratio', 
-            'value': BC},
-        {'words':'source', 
-            'value': source},
-        {'words':'notes', 
-            'value': notes},
-            ]

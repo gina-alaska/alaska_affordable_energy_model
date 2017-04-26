@@ -1,7 +1,12 @@
 """
-preprocessing.py
+Biomass Cordwood preprocessing 
+------------------------------
 
-    preprocessing functions for Biomass - Cordwood component  
+    preprocessing functions for Biomass Cordwood component
+    
+    .. note::
+        Uses Biomass Base preprocessor functions  
+
 """
 #~ import os.path
 #~ from pandas import read_csv

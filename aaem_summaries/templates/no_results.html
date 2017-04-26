@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+
+
+{% block title %}{{ com }} - {{ type }} summary{% endblock %}
+
+{% block additional_css %}
+<link href="../summary.css" rel="stylesheet"> 
+<link href="../footer.css" rel="stylesheet">
+<link href="../dropdown.css" rel="stylesheet">
+{% endblock %}
+
+{% block secondary_nav %}
+    {% include 'summary_nav.html' %}
+{% endblock %}
+
+{% block full %}
+<div class="panel panel-default">
+<!--
+    <div class="panel-heading">Component Not Viable</div>
+-->
+    <div class="panel-body center-block">
+         <H1>Component Not Viable</H1>
+         <p>Reason: {{ reason }}</p>
+    </div>
+    <!--<div class="panel-footer"></div>-->
+</div>    
+
+{% endblock %}

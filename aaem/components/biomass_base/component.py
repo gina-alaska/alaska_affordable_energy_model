@@ -1,7 +1,7 @@
 """
-component.py
+Biomass - Base component body
+-----------------------------
 
-    Biomass - Base component body
 """
 import numpy as np
 from pandas import DataFrame
@@ -15,19 +15,60 @@ import aaem.constants as constants
 from config import COMPONENT_NAME, UNKNOWN
 
 class BiomassBase (AnnualSavings):
-    """
-    class containing data and functions common to biomass componentes 
+    """Base Biomass of the Alaska Affordable Eenergy Model. Base component
+    does noting on it's own.
+
+    Parameters
+    ----------
+    commnity_data : CommunityData
+        CommintyData Object for a community
+    forecast : Forecast
+        forcast for a community 
+    diagnostics : diagnostics, optional
+        diagnostics for tracking error/warining messeges
+    prerequisites : dictionary of components, optional
+        Non-residential buildings is required
+        
+    Attributes
+    ----------
+    diagnostics : diagnostics
+        for tracking error/warining messeges
+        initial value: diag or new diagnostics object
+    forecast : forecast
+        community forcast for estimating future values
+        initial value: forecast
+    cd : dictionary
+        general data for a community.
+        Initial value: 'community' section of community_data
+    comp_specs : dictionary
+        component specific data for a community.
+        Initial value: 'Biomass Base' section of community_data
+        
+    See also
+    --------
+    aaem.community_data : 
+        community data module, see for information on CommintyData Object
+    aaem.forecast : 
+        forecast module, see for information on Forecast Object
+    aaem.diagnostics :
+        diagnostics module, see for information on diagnostics Object
+
     """
     def __init__ (self, community_data, forecast, 
                         diag = None, prerequisites = {}):
-        """
-        Class initialiser
+        """Class initialiser
+        
+        Parameters
+        ----------
+        commnity_data : CommunityData
+            CommintyData Object for a community
+        forecast : Forecast
+            forcast for a community 
+        diagnostics : diagnostics, optional
+            diagnostics for tracking error/warining messeges
+        prerequisites : dictionary of components, optional
+            prerequisite component data, None
 
-        pre:
-            community_data is a CommunityData object. diag (if provided) should 
-        be a Diagnostics object
-        post:
-            the model can be run
         """
         self.diagnostics = diag
         if self.diagnostics == None:
@@ -53,11 +94,13 @@ class BiomassBase (AnnualSavings):
         
         
     def load_prerequisite_variables (self, comps):
-        """
-        load variables from prerequisites
+        """Load variables from prerequisites, placeholder for child 
+        components if needed.
         
-        pre:
-             prerequisites: dictonary of componentes
+        Parameters
+        ----------
+        comps : Dict
+            Dictionary of components
         """
         tag = self.cd['name'].split('+')
         
@@ -67,15 +110,20 @@ class BiomassBase (AnnualSavings):
         self.get_non_res_values(non_res)
         
     def get_non_res_values (self, non_res):
-        """
-            get the values nessaery to run the biomass component from
-        the non residential buildings component 
+        """Get the values nessaery to run the biomass component from
+        the non residential buildings component.
         
-        pre:
-            non_res is a run non residential buildings componet
-        post:
-            self.non_res_sqft, and self.avg_gal_per_sqft
-        are numbers
+        Parameters
+        ----------
+        non_res : aaem.components.non_residential.CommunityBuildings 
+            is a run non residential buildings componet
+        
+        Attributes
+        ----------
+        non_res_sqft : float
+            square feet in community
+        avg_gal_per_sqft : float
+            average gallons per sq. ft. used in heating 
         """
         try:
             self.non_res_sqft = non_res.total_sqft_to_retrofit
@@ -85,26 +133,26 @@ class BiomassBase (AnnualSavings):
             self.avg_gal_per_sqft = 0
         
     def calc_heat_displaced_sqft (self):
-        """ 
-            calculates the sqft for which biomass will displace heating oil
-        as the heating fuel
+        """Calculates the sqarefootage for which biomass will displace heating 
+        oil as the heating fuel
         
-        pre:
-            self.non_res_sqft and ' assumed percent non-residential sqft heat displacement' in
-        in comp_specs are numbers
+        Attributes
+        ----------
+        heat_displaced_sqft : float
+            Square footage assumed to be heated by biomass.
         """
         self.heat_displaced_sqft = self.non_res_sqft * \
             self.cd['assumed percent non-residential sqft heat displacement']
         
     def calc_energy_output (self):
-        """
-        the net and monthly energy calculated
+        """Calculate the net and monthly energy output of heating oil.
         
-        pre:
-            self.avg_gal_per_sqft, self.cd['heating oil efficiency'],
-        and self.comp_specs['data']['Peak Month % of total'] 
-        post:
-            the net and monthly energy calculated
+        Attributes
+        ----------
+        average_net_energy_output : float
+            averge energy output of heating oil(mmbtu/sq. ft./hr).
+        peak_monthly_energy_output : float
+            peak energy out put for a month (mmbtu/sq. ft./hr)
         """
         self.average_net_energy_output = self.avg_gal_per_sqft * \
                                     ((constants.mmbtu_to_gal_HF ** -1) * 1E6 /\
@@ -114,8 +162,19 @@ class BiomassBase (AnnualSavings):
                                 self.comp_specs['data']['Peak Month % of total']
         
     def calc_max_boiler_output (self, efficiency):
-        """
-        calculate the max boiler out put
+        """Calculate the max boiler output.
+        
+        Parameters
+        ----------
+        efficiency : float
+            Efficiency of biomass fuel.
+            
+        Attributes
+        ----------
+        max_boiler_output_per_sf : float
+            boiler energy output per squarefoot (mmbtu/sq. ft.)
+        max_boiler_output_per : float
+            boiler energy output (mmbtu/hr)
         """
         self.max_boiler_output_per_sf = self.peak_monthly_energy_output / \
                                         efficiency
@@ -123,30 +182,51 @@ class BiomassBase (AnnualSavings):
                                     self.heat_displaced_sqft
         
     def calc_biomass_fuel_consumed (self, capacity_factor):
-        """
-        calc amount of biomass fuel consumed
+        """Calculate biomass fuel consumed
+        
+        Parameters
+        ----------
+        capacity_factor : float
+            TODO:
+            
+        Attributes
+        ----------
+        biomass_fuel_consumed : float
+            biomass fuel conusmed (units/year)
         """
         self.biomass_fuel_consumed = capacity_factor * self.max_boiler_output *\
                                      constants.hours_per_year /\
                                      self.comp_specs['energy density']
         
     def calc_diesel_displaced (self):
-        """
-        calculate the disel of set by biomass
+        """Calculate the disel of set by biomass
+        
+        Attributes
+        ----------
+        heat_diesel_displaced : float
+            heating fuel displaced (gal/year)
         """
         self.heat_diesel_displaced = self.biomass_fuel_consumed * \
                                      self.comp_specs['energy density'] * \
                                      (constants.mmbtu_to_gal_HF / 1e6)
         
     def calc_maintainance_cost(self):
-        """
-        calculate the maintanence costs
+        """Calculate the maintanence costs placeholder
+        
+        Attributes
+        ----------
+        maintenance_cost : float
+            set to zero
         """
         self.maintenance_cost = 0
         
     def calc_proposed_biomass_cost (self, price):
-        """ 
-            calcualte cost of biomass fuel
+        """Calcualte cost of biomass fuel.
+        
+        Attributes
+        ----------
+        proposed_biomass_cost : Array of floats
+            proposed biomass cost ($/year)
         """
         self.proposed_biomass_cost = price * self.biomass_fuel_consumed + \
                         self.maintenance_cost
@@ -174,43 +254,63 @@ class BiomassBase (AnnualSavings):
         
         # Make this do stuff
     def calc_capital_costs (self):
-        """
-        caclulate the capital costs
+        """Caclulate the capital costs placeholder.
         """
         pass
         
     
     # Make this do stuff
     def calc_annual_electric_savings (self):
-        """
-        no electric savings 
+        """Set electric savings to zero as there are none.
+        
+        Attributes
+        ----------
+        annual_electric_savings : float
+            set to zero
         """
         self.annual_electric_savings = 0
         
         
     # Make this do sruff. Remember the different fuel type prices if using
     def calc_annual_heating_savings (self):
-        """
-        clacluate the annual heating savings
+        """Calcluate the annual heating savings
+        
+        Attributes
+        ----------
+        annual_heating_savings : Array, Floats
+            savings in heating cost ($/year)
         """
         self.annual_heating_savings = self.displaced_heating_oil_price -\
                                       self.proposed_biomass_cost 
-
+        
     def get_fuel_total_saved (self):
-        """
-        returns the total fuel saved in gallons
+        """Get total fuel saved
+        
+        Returns
+        ------- 
+        float
+            the total fuel saved in gallons
         """
         return self.heat_diesel_displaced
                                 
     def get_total_enery_produced (self):
-        """
-        returns the total energy produced
+        """Get total energy produced
+        
+        Returns
+        ------- 
+        float
+            the total energy produced
         """
         return self.biomass_fuel_consumed * self.comp_specs['energy density']/ 1e6
 
     def save_component_csv (self, directory):
-        """
-        save the component output csv in directory
+        """Save the component output csv in directory, place holder
+
+        Parameters
+        ----------
+        directory : path
+            output directory
+
         """
         if not self.run:
             return

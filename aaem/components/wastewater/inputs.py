@@ -1,14 +1,26 @@
 """
-inputs.py
+Water Wastewater Inputs
+-----------------------
 
-    input functions for Water/Waste Water efficiency component
+input functions for Water Wastewater component
+    
 """
 import os.path
 from pandas import read_csv
 
 ## Functions for CommunityData IMPORT keys
 def process_data_import(data_dir):
-    """
+    """Load data from wastewater_data.csv
+    
+    Parameters
+    ----------
+    data_dir: path
+        path to data directory for community
+        
+    Returns
+    -------
+    dict
+        transmission data
     """
     data_file = os.path.join(data_dir, "wastewater_data.csv")
     

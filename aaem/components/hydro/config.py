@@ -1,7 +1,17 @@
 """
-config.py
-
-    Hydropower config info for community data yaml file
+Hydropower configuration 
+------------------------
+    
+    Contains configuration info for community data yaml file, and 
+     other set-up requirements
+    
+    **Unique Configuration keys**
+    
+        'percent heat recovered' : percent heat recovered
+        
+        'percent o&m': percent of captial costs for o&m
+    
+    
 """
 COMPONENT_NAME = "Hydropower"
 IMPORT = "IMPORT"
@@ -36,7 +46,3 @@ yaml_not_to_save = []
 
 ## list of prerequisites for module
 prereq_comps = []
-
-DESCRIPTION = """
-    This component calculates the potential electricity generation from diesel that could be offset by installing new Hydropower generation infrastructure. This component only uses existing proposed projects to base its calculations on, and does not attempt to model values
-"""

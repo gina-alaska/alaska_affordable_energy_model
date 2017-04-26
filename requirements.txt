@@ -6,3 +6,4 @@ pycommand
 matplotlib
 Sphinx
 jinja2
+numpydoc

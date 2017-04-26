@@ -1,5 +1,28 @@
 #Change Log
 
+## [0.26.1]
+### changes
+- in diesel efficiency component. the LCOE numerator is set to the generation for the community 
+
+## [0.26.0]
+### changes
+- the source files and format for wind classes has changed in the preprocessor
+
+
+## [0.25.2]
+### changes
+- barrow is listed as a alternate name for Utqiagvik
+
+
+## [0.25.1]
+### added
+- headers to component csv files
+
+## [0.25.0]
+### updated
+- split out html summary code
+- updated all comments based on numpydoc format
+
 ## [0.24.6]
 ### updated 
 - added google analytics code to docs and summaries

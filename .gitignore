@@ -5,3 +5,4 @@
 *.egg-info
 /model/*
 docs/build/*
+/web_sync/*

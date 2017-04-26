@@ -1,7 +1,7 @@
 """
-component.py
+Biomass Cordwood component body
+-------------------------------
 
-    Biomass - Cordwood component body
 """
 import numpy as np
 from pandas import DataFrame
@@ -17,19 +17,64 @@ from config import COMPONENT_NAME, UNKNOWN
 import aaem.components.biomass_base as bmb
 
 class BiomassCordwood (bmb.BiomassBase):
-    """
-    cordwood biomass componenet
+    """Biomass Cordwood component of the Alaska Affordable Eenergy Model
+
+    Parameters
+    ----------
+    commnity_data : CommunityData
+        CommintyData Object for a community
+    forecast : Forecast
+        forcast for a community 
+    diagnostics : diagnostics, optional
+        diagnostics for tracking error/warining messeges
+    prerequisites : dictionary of components, optional
+        'Non-residential Energy Efficiency' component is a required prerequisite
+        for this component
+        
+    Attributes
+    ----------
+    diagnostics : diagnostics
+        for tracking error/warining messeges
+        initial value: diag or new diagnostics object
+    forecast : forecast
+        community forcast for estimating future values
+        initial value: forecast
+    cd : dictionary
+        general data for a community.
+        Initial value: 'community' section of community_data
+    comp_specs : dictionary
+        component specific data for a community.
+        Initial value: 'Biomass Cordwood' section of community_data
+        
+    See also
+    --------
+    aaem.community_data : 
+        community data module, see for information on CommintyData Object
+    aaem.forecast : 
+        forecast module, see for information on Forecast Object
+    aaem.diagnostics :
+        diagnostics module, see for information on diagnostics Object
+    aaem.components.non_residential :
+        'Non-residential Energy Efficiency' component is a required prerequisite
+        for this component
+
     """
     def __init__ (self, community_data, forecast, 
                         diag = None, prerequisites = {}):
-        """
-        Class initialiser
+        """Class initialiser
+        
+        Parameters
+        ----------
+        commnity_data : CommunityData
+            CommintyData Object for a community
+        forecast : Forecast
+            forcast for a community 
+        diagnostics : diagnostics, optional
+            diagnostics for tracking error/warining messeges
+        prerequisites : dictionary of components, optional
+            prerequisite component data, 
+            'Non-residential Energy Efficiency' component
 
-        pre:
-            community_data is a CommunityData object. diag (if provided) should 
-        be a Diagnostics object
-        post:
-            the model can be run
         """
         self.component_name = COMPONENT_NAME
         super(BiomassCordwood, self).__init__(community_data, forecast, 
@@ -42,21 +87,34 @@ class BiomassCordwood (bmb.BiomassBase):
         
     
     def run (self, scalers = {'capital costs':1.0}):
-        """
-        run the forecast model
+        """Runs the component. The Annual Total Savings,Annual Costs, 
+        Annual Net Benefit, NPV Benefits, NPV Costs, NPV Net Benefits, 
+        Benefit Cost Ratio, Levelized Cost of Energy, 
+        and Internal Rate of Return will all be calculated. 
         
-        pre:
-            self.cd should be the community library from a community data object
-        post:
-            TODO: define output values. 
-            the model is run and the output values are available
+        Parameters
+        ----------
+        scalers: dictionay of valid scalers, optional
+            Scalers to adjust normal run variables. 
+            See note on accepted  scalers
+        
+        Attributes
+        ----------
+        run : bool
+            True in the component runs to completion, False otherwise
+        reason : string
+            lists reason for failure if run == False
+            
+        Notes
+        -----
+            Accepted scalers: capital costs.
         """
         s_key = 'Sufficient Biomass for 30% of Non-residential buildings'
         
         tag = self.cd['name'].split('+')
         if len(tag) > 1 and tag[1] != 'biomass_wood':
             self.run = False
-            self.reason = "Not a biomass cordwood project"
+            self.reason = "Not a biomass cordwood project."
             return 
         
         if not self.comp_specs['data'][s_key]:
@@ -67,7 +125,7 @@ class BiomassCordwood (bmb.BiomassBase):
             self.biomass_fuel_consumed = 0
             self.fuel_price_per_unit = 0
             self.heat_diesel_displaced = 0
-            self.reason = s_key + ' not available.'
+            self.reason = s_key[0].upper() + s_key[1:].lower() + ' not available.'
             return
         
         if self.cd["model heating fuel"]:
@@ -109,16 +167,24 @@ class BiomassCordwood (bmb.BiomassBase):
             self.calc_levelized_costs(self.maintenance_cost +  fuel_cost)
             
     def calc_number_boilers (self):
-        """
-        caclulate the number of boilers
+        """caclulate the number of boilers
+        
+        Attributes
+        ----------
+        number_boilers : int
+            Number of boilers to install
         """
         self.number_boilers = \
             round(self.max_boiler_output / \
             self.comp_specs["boiler assumed output"] )
             
     def calc_maintainance_cost(self):
-        """
-        calculate the opperation and maintaince const 
+        """Calculate the opperation and maintaince const 
+       
+        Attributes
+        ----------
+        maintenance_costs : float
+            caclulated captial costs for heat recovery ($)
         """
         operation = self.biomass_fuel_consumed * \
                     self.comp_specs["hours operation per cord"] *\
@@ -130,8 +196,12 @@ class BiomassCordwood (bmb.BiomassBase):
         self.maintenance_cost = operation + maintenance
 
     def calc_capital_costs (self):
-        """
-        calculate the capital costs
+        """Calculate the capital costs
+        
+        Attributes
+        ----------
+        capital_costs : float
+            caclulated captial costs for heat recovery ($)
         """
         self.capital_costs = self.number_boilers * \
                              self.comp_specs["boiler assumed output"] *\

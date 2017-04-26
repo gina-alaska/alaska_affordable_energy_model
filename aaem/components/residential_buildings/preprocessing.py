@@ -1,7 +1,9 @@
 """
-preprocessing.py
+Residential Efficiency preprocessing 
+------------------------------------
 
-    preprocessing functions for Residential Building Efficiency component  
+preprocessing functions for Residential Efficiency component  
+
 """
 #~ import os.path
 #~ from pandas import read_csv

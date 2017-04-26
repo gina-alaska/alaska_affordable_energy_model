@@ -1,15 +1,17 @@
 from importlib import import_module
+import definitions as definitions
+
 
 comp_lib = {
     "Residential Energy Efficiency": "residential_buildings",
-    "Non-residential Energy Efficiency": "non-residential",
+    "Non-residential Energy Efficiency": "non_residential",
     "Water and Wastewater Efficiency": "wastewater",
     "Wind Power": "wind_power",
     'Solar Power': "solar_power",
     'Biomass for Heat (Cordwood)': "biomass_wood",
     'Biomass for Heat (Pellet)': 'biomass_pellet',
     'Residential ASHP': 'ashp_res',
-    'Non-Residential ASHP': 'ashp_non-res',
+    'Non-Residential ASHP': 'ashp_non_res',
     'Hydropower': 'hydro',
     'Transmission and Interties': 'transmission',
     'Heat Recovery': 'heat_recovery',
@@ -39,3 +41,5 @@ def get_raw_data_files():
         except AttributeError:
             pass
     return raw_data_files
+    
+

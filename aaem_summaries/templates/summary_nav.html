@@ -1,0 +1,33 @@
+<!-- community summary navigation -->
+<nav class="navbar navbar-default navbar-summary">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-summaries" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#"> <span class="page-title">{{ com.replace('_', ' ') }}{% if com.lower() == 'barrow' %} <small> (ctobrw) </small>{% endif %}<span class="page-subtitle"> {{ type }}</span></span></a>
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="navbar-summaries">
+      <ul class="nav navbar-nav navbar-right">
+        
+        {% for section in sections %}
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{ section.name }} <span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            {% for page in section.pages %}<li>
+        <a href="../{{ com.replace('\'','') }}/{{ page.lower().replace(' ', "_").replace(")", "").replace("(", "") }}.html">
+          {{ page }} 
+        </a></li>{% endfor %}
+          </ul>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</nav>

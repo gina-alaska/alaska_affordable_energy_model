@@ -1,7 +1,24 @@
 """
-config.py
-
-    Wind Power config info for community data yaml file
+Wind Power Configuration 
+------------------------
+    
+    Contains Transmission configuration info for community
+    data yaml file, and other set-up requirements
+    
+    **Unique Configuration keys**
+    
+        'default distance to resource'
+        'average load limit'
+        'percent generation to offset'
+        'resource data'
+        'secondary load'
+        'secondary load cost'
+        'road needed for transmission line'
+        'est. transmission line cost'
+        'costs'
+        'percent o&m'
+        'percent heat recovered'
+    
 """
 COMPONENT_NAME = "Wind Power"
 IMPORT = "IMPORT"
@@ -73,8 +90,3 @@ yaml_not_to_save = ['costs']
 ## list of prerequisites for module
 prereq_comps = []
 
-
-
-DESCRIPTION = """
-   This component calculates the potential electricity generation from diesel that could be offset by installing new wind power infrastructure. 
-"""

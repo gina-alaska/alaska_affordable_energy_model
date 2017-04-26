@@ -1,7 +1,12 @@
 """
-inputs.py
+Biomass Cordwood inputs
+-----------------------
 
-    input functions for Biomass - Cordwood component
+    input functions for Biomass cordwood component
+    
+    .. note::
+        Uses Biomass Base input functions
+    
 """
 #~ import os.path
 #~ from pandas import read_csv

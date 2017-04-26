@@ -1,51 +1,30 @@
-aaem.components.template_component package
-==========================================
+******************
+Template Component
+******************
 
-Submodules
-----------
+The Tempplate Componente is desgined as a starting place for new components
 
-aaem.components.template_component.component module
----------------------------------------------------
 
-.. automodule:: aaem.components.template_component.component
+.. autoclass:: aaem.components.template_component.component.ComponentName
     :members:
     :undoc-members:
     :show-inheritance:
-
-aaem.components.template_component.component_template module
-------------------------------------------------------------
-
-.. automodule:: aaem.components.template_component.component_template
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-aaem.components.template_component.config module
-------------------------------------------------
 
 .. automodule:: aaem.components.template_component.config
     :members:
     :undoc-members:
     :show-inheritance:
 
-aaem.components.template_component.inputs module
-------------------------------------------------
 
 .. automodule:: aaem.components.template_component.inputs
     :members:
     :undoc-members:
     :show-inheritance:
 
-aaem.components.template_component.outputs module
--------------------------------------------------
-
 .. automodule:: aaem.components.template_component.outputs
     :members:
     :undoc-members:
     :show-inheritance:
-
-aaem.components.template_component.preprocessing module
--------------------------------------------------------
 
 .. automodule:: aaem.components.template_component.preprocessing
     :members:
@@ -53,10 +32,3 @@ aaem.components.template_component.preprocessing module
     :show-inheritance:
 
 
-Module contents
----------------
-
-.. automodule:: aaem.components.template_component
-    :members:
-    :undoc-members:
-    :show-inheritance:
