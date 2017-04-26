@@ -9,6 +9,23 @@ from importlib import import_module
 import aaem.config as config
 from aaem.components import comp_lib, comp_order
 
+def save_formated_generation_numbers (generation_numbers, indent = '  ', nl = '\n'):
+    text = ""
+    for row in [
+        'year', 
+        'generation diesel',
+        'generation hydro',
+        'generation wind',
+        'generation solar',
+        'generation natural gas',
+        'generation biomass',
+    ]:
+        text += indent * 2 + row +': ' + str(generation_numbers[row]) + nl
+    #~ print text
+    return text
+    
+
+
 def save_config (filename, config, comments, s_order = None, i_orders = None, 
                         indent = '  ' , header = ''):
     """
@@ -50,14 +67,19 @@ def save_config (filename, config, comments, s_order = None, i_orders = None,
                     except KeyError:
                         pass
                     text += nl
-                    for sub_item in config[section][item]:
-                        text += indent + indent
-                        text += str(sub_item) + ': '  +\
-                                str(config[section][item][sub_item])
-                       
-                        text += nl
+                    if section == 'community' and item == 'generation numbers':
+                        text += save_formated_generation_numbers(config[section][item], indent, nl)
+                        print text
+                    else:
+                        for sub_item in config[section][item]:
+                            text += indent + indent
+                            text += str(sub_item) + ': '  +\
+                                    str(config[section][item][sub_item])
+                           
+                            text += nl
                     continue
-            except KeyError:
+            except KeyError as e :
+                #~ print e
                 pass
             
             try:
@@ -74,6 +96,8 @@ def save_config (filename, config, comments, s_order = None, i_orders = None,
         
     with open(filename, 'w') as conf:
         conf.write(text)
+        
+
     
 def save_structure ( filename = "default_config.yaml"):
     """

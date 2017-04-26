@@ -790,7 +790,17 @@ class CommunityData (object):
         copy['forecast']["population"] = "--see input_data"
         copy['Water and Wastewater Efficiency']["data"] = "--see input_data"
         copy["community"]["electric non-fuel prices"] = "--see input_data"
-        copy["community"]["generation numbers"] =  "--see input_data"
+       
+
+        #~ vals = [[int(f) for f in copy["community"]["generation numbers"].index.tolist()]] + copy["community"]["generation numbers"].values.T.tolist()
+      
+        #~ cols = ['year'] + copy["community"]["generation numbers"].columns.tolist()
+        #~ thing ={}
+        #~ for i in range(len(cols)):
+            #~ thing[cols[i]] = vals[i]
+        thing = "--see input_data"
+        
+        copy["community"]["generation numbers"] =  thing
         copy["community"]["generation"] = "--see input_data"
         comment = "config used"
 
