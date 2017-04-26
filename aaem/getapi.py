@@ -14,7 +14,7 @@ from pandas import DataFrame
 
 URL_RT = 'https://akenergygateway.alaska.edu/api/models/'
 
-def get_api_data(name):
+def get_api_data(name, show = True):
     """Get data from api as pandas DataFrame. Will get data starting from page
     1 of table, and the each page in response['next'] until response['next'] is
     None. 
@@ -41,7 +41,8 @@ def get_api_data(name):
         temp = json.loads(content)
         data += temp['results']
         url = temp['next']
-        print url
+        if show:
+            print url
         if url is None:
             break
     
