@@ -78,7 +78,7 @@ yaml_comments = {'enabled': '<boolean>',
          }
 
 ## list of data keys not to save when writing the CommunityData output
-yaml_not_to_save = ["data"]
+#~ yaml_not_to_save = ["data"]
 
 ## list of prerequisites for module
 prereq_comps = []

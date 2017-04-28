@@ -51,7 +51,7 @@ yaml_comments = {'enabled': '',
         'start year': 'start year <int>'}
         
 ## list of data keys not to save when writing the CommunityData output
-yaml_not_to_save = ['nearest community']
+#~ yaml_not_to_save = ['nearest community']
     
 ## list of prerequisites for module
 prereq_comps = [] 

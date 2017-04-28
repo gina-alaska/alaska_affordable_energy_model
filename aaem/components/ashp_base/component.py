@@ -124,6 +124,7 @@ class ASHPBase (AnnualSavings):
                'Avg. Temp (F) OCT','Avg. Temp (F) NOV','Avg. Temp (F) DEC',
                'Avg. Temp (F) JAN','Avg. Temp (F) FEB','Avg. Temp (F) MAR',
                'Avg. Temp (F) APR','Avg. Temp (F) MAY','Avg. Temp (F) JUN']
+        #~ print self.comp_specs['data']
         monthly_temps = self.comp_specs['data'].ix[mtk].astype(float)
 
         monthly_temps = monthly_temps.T

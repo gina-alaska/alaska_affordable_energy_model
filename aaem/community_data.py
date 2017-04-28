@@ -785,27 +785,18 @@ class CommunityData (object):
         #~ print copy['Non-residential Energy Efficiency']['com building data']
         copy['Non-residential Energy Efficiency']['com building data'] =\
                                                                         "--see input_data"
-        print copy['Non-residential Energy Efficiency']["com building estimates"]
         #~ copy['Non-residential Energy Efficiency']["com building estimates"] = \
                                                                         #~ "--see input_data"
 
-        #~ copy['community']["diesel prices"]="--see input_data"
+        copy['community']["diesel prices"]="--see input_data"
         #~ copy['forecast']["electricity"] = "--see input_data"
         #~ copy['forecast']["population"] = "--see input_data"
-        copy['Water and Wastewater Efficiency']["data"] = "--see input_data"
+        #~ copy['Water and Wastewater Efficiency']["data"] = "--see input_data"
         #~ copy["community"]["electric non-fuel prices"] = "--see input_data"
        
-
-        #~ vals = [[int(f) for f in copy["community"]["generation numbers"].index.tolist()]] + copy["community"]["generation numbers"].values.T.tolist()
-      
-        #~ cols = ['year'] + copy["community"]["generation numbers"].columns.tolist()
-        #~ thing ={}
-        #~ for i in range(len(cols)):
-            #~ thing[cols[i]] = vals[i]
-        #~ thing = "--see input_data"
         
-        #~ copy["community"]["generation numbers"] =  thing
-        #~ copy["community"]["generation"] = DataFrame(copy["community"]["generation"])
+        #~ copy["community"]["generation numbers"] =  "--see input_data"
+        #~ copy["community"]["generation"] = "--see input_data"
         comment = "config used"
 
         conf, orders, comments, defaults = \
@@ -822,6 +813,7 @@ class CommunityData (object):
             try:
                 #~ if type(cfg.yaml_not_to_save) is dict:
                 for item in cfg.yaml_not_to_save:
+                    print comp, item
                     copy[comp][item] = "--see input_data"
             except AttributeError:
                 pass

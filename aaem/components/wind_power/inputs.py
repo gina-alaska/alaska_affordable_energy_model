@@ -44,6 +44,7 @@ def load_wind_costs_table (data_dir):
     data_file = os.path.join(data_dir, "wind_kw_costs.csv")
     data = read_csv(data_file, comment = '#', index_col=0, header=0)
     data.index =data.index.astype(str)
+    #~ print data
     return data
     
 def load_project_details (data_dir):

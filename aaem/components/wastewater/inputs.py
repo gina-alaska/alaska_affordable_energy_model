@@ -26,7 +26,8 @@ def process_data_import(data_dir):
     
     data = read_csv(data_file, comment = '#', index_col=0, header=0)    
     
-    return data
+    #~ print data.to_dict()
+    return data['value'].to_dict()
 
 ## library of keys and functions for CommunityData IMPORT Keys
 yaml_import_lib = {'data': process_data_import}
