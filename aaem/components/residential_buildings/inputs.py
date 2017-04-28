@@ -31,7 +31,8 @@ def process_data_import(data_dir):
         data.ix["average kWh per house"]['value'] = np.nan
     data['value'] = data['value'].astype(float) 
     
+    #~ print data['value'].to_dict()
     
-    return data
+    return data['value'].to_dict()
         
 yaml_import_lib = {'data': process_data_import}

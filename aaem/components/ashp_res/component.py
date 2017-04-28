@@ -119,8 +119,8 @@ class ASHPResidential (ashp_base.ASHPBase):
         self.pre_ashp_heating_oil_used =  res.init_HF
         self.pre_ashp_heating_electricty_used = res.init_kWh
         self.num_houses = res.init_HH
-        self.precent_heated_oil = res.comp_specs['data'].T["Fuel Oil"]
-        self.precent_heated_elec = res.comp_specs['data'].T["Electricity"]
+        self.precent_heated_oil = res.comp_specs['data']["Fuel Oil"]
+        self.precent_heated_elec = res.comp_specs['data']["Electricity"]
         #~ print self.pre_ashp_heating_oil_used
         #~ print self.num_houses
         

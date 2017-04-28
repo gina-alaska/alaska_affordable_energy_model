@@ -9,6 +9,8 @@ from importlib import import_module
 import aaem.config as config
 from aaem.components import comp_lib, comp_order
 
+from pandas import DataFrame
+
 def save_formated_generation_numbers (generation_numbers, indent = '  ', nl = '\n'):
     text = ""
     for row in [
@@ -43,6 +45,7 @@ def save_config (filename, config, comments, s_order = None, i_orders = None,
     outputs:
         saves config .yaml file at path
     """
+    import yaml_dataframe as yd
     nl = '\n'
     text = '# ' + header + nl
     
@@ -67,31 +70,50 @@ def save_config (filename, config, comments, s_order = None, i_orders = None,
                     except KeyError:
                         pass
                     text += nl
-                    if section == 'community' and item == 'generation numbers':
-                        text += save_formated_generation_numbers(config[section][item], indent, nl)
-                        print text
-                    else:
-                        for sub_item in config[section][item]:
-                            text += indent + indent
-                            text += str(sub_item) + ': '  +\
-                                    str(config[section][item][sub_item])
-                           
-                            text += nl
+                    #~ print section, item
+                    #~ print type(config[section][item])
+                    #~ 
+    
+                        #~ text += yd.dataframe_to_yaml_snippet(config[section][item], indent, 2, nl)
+                        #~ print text
+                    #~ else:
+                    for sub_item in config[section][item]:
+                        text += indent + indent
+                        text += str(sub_item) + ': '  +\
+                                str(config[section][item][sub_item])
+                       
+                        text += nl
                     continue
             except KeyError as e :
                 #~ print e
                 pass
             
             try:
-                text += indent + str(item) + ': ' +  str(config[section][item])
+                if DataFrame == type(config[section][item]):
+                    #~ print section,item
+                    #~ print  config[section][item]
+                    text += indent + str(item) + ': ' 
+                    try:
+                        text +=  ' # ' +  str(comments[section][item]) + nl
+                    except KeyError:
+                        text += nl
+                    try:
+                        text += yd.dataframe_to_yaml_snippet(config[section][item],
+                        indent, 2, nl) 
+                    except TypeError:
+                        text += indent * 2 + "NOTE: None Need to fix" + nl
+                else:
+                    text += indent + str(item) + ': ' + \
+                        str(config[section][item]) 
+                    try:
+                        text +=  ' # ' +  str(comments[section][item]) + nl
+                    except KeyError:
+                        text += nl
             except KeyError:
                 continue
-            try:
-                text +=  ' # ' +  str(comments[section][item]) 
-            except KeyError:
-                pass
             
-            text += nl
+            
+            #~ text += nl
         text += nl + nl        
         
     with open(filename, 'w') as conf:

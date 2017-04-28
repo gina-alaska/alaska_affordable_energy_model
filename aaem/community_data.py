@@ -159,8 +159,9 @@ class CommunityData (object):
         generation_eff = self.get_item("community",
                                             "diesel generation efficiency")
         percent_diesel = self.get_item('community','generation numbers')\
-                         ['generation diesel'].fillna(0)/\
-                         self.get_item('community',"generation")
+                    ['generation diesel'].fillna(0)/\
+                    self.get_item('community',"generation")['net generation']
+        #~ print percent_diesel
         percent_diesel = float(percent_diesel.values[-1])
         start = self.get_item('community','current year')
         end = self.get_item('forecast','end year')
@@ -712,7 +713,7 @@ class CommunityData (object):
                                                             diesel_gen_eff)
         try:
             if self.get_item('community',"generation") in IMPORT_FLAGS:
-                self.set_item('community',"generation", net_gen)
+                self.set_item('community',"generation", DataFrame(net_gen))
             if self.get_item('community','generation numbers') in IMPORT_FLAGS:
                 self.set_item('community','generation numbers', gen_by_type)
         except:
@@ -779,17 +780,20 @@ class CommunityData (object):
         #~ rel = os.path.relpath(os.path.dirname(fname),os.path.join("model",".."))
         #~ rt = os.path.join(rel,"input_data")
         
-        copy['Residential Energy Efficiency']['data'] = "--see input_data"
+        #~ print copy['Residential Energy Efficiency']['data']
+        #~ copy['Residential Energy Efficiency']['data'] = "--see input_data"
+        #~ print copy['Non-residential Energy Efficiency']['com building data']
         copy['Non-residential Energy Efficiency']['com building data'] =\
                                                                         "--see input_data"
-        copy['Non-residential Energy Efficiency']["com building estimates"] = \
-                                                                        "--see input_data"
+        print copy['Non-residential Energy Efficiency']["com building estimates"]
+        #~ copy['Non-residential Energy Efficiency']["com building estimates"] = \
+                                                                        #~ "--see input_data"
 
-        copy['community']["diesel prices"]="--see input_data"
-        copy['forecast']["electricity"] = "--see input_data"
-        copy['forecast']["population"] = "--see input_data"
+        #~ copy['community']["diesel prices"]="--see input_data"
+        #~ copy['forecast']["electricity"] = "--see input_data"
+        #~ copy['forecast']["population"] = "--see input_data"
         copy['Water and Wastewater Efficiency']["data"] = "--see input_data"
-        copy["community"]["electric non-fuel prices"] = "--see input_data"
+        #~ copy["community"]["electric non-fuel prices"] = "--see input_data"
        
 
         #~ vals = [[int(f) for f in copy["community"]["generation numbers"].index.tolist()]] + copy["community"]["generation numbers"].values.T.tolist()
@@ -798,10 +802,10 @@ class CommunityData (object):
         #~ thing ={}
         #~ for i in range(len(cols)):
             #~ thing[cols[i]] = vals[i]
-        thing = "--see input_data"
+        #~ thing = "--see input_data"
         
-        copy["community"]["generation numbers"] =  thing
-        copy["community"]["generation"] = "--see input_data"
+        #~ copy["community"]["generation numbers"] =  thing
+        #~ copy["community"]["generation"] = DataFrame(copy["community"]["generation"])
         comment = "config used"
 
         conf, orders, comments, defaults = \

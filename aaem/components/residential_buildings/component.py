@@ -90,19 +90,21 @@ class ResidentialBuildings(AnnualSavings):
                                       self.comp_specs["lifetime"],
                         self.forecast.end_year - self.comp_specs["start year"])
                         
-                     
-        yr = self.comp_specs['data'].ix['Year']
-        self.base_pop = self.forecast.population.ix[yr].values[0][0]
+        #~ print self.comp_specs['data']
+        yr = int(self.comp_specs['data']['Year'])
+        #~ print yr
+        #~ print self.forecast.population.ix[yr]
+        self.base_pop = int(self.forecast.population.ix[yr])#.values[0][0]
         
         peps_per_house = float(self.base_pop) / \
-            self.comp_specs['data'].ix['Total Occupied']
+            self.comp_specs['data']['Total Occupied']
         households = np.round(self.forecast.population / np.float64(peps_per_house))
         households.columns = ["HH"] 
         self.households = households.ix[self.start_year:self.end_year-1].T.values[0]
         
         
         val = self.forecast.get_population(self.start_year)
-        HH =self.comp_specs['data'].ix['Total Occupied']
+        HH =self.comp_specs['data']['Total Occupied']
         self.init_HH = int(round(HH*(val / self.base_pop)))
         
     def run (self, scalers = {'capital costs':1.0}):
@@ -214,10 +216,10 @@ class ResidentialBuildings(AnnualSavings):
         #   500 average energy use, 12 months in a year. That's whrer the 6000.0
         # comes from.
         con_threshold = self.comp_specs['min kWh per household']
-        yr = int(self.comp_specs['data'].ix['Year'])
-        #~ houses = int(self.comp_specs['data'].ix['Total Occupied'])
+        yr = int(self.comp_specs['data']['Year'])
+        #~ houses = int(self.comp_specs['data']['Total Occupied'])
         #~ r_con = self.forecast.base_res_consumption
-        avg_con = float(self.comp_specs['data'].ix['average kWh per house'])
+        avg_con = float(self.comp_specs['data']['average kWh per house'])
         #~ self.avg_monthly_consumption = ave_con/12
         if (avg_con < con_threshold) or self.copied_elec or np.isnan(avg_con):
             avg_con = con_threshold
@@ -239,7 +241,7 @@ class ResidentialBuildings(AnnualSavings):
             estimated households for first year of project
         """
         val = self.forecast.get_population(self.start_year)
-        HH =self.comp_specs['data'].ix['Total Occupied']
+        HH =self.comp_specs['data']['Total Occupied']
         pop = self.forecast.base_pop
                             
         self.init_HH = int(round(HH*(val / pop)))
@@ -260,7 +262,7 @@ class ResidentialBuildings(AnnualSavings):
         init_kWh : float
             initial electric consumption
         """
-        rd = self.comp_specs['data'].T
+        rd = self.comp_specs['data']
         ## total consumption
         total = rd["Total Consumption (MMBtu)"] + \
             rd["BEES Total Consumption (MMBtu)"] + \
@@ -321,7 +323,7 @@ class ResidentialBuildings(AnnualSavings):
         savings_mmbtu: float
             total savings in mmbtu
         """
-        rd = self.comp_specs['data'].T
+        rd = self.comp_specs['data']
         ##  #HH
         self.opportunity_HH = self.init_HH -rd["BEES Number"] -rd["Post-Retrofit Number"]
         self.opportunity_HH = np.float64( self.opportunity_HH )
@@ -422,7 +424,7 @@ class ResidentialBuildings(AnnualSavings):
         baseline_HF_consumption : np.array
             baseline total heating fuel consumption
         """
-        rd = self.comp_specs['data'].T
+        rd = self.comp_specs['data']
         self.fuel_oil_percent = rd["Fuel Oil"]
         HH = self.households
         #~ print HH
