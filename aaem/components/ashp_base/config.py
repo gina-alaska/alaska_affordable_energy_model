@@ -43,8 +43,3 @@ yaml_comments = {'enabled': '',
 
 ## list of prerequisites for module
 prereq_comps = []
-
-
-    
-
-
