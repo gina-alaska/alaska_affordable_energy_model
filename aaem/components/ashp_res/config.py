@@ -34,8 +34,5 @@ yaml_order = deepcopy(ashp_base.yaml_order)
 yaml_comments = deepcopy(ashp_base.yaml_comments)
 
 
-## list of data keys not to save when writing the CommunityData output
-#~ yaml_not_to_save = deepcopy(ashp_base.yaml_not_to_save)
-
 ## list of prerequisites for module
 prereq_comps = ['Residential Energy Efficiency']

@@ -77,8 +77,6 @@ yaml_comments = {'enabled': '<boolean>',
         'o&m cost per kWh': 'cost of repairs for generator per kWh <float>',
          }
 
-## list of data keys not to save when writing the CommunityData output
-#~ yaml_not_to_save = ["data"]
 
 ## list of prerequisites for module
 prereq_comps = []

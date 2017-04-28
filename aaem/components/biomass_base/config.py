@@ -40,9 +40,6 @@ yaml_comments = {'enabled': '',
         'start year': 'start year <int>',
         'energy density': 'BTU/fuel unit (specified in child) <float>',
         'data': 'biomass data'}
-        
-## list of data keys not to save when writing the CommunityData output
-yaml_not_to_save = []
 
 ## list of prerequisites for module
 prereq_comps = ["Non-residential Energy Efficiency",]

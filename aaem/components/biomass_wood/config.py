@@ -64,8 +64,5 @@ yaml_comments["energy density"] = "<float>"
 yaml_comments["boiler assumed output"] = "<float>"
 yaml_comments["cost per btu/hr"] = "<float>"
 
-## list of data keys not to save when writing the CommunityData output
-yaml_not_to_save = []
-
 ## list of prerequisites for module
 prereq_comps = deepcopy(bmb.prereq_comps)

@@ -44,8 +44,7 @@ yaml_comments = {'enabled': '',
 ## list of prerequisites for module
 prereq_comps = []
 
-## list of data keys not to save when writing the CommunityData output
-yaml_not_to_save = ['perfromance data','data']
+
     
 
 

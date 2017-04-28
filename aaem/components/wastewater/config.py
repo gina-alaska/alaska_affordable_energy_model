@@ -64,6 +64,3 @@ prereq_comps = []
 
 ## List of raw data files required for  preproecssing 
 raw_data_files = []
-
-## list of data keys not to save when writing the CommunityData output
-yaml_not_to_save = []

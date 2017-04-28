@@ -84,9 +84,6 @@ yaml_comments = {'enabled': '',
         'percent heat recovered': '% as decimal <float>',
         }
         
-## list of data keys not to save when writing the CommunityData output
-#~ yaml_not_to_save = ['costs']
-
 ## list of prerequisites for module
 prereq_comps = []
 

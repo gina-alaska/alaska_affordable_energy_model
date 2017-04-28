@@ -810,13 +810,6 @@ class CommunityData (object):
                     list(set(cfg.yaml_order) ^ set(cfg.yaml.keys()))
             orders[comp] = order
             comments[comp] = cfg.yaml_comments
-            try:
-                #~ if type(cfg.yaml_not_to_save) is dict:
-                for item in cfg.yaml_not_to_save:
-                    print comp, item
-                    copy[comp][item] = "--see input_data"
-            except AttributeError:
-                pass
             
         section_order = config.non_component_config_sections + comp_order
         save_config(fname,copy, comments, section_order, orders, header=comment)
