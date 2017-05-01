@@ -100,9 +100,16 @@ class CommunityData (object):
         self.data_dir = data_dir
         self.get_csv_data()
         
+        
+        # Process Diesel Prices to their object
+        diesel_prices = self.get_item("community","diesel prices")
         self.set_item("community","diesel prices",
-                        DieselProjections(data_dir, scalers['diesel price'],
-                                                    scalers['diesel price adder']))
+            DieselProjections(
+                diesel_prices,
+                scalers['diesel price'],
+                scalers['diesel price adder']
+            )
+        )
 
         if self.get_item("community", "model electricity"):
             self.calc_non_fuel_electricty_price ()
@@ -738,6 +745,17 @@ class CommunityData (object):
             self.diagnostics.add_note("Generation Data",
                         "Generation data not available by energy type")
         
+        ## get diesel prices, moved here from diesel_prices.py 
+        df = read_csv(
+            os.path.join(data_dir,"diesel_prices_community.csv"),
+            index_col=0,
+            comment="#",
+            header=0
+        )
+        df = df.T
+        df.index = df.index.astype(int)
+        self.set_item("community", "diesel prices", df)
+        
         
     def load_pp_csv(self, f_name):
         """
@@ -775,28 +793,22 @@ class CommunityData (object):
         """
         ## save work around 
         import copy
-
         copy = copy.deepcopy(self.model_inputs)
-        #~ rel = os.path.relpath(os.path.dirname(fname),os.path.join("model",".."))
-        #~ rt = os.path.join(rel,"input_data")
         
-        #~ print copy['Residential Energy Efficiency']['data']
-        #~ copy['Residential Energy Efficiency']['data'] = "--see input_data"
-        #~ print copy['Non-residential Energy Efficiency']['com building data']
-        copy['Non-residential Energy Efficiency']['com building data'] =\
-                                                                        "--see input_data"
-        #~ copy['Non-residential Energy Efficiency']["com building estimates"] = \
-                                                                        #~ "--see input_data"
-
-        copy['community']["diesel prices"]="--see input_data"
-        #~ copy['forecast']["electricity"] = "--see input_data"
-        #~ copy['forecast']["population"] = "--see input_data"
-        #~ copy['Water and Wastewater Efficiency']["data"] = "--see input_data"
-        #~ copy["community"]["electric non-fuel prices"] = "--see input_data"
-       
         
-        #~ copy["community"]["generation numbers"] =  "--see input_data"
-        #~ copy["community"]["generation"] = "--see input_data"
+        # special processing for building inventory 
+        b_data = copy['Non-residential Energy Efficiency']['com building data']
+        b_data['Building Type'] = b_data.index
+        b_data = b_data[[b_data.columns[-1]] + list(b_data.columns[:-1])]
+        b_data = b_data.reset_index(drop= True)
+        b_data.index.name = 'int_index'
+        
+        copy['Non-residential Energy Efficiency']['com building data'] = b_data
+        
+        # special processing for diesel prices
+        copy['community']["diesel prices"] = \
+            copy['community']["diesel prices"].projected_prices 
+ 
         comment = "config used"
 
         conf, orders, comments, defaults = \

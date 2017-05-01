@@ -6,7 +6,7 @@ created 2015/09/17
     for calculating diesel price projections
 """
 import numpy as np
-from pandas import read_csv
+from pandas import DataFrame
 import os.path
 
 class DieselProjections (object):
@@ -14,7 +14,7 @@ class DieselProjections (object):
     This class Projects diesel fuel prices
     """
 
-    def __init__ (self, data_dir, diesel_price_scaler = 1.0, adder = 0):
+    def __init__ (self, diesel_prices, diesel_price_scaler = 1.0, adder = 0):
         """
         create the projected values
         Pre:
@@ -25,21 +25,10 @@ class DieselProjections (object):
             self.projected_prices will contain the projected prices, and
         the start year is configred based off of it
         """
-        df = read_csv(os.path.join(data_dir,"diesel_prices_community.csv"),
-                        index_col=0, comment="#", header=0)
-                        
-        df = df.T
-
-        # 3 is the first column that has a year as the name/index
+        df = diesel_prices
         self.start_year = int(df.index[0])
-        #~ try
-        #~ print diesel_price_scaler, adder
-        self.projected_prices = np.array(df.T.values[0]) * diesel_price_scaler + adder
-        #~ print self.projected_prices
-        #~ except KeyError:
-            #~ self.projected_prices = np.array(df.mean()[3:].values,
-                                                            #~ dtype = np.float64)
-            #~ self.msg = "average used"
+        self.projected_prices = df * diesel_price_scaler + adder
+        self.projected_prices.index.name = 'year'
 
     def get_projected_prices (self, start_year, end_year):
         """
@@ -50,19 +39,22 @@ class DieselProjections (object):
         pre:
             returns the prjectied prices as an array
         """
-        prices = self.projected_prices[start_year-self.start_year:
-                                                end_year-self.start_year]
-        range_available = len(self.projected_prices[start_year-self.start_year:
-                                                end_year-self.start_year])
-        range_wanted = end_year - start_year
-        #~ print prices
-        if range_wanted > range_available:
-            extra_needed = range_wanted - range_available
-            extra = np.zeros(extra_needed) + prices[-1]
-            prices = prices.tolist() + extra.tolist()
-            return np.array(prices)
-        else:
-            return prices
+        prices = self.projected_prices.ix[start_year:end_year]
+        if prices.index[-1] < end_year:
+            
+            # exta minus 1 is needed for proper range
+            values = [float(prices.ix[prices.index[-1]]) \
+                for i in range(end_year - prices.index[-1] - 1)] 
+            
+            #~ print range(prices.index[-1] + 1, end_year +1)
+            pa = DataFrame(
+                values, 
+                index = range(prices.index[-1] + 1, end_year),
+                columns = prices.columns)
+            
+            prices = prices.append ( pa )
+    
+        return prices.values.T[0]
 
 
 
