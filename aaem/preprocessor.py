@@ -15,6 +15,7 @@ from datetime import datetime
 from importlib import import_module
 
 from aaem.components import comp_lib
+import aaem.yaml_dataframe as yd
 
 GENERATION_AVG = .03
 
@@ -1503,6 +1504,7 @@ class Preprocessor (object):
                      '"HW District","HW District Post","Natural Gas",'
                      '"Natural Gas Post","Propane","Propane Post"\n')
             fd.close()
+        print yd.dataframe_to_yaml_snippet(self.buildings_inventory_data)
 
 
     def buildings (self, population):

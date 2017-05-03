@@ -8,6 +8,7 @@ from importlib import import_module
 
 import aaem.config as config
 from aaem.components import comp_lib, comp_order
+import aaem.yaml_dataframe as yd
 
 from pandas import DataFrame
 
@@ -45,7 +46,7 @@ def save_config (filename, config, comments, s_order = None, i_orders = None,
     outputs:
         saves config .yaml file at path
     """
-    import yaml_dataframe as yd
+
     nl = '\n'
     text = '# ' + header + nl
     
