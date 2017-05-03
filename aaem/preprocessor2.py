@@ -1,6 +1,6 @@
 """
-preprocessor.py
-ross spicer
+preprocessor
+------------
 
 process data into a format for the model to use
 """
@@ -49,6 +49,8 @@ def growth(xs, ys , x):
 
 
 class Preprocessor (object):
+    """
+    """
     def __init__ (self, community, data, diag = None, process_intertie = False):
         """
         
@@ -73,10 +75,7 @@ class Preprocessor (object):
         self.data_dir = os.path.join(os.path.abspath(data),"")
 
 
-        self.intertie_status = self.detrmine_intertie_status( 
-            os.path.join(self.data_dir,"current_interties.csv"),
-            community
-        )
+        self.intertie_status = self.detrmine_intertie_status(community)
         
         if process_intertie == True and self.intertie_status != 'parent':
             raise StandardError, "Cannot Preprocess as interite not a parent"
@@ -108,7 +107,6 @@ class Preprocessor (object):
     def load_ids (self, datafile, communities):
         """get a communities id information
         """
-        print communities
         data = read_csv(datafile, comment = '#')
         ids = data[data.isin(self.intertie).any(axis=1)]
         if len(ids) != len(communities):
@@ -121,41 +119,70 @@ class Preprocessor (object):
             list(ids['FIPS'].values), \
             list(ids['Alias'].values) 
             
-    def detrmine_intertie_status (self, datafile, community):
-        """ detrmine if commiunity is parent, child, or not in intertie
+    def detrmine_intertie_status (self, community):
+        """detrmine if commiunity is parent, child, or not in intertie
+        
+        Parameters
+        ----------
+        community: str
+            the community of interest
+        
+        Returns
+        -------
+        status: str
+            the status of the intertie 'parent', 'child', or 'not in intertie'
         """
+        ## load file
+        datafile = os.path.join(self.data_dir,"current_interties.csv")
         data = read_csv(datafile, index_col=0, comment = "#").fillna("''")
         
         ### TODO: figure this out
         if community in ['Klukwan']:
             return "not in intertie"
         
+        ## is community a parent
         if community in data.index: 
             plant = data.ix[community]['Plant Intertied']
             other_communites = data.ix[community]['Other Community on Intertie']
             if plant.lower()  == 'yes' and other_communites != "''":
                 status = "parent"
-            else:
+            else: 
+                # if 'Plant Intertied' not yes or no communites listed
+                # in interite, community is not part of intertie
                 status = "not in intertie"
+        ## is it a child
         elif (data == community).any().any():
             status = 'child'
         else:
             status = "not in intertie"
         return status
     
-    def get_all_intertie_communties (self, datafile, community):
+    def get_all_intertie_communties (self, community):
+        """get all communities in the intertie
+        
+        Parameters
+        ----------
+        community: str
+            the community of interest
+        
+        Returns
+        -------
+        list:
+            list of the intertied communities. Format will be
+            [parent, child 1, ... , child n] where the community of 
+            intrest is either the parent or child 1 if the community is 
+            the parent or a child in the community respectably
         """
-        will return list as 
-            parent(community_of_interest), child, child,  or
-            parent, child(community_of_interest), other child, other child
-        depending on weatehr the community of interest is has an
-        intertie status of paret or child
-        """
+        ## load file
+        datafile = os.path.join(self.data_dir,"current_interties.csv")
         data = read_csv(datafile, index_col=0, comment = "#").fillna("''")
+        
+        ## community is parent
         if community in data.index: 
             intertie = [community] +\
                 list(data.ix[community].drop('Plant Intertied'))
             intertie = [c for c in intertie  if c != "''"]
+        ## community is child
         else:
             children = data.ix[data.index[data.T[data.T==community].any()]]
             parent = children.index[0]
@@ -165,12 +192,17 @@ class Preprocessor (object):
             intertie = [ parent ] + [c for c in children  if c != "''"]
         return intertie
             
-        
-        
-        
     def create_community_section (self, **kwargs):
         """create community section
+        
+        Returns
+        -------
+        dict: 
+            the community section of a confinguration object
         """
+        
+        ## TODO modify all code format to support the new tags and the 
+        ## reworked intertie format
         if self.intertie_status != "not in intertie":
             intertie = self.communities 
         else:
@@ -189,11 +221,14 @@ class Preprocessor (object):
         
         
     def create_forecast_section (self, **kwargs):
-        """ Function doc """
+        """create forecast section
         
-        population = self.load_population(
-            os.path.join(self.data_dir, "population_projections.csv")
-        )
+        Returns
+        -------
+        dict: 
+            the forecast section of a confinguration object 
+        """
+        population = self.load_population(**kwargs)
         data = {
             'forecast': {
                 'population':population
@@ -203,32 +238,50 @@ class Preprocessor (object):
         return data
         
         
-    def load_population (self, datafile, **kwargs):
+    def load_population (self, **kwargs):
+        """load population for the community
+        
+        Parameters
+        ----------
+        population_threshold: int, optional, default 20
+            lower limit on population, a warning will be logged if 
+            any population values fall below this
+        start_year: int, otional, default 2003
+            the first year to load from population data. 
+        max_population_change: float otional, default .02
+            the percent as a decimal that gives the max chage in population 
+            that can occur with out a warning being issued
+            
+            
+        Returns
+        -------
+        population: DataFrame
+            the population in the community from start_year to the end of the
+            forecast
+        
         """
-        """
-        in_file = datafile
-
+        datafile = os.path.join(self.data_dir, "population_projections.csv")
+        ## process kwargs
+        threshold = kwargs['population_threshold'] \
+            if 'population_threshold' in kwargs else 20
+        ## TODO: Needs better mor unique name
+        start_year = kwargs['start_year'] if 'start_year' in kwargs else 2003
+        #change to support 1 as one percent as opposed to .01
+        percent = kwargs['max_population_change'] if \
+            'max_population_change' in kwargs else .02
+        
         ids = self.GNIS_ids
         
-        # intertie needs normal Population?
+        # TODO check intertie needs normal Population?
         #~ if not self.process_intertie:
             #~ ids = [ids[0]]
         ids = [ids[0]]
-        
-        threshold = kwargs['threshold'] if 'threshold' in kwargs else 20
-        end_year = kwargs['end_year'] if 'end_year' in kwargs else 2050
-        current_year = \
-            kwargs['current_year'] if 'current_year' in kwargs else 2015
-        start_year = kwargs['start_year'] if 'start_year' in kwargs else 2003
-        
-        #change to support 1 as one percent as opposed to .01
-        percent = kwargs['percent'] if 'percent' in kwargs else .02
-        
-        # load data & remove name of town
-        pops = read_csv(in_file, index_col = 1)
+       
+        ## load data & remove name of town
+        pops = read_csv(datafile, index_col = 1)
         pops = pops.ix[ids].drop('place_name', axis = 1).sum()
     
-        # set index to integers
+        ## set index to integers
         pops.index = pops.index.astype(int)
 
         ## interpolate missing values
@@ -238,6 +291,7 @@ class Preprocessor (object):
         
             pops = pops.interpolate()
         
+        ## convert to dataframe & format
         pops = DataFrame(pops.ix[2003:])
         pops.columns  = ["population"]
         ## check threshold
@@ -245,7 +299,7 @@ class Preprocessor (object):
             self.diagnostics.add_warning("Forecast: Population",
                 "less than threshold (" + str(threshold) + ")")
         
-        ## check change
+        ## check change between years
         for year in pops.index[1:-1]:
             current = pops['population'].ix[year]
             previous = pops['population'].ix[year - 1]
@@ -261,35 +315,58 @@ class Preprocessor (object):
         pops["population_qualifier"] = 'I'
         return pops
         
-    def load_pce (self):
-        """ Function doc """
+    def load_pce (self, **kwargs):
+        """load PCE data
+        
+        Returns
+        -------
+        pce_data: DataFrame
+            the PCE Data for the community (or intertie if 
+            process_intertie is True)
+        """
         
         ### TODO fix weird cases
         # "Klukwan": [["Klukwan","Chilkat Valley"]]
             
         ###
-        in_file = os.path.join(self.data_dir,
-                        "power-cost-equalization-pce-data.csv")
-        data = read_csv(in_file, index_col=1, comment = "#")
-        # clean up index
+        datafile = os.path.join(self.data_dir, 
+            "power-cost-equalization-pce-data.csv")
+        data = read_csv(datafile, index_col=1, comment = "#")
+        ## clean up index
         data.index = [i.split(',')[0] for i in data.index]
         
+        ## get ids
         ids = self.communities + self.aliases
         if not self.process_intertie:
             ids = [self.communities[0], self.aliases[0]]
+        ## cleanup ids
+        ids = [i for i in ids if type(i) is str]
         
+        ## Klukwan fix - see not at top of function
         if 'Klukwan' in ids:
             ids += ["Chilkat Valley"]    
         
-        ids = [i for i in ids if type(i) is str]
-        #~ print ids
+        ## get data
         data = data.ix[ids][data.ix[ids].isnull().all(1) == False]
         return data
         
     def process_electric_prices_pce (self, pce_data):
+        """process the PCE electric prices
+        
+        Parameters
+        ----------
+        pce_data: DataFrame
+            the pce data to process prices for
+            
+        Returns
+        -------
+        dict
+            configuration values in community section with keys
+            residential non-PCE electric price and electric non-fuel price
+        
+        
         """
-        """
-        ## todo add some intertie stuff?
+        ## get_columns
         data = pce_data[[
             "year","month","residential_rate",
             "pce_rate","effective_rate","residential_kwh_sold",
@@ -299,12 +376,10 @@ class Preprocessor (object):
             "unbilled_kwh", "fuel_cost"
         ]]
         
-        # get last year with full data
+        ## get last year with full data
         last_year = data["year"].max()
         while len(data[data["year"] == last_year])%12 != 0:
             last_year -= 1
-        print last_year
-        
         
         ## get last years electric fuel cost
         cols = [
@@ -315,7 +390,6 @@ class Preprocessor (object):
             data[data["year"] == last_year]['fuel_cost']/\
             data[data["year"] == last_year][cols].sum(axis = 1)
         ).mean()
-        print elec_fuel_cost 
         
         if np.isnan(elec_fuel_cost):
             elec_fuel_cost = 0.0
@@ -326,12 +400,12 @@ class Preprocessor (object):
                                 last_year]["residential_rate"].mean()
         elec_nonFuel_cost = res_nonPCE_price - elec_fuel_cost
         
-        #~ self.diagnostics.add_note("Community: Generation(PCE)",
-                                #~ "calculated res non-PCE elec cost: " + \
-                                 #~ str(res_nonPCE_price))
-        #~ self.diagnostics.add_note("Electricity Prices PCE",
-                                    #~ "calculated elec non-fuel cost: " + \
-                                    #~ str(elec_nonFuel_cost))
+        self.diagnostics.add_note("Community: Electric Prices(PCE)",
+            "calculated res non-PCE elec cost: " + str(res_nonPCE_price))
+        self.diagnostics.add_note("Community: Electric Prices(PCE)",
+            "calculated elec non-fuel cost: " + str(elec_nonFuel_cost))
+            
+        ## TODO change these name in other code
         return {
             'community': {
                 'residential non-PCE electric price' :  res_nonPCE_price, # was res non-PCE elec cost 
@@ -340,25 +414,30 @@ class Preprocessor (object):
         }
     
     
-    def load_purchased_power_lib (self):
-        lib_file = os.path.join(self.data_dir, "purchased_power_lib.csv")
+    def load_purchased_power_lib (self, **kwargs):
+        """load pruchaced power lib for pce data
         
-        #~ try:
-        
-        
+        Returns
+        -------
+        dict:
+            dictionary of utilities and the type of generation they supply
+        """
+        ## get ids
         ids = self.communities + self.aliases
         if not self.process_intertie:
             ids = [self.communities[0], self.aliases[0]]
-        
         
         ## TODO: weird
         if 'Klukwan' in ids:
             ids += ["Chilkat Valley"]
             
-        data = read_csv(lib_file, index_col=0, comment = '#')
+        ## setup data
+        datafile = os.path.join(self.data_dir, "purchased_power_lib.csv")
+        data = read_csv(datafile, index_col=0, comment = '#')
         data = data.ix[ids][data.ix[ids].isnull().all(1) == False]
-        
         data= data.set_index('purchased_from')
+        
+        ### create purchased power lib
         lib = {}
         for utility in set(data.index):
             source = data.ix[utility]['Energy Source']
