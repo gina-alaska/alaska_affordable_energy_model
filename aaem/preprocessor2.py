@@ -11,8 +11,9 @@ from diagnostics import diagnostics
 import numpy as np
 #~ from forecast import growth
 from datetime import datetime
-
+from collections import Counter
 from importlib import import_module
+
 
 from aaem.components import comp_lib
 import aaem.yaml_dataframe as yd
@@ -20,8 +21,15 @@ import aaem.yaml_dataframe as yd
 GENERATION_AVG = .03
 
 
-
 from config_IO import merge_configs
+
+class PreprocessorError(Exception):
+    def __init__(self, value):
+         self.value = value
+    def __str__(self):
+        return repr(self.value)
+
+
 
 
 def growth(xs, ys , x):
@@ -78,7 +86,8 @@ class Preprocessor (object):
         self.intertie_status = self.detrmine_intertie_status(community)
         
         if process_intertie == True and self.intertie_status != 'parent':
-            raise StandardError, "Cannot Preprocess as interite not a parent"
+            raise PreprocessorError, \
+                "Cannot Preprocess as interite not a parent"
             
         self.process_intertie = process_intertie
         
@@ -86,7 +95,6 @@ class Preprocessor (object):
             self.intertie = [community]
         else:
             self.intertie = self.get_all_intertie_communties(
-                os.path.join(self.data_dir,"current_interties.csv"),
                 community
             )
 
@@ -101,17 +109,24 @@ class Preprocessor (object):
         
     def run (self, **kwargs):
         """ Function doc """
+        print self.community, self.process_intertie
+        try:
+            generation_data = self.process_generation_pce(self.load_pce())
+        except KeyError:
+            print "Not found in PCE"
+            generation_data = None
         self.data = merge_configs(self.data, self.create_community_section())
         self.data = merge_configs(self.data, self.create_forecast_section())
+
         
     def load_ids (self, datafile, communities):
         """get a communities id information
         """
         data = read_csv(datafile, comment = '#')
-        ids = data[data.isin(self.intertie).any(axis=1)]
+        id_cols = [c for c in data.columns if c != 'Energy Region']
+        ids = data[data[id_cols].isin(self.intertie).any(axis=1)]
         if len(ids) != len(communities):
-            print len(ids)
-            raise StandardError, "Could not find community ID info"
+            raise PreprocessorError, "Could not find community ID info"
         ids = ids.set_index('Community').ix[self.intertie]
         return list(ids.index), \
             list(ids['Energy Region'].values), \
@@ -190,7 +205,7 @@ class Preprocessor (object):
             children = list(children.values.flatten())
             children = [ community ] + [ c for c in children if c != community]
             intertie = [ parent ] + [c for c in children  if c != "''"]
-        return intertie
+        return list(set(intertie))
             
     def create_community_section (self, **kwargs):
         """create community section
@@ -338,7 +353,13 @@ class Preprocessor (object):
         ## get ids
         ids = self.communities + self.aliases
         if not self.process_intertie:
-            ids = [self.communities[0], self.aliases[0]]
+            ## parent community or only community 
+            if self.intertie_status in ['parent', 'not in intertie']:
+                ids = [self.communities[0], self.aliases[0]]
+            else:
+                ## name and ailias of first child (community of interest)
+                ids = [self.communities[1], self.aliases[1]]
+        
         ## cleanup ids
         ids = [i for i in ids if type(i) is str]
         
@@ -348,9 +369,21 @@ class Preprocessor (object):
         
         ## get data
         data = data.ix[ids][data.ix[ids].isnull().all(1) == False]
+        
+        # filter out 'Purchased Power' from child communities as they
+        # buy it from the parent so its counted there
+        if self.process_intertie:
+            children = self.communities[1:] +  self.aliases[1:]
+            for child in children:
+                try: 
+                    data['kwh_purchased'].ix[[child]] = 0
+                except KeyError:
+                    pass # no data for child
+
+        
         return data
         
-    def process_electric_prices_pce (self, pce_data):
+    def process_electric_prices_pce (self, pce_data, **kwargs):
         """process the PCE electric prices
         
         Parameters
@@ -434,6 +467,7 @@ class Preprocessor (object):
         ## setup data
         datafile = os.path.join(self.data_dir, "purchased_power_lib.csv")
         data = read_csv(datafile, index_col=0, comment = '#')
+        data.index = [i.split(',')[0] for i in data.index] # reindex
         data = data.ix[ids][data.ix[ids].isnull().all(1) == False]
         data= data.set_index('purchased_from')
         
@@ -451,15 +485,202 @@ class Preprocessor (object):
             
         return lib
     
-    def process_generation_pce (self, pce_data):
+    def process_generation_pce (self, pce_data, **kwargs):
+        """
+        """
+        ### read kwargs
+        pwc_percent = kwargs['power_house_consumption_percet'] if \
+            'power_house_consumption_percet' in kwargs else .03
+        
         data = pce_data[[
-            "year","diesel_kwh_generated", "powerhouse_consumption_kwh",
+            "year","month","diesel_kwh_generated", "powerhouse_consumption_kwh",
             "hydro_kwh_generated", "other_1_kwh_generated", "other_1_kwh_type",
             "other_2_kwh_generated", "other_2_kwh_type", 'purchased_from',
             'kwh_purchased', "fuel_used_gal", "residential_kwh_sold",
             "commercial_kwh_sold", "community_kwh_sold", "government_kwh_sold",
             "unbilled_kwh", "residential_rate", "fuel_price"]]
+        
+        ### NOTE: folowing code block (commented) is not nessary at this time
+        ### but would become required if more that one type of 
+        ### pruchaded power is provided to a comunity / intertie
+        #~ purchase_sources = sorted(set(
+            #~ data[data['purchased_from'].notnull()]["purchased_from"].values
+        #~ ))
+        #~ ### DO we need this note
+        #~ self.diagnostics.add_note("Community: generation(PCE)",
+                #~ "Utility list for purchased power " + str(sources)
+        #~ )
+        ### -- End
+        
+        ## check purchased power
+        purchased_power_lib = self.load_purchased_power_lib()
+        if len (purchased_power_lib) == 0 :
+            purchase_type = None
+        elif len(set(purchased_power_lib.values())) == 1:
+            purchase_type = set(purchased_power_lib.values()).pop().lower()
+            self.diagnostics.add_note("Community: generation(PCE)",
+                "All utilities power is purchased from provided " +\
+                 purchase_type + " Power"
+            )
+        else:
+            msg = ("At this point it is assumed that all power is purchased "
+                "from one source type. This may not be the case in the future " 
+                "and code for handleing it should be written"
+            )
+            raise PreprocessorError, msg
+        
+        ### check other sources 1
+        other_sources_1 = sorted(
+            data[data['other_1_kwh_type'].notnull()]["other_1_kwh_type"].values
+        )
+
+        if len(other_sources_1) == 0 :
+            other_type_1 = None
+        else: 
+            other_type_1, count = Counter(other_sources_1).most_common(1)[0]
+            other_type_1 = other_type_1.lower()
+            self.diagnostics.add_note("Community: generation(PCE)",
+                "Other energy type no. 1 is being set as " + other_type_1 +\
+                " as it occured most as the type for other generatio no. 1 (" +
+                str(count) + " out of "+ str(len(other_sources_1)) + " times."
+            )
             
+            if other_type_1 not in ('diesel', 'natural gas','wind', 'solar'):
+                other_type_1 = None
+                self.diagnostics.add_warning("Community: generation(PCE)",
+                    ("Other energy type no. 1 is being set as None because "
+                    "povided type is not 'diesel', 'natural gas', "
+                    "'wind', or 'solar'.")
+                )
+                
+        ### check other sources 2
+        other_sources_2 = sorted(
+            data[data['other_2_kwh_type'].notnull()]["other_2_kwh_type"].values
+        )
+
+        if len(other_sources_2) == 0 :
+            other_type_2 = None
+        else: 
+            other_type_2, count = Counter(other_sources_2).most_common(1)[0]
+            other_type_2 = other_type_2.lower()
+            self.diagnostics.add_note("Community: generation(PCE)",
+                "Other energy type no. 2 is being set as " + other_type_2 +\
+                " as it occured most as the type for other generatio no. 2 (" +
+                str(count) + " out of "+ str(len(other_sources_2)) + " times."
+            )
+            
+            if other_type_2 not in ('diesel', 'natural gas','wind', 'solar'):
+                other_type_2 = None
+                self.diagnostics.add_warning("Community: generation(PCE)",
+                    ("Other energy type no. 2 is being set as None because "
+                    "povided type is not 'diesel', 'natural gas', "
+                    "'wind', or 'solar'.")
+                )
+          
+        ## reindex by year
+        data = data.set_index('year')
+        data_by_year = []
+        ## merge each year 
+        for year in data.index.unique():
+            ## make sure every month is present in the year
+            if set(data.ix[year]['month'].values) != set(range(1,13)):
+                #~ print year
+                continue
+                
+            ## set up current years data
+            years_data = data.ix[year].sum()
+            years_data['year'] = year
+            years_data = years_data.fillna(0)
+            
+            ## add total generation
+            years_data['generation'] = years_data[['diesel_kwh_generated',
+                "powerhouse_consumption_kwh", "hydro_kwh_generated",
+                "other_1_kwh_generated", "other_2_kwh_generated",
+                "kwh_purchased"]].sum()
+                
+            # add generation from diesel, hydro, etc
+            years_data['generation diesel'] = years_data['diesel_kwh_generated']
+            years_data['generation hydro'] = years_data['hydro_kwh_generated']
+            years_data['generation solar'] = 0
+            years_data['generation wind'] = 0
+            years_data['generation natural gas'] = 0
+            years_data['generation biomass'] = 0
+            
+            data_by_year.append(years_data)
+            
+            ## add generation from purchases
+            if not purchase_type is None:
+                years_data['generation ' + purchase_type ] += \
+                    years_data["kwh_purchased"]
+            
+            ## add generation from other type 1        
+            if not other_type_1 is None:
+                years_data['generation ' + other_type_1 ] += \
+                    years_data["other_1_kwh_generated"]
+            
+            ## add generation from other type 2        
+            if not other_type_2 is None:
+                years_data['generation ' + other_type_2 ] += \
+                    years_data["other_2_kwh_generated"]
+                    
+            ## get total consumption
+            years_data['consumption'] = years_data[["residential_kwh_sold",
+                                        "commercial_kwh_sold",
+                                        "community_kwh_sold",
+                                        "government_kwh_sold",
+                                        "unbilled_kwh"]].sum()
+            ### get residential and non-resedential consumptions
+            years_data['consumption residential'] = \
+                years_data["residential_kwh_sold"]
+            years_data['consumption non-residential'] = \
+                years_data['consumption'] - \
+                years_data['consumption residential']
+                
+            ### get the net generation
+            phc = years_data["powerhouse_consumption_kwh"]
+            if np.isnan(phc):
+                print "DO I EVER DO THIS"
+                phc = years_data['generation diesel'] * pwc_percent
+                self.diagnostics.add_note("PCE Electricity",
+                        "Powerhouse consumption not found for " + \
+                        str(year) +" assuming to be " +\
+                        str(pwc_percent*100) + "% of gross generation.")
+                years_data['net generation'] = years_data['generation'] 
+                years_data['generation'] = years_data['generation'] + phc
+            else:
+                years_data['net generation'] = years_data['generation'] - phc
+                
+            # other values
+            years_data['fuel used'] = years_data['fuel_used_gal']
+            years_data['line loss'] = \
+                1.0 - years_data['consumption']/years_data['net generation']
+            
+            ### diesel efficiency
+            try:
+                years_data['efficiency'] = \
+                    years_data['generation diesel'] /\
+                    years_data['fuel_used_gal']
+            except ZeroDivisionError:
+                years_data['efficiency'] = np.nan
+                
+            if np.isinf(years_data['efficiency']):
+                years_data['efficiency'] = np.nan
+                
+            ### these nead a mean
+            years_data['residential_rate'] = \
+                data.ix[year]['residential_rate'].mean()
+            years_data['diesel_price'] = data.ix[year]['fuel_price'].mean()
+            
+        ### clean up
+        columns = ["year","generation","consumption","fuel used",
+            "efficiency","line loss","net generation","consumption residential",
+            "consumption non-residential","kwh_purchased","residential_rate",
+            "diesel_price","generation diesel","generation hydro",
+            "generation natural gas","generation wind","generation solar",
+            "generation biomass"]
+        processed_data = DataFrame(data_by_year)[columns]
+        
+        return processed_data
         
         
         
