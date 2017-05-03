@@ -102,7 +102,7 @@ def save_config (filename, config, comments, s_order = None, i_orders = None,
                         raise TypeError, "Bad DataFrame"
                 #### section is a value
                 else:
-                    print section, config[section][item]
+                    #~ print section, config[section][item]
                     text += indent + str(item) + ': ' + \
                         str(config[section][item]) 
                     try:
@@ -130,7 +130,7 @@ def merge_configs (bottom, top):
     bottom = copy.deepcopy(bottom)
     to_overload = set(top.keys()).intersection( set(bottom.keys()) )
     to_add = set(top.keys()).difference( set(bottom.keys()) )
-    print to_overload, to_add
+    #~ print to_overload, to_add
     
     for section in to_overload:
         if type(bottom[section]) is dict:

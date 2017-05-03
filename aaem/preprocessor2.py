@@ -109,12 +109,62 @@ class Preprocessor (object):
         
     def run (self, **kwargs):
         """ Function doc """
-        print self.community, self.process_intertie
-        try:
-            generation_data = self.process_generation_pce(self.load_pce())
-        except KeyError:
-            print "Not found in PCE"
-            generation_data = None
+        print self.community, 'Intertie' if self.process_intertie else ''
+        
+        data = self.load_pce()
+        if len(data) == 0:
+            data = self.load_eia()
+            if len(data[0]) == 0 or len(data[1]) == 0:
+                source = None
+            else:
+                source = 'eia'
+                self.diagnostics.add_note('Generation Data',
+                    "Using Generation data in EIA data"
+                )
+        else:
+            source = 'pce'
+            self.diagnostics.add_note('Generation Data',
+                "Using Generation data in PCE data"
+            )
+        
+        ## try paret if source is none and a child
+        if source is None:
+            # TODO, do i use parent or all interttie ?
+            ids_to_use = [self.communities[0],self.aliases[0]]
+            data = self.load_pce(ids_to_use=ids_to_use) 
+            if len(data) == 0:
+                data = self.load_eia(ids_to_use=ids_to_use)
+                if len(data[0]) == 0 or len(data[1]) == 0:
+                    print "No generation data found"
+                    return
+                    #~ raise PreprocessorError, "No generation data found"
+                else:
+                    source = 'eia'
+                    self.diagnostics.add_note('Generation Data',
+                        "Using Generation data in EIA data"
+                    )
+            else:
+                source = 'pce'
+                self.diagnostics.add_note('Generation Data',
+                    "Using Generation data in PCE data"
+                )
+            print "ids used", ids_to_use
+        
+        print source
+        if source == 'pce':
+            generation_data = self.process_generation(pce_data = data) 
+            sales_data = self.process_electric_prices(pce_data = data) 
+        else: # 'eia'
+            generation_data = self.process_generation(
+                eia_generation = data[0],
+                eia_sales = data[1],
+            ) 
+            sales_data = self.process_electric_prices(
+                eia_sales = data[1],
+            ) 
+        
+        print len(generation_data)
+        print sales_data
         self.data = merge_configs(self.data, self.create_community_section())
         self.data = merge_configs(self.data, self.create_forecast_section())
 
@@ -126,6 +176,7 @@ class Preprocessor (object):
         id_cols = [c for c in data.columns if c != 'Energy Region']
         ids = data[data[id_cols].isin(self.intertie).any(axis=1)]
         if len(ids) != len(communities):
+            print ids, communities
             raise PreprocessorError, "Could not find community ID info"
         ids = ids.set_index('Community').ix[self.intertie]
         return list(ids.index), \
@@ -205,7 +256,7 @@ class Preprocessor (object):
             children = list(children.values.flatten())
             children = [ community ] + [ c for c in children if c != community]
             intertie = [ parent ] + [c for c in children  if c != "''"]
-        return list(set(intertie))
+        return intertie
             
     def create_community_section (self, **kwargs):
         """create community section
@@ -333,12 +384,18 @@ class Preprocessor (object):
     def load_pce (self, **kwargs):
         """load PCE data
         
+        Parameters
+        ----------
+        ids_to_use
+        
         Returns
         -------
         pce_data: DataFrame
             the PCE Data for the community (or intertie if 
             process_intertie is True)
         """
+        
+        
         
         ### TODO fix weird cases
         # "Klukwan": [["Klukwan","Chilkat Valley"]]
@@ -351,17 +408,21 @@ class Preprocessor (object):
         data.index = [i.split(',')[0] for i in data.index]
         
         ## get ids
-        ids = self.communities + self.aliases
-        if not self.process_intertie:
-            ## parent community or only community 
-            if self.intertie_status in ['parent', 'not in intertie']:
-                ids = [self.communities[0], self.aliases[0]]
-            else:
-                ## name and ailias of first child (community of interest)
-                ids = [self.communities[1], self.aliases[1]]
         
-        ## cleanup ids
-        ids = [i for i in ids if type(i) is str]
+        if "ids_to_use" in kwargs:
+            ids = kwargs["ids_to_use"]
+        else:
+            ids = self.communities + self.aliases
+            #~ print ids
+            if not self.process_intertie:
+                ## parent community or only community 
+                if self.intertie_status in ['parent', 'not in intertie']:
+                    ids = [self.communities[0], self.aliases[0]]
+                else:
+                    ## name and ailias of first child (community of interest)
+                    ids = [self.communities[1], self.aliases[1]]
+            ## cleanup ids
+            ids = [i for i in ids if type(i) is str]
         
         ## Klukwan fix - see not at top of function
         if 'Klukwan' in ids:
@@ -379,11 +440,10 @@ class Preprocessor (object):
                     data['kwh_purchased'].ix[[child]] = 0
                 except KeyError:
                     pass # no data for child
-
         
         return data
         
-    def process_electric_prices_pce (self, pce_data, **kwargs):
+    def helper_pce_prices (self, pce_data, **kwargs):
         """process the PCE electric prices
         
         Parameters
@@ -438,13 +498,8 @@ class Preprocessor (object):
         self.diagnostics.add_note("Community: Electric Prices(PCE)",
             "calculated elec non-fuel cost: " + str(elec_nonFuel_cost))
             
-        ## TODO change these name in other code
-        return {
-            'community': {
-                'residential non-PCE electric price' :  res_nonPCE_price, # was res non-PCE elec cost 
-                'electric non-fuel price': elec_nonFuel_cost, # was elec non-fuel cost
-            }
-        }
+        return res_nonPCE_price, elec_nonFuel_cost 
+        
     
     
     def load_purchased_power_lib (self, **kwargs):
@@ -485,11 +540,11 @@ class Preprocessor (object):
             
         return lib
     
-    def process_generation_pce (self, pce_data, **kwargs):
+    def helper_pce_generation (self, pce_data, **kwargs):
         """
         """
         ### read kwargs
-        pwc_percent = kwargs['power_house_consumption_percet'] if \
+        phc_percent = kwargs['power_house_consumption_percet'] if \
             'power_house_consumption_percet' in kwargs else .03
         
         data = pce_data[[
@@ -498,7 +553,8 @@ class Preprocessor (object):
             "other_2_kwh_generated", "other_2_kwh_type", 'purchased_from',
             'kwh_purchased', "fuel_used_gal", "residential_kwh_sold",
             "commercial_kwh_sold", "community_kwh_sold", "government_kwh_sold",
-            "unbilled_kwh", "residential_rate", "fuel_price"]]
+            "unbilled_kwh", "residential_rate", "fuel_price"
+        ]]
         
         ### NOTE: folowing code block (commented) is not nessary at this time
         ### but would become required if more that one type of 
@@ -637,14 +693,13 @@ class Preprocessor (object):
                 years_data['consumption residential']
                 
             ### get the net generation
-            phc = years_data["powerhouse_consumption_kwh"]
+            phc = data.ix[year]["powerhouse_consumption_kwh"].sum()
             if np.isnan(phc):
-                print "DO I EVER DO THIS"
-                phc = years_data['generation diesel'] * pwc_percent
+                phc = years_data['generation diesel'] * phc_percent
                 self.diagnostics.add_note("PCE Electricity",
                         "Powerhouse consumption not found for " + \
                         str(year) +" assuming to be " +\
-                        str(pwc_percent*100) + "% of gross generation.")
+                        str(phc_percent*100) + "% of gross generation.")
                 years_data['net generation'] = years_data['generation'] 
                 years_data['generation'] = years_data['generation'] + phc
             else:
@@ -681,6 +736,105 @@ class Preprocessor (object):
         processed_data = DataFrame(data_by_year)[columns]
         
         return processed_data
+        
+    def load_eia (self, **kwargs):
+        """"""
+        datafile_generation = os.path.join(self.data_dir, 'eia_generation.csv')
+        datafile_sales = os.path.join(self.data_dir, 'eia_sales.csv')
+        
+        ## get ids
+        if "ids_to_use" in kwargs:
+            ids = kwargs["ids_to_use"]
+        else:
+            ids = self.communities + self.aliases
+            #~ print ids
+            if not self.process_intertie:
+                ## parent community or only community 
+                if self.intertie_status in ['parent', 'not in intertie']:
+                    ids = [self.communities[0], self.aliases[0]]
+                else:
+                    ## name and ailias of first child (community of interest)
+                    ids = [self.communities[1], self.aliases[1]]
+            ## cleanup ids
+            ids = [i for i in ids if type(i) is str]
+                
+        if 'Glennallen' in ids:
+            ids.append( "Copper Valley" )
+        
+        
+        
+        generation = read_csv(datafile_generation, comment = '#', index_col=3)
+        generation = generation.ix[ids].\
+            groupby(['Year','Reported Fuel Type Code']).sum()[[
+                'TOTAL FUEL CONSUMPTION QUANTITY',
+                'ELECTRIC FUEL CONSUMPTION QUANTITY',
+                'TOTAL FUEL CONSUMPTION MMBTUS',
+                'ELEC FUEL CONSUMPTION MMBTUS',
+                'NET GENERATION (megawatthours)'
+            ]]
+            
+        sales = read_csv(datafile_sales, comment = '#', index_col=2)
+
+        sales = sales.ix[ids].groupby('Data Year').sum()[[
+            'Residential Thousand Dollars','Residential Megawatthours',
+            'Total Thousand Dollars','Total Megawatthours']]
+            
+        return generation, sales
+        
+    def helper_eia_prices (self, eia_sales, **kwargs):
+        """ Function doc """
+        data = eia_sales
+        
+        data.iloc[-1] 
+        try:
+            res_nonPCE_price = \
+                float(data.iloc[-1]['Residential Thousand Dollars']) /\
+                float(data.iloc[-1]['Residential Megawatthours'])
+        except ZeroDivisionError:
+            self.diagnostics.add_note('Community Electricity Prices EIA',
+                "no residental sales")
+            res_nonPCE_price = 0
+            
+        elec_nonFuel_cost = float(data.iloc[-1]['Total Thousand Dollars']) /\
+            float(data.iloc[-1]['Total Megawatthours'])
+        
+        return res_nonPCE_price, elec_nonFuel_cost 
+    
+    def process_electric_prices(self, **kwargs):
+        """
+        """
+        if 'pce_data' in kwargs:
+            process_function = self.helper_pce_prices
+            data = kwargs['pce_data']
+        elif 'eia_sales' in kwargs:
+            process_function = self.helper_eia_prices
+            data = kwargs['eia_sales']
+        else:
+            raise PreprocessorError, "No electric price data avaialbe"
+            
+        res_nonPCE_price, elec_nonFuel_cost = process_function(data)
+        
+        ## TODO change these name in other code
+        return {
+            'community': {
+                'residential non-PCE electric price' :  res_nonPCE_price, # was res non-PCE elec cost 
+                'electric non-fuel price': elec_nonFuel_cost, # was elec non-fuel cost
+            }
+        }
+        
+    def process_generation (self, **kwargs):
+        """
+        """
+        if 'pce_data' in kwargs:
+            data = self.helper_pce_generation(kwargs['pce_data'])
+        elif 'eia_generation' in kwargs and 'eia_sales' in kwargs:
+            data = [] # not implmented
+            #~ data = self.helper_eia_generation (
+            #kwargs['eia_generation'], kwargs['eia_sales'] )
+        else:
+            raise PreprocessorError, "No generation data avaialbe"
+            
+        return data
         
         
         
