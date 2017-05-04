@@ -164,11 +164,13 @@ class Preprocessor (object):
                 eia_sales = data[1],
             ) 
         
-        print len(generation_data)
-        print sales_data
+        #~ print len(generation_data)
+        #~ print sales_data
         self.data = merge_configs(self.data, self.create_community_section())
         self.data = merge_configs(self.data, self.create_forecast_section())
-
+        self.data = merge_configs(self.data, generation_data)
+        self.data = merge_configs(self.data, sales_data)
+        return self.data
         
     def load_ids (self, datafile, communities):
         """get a communities id information
@@ -835,7 +837,6 @@ class Preprocessor (object):
         generation = eia_generation
         sales = eia_sales
         
-        # TODO add other fuel sources These two are from sitka example
         power_type_lib = {"WAT":"hydro",
                           "DFO":"diesel",
                           "WND":"wind",
@@ -939,8 +940,48 @@ class Preprocessor (object):
                 kwargs['eia_sales'] )
         else:
             raise PreprocessorError, "No generation data avaialbe"
-            
+        
+        data = {
+            "community":{
+                "line losses": self.helper_line_losses(data),
+                "diesel generation efficiency":
+                     self.helper_diesel_efficiency(data),
+                "generation": self.helper_net_generation(data),
+                "generation numbers": self.helper_generation_by_type(data),
+            }
+        
+        }
         return data
+        
+    def helper_line_losses (self, electric_data, **kwargs):
+        """
+        """
+        line_losses = electric_data['line loss'].iloc[-3:].mean()
+        return line_losses
+        
+        ## should these be processed here or in the CD module
+        #~ default_line_losses
+        #~ max_line_losses
+        
+        
+        
+    def helper_diesel_efficiency (self, electric_data, **kwargs):
+        line_losses = electric_data['efficiency'].iloc[-3:].mean()
+        return line_losses
+        
+    def helper_net_generation (self, electric_data, **kwargs):
+        """"""
+        return electric_data["net generation"]
+        
+    def helper_generation_by_type (self, electric_data, **kwargs):
+        
+        return electric_data[['generation diesel',
+            'generation hydro',
+            'generation natural gas',
+            'generation wind',
+            'generation solar',
+            'generation biomass'
+        ]]
         
         
         
