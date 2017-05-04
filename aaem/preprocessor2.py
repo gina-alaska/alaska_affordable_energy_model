@@ -17,6 +17,7 @@ from importlib import import_module
 
 from aaem.components import comp_lib
 import aaem.yaml_dataframe as yd
+import aaem.constants as constants
 
 GENERATION_AVG = .03
 
@@ -662,7 +663,7 @@ class Preprocessor (object):
             years_data['generation natural gas'] = 0
             years_data['generation biomass'] = 0
             
-            data_by_year.append(years_data)
+            
             
             ## add generation from purchases
             if not purchase_type is None:
@@ -725,6 +726,8 @@ class Preprocessor (object):
             years_data['residential_rate'] = \
                 data.ix[year]['residential_rate'].mean()
             years_data['diesel_price'] = data.ix[year]['fuel_price'].mean()
+            
+            data_by_year.append(years_data)
             
         ### clean up
         columns = ["year","generation","consumption","fuel used",
@@ -822,15 +825,118 @@ class Preprocessor (object):
             }
         }
         
+    def helper_eia_generation(self, eia_generation, eia_sales, **kwargs):
+        """
+        """
+        ### read kwargs
+        phc_percent = kwargs['power_house_consumption_percet'] if \
+            'power_house_consumption_percet' in kwargs else .03
+        
+        generation = eia_generation
+        sales = eia_sales
+        
+        # TODO add other fuel sources These two are from sitka example
+        power_type_lib = {"WAT":"hydro",
+                          "DFO":"diesel",
+                          "WND":"wind",
+                          "NG": "natural gas",
+                          "WO":"diesel",
+                          "OBL":"biomass",
+                          "SUB":"coal",
+                          "WDS":"biomass",
+                          "JF": "diesel", # jet fuel
+                          "OG": "natural gas", 
+                          "LFG": "other", # land fill gass
+                            }
+                          
+        data_by_year = []
+        for year in generation.index.levels[0]:
+            
+            years_data = generation.sum(level=0).ix[year]
+            years_data['year'] = year
+            
+            ## setup generation from diesel, hydro, etc
+            years_data['generation diesel'] = 0
+            years_data['generation hydro'] = 0
+            years_data['generation solar'] = 0
+            years_data['generation wind'] = 0
+            years_data['generation natural gas'] = 0
+            years_data['generation biomass'] = 0
+            years_data['fuel used'] = 0
+            # add any generation to types
+            for type_code in generation.ix[year].index:
+                if type_code in ["LFG", "SUB"]:
+                    continue
+                ## convert from MWh to kWh
+                fuel_for_year = generation.ix[year].ix[type_code]
+                type_generation = \
+                    fuel_for_year['NET GENERATION (megawatthours)'] * 1000.0
+                fuel_type = power_type_lib[type_code]
+                years_data['generation ' + fuel_type] += type_generation
+                
+                ## if diesel add fuel used
+                if fuel_type == 'diesel':
+                    dfo = fuel_for_year['TOTAL FUEL CONSUMPTION QUANTITY'] *\
+                        constants.barrels_to_gallons 
+                    years_data['fuel used'] += dfo
+            
+            ## set net_generation and (gross_)generation
+            years_data['net generation'] = \
+                years_data['NET GENERATION (megawatthours)'] * 1000.0
+                
+            years_data['generation'] = years_data['net generation'] + \
+                years_data['generation diesel'] * phc_percent
+                
+            self.diagnostics.add_note(
+                "Community Generation(EIA)",
+                "Gross generation assumed to be total net genetation plus " + \
+                str((1+phc_percent)*100) + "% of diesel generation"
+            )
+            try:
+                years_data["consumption"] = \
+                    sales.ix[year]["Total Megawatthours"] * 1000.0
+                years_data["consumption residential"] = \
+                    sales.ix[year]["Residential Megawatthours"] * 1000.0
+                years_data["consumption non-residential"] = \
+                    years_data["consumption"] - \
+                    years_data["consumption residential"]
+            except KeyError:
+                years_data["consumption"] = np.nan
+                years_data["consumption residential"] = np.nan
+                years_data["consumption non-residential"] = np.nan
+                
+            ## add calculated stuff
+            years_data['line loss'] = 1.0 - years_data['consumption']/\
+                                                years_data['net generation']
+
+            years_data['efficiency'] = years_data['generation diesel'] / \
+                                                        years_data['fuel used']
+            #  zeros
+            years_data['kwh_purchased'] = 0
+            
+            
+            data_by_year.append(years_data)
+            
+        ### clean up
+        columns = ["year","generation","consumption","fuel used",
+            "efficiency","line loss","net generation","consumption residential",
+            "consumption non-residential","kwh_purchased",
+            "generation diesel","generation hydro",
+            "generation natural gas","generation wind","generation solar",
+            "generation biomass"]
+        processed_data = DataFrame(data_by_year)[columns]
+        
+        return processed_data
+        
     def process_generation (self, **kwargs):
         """
         """
         if 'pce_data' in kwargs:
             data = self.helper_pce_generation(kwargs['pce_data'])
         elif 'eia_generation' in kwargs and 'eia_sales' in kwargs:
-            data = [] # not implmented
-            #~ data = self.helper_eia_generation (
-            #kwargs['eia_generation'], kwargs['eia_sales'] )
+            data = self.helper_eia_generation (
+                kwargs['eia_generation'], 
+                kwargs['eia_sales'] )
         else:
             raise PreprocessorError, "No generation data avaialbe"
             
