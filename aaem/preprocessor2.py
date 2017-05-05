@@ -283,7 +283,8 @@ class Preprocessor (object):
                 'region': self.regions[0],
                 'GNIS ID': self.GNIS_ids[0],
                 'FIPS ID': self.FIPS_ids[0],
-                'intertie': intertie
+                'intertie': intertie,
+                'heating degree days': self.load_heating_degree_days()
             },
         }
         return data
@@ -425,7 +426,7 @@ class Preprocessor (object):
                     ## name and ailias of first child (community of interest)
                     ids = [self.communities[1], self.aliases[1]]
             ## cleanup ids
-            ids = [i for i in ids if type(i) is str]
+        ids = [i for i in ids if type(i) is str]
         
         ## Klukwan fix - see not at top of function
         if 'Klukwan' in ids:
@@ -517,6 +518,7 @@ class Preprocessor (object):
         ids = self.communities + self.aliases
         if not self.process_intertie:
             ids = [self.communities[0], self.aliases[0]]
+        ids = [i for i in ids if type(i) is str]
         
         ## TODO: weird
         if 'Klukwan' in ids:
@@ -761,11 +763,11 @@ class Preprocessor (object):
                     ## name and ailias of first child (community of interest)
                     ids = [self.communities[1], self.aliases[1]]
             ## cleanup ids
-            ids = [i for i in ids if type(i) is str]
+        ids = [i for i in ids if type(i) is str]
                 
         if 'Glennallen' in ids:
             ids.append( "Copper Valley" )
-        
+        print ids
         
         
         generation = read_csv(datafile_generation, comment = '#', index_col=3)
@@ -929,9 +931,9 @@ class Preprocessor (object):
         
         return processed_data
         
-    def process_generation (self, **kwargs):
-        """
-        """
+    def helper_yearly_electric_data (self, **kwargs):
+        """ Function doc """
+        #~ print kwargs.keys()
         if 'pce_data' in kwargs:
             data = self.helper_pce_generation(kwargs['pce_data'])
         elif 'eia_generation' in kwargs and 'eia_sales' in kwargs:
@@ -940,14 +942,20 @@ class Preprocessor (object):
                 kwargs['eia_sales'] )
         else:
             raise PreprocessorError, "No generation data avaialbe"
+        return data
+        
+    def process_generation (self, **kwargs):
+        """
+        """
+        
+        data = self.helper_yearly_electric_data(**kwargs)
         
         data = {
             "community":{
                 "line losses": self.helper_line_losses(data),
                 "diesel generation efficiency":
                      self.helper_diesel_efficiency(data),
-                "generation": self.helper_net_generation(data),
-                "generation numbers": self.helper_generation_by_type(data),
+                "generation": self.helper_generation(data),
             }
         
         }
@@ -956,32 +964,164 @@ class Preprocessor (object):
     def helper_line_losses (self, electric_data, **kwargs):
         """
         """
-        line_losses = electric_data['line loss'].iloc[-3:].mean()
-        return line_losses
+        
+        #~ default_line_losses: default max is 40
+        max_line_losses = \
+            kwargs['max_line_loss'] if 'max_line_loss' in kwargs else 40
+        default_line_losses = \
+            kwargs['default_line_loss'] if 'default_line_loss' in kwargs else 10
+        ## last n years of measured data to average for value to use 
+        ## the -1 is to allow index of last n vals
+        years = -1 * \
+            (kwargs['years_to_average'] if 'years_to_average' in kwargs else 3)
+            
+        self.diagnostics.add_note('Community: line losses',
+            'Line losses are being calculated as average of last ' + \
+            str(-1*years) + ' of measured data'
+        )
+ 
+        ## get mean of last 3 years and convert to a percent from decimal
+
+        line_losses = electric_data['line loss'].iloc[years:].mean() * 100
+        
+        if np.isnan(line_losses) or line_losses < 0:
+            line_losses = default_line_losses
+            self.diagnostics.add_note('Community: line losses',
+                'Caclulated line losses were invalid (less than 0,' + \
+                ' or not a number). Setting to default (' + \
+                str(default_line_losses) + '%)'
+            )
+            
+        if line_losses > max_line_losses:
+            line_losses = max_line_losses
+            self.diagnostics.add_note('Community: line losses',
+                'Caclulated line losses were greter than the maximum allowed. '
+                'Setting to maximum (' + \
+                str(max_line_losses) + '%)'
+            )
+        return round(line_losses,2)
         
         ## should these be processed here or in the CD module
-        #~ default_line_losses
-        #~ max_line_losses
         
         
         
     def helper_diesel_efficiency (self, electric_data, **kwargs):
-        line_losses = electric_data['efficiency'].iloc[-3:].mean()
-        return line_losses
         
-    def helper_net_generation (self, electric_data, **kwargs):
-        """"""
-        return electric_data["net generation"]
+        default_efficiency = kwargs['default_diesl_efficieny']\
+            if 'default_diesl_efficieny' in kwargs else 12
+        ## last n years of measured data to average for value to use 
+        ## the -1 is to allow index of last n vals
+        years = -1 * \
+            (kwargs['years_to_average'] if 'years_to_average' in kwargs else 3)
+            
+        self.diagnostics.add_note('Community: diesel generation efficiency',
+            'iesel generation efficiency is being calculated as average of ' +\
+            'last ' + str(-1*years) + ' of measured data'
+        )
         
-    def helper_generation_by_type (self, electric_data, **kwargs):
+        efficiency = electric_data['efficiency'].iloc[years:].mean()
         
-        return electric_data[['generation diesel',
+        if np.isnan(efficiency) or efficiency <= 0:
+            efficiency = default_efficiency
+            self.diagnostics.add_note('Community: diesel generation efficiency',
+                'Caclulated diesel generation efficiency was invalid ' + \
+                '(less than or equall to 0,' + \
+                ' or not a number). Setting to default (' + \
+                str(default_efficiency) + ')'
+            )
+            
+        return efficiency
+        
+        
+    def helper_generation (self, electric_data, **kwargs):
+        
+        
+        ## todo combine generation and generation numbers in the other places 
+        generation = electric_data.set_index('year')[[
+            'net generation',
+            'generation diesel',
             'generation hydro',
             'generation natural gas',
             'generation wind',
             'generation solar',
             'generation biomass'
         ]]
+        generation.index = generation.index.astype(int)
+        return generation
+        
+        
+    def load_heating_degree_days (self, **kwargs):
+        """ Function doc """
+        datafile = os.path.join(self.data_dir, "heating_degree_days.csv")
+        data = read_csv(datafile, index_col=0, comment = "#", header=0)
+        
+        ## community
+        if self.community in data.index:
+            ids = self.community
+        ## community alais ,note: check if community is a child
+        elif str(self.aliases[0]) in data.index:
+            child_or_parent = 0
+            if self.intertie_status == 'child':
+                child_or_parent = 1
+            ids = self.aliases[child_or_parent]
+        ## parent is alaways index 0 if it gets this far
+        elif str(self.communities[0]) in data.index:
+            ids = self.communities[0]
+            self.diagnostics.add_note('Community: heating degree days',
+                'Using parents heating degree days'
+            )
+        ## parent alais is alaways index 0 if it gets this far   
+        elif str(self.aliases[0]) in data.index:
+            ids = self.aliases[0]
+            self.diagnostics.add_note('Community: heating degree days',
+                'Using parents heating degree days'
+            )
+        else:
+            raise PreprocessorError, 'No Heating Degree data found'
+
+        return data.ix[ids]['HDD in ARIS equations']
+        
+    def load_heating_fuel_premium (self, **kwargs):
+        """
+        """
+        pass
+        
+    def load_election_divisions (self, **kwargs):
+        """
+        """
+        pass
+    
+    def load_diesel_powerhouse_data (self, **kwargs):
+        """
+        """
+        pass
+        
+    def helper_heat_recovery_status (self, **kwargs):
+        """
+        """
+        pass
+        
+    def helper_switch_gear_status (self, ** kwargs):
+        """"""
+        pass
+        
+    def process_diesel_powerhouse_data (self, ** kwargs):
+        pass
+        
+    def load_fuel_prices (self, ** kwargs):
+        pass
+    
+    def process_fuel_prices (self, ** kwargs):
+        pass
+        
+    def load_renewable_capacities (self, ** kwargs):
+        pass
+        
+    def process_renewable_capacities (self, ** kwargs):
+        pass
+        
+    
+        
         
         
         
