@@ -154,13 +154,13 @@ class Preprocessor (object):
         print source
         if source == 'pce':
             generation_data = self.process_generation(pce_data = data) 
-            sales_data = self.process_electric_prices(pce_data = data) 
+            sales_data = self.process_prices(pce_data = data) 
         else: # 'eia'
             generation_data = self.process_generation(
                 eia_generation = data[0],
                 eia_sales = data[1],
             ) 
-            sales_data = self.process_electric_prices(
+            sales_data = self.process_prices(
                 eia_sales = data[1],
             ) 
         
@@ -170,6 +170,9 @@ class Preprocessor (object):
         self.data = merge_configs(self.data, self.create_forecast_section())
         self.data = merge_configs(self.data, generation_data)
         self.data = merge_configs(self.data, sales_data)
+        self.data = merge_configs(self.data, 
+            self.process_diesel_powerhouse_data() )
+            
         return self.data
         
     def load_ids (self, datafile, communities):
@@ -272,6 +275,9 @@ class Preprocessor (object):
         
         ## TODO modify all code format to support the new tags and the 
         ## reworked intertie format
+        
+        senate, house = self.load_election_divisions()
+        
         if self.intertie_status != "not in intertie":
             intertie = self.communities 
         else:
@@ -283,10 +289,17 @@ class Preprocessor (object):
                 'region': self.regions[0],
                 'GNIS ID': self.GNIS_ids[0],
                 'FIPS ID': self.FIPS_ids[0],
+                'senate district': senate,
+                'house district': house,
                 'intertie': intertie,
-                'heating degree days': self.load_heating_degree_days()
+                'heating degree days': self.load_heating_degree_days(),
+                'heating fuel premium': self.load_heating_fuel_premium(),
+                'on road system': self.load_road_system_status(),
+                
             },
         }
+        
+        data = merge_configs(data, self.process_renewable_capacities())
         return data
         
         
@@ -342,10 +355,9 @@ class Preprocessor (object):
         
         ids = self.GNIS_ids
         
-        # TODO check intertie needs normal Population?
-        #~ if not self.process_intertie:
-            #~ ids = [ids[0]]
-        ids = [ids[0]]
+        if not self.process_intertie:
+            ids = [ids[0]]
+        #~ ids = [ids[0]]
        
         ## load data & remove name of town
         pops = read_csv(datafile, index_col = 1)
@@ -807,7 +819,7 @@ class Preprocessor (object):
         
         return res_nonPCE_price, elec_nonFuel_cost 
     
-    def process_electric_prices(self, **kwargs):
+    def helper_electric_prices(self, **kwargs):
         """
         """
         if 'pce_data' in kwargs:
@@ -1084,41 +1096,253 @@ class Preprocessor (object):
     def load_heating_fuel_premium (self, **kwargs):
         """
         """
-        pass
+        datafile = os.path.join(self.data_dir,"heating_fuel_premium.csv")
+        data = read_csv(datafile, index_col=0, comment='#')
+        
+        ids = self.regions[0].replace(' Region','') 
+        if self.intertie_status == 'child':
+            ids = self.regions[1].replace(' Region','') 
+        
+        premium = data.ix[ids]
+        
+        return premium 
         
     def load_election_divisions (self, **kwargs):
         """
         """
-        pass
+        datafile = os.path.join(self.data_dir,'election-divisions.csv')
+        data = read_csv(datafile, index_col=0, comment='#')
+        data.index = [i.replace(' (part)','') for i in data.index]
+        
+        ## make it a list index to make all acesses return same format
+        senate = data.ix[[self.community]]['Senate'].values.tolist()
+        house = data.ix[[self.community]]['House District'].values.tolist()
+        return senate, house
+    
+    def load_road_system_status (self, **kwargs):
+        """
+        """
+        datafile = os.path.join(self.data_dir,"road_system.csv")
+        data = read_csv(datafile ,comment = '#',index_col = 0)
+        
+        idx = 1 if self.intertie_status == 'child' else 0  
+        ids = [self.community, self.aliases[idx]]
+        ids = [ i for i in ids if type(i) is str ]
+                            
+        data = data.ix[ids][data.ix[ids].isnull().all(1) == False]
+        status = data['On Road/SE'].values[0]
+        status = True if status.lower() == 'yes' else False
+        
+        return status
+
     
     def load_diesel_powerhouse_data (self, **kwargs):
         """
         """
-        pass
+        datafile = os.path.join(self.data_dir, "diesel_powerhouse_data.csv")
+        data = read_csv(datafile, comment = '#', index_col = 0)
         
-    def helper_heat_recovery_status (self, **kwargs):
-        """
-        """
-        pass
+        idx = 1 if self.intertie_status == 'child' else 0  
+        ids = [self.community, self.aliases[idx]]
+        ids = [ i for i in ids if type(i) is str ]
         
-    def helper_switch_gear_status (self, ** kwargs):
-        """"""
-        pass
+        data = data.ix[ids][data.ix[ids].isnull().all(1) == False]
+        if data.size == 0:
+            data.ix[self.community] = 'N/a'
         
-    def process_diesel_powerhouse_data (self, ** kwargs):
-        pass
+        return data
         
-    def load_fuel_prices (self, ** kwargs):
-        pass
+    def process_diesel_powerhouse_data (self, **kwargs):
+        data = self.load_diesel_powerhouse_data()
+        
+        hr_operational = data['Waste Heat Recovery Opperational'].values[0]
+        hr_operational = True if hr_operational.lower() == 'yes' else False
+        switchgear_status = data['Switchgear Suitable'].values[0]
+        switchgear_status = True if  switchgear_status.lower() == 'yes' \
+            else False
+            
+        return {
+            'community': {
+                'heat recovery operational': hr_operational,
+                'switchgear suatable for renewables': switchgear_status,
+            }
+        }
+        
+    def load_fuel_prices (self, **kwargs):
+        datafile_biomass = os.path.join(self.data_dir, "biomass_prices.csv")
+        datafile_diesel = os.path.join(self.data_dir, "diesel_fuel_prices.csv")
+        datafile_propane = os.path.join(self.data_dir,
+            "propane_price_estimates.csv")
+        
+        idx = 1 if self.intertie_status == 'child' else 0  
+        ids = [self.community, self.aliases[idx]]
+        ids = [ i for i in ids if type(i) is str ]
+        
+        data = read_csv(datafile_biomass, comment = '#', index_col = 0)
+       
+        try:
+            set_as_0 = False
+            price_cord = float(data.ix[ids]\
+                [data.ix[ids].isnull().all(1) == False]['Biomass ($/Cord)'])
+            if np.isnan(price_cord):
+                set_as_0 = True
+        except TypeError:
+            set_as_0 = True
+        if set_as_0:
+            self.diagnostics.add_note("Community: Pellet Cordwood", 
+                "Could not find price. seting as $0")
+            price_cord = 0
+        
+        try:
+            set_as_0 = False
+            price_pellet = float(data.ix[ids]\
+                [data.ix[ids].isnull().all(1) == False]['Pellets ($/ton)'])
+            if np.isnan(price_pellet):
+                set_as_0 = True
+        except TypeError:
+            set_as_0 = True
+            
+        if set_as_0:
+            self.diagnostics.add_note("Community: Pellet Price", 
+                "Could not find price. seting as $0")
+            price_pellet = 0
+        
+        data = read_csv(datafile_diesel, comment = '#', index_col = 0)
+        prices_diesel = data.ix[ids][data.ix[ids].isnull().all(1) == False].T
+        prices_diesel.index.name = 'year'
+        prices_diesel.columns.name = None
+        
+        data = read_csv(datafile_propane, comment = '#', index_col = 0)
+        
+        try:
+            set_as_0 = False
+            price_propane = float(data.ix[ids]\
+                [data.ix[ids].isnull().all(1) == False]['Propane ($/gallon)'])
+            if np.isnan(price_propane):
+                set_as_0 = True
+        except TypeError:
+            set_as_0 = True
+            
+        if set_as_0:
+            self.diagnostics.add_note("Community: Propane Price", 
+                "Could not find price. seting as $0")
+            price_propane = 0
+        
+        
+        return price_cord, price_pellet, prices_diesel, price_propane
+        
     
-    def process_fuel_prices (self, ** kwargs):
-        pass
+    def helper_fuel_prices (self, ** kwargs):
+        price_cord, price_pellet, prices_diesel, price_propane = \
+            self.load_fuel_prices()
         
-    def load_renewable_capacities (self, ** kwargs):
-        pass
+        return {
+            'community': {
+                'diesel prices': prices_diesel, 
+                'propane price': price_propane,
+                'cordwood price': price_cord,
+                'pellet price': price_pellet, 
+            } 
+        }
         
-    def process_renewable_capacities (self, ** kwargs):
-        pass
+    def process_prices (self, **kwargs):
+        
+        
+        electric_prices = self.helper_electric_prices(**kwargs)
+        fuel_prices = self.helper_fuel_prices()
+        electric_non_fuel_prices = None
+        
+        
+        data = merge_configs(electric_prices, fuel_prices)
+        data['community']['electric non-fuel prices'] = electric_non_fuel_prices
+        return data
+        
+        
+        
+        
+    def load_renewable_capacities (self, **kwargs):
+        
+        datafile = os.path.join(self.data_dir, 
+            'renewable_generation_capacities.csv')
+        data = read_csv(datafile, comment = '#')
+        
+
+        ids = self.communities + self.aliases
+        #~ print ids
+        if not self.process_intertie:
+            ## parent community or only community 
+            if self.intertie_status in ['parent', 'not in intertie']:
+                ids = [self.communities[0], self.aliases[0]]
+            else:
+                ## name and ailias of first child (community of interest)
+                ids = [self.communities[1], self.aliases[1]]
+            ## cleanup ids
+        ids = [i for i in ids if type(i) is str]
+        
+        data = data.ix[ids]
+        
+        data = data.groupby(['Resource Type']).sum()
+        return data
+        
+    def process_renewable_capacities (self, **kwargs):
+        """
+        """
+        ## in kW
+        hydro_capacity = 0
+        wind_capacity = 0
+        solar_capacity = 0
+        
+        ## in  kWh
+        hydro_generation = 0
+        wind_generation = 0
+        solar_generation = 0 
+        
+        try:
+            data = self.load_renewable_capacities()
+            ## hydro 
+            try:
+                hydro_capacity = data.ix['Hydro']['Capacity (kW)']
+                hydro_generation = \
+                    data.ix['Hydro']['Average Expected Annual Generation (kWh)']
+            except KeyError:
+                self.diagnostics.add_note('Community: Renewable Capacities',
+                    'No hydro data found. Values have been set to 0')
+            ## solar 
+            try:
+                hydro_capacity = data.ix['Solar']['Capacity (kW)']
+                hydro_generation = \
+                    data.ix['Solar']['Average Expected Annual Generation (kWh)']
+            except KeyError:
+                self.diagnostics.add_note('Community: Renewable Capacities',
+                    'No solar data found. Values have been set to 0')
+            
+            ## wind
+            try:
+                hydro_capacity = data.ix['wind']['Capacity (kW)']
+                hydro_generation = \
+                    data.ix['Wind']['Average Expected Annual Generation (kWh)']
+            except KeyError:
+                self.diagnostics.add_note('Community: Renewable Capacities',
+                    'No wind data found. Values have been set to 0')
+            
+            
+        except KeyError:
+            self.diagnostics.add_note('Community: Renewable Capacities',
+                'No data found. Values have been set to 0')
+                
+        return {
+            'community' : {
+                'hydro generation limit': hydro_generation,
+                'solar generation limit': solar_generation,
+                'wind generation limit': wind_generation,
+                'hydro capacity': hydro_capacity,
+                'solar capacity': solar_capacity,
+                'wind capacity': wind_capacity,
+            
+            }
+        }
+        
+        
         
     
         
