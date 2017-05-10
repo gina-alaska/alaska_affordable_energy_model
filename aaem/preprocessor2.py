@@ -18,6 +18,7 @@ from importlib import import_module
 from aaem.components import comp_lib
 import aaem.yaml_dataframe as yd
 import aaem.constants as constants
+from aaem.defaults import save_config
 
 GENERATION_AVG = .03
 
@@ -173,6 +174,59 @@ class Preprocessor (object):
         self.data = merge_configs(self.data, 
             self.process_diesel_powerhouse_data() )
             
+        
+        save_config(
+            './pp2_testing/' +self.community.replace(' ', '_').replace("'", '')\
+            + '_config.yaml',
+            self.data,
+            comments = {},
+            s_order = ['community', 'forecast'],
+            i_orders = {
+                'community': [
+                    'name',
+                    'alternate name',
+                    'region',
+                    'GNIS ID',
+                    'FIPS ID',
+                    'senate district',
+                    'house district',
+                    'intertie',
+                    'heating degree days',
+                    'heating fuel premium',
+                    'on road system',
+                    
+                    'diesel prices',
+                    'electric non-fuel prices',
+                    
+                    'residential non-PCE electric price',
+                    'electric non-fuel price',
+                    'propane price',
+                    'cordwood price',
+                    'pellet price',
+                    'natural gas price',
+                    
+                    'hydro generation limit',
+                    'solar generation limit',
+                    'wind generation limit',
+                    'hydro capacity',
+                    'solar capacity',
+                    'wind capacity',
+                    
+                    
+                    "generation",
+                    "line losses",
+                    "diesel generation efficiency",
+                    
+                    'heat recovery operational',
+                    'switchgear suatable for renewables',
+                
+                ],
+                'forecast': [
+                    'population',
+                ]
+            }
+        )
+        
         return self.data
         
     def load_ids (self, datafile, communities):
@@ -189,7 +243,7 @@ class Preprocessor (object):
             list(ids['Energy Region'].values), \
             list(ids['GNIS'].values), \
             list(ids['FIPS'].values), \
-            list(ids['Alias'].values) 
+            [str(i).replace('nan','') for i in ids['Alias'].values] 
             
     def detrmine_intertie_status (self, community):
         """detrmine if commiunity is parent, child, or not in intertie
@@ -395,6 +449,9 @@ class Preprocessor (object):
                 
         ## all data is from input 
         pops["population_qualifier"] = 'I'
+        
+        pops.index.name = 'year'
+        
         return pops
         
     def load_pce (self, **kwargs):
@@ -437,8 +494,8 @@ class Preprocessor (object):
                 else:
                     ## name and ailias of first child (community of interest)
                     ids = [self.communities[1], self.aliases[1]]
-            ## cleanup ids
-        ids = [i for i in ids if type(i) is str]
+        ## cleanup ids
+        ids = [i for i in ids if i != ""]
         
         ## Klukwan fix - see not at top of function
         if 'Klukwan' in ids:
@@ -530,7 +587,7 @@ class Preprocessor (object):
         ids = self.communities + self.aliases
         if not self.process_intertie:
             ids = [self.communities[0], self.aliases[0]]
-        ids = [i for i in ids if type(i) is str]
+        ids = [i for i in ids if i != ""]
         
         ## TODO: weird
         if 'Klukwan' in ids:
@@ -775,7 +832,7 @@ class Preprocessor (object):
                     ## name and ailias of first child (community of interest)
                     ids = [self.communities[1], self.aliases[1]]
             ## cleanup ids
-        ids = [i for i in ids if type(i) is str]
+        ids = [i for i in ids if i != ""]
                 
         if 'Glennallen' in ids:
             ids.append( "Copper Valley" )
@@ -1103,7 +1160,7 @@ class Preprocessor (object):
         if self.intertie_status == 'child':
             ids = self.regions[1].replace(' Region','') 
         
-        premium = data.ix[ids]
+        premium = float(data.ix[ids])
         
         return premium 
         
@@ -1236,12 +1293,17 @@ class Preprocessor (object):
         price_cord, price_pellet, prices_diesel, price_propane = \
             self.load_fuel_prices()
         
+        
+        ## todo add statment to fix for nuqisu.. and Barrow
+        price_ng = 0
+        
         return {
             'community': {
                 'diesel prices': prices_diesel, 
                 'propane price': price_propane,
                 'cordwood price': price_cord,
                 'pellet price': price_pellet, 
+                'natural gas price': price_ng,
             } 
         }
         
@@ -1276,8 +1338,8 @@ class Preprocessor (object):
             else:
                 ## name and ailias of first child (community of interest)
                 ids = [self.communities[1], self.aliases[1]]
-            ## cleanup ids
-        ids = [i for i in ids if type(i) is str]
+        ## cleanup ids
+        ids = [i for i in ids if i != ""]
         
         data = data.ix[ids]
         
