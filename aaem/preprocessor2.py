@@ -1107,16 +1107,21 @@ class Preprocessor (object):
         
         ## todo combine generation and generation numbers in the other places 
         generation = electric_data.set_index('year')[[
+            'consumption',
+            'consumption residential',
+            'consumption non-residential',
             'net generation',
             'generation diesel',
             'generation hydro',
             'generation natural gas',
             'generation wind',
             'generation solar',
-            'generation biomass'
+            'generation biomass',
+            'line loss',
+            'efficiency'
         ]]
         generation.index = generation.index.astype(int)
-        return generation
+        return generation.round(3)
         
         
     def load_heating_degree_days (self, **kwargs):
