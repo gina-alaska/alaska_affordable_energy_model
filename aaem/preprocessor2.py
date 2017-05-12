@@ -174,7 +174,24 @@ class Preprocessor (object):
         self.data = merge_configs(self.data, 
             self.process_diesel_powerhouse_data() )
             
+        ## caclulate 'electric non-fuel prices'
+        efficiency = self.data['community']['diesel generation efficiency']
+        percent_diesel = \
+            self.data['community']['generation']['generation diesel'].fillna(0)\
+            /self.data['community']['generation']['net generation']
+        percent_diesel = float(percent_diesel.iloc[-1])
         
+        adder = percent_diesel * \
+            self.data['community']['diesel prices'] / efficiency
+        adder = adder.fillna(0)
+        
+        
+        self.data['community']['electric non-fuel prices'] = \
+            self.data['community']['electric non-fuel price'] + adder
+            
+        self.data = merge_configs(self.data,
+            {'community': {'precent diesel generation': percent_diesel}})
+            
         save_config(
             './pp2_testing/' +self.community.replace(' ', '_').replace("'", '')\
             + '_config.yaml',
@@ -214,6 +231,7 @@ class Preprocessor (object):
                     
                     
                     "generation",
+                    "precent diesel generation",
                     "line losses",
                     "diesel generation efficiency",
                     
