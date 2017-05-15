@@ -52,6 +52,8 @@ def get_consumption_estimates(data_dir, population, diagnostics):
     del(df["Lower Limit"])
     del(df["Upper Limit"])
     df = df.T
+    
+    df.index.name = 'building type'
     return df
 
 def get_building_inventory (community, data_dir, diagnostics, **kwargs):

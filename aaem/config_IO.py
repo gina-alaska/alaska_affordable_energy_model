@@ -99,6 +99,7 @@ def save_config (filename, config, comments, s_order = None, i_orders = None,
                             2,
                             nl) 
                     except TypeError:
+                        print config[section][item]
                         raise TypeError, "Bad DataFrame"
                 #### section is a value
                 else:
@@ -152,7 +153,8 @@ def validate_dict(to_validate, validator, level = 0):
     """
     ## are all keys same?
     if set(to_validate.keys()) != set(validator.keys()):
-        return False, 'Key missmatch level: ' + str(level) 
+        return False, 'Key missmatch level: ' + str(level) + \
+            ". See keys " + str(set(to_validate.keys())^set(validator.keys()))
         
     for section in to_validate:
         ## if to_validate is a sub dictionary
@@ -171,18 +173,109 @@ def validate_dict(to_validate, validator, level = 0):
                 
                 try:
                     # if the type can convert to desired type don't fail
-                    validator[section](to_validate[section])
+                    ## is it a list of types
+                    if type(validator[section]) is list:
+                        passes_any = False
+                        for t in validator[section]:
+                            try:
+                                t(to_validate[section])
+                                passes_any = True
+                                break
+                            except: 
+                                pass
+                        ## all types tested none pass
+                        if not passes_any:
+                            raise ValueError
+                            
+                    else:# not a list
+                        validator[section](to_validate[section])
                 except ValueError: 
                     reason = 'Type(' + str(validator[section]) + \
-                        ') missmatch level: ' + str(level) 
+                        ') missmatch level: ' + str(level) + '. Type was ' + \
+                        str(type(to_validate[section]))+', and the key was ' + \
+                        section
                     return False, reason
         
     return True, '' 
     
     
     
-    
-    
+ex_data_passes = {
+    'a':
+        {'1':1, '2':2, '3':{'3-s':3}}, # test subsections
+    'a2': {'1':1, '2':2, '3':3}, # test dict
+    'b': 3.14, # float
+    'c': 10, # int
+    'd': 10, # float
+    'd2': 10, # float or int
+    'd3': DataFrame(), # float or int, or DataFrame
+    'e': 10, # str
+    'f': '10', # str
+    'g': DataFrame([1,2,3]),
+    'h': [1,2,3,4]
+
+}
+ex_data_fail_1 = {
+    'a':
+        {'1':1, '2':2, '3':{'3-s':3}}, # test subsections
+    'a2': {'1':1, '2':2, '3':3}, # test dict
+    'b': 3.14, # float
+    'c': 10, # int
+    'd': 10, # float
+    'd2': 10, # float or int
+    'd3': '', # float or int, or DataFrame ## <<<<< fails here
+    'e': 10, # str
+    'f': '10', # str
+    'g': DataFrame([1,2,3]),
+    'h': [1,2,3,4]
+
+}
+ex_data_fail_2 = {
+    'a':
+        {'1':1, '2':2, '3':{'3-s':''}}, # test subsections << fails here
+    'a2': {'1':1, '2':2, '3':3}, # test dict
+    'b': 3.14, # float
+    'c': 10, # int
+    'd': 10, # float
+    'd2': 10, # float or int
+    'd3': DataFrame(), # float or int, or DataFrame
+    'e': 10, # str
+    'f': '10', # str
+    'g': DataFrame([1,2,3]),
+    'h': [1,2,3,4]
+
+}
+## key mismatch
+ex_data_fail_3 = {
+    'a':
+        {'1':1, '2':2, }, # test subsections << fails here
+    'a2': {'1':1, '2':2, '3':3}, # test dict
+    'b': 3.14, # float
+    'c': 10, # int
+    'd': 10, # float
+    'd2': 10, # float or int
+    'd3': DataFrame(), # float or int, or DataFrame
+    'e': 10, # str
+    'f': '10', # str
+    'g': DataFrame([1,2,3]),
+    'h': [1,2,3,4]
+
+}
+
+ex_structure = {
+    'a':
+        {'1':int, '2':int, '3':{'3-s':int}}, # test subsections
+    'a2': dict, # test dict
+    'b': float, # float
+    'c': int, # int
+    'd': float, # float
+    'd2': [float, int, DataFrame], # float or int
+    'd3': [float, int, DataFrame], # float or int, or dataframe
+    'e': str, # str
+    'f': str, # str
+    'g': DataFrame,
+    'h': list
+}
     
     
 

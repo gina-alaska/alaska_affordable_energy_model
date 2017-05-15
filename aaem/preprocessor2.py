@@ -18,7 +18,7 @@ from importlib import import_module
 from aaem.components import comp_lib
 import aaem.yaml_dataframe as yd
 import aaem.constants as constants
-from aaem.defaults import save_config
+from aaem.config_IO import save_config
 
 GENERATION_AVG = .03
 
@@ -168,7 +168,7 @@ class Preprocessor (object):
         #~ print len(generation_data)
         #~ print sales_data
         self.data = merge_configs(self.data, self.create_community_section())
-        self.data = merge_configs(self.data, self.create_forecast_section())
+        #~ self.data = merge_configs(self.data, self.create_forecast_section())
         self.data = merge_configs(self.data, generation_data)
         self.data = merge_configs(self.data, sales_data)
         self.data = merge_configs(self.data, 
@@ -177,8 +177,8 @@ class Preprocessor (object):
         ## caclulate 'electric non-fuel prices'
         efficiency = self.data['community']['diesel generation efficiency']
         percent_diesel = \
-            self.data['community']['generation']['generation diesel'].fillna(0)\
-            /self.data['community']['generation']['net generation']
+            self.data['community']['utility info']['generation diesel'].fillna(0)\
+            /self.data['community']['utility info']['net generation']
         percent_diesel = float(percent_diesel.iloc[-1])
         
         adder = percent_diesel * \
@@ -206,7 +206,7 @@ class Preprocessor (object):
             + '_config.yaml',
             self.data,
             comments = {},
-            s_order = ['community', 'forecast', 'Non-residential Energy Efficiency'],
+            s_order = ['community', 'Non-residential Energy Efficiency'],
             i_orders = {
                 'community': [
                     'name',
@@ -216,6 +216,8 @@ class Preprocessor (object):
                     'FIPS ID',
                     'senate district',
                     'house district',
+                    
+                    'population',
                     'intertie',
                     'heating degree days',
                     'heating fuel premium',
@@ -238,7 +240,7 @@ class Preprocessor (object):
                     'solar capacity',
                     'wind capacity',
                     
-                    "generation",
+                    "utility info",
                     "precent diesel generation",
                     "line losses",
                     "diesel generation efficiency",
@@ -247,9 +249,7 @@ class Preprocessor (object):
                     'switchgear suatable for renewables',
                 
                 ],
-                'forecast': [
-                    'population',
-                ],
+
                 'Non-residential Energy Efficiency': [
                     'enabled',
                     'start year',
@@ -388,6 +388,8 @@ class Preprocessor (object):
             intertie = self.communities 
         else:
             intertie = "not in intertie"
+            
+        population = self.load_population(**kwargs)
         data = {
             'community': {
                 'name': self.community,
@@ -398,6 +400,9 @@ class Preprocessor (object):
                 'senate district': senate,
                 'house district': house,
                 'intertie': intertie,
+                
+                'population':population,
+                
                 'heating degree days': self.load_heating_degree_days(),
                 'heating fuel premium': self.load_heating_fuel_premium(),
                 'on road system': self.load_road_system_status(),
@@ -409,22 +414,22 @@ class Preprocessor (object):
         return data
         
         
-    def create_forecast_section (self, **kwargs):
-        """create forecast section
+    #~ def create_forecast_section (self, **kwargs):
+        #~ """create forecast section
         
-        Returns
-        -------
-        dict: 
-            the forecast section of a confinguration object 
-        """
-        population = self.load_population(**kwargs)
-        data = {
-            'forecast': {
-                'population':population
-            }
-        }
+        #~ Returns
+        #~ -------
+        #~ dict: 
+            #~ the forecast section of a confinguration object 
+        #~ """
+        #~ population = self.load_population(**kwargs)
+        #~ data = {
+            #~ 'forecast': {
+                #~ 'population':population
+            #~ }
+        #~ }
         
-        return data
+        #~ return data
         
         
     def load_population (self, **kwargs):
@@ -1076,7 +1081,7 @@ class Preprocessor (object):
                 "line losses": self.helper_line_losses(data),
                 "diesel generation efficiency":
                      self.helper_diesel_efficiency(data),
-                "generation": self.helper_generation(data),
+                "utility info": self.helper_generation(data),
             }
         
         }
