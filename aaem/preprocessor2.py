@@ -192,12 +192,21 @@ class Preprocessor (object):
         self.data = merge_configs(self.data,
             {'community': {'precent diesel generation': percent_diesel}})
             
+            
+        import aaem.components.non_residential.preprocessing as test
+        reload(test)
+        
+        self.data = merge_configs(self.data, 
+            self.preprocess_component(test, population=100)
+        )
+        #~ print self.data
+            
         save_config(
             './pp2_testing/' +self.community.replace(' ', '_').replace("'", '')\
             + '_config.yaml',
             self.data,
             comments = {},
-            s_order = ['community', 'forecast'],
+            s_order = ['community', 'forecast', 'Non-residential Energy Efficiency'],
             i_orders = {
                 'community': [
                     'name',
@@ -229,7 +238,6 @@ class Preprocessor (object):
                     'solar capacity',
                     'wind capacity',
                     
-                    
                     "generation",
                     "precent diesel generation",
                     "line losses",
@@ -241,11 +249,37 @@ class Preprocessor (object):
                 ],
                 'forecast': [
                     'population',
+                ],
+                'Non-residential Energy Efficiency': [
+                    'enabled',
+                    'start year',
+                    'lifetime',
+                    'average refit cost',
+                    'cohort savings multiplier',
+                    'heating cost percent',
+                    'waste oil cost percent',
+                    
+                    'number buildings',
+                    'consumption estimates',
+                    'building inventory'
                 ]
             }
         )
         
+        
+        
+        
+        
+        
+        
         return self.data
+        
+    def preprocess_component ( self, component, **kwargs):
+        """
+        """
+        data = component.preprocess(self.community, self.data_dir, self.diagnostics, **kwargs)
+        return data
+        
         
     def load_ids (self, datafile, communities):
         """get a communities id information

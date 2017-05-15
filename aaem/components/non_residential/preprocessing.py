@@ -10,33 +10,33 @@ preprocessing functions for Non-residential Efficiency component
 
 # preprocessing in preprocessor
 import os
-from pandas import read_csv
+from pandas import read_csv, concat, DataFrame
 
 
-def get_number_buildings (datafile, community, diagnostics = None):
+def get_number_buildings (community, data_dir, diagnostics):
     """
     Function doc
+    
+    
     """
-    count_file = datafile
+    datafile = os.path.join(data_dir, 'non-res_count.csv')
     try:
-        data = int(read_csv(count_file ,comment = "#", index_col = 0,
+        data = int(read_csv(datafile ,comment = "#", index_col = 0,
                                              header = 0).ix[community][0])
     except (KeyError):
         data = 0
-        if not diagnostics is None:
-            self.diagnostics.add_note((
-                "Non-residential Efficiency: Community " + community + ""
-                " does not have an entry in "+ os.path.split(count_file) + ","
-                " using 0"
-            ))
+        diagnostics.add_note("Non-residential Efficiency: Community ",
+            ("" + community + " does not have an entry in "
+             "" + os.path.split(datafile)[1] + ", using 0"
+        ))
 
     return data
     
-def buildings_estimates(datafile, community, population, diagnostics = None):
+def get_consumption_estimates(data_dir, population, diagnostics):
     """
     """
-    est_file = datafile
-    data = read_csv(est_file ,comment = u"#",index_col = 0, header = 0)
+    datafile = os.path.join(data_dir, 'non-res_consumption_estimates.csv')
+    data = read_csv(datafile ,comment = u"#",index_col = 0, header = 0)
 
     units = set(data.ix["Estimate units"])
     l = []
@@ -54,41 +54,93 @@ def buildings_estimates(datafile, community, population, diagnostics = None):
     df = df.T
     return df
 
-
-def expand_args (kwargs):
-    if 'preprocessor' in kwargs.keys():
-        preprocessor = kwargs['preprocessor']
-        community = preprocessor.community
-        data_dir = preprocessor.data_dir
-        diagnostics = preprocessor.diagnostics
-        population = 
-    else:
-        preprocessor = None
-        community = kwargs['community']
-        population = kwargs['population']
-        data_dir = kwargs['data_dir']
-        diagnostics = None
-        if 'diagnostics ' in kwargs.keys():
-            diagnostics = kwargs['diagnostics']  
-    return community, data_dir, diagnostics, preprocessor, population
-
-def build_data_dict (**kwargs):
-    #~ print kwargs
-    community, data_dir, diagnostics, preprocessor = expand_args (kwargs)
-             
+def get_building_inventory (community, data_dir, diagnostics, **kwargs):
+    """ Function doc """
+    datafile = os.path.join(data_dir, 'non-res_buildings.csv')
+    data = read_csv(datafile, comment = '#', index_col = 0)
     
-    data = {}
-    data['number buildings'] = get_number_buildings(
-        os.path.join(data_dir, "non-res_count.csv"),
-        community,
-        diagnostics
-    )
-    data['building estimates'] = 
+    order = ['int_index' , 'Building Type', 'Audited', 'Biomass',
+        'Biomass Post', 'Electric', 'Electric Post', 'Fuel Oil',
+        'Fuel Oil Post', 'HW District', 'HW District Post', 'Natural Gas',
+        'Natural Gas Post', 'Propane', 'Propane Post', 'Retrofits Done',
+        'Square Feet', 'implementation cost']
     
+    try:
+        data = data.ix[[community]]
+    except KeyError:
+        diagnostics.add_note(
+            'Non-residential Energy Efficiency: Building Inventory',
+            'no buildings in inventory creating empty inventory'
+        )
+        data = DataFrame(columns = order)
+        
+    #~ print data
+    data['int_index'] = range(len(data))
+    
+    
+        
+    data = data[order]
+    data = data.set_index('int_index')
+    return data
+
+    
+   
+   
+def preprocess(community, data_dir, diagnostics, **kwargs):
+    """
+    """
+    if not 'population' in kwargs:
+        raise StandardError, 'Non-residential preprocessing needs population'
+        
+    population = kwargs['population']
+    
+    refit_cost = 7.0 
+    if 'non-res-refit-cost' in kwargs:
+        refit_cost = float(kwargs['non-res-refit-cost'])
+    
+    cohort_multiplier = 7.0 
+    if 'non-res-cohort-savings-multiplier' in kwargs:
+        cohort_multiplier = float(kwargs['non-res-cohort-savings-multiplier'])
+        
+    start_year = 2017
+    if 'non-res-start-year' in kwargs:
+        start_year = int(kwargs['non-res-start-year'])   
+    
+    lifetime = 15
+    if 'non-res-project-lifetime' in kwargs:
+        lifetime = int(kwargs['non-res-project-lifetime']) 
+    
+    heating_cost_percent = 0.6 * 100 # convert to whole %
+    if 'non-res-heating-cost-percent' in kwargs:
+        heating_cost_percent = float(kwargs['non-res-heating-cost-percent']) 
+   
+   
+    # The waste oil price is N% of the heating oil price
+    waste_oil_cost_precent = 0.5 * 100# convert to whole %
+    if 'non-res-waste-oil-cost-precent' in kwargs:
+        waste_oil_cost_precent = float(kwargs['non-res-waste-oil-cost-precent']) 
+    
+   
+    
+    data = {
+        'Non-residential Energy Efficiency':{
+            'enabled': True,
+            'start year': start_year,
+            'lifetime': lifetime,
+            'average refit cost': refit_cost,
+            'cohort savings multiplier': cohort_multiplier,
+            'heating cost percent': heating_cost_percent,
+            'waste oil cost percent': waste_oil_cost_precent,
+            'number buildings': get_number_buildings(community, 
+                data_dir, diagnostics),
+            'consumption estimates':  get_consumption_estimates(data_dir,
+                population, diagnostics),
+            'building inventory': get_building_inventory(community,
+                data_dir, diagnostics)
+        }
+    }
     return data
     
-   
-   
    
     
     
