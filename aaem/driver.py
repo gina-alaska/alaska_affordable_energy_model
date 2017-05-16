@@ -8,8 +8,8 @@ from aaem.components import comp_lib, comp_order
 from community_data import CommunityData
 from forecast import Forecast
 from diagnostics import diagnostics
-from preprocessor import preprocess
-import defaults
+from preprocessor2 import Preprocessor,  PreprocessorError
+#~ import defaults
 
 import yaml
 import os.path
@@ -22,6 +22,8 @@ try:
     #~ print "C Pickle"
 except ImportError:
     import pickle
+    
+from pandas import read_csv
 
 
 default_scalers = {'diesel price': 1.0,
@@ -67,12 +69,14 @@ class Driver (object):
         self.model_root = model_root
         
         # default locations
-        self.inputs_dir = os.path.join(model_root, 'input_files')
         self.config_dir = os.path.join(model_root, 'config')
+        
         self.global_config = os.path.join(model_root, 
                                             'config', '__global_config.yaml')
+        ### MOVE TO PROCESSOR?? SCALERS??
         self.constuction_multipliers  = os.path.join(model_root, 'config', 
                                             '__regional_multipliers.yaml')
+                                            
         self.comp_lib = comp_lib
         self.comp_order = comp_order
         
@@ -130,59 +134,22 @@ class Driver (object):
                     import_module("aaem.components." + comp_name).component
         return self.imported_comps[comp_name]
         
-    def setup_community (self, community, i_dir = None,
-                                c_config = None, g_config = None,
-                                constuction_mult = None, scalers = None):
+    def setup_community (self, community_config, global_config, i_dir = None,
+                          scalers = None):
         """
-        setup a community to run the model
         
-        inputs:
-            community: a community/project <string>
-            i_dir: (optional) non default input files directory <string> 
-            c_config: (optional) non default community config file <string>
-            g_config: (optional) non default global config file <string>
-            
-        outputs:
-            returns an initilized CommunityData, Forecast, Diagnostic object for 
-        the community
-        
-        preconditions:
-            See class invariants
-        
-        postconditions:
-            None
         """
         diag = diagnostics()
-        
-        if c_config is None:
-            c_config = os.path.join(self.config_dir,
-                                community.replace(' ','_') + "_config.yaml")
-        
-        if g_config is None:
-            g_config = self.global_config
             
         if i_dir is None:
             com_dir = community.replace(' ','_').split('+')[0]
             i_dir = os.path.join(self.inputs_dir, com_dir) 
-            
-        if constuction_mult is None:
-           constuction_mult = self.constuction_multipliers 
-        
-        tag = '+'.join(community.replace(' ','_').split('+')[1:]).lower()
-        if tag == '':
-            tag = None  
 
-        if not os.path.exists(c_config):
-            raise IOError, "Config Does not exist for " + community
-            
         try:
-            cd = CommunityData(alt_data_dir = i_dir,
-                               alt_community_conf = c_config,
-                               alt_global_conf = g_config,
-                               alt_construction_multipliers = constuction_mult,
-                               diag = diag, 
-                               tag = tag,
-                               scalers = scalers)
+            cd = CommunityData( community_config,
+                                global_config,
+                                diag,
+                                scalers)
         except IOError as e:
             raise RuntimeError, \
                 ("A Fatal Error Has occurred, ("+ str(e) +")")
@@ -587,7 +554,7 @@ class Setup (object):
             model_root <string>
     """
     
-    def __init__ (self, model_root, communities, data_repo, tag = None):
+    def __init__ (self, model_root, data_dir, communities = None, tag = None):
         """
         initilizer 
         
@@ -603,11 +570,12 @@ class Setup (object):
         """
         self.model_root = model_root
         self.communities = communities
-        self.data_repo = data_repo
+        self.data_dir = data_dir
         
         self.tag = tag
         if tag is None:
             self.tag = self.make_version_tag()
+        self.diagnostics = diagnostics()
                 
                 
     def make_version_tag (self):
@@ -621,7 +589,7 @@ class Setup (object):
         outputs
             returns tag
         """
-        data_version_file = os.path.join(self.data_repo, 'VERSION')
+        data_version_file = os.path.join(self.data_dir, 'VERSION')
         with open(data_version_file, 'r') as fd:
             ver = fd.read().replace("\n", "")
             ver = 'm' +  __version__  + '_d' + ver
@@ -641,59 +609,54 @@ class Setup (object):
         setup_path = os.path.join(self.model_root, self.tag)
     
         try:
-            shutil.rmtree(os.path.join(setup_path, "input_files"))
-        except OSError:
-            pass
-        try:
             shutil.rmtree(os.path.join(setup_path, "config"))
         except OSError:
             pass
         
-        os.makedirs(os.path.join(setup_path, "input_files"))
         os.makedirs(os.path.join(setup_path, "config"))
             
-    def setup_community_configs (self, coms = None):
-        """
-        set up the conigureation files
+    #~ def setup_community_configs (self, coms = None):
+        #~ """
+        #~ set up the conigureation files
         
-        inputs:
-            coms: (optional) alterante of communites to setup should be a 
-                subset of self.communities
+        #~ inputs:
+            #~ coms: (optional) alterante of communites to setup should be a 
+                #~ subset of self.communities
         
-        post conditions:
-            saves a configuration .yaml for each community/ projcet in coms or 
-        self.communities
-        """
-        config_path = os.path.join(self.model_root, self.tag, 'config')
-        if coms is None:
-            coms = self.communities
+        #~ post conditions:
+            #~ saves a configuration .yaml for each community/ projcet in coms or 
+        #~ self.communities
+        #~ """
+        #~ config_path = os.path.join(self.model_root, self.tag, 'config')
+        #~ if coms is None:
+            #~ coms = self.communities
         
-        for c in coms:
-            config = {'community':{'name': c,
-                                   'model financial': True,},
-                        }
-            comments = {'community':{'name': 'name of community/project',
-                                     'model financial': 'Model Finances?',},
+        #~ for c in coms:
+            #~ config = {'community':{'name': c,
+                                   #~ 'model financial': True,},
+                        #~ }
+            #~ comments = {'community':{'name': 'name of community/project',
+                                     #~ 'model financial': 'Model Finances?',},
                
-                        }
-            north_slope = ["Barrow", "Nuiqsut"] 
-            if c.split('+')[0] in north_slope or c.split('_')[0] in north_slope:
-                config['community']['natural gas price'] = 3
-                config['community']['natural gas used'] = True
-                comments['community']['natural gas price'] = 'LNG price $/gal'
-                comments['community']['natural gas used'] = \
-                                                        'LNG used in community'
+                        #~ }
+            #~ north_slope = ["Barrow", "Nuiqsut"] 
+            #~ if c.split('+')[0] in north_slope or c.split('_')[0] in north_slope:
+                #~ config['community']['natural gas price'] = 3
+                #~ config['community']['natural gas used'] = True
+                #~ comments['community']['natural gas price'] = 'LNG price $/gal'
+                #~ comments['community']['natural gas used'] = \
+                                                        #~ 'LNG used in community'
             
-            config_file = os.path.join(config_path, 
-                                c.replace(' ','_') + '_config.yaml')
-            header = 'community data for ' + c 
-            write_config_file(config_file, config, comments, 
-                                            s_order = ['community',],
-                                            i_orders = {'community':['name',
-                                                        'model financial',
-                                                        'natural gas used',
-                                                        'natural gas price']},
-                                            header = header)
+            #~ config_file = os.path.join(config_path, 
+                                #~ c.replace(' ','_') + '_config.yaml')
+            #~ header = 'community data for ' + c 
+            #~ write_config_file(config_file, config, comments, 
+                                            #~ s_order = ['community',],
+                                            #~ i_orders = {'community':['name',
+                                                        #~ 'model financial',
+                                                        #~ 'natural gas used',
+                                                        #~ 'natural gas price']},
+                                            #~ header = header)
             
     def setup_community_list (self):
         """
@@ -707,172 +670,177 @@ class Setup (object):
         """
         config_path = os.path.join(self.model_root, self.tag, 'config', 
                                                     '__community_list.csv')
-        src_path = os.path.join(self.data_repo, 'community_list.csv')
+        src_path = os.path.join(self.data_dir, 'community_list.csv')
         shutil.copy(src_path, config_path)
         
-    def setup_goals (self):
-        """
-        create the community list file from the repo
+    #~ def setup_goals (self):
+        #~ """
+        #~ create the community list file from the repo
         
-        preconditions:
-            see invariants, community_list.csv sould exist in data repo
+        #~ preconditions:
+            #~ see invariants, community_list.csv sould exist in data repo
             
-        postcondition:
-            '__community_list.csv' saved in config directory
-        """
-        config_path = os.path.join(self.model_root, self.tag, 'input_files', 
-                                                    '__goals_community.csv')
-        src_path = os.path.join(self.data_repo, 'goals_community.csv')
-        shutil.copy(src_path, config_path)
+        #~ postcondition:
+            #~ '__community_list.csv' saved in config directory
+        #~ """
+        #~ config_path = os.path.join(self.model_root, self.tag, 'input_files', 
+                                                    #~ '__goals_community.csv')
+        #~ src_path = os.path.join(self.data_repo, 'goals_community.csv')
+        #~ shutil.copy(src_path, config_path)
         
-        config_path = os.path.join(self.model_root, self.tag, 'input_files', 
-                                                    '__goals_regional.csv')
-        src_path = os.path.join(self.data_repo, 'goals_regional.csv')
-        shutil.copy(src_path, config_path)
+        #~ config_path = os.path.join(self.model_root, self.tag, 'input_files', 
+                                                    #~ '__goals_regional.csv')
+        #~ src_path = os.path.join(self.data_repo, 'goals_regional.csv')
+        #~ shutil.copy(src_path, config_path)
         
-    def setup_construction_multipliers (self):
-        """
-        create the construction multipliers file from the repo
+    #~ def setup_construction_multipliers (self):
+        #~ """
+        #~ create the construction multipliers file from the repo
         
-        preconditions:
-            see invariants, construction multipliers.yaml sould exist in 
-        data repo
+        #~ preconditions:
+            #~ see invariants, construction multipliers.yaml sould exist in 
+        #~ data repo
             
-        postcondition:
-            '__construction multipliers.yaml' saved in config directory
-        """
-        config_path = os.path.join(self.model_root, self.tag, 'config', 
-                                              '__regional_multipliers.yaml')
-        src_path = os.path.join(self.data_repo, 'regional_multipliers.yaml')
-        shutil.copy(src_path, config_path)
+        #~ postcondition:
+            #~ '__construction multipliers.yaml' saved in config directory
+        #~ """
+        #~ config_path = os.path.join(self.model_root, self.tag, 'config', 
+                                              #~ '__regional_multipliers.yaml')
+        #~ src_path = os.path.join(self.data_repo, 'regional_multipliers.yaml')
+        #~ shutil.copy(src_path, config_path)
 
-    def setup_global_config (self):
-        """
-        setup global config
+    #~ def setup_global_config (self):
+        #~ """
+        #~ setup global config
         
-        preconditions:
-            see invariants
+        #~ preconditions:
+            #~ see invariants
             
-        postcondition:
-            default '__global_config.yaml' saved in config directory
-        """
-        config_path = os.path.join(self.model_root, self.tag, 'config', 
-                                                    "__global_config.yaml")
-        with open(config_path, 'w') as def_file:
-            def_file.write(yaml.dump(defaults.build_setup_defaults(comp_lib),
-                                                default_flow_style = False))
+        #~ postcondition:
+            #~ default '__global_config.yaml' saved in config directory
+        #~ """
+        #~ config_path = os.path.join(self.model_root, self.tag, 'config', 
+                                                    #~ "__global_config.yaml")
+        #~ with open(config_path, 'w') as def_file:
+            #~ def_file.write(yaml.dump(defaults.build_setup_defaults(comp_lib),
+                                                #~ default_flow_style = False))
             
-    def setup_input_files (self):
-        """
-        setup the input files, preprocessing the data
+    #~ def setup_input_files (self):
+        #~ """
+        #~ setup the input files, preprocessing the data
         
-        preconditions:
-            see invariants
+        #~ preconditions:
+            #~ see invariants
             
-        postconditons:
-            sets up input files, and metadata
+        #~ postconditons:
+            #~ sets up input files, and metadata
             
-        output:
-            returns the list of ids
-        """
-        input_path = os.path.join(self.model_root,self.tag,"input_files")
+        #~ output:
+            #~ returns the list of ids
+        #~ """
+        #~ input_path = os.path.join(self.model_root,self.tag,"input_files")
         
-        ids = self.preprocess_input_files(input_path)
-        self.move_input_files_diagnostics(input_path)
-        self.write_input_files_metadata(input_path)
-        self.archive_input_files_raw_data (input_path)
-        return ids
+        #~ ids = self.preprocess_input_files(input_path)
+        #~ self.move_input_files_diagnostics(input_path)
+        #~ self.write_input_files_metadata(input_path)
+        #~ self.archive_input_files_raw_data (input_path)
+        #~ return ids
         
-    def preprocess_input_files (self, input_path):
-        """
-        preprocess input files
+    #~ def preprocess_input_files (self, input_path):
+        #~ """
+        #~ preprocess input files
         
-        inputs:
-            input_path: path to preprocess the data into <string>
+        #~ inputs:
+            #~ input_path: path to preprocess the data into <string>
             
-        preconditions:
-            see invatiants
+        #~ preconditions:
+            #~ see invatiants
             
-        outputs:
-            returns ids of preprocessed communities/projects including interies
-        """
-        all_ids = []
-        for c in self.communities:
-            it_batch = {}
-            ids = preprocess(self.data_repo, input_path, c, dev = True)
-            all_ids += ids
+        #~ outputs:
+            #~ returns ids of preprocessed communities/projects including interies
+        #~ """
+        #~ all_ids = []
+        #~ for c in self.communities:
+            #~ it_batch = {}
+            #~ ids = preprocess(self.data_repo, input_path, c, dev = True)
+            #~ all_ids += ids
             
-        return all_ids
+        #~ return all_ids
             
-    def move_input_files_diagnostics (self, input_path):
-        """
-        move the input file diagnostics to a '__diagnostic_files' sub directory
+    #~ def move_input_files_diagnostics (self, input_path):
+        #~ """
+        #~ move the input file diagnostics to a '__diagnostic_files' sub directory
         
-        inputs:
-            input_path: path to preprocess the data into <string>
+        #~ inputs:
+            #~ input_path: path to preprocess the data into <string>
         
-        postconditions:
-            move the input file diagnostics
-        """
-        diag_path = os.path.join(input_path, '__diagnostic_files')
-        try:
-            os.makedirs(diag_path)
-        except OSError:
-            pass
-        for diagf in [f for f in os.listdir(input_path) if '.csv' in f] : 
-            os.rename(os.path.join(input_path,diagf),
-                        os.path.join(diag_path,diagf))
+        #~ postconditions:
+            #~ move the input file diagnostics
+        #~ """
+        #~ diag_path = os.path.join(input_path, '__diagnostic_files')
+        #~ try:
+            #~ os.makedirs(diag_path)
+        #~ except OSError:
+            #~ pass
+        #~ for diagf in [f for f in os.listdir(input_path) if '.csv' in f] : 
+            #~ os.rename(os.path.join(input_path,diagf),
+                        #~ os.path.join(diag_path,diagf))
           
-    def write_input_files_metadata (self, input_path):
-        """ 
-        write data metadata
+    #~ def write_input_files_metadata (self, input_path):
+        #~ """ 
+        #~ write data metadata
         
-        inputs:
-            input_path: path to inputs directory <string>
+        #~ inputs:
+            #~ input_path: path to inputs directory <string>
             
-        outputs:
-            saves 'input_files_metadata.yaml' in "__metadata" subdirectory
-        """
-        data_version_file = os.path.join(self.data_repo, 'VERSION')
-        with open(data_version_file, 'r') as fd:
-            ver = fd.read().replace("\n", "")
+        #~ outputs:
+            #~ saves 'input_files_metadata.yaml' in "__metadata" subdirectory
+        #~ """
+        #~ data_version_file = os.path.join(self.data_repo, 'VERSION')
+        #~ with open(data_version_file, 'r') as fd:
+            #~ ver = fd.read().replace("\n", "")
             
-        md_dir = os.path.join(input_path, "__metadata")
-        try:
-            os.makedirs(md_dir)
-        except OSError:
-            pass
-        m = 'w'
-        with open(os.path.join(md_dir, 'input_files_metadata.yaml'), m) as meta:
-            meta.write(yaml.dump({'upadted': datetime.strftime(datetime.now(),
-                                                        "%Y-%m-%d %H:%M:%S"),
-                                  'data version': ver},
-                                  default_flow_style = False))
+        #~ md_dir = os.path.join(input_path, "__metadata")
+        #~ try:
+            #~ os.makedirs(md_dir)
+        #~ except OSError:
+            #~ pass
+        #~ m = 'w'
+        #~ with open(os.path.join(md_dir, 'input_files_metadata.yaml'), m) as meta:
+            #~ meta.write(yaml.dump({'upadted': datetime.strftime(datetime.now(),
+                                                        #~ "%Y-%m-%d %H:%M:%S"),
+                                  #~ 'data version': ver},
+                                  #~ default_flow_style = False))
                                   
-    def archive_input_files_raw_data (self, input_path):
-        """
-        saves an archive of the raw data in the meta dat folder
+    #~ def archive_input_files_raw_data (self, input_path):
+        #~ """
+        #~ saves an archive of the raw data in the meta dat folder
         
-        inputs:
-            input_path: path to inputs directory<string>
+        #~ inputs:
+            #~ input_path: path to inputs directory<string>
             
-        outputs:
-            saves in "raw_data.zip" in "__metadata" subdirectory
-        """
-        data_version_file = os.path.join(self.data_repo, 'VERSION')
-        with open(data_version_file, 'r') as fd:
-            ver = fd.read().replace("\n", "")
+        #~ outputs:
+            #~ saves in "raw_data.zip" in "__metadata" subdirectory
+        #~ """
+        #~ data_version_file = os.path.join(self.data_repo, 'VERSION')
+        #~ with open(data_version_file, 'r') as fd:
+            #~ ver = fd.read().replace("\n", "")
     
-        md_dir = os.path.join(input_path, "__metadata")
-        try:
-            os.makedirs(md_dir)
-        except OSError:
-            pass
-        z = zipfile.ZipFile(os.path.join(md_dir, "raw_data.zip"),"w")
-        for raw in [f for f in os.listdir(self.data_repo) if '.csv' in f]:
-            z.write(os.path.join(self.data_repo,raw), raw)
-        z.write(os.path.join(data_version_file), 'VERSION')
-
+        #~ md_dir = os.path.join(input_path, "__metadata")
+        #~ try:
+            #~ os.makedirs(md_dir)
+        #~ except OSError:
+            #~ pass
+        #~ z = zipfile.ZipFile(os.path.join(md_dir, "raw_data.zip"),"w")
+        #~ for raw in [f for f in os.listdir(self.data_repo) if '.csv' in f]:
+            #~ z.write(os.path.join(self.data_repo,raw), raw)
+        #~ z.write(os.path.join(data_version_file), 'VERSION')
+    def load_communities (self):
+        """ Function doc """
+        data = read_csv(os.path.join(self.model_root, self.tag, 'config', 
+                                                    '__community_list.csv'))
+        
+        self.communities = [c for c in data['Community'].values]
         
     def setup (self, force = False):
         """
@@ -888,35 +856,65 @@ class Setup (object):
         if os.path.exists(setup_path) and force == False:
             return False
             
+        
         self.setup_directories()
-        self.setup_global_config()
-        ids = self.setup_input_files()
-        self.setup_community_configs(ids)
         self.setup_community_list()
-        self.setup_construction_multipliers()
-        self.setup_goals()
+        
+        if self.communities is None:
+            self.load_communities()
+        
+        for community in self.communities:
+            f_path = os.path.join(self.model_root, self.tag, 'config')
+            preprocessor = Preprocessor(community,
+                self.data_dir, 
+                diag = self.diagnostics, 
+                process_intertie = False)
+            self.diagnostics.add_note('Preprocessing ' + community, '---------')
+            preprocessor.run()
+            
+            preprocessor.save_config(f_path)
+            
+            ## the intertie, if it exists
+            try:
+                preprocessor = Preprocessor(community,
+                    self.data_dir, 
+                    diag = self.diagnostics, 
+                    process_intertie = True)
+                self.diagnostics.add_note('Preprocessing ' + community,
+                    '---------')
+                preprocessor.run()
+                preprocessor.save_config(f_path)
+            except  PreprocessorError:
+                pass
+        
+        #~ self.setup_global_config()
+        #~ ids = self.setup_input_files()
+        #~ self.setup_community_configs()
+        
+        #~ self.setup_construction_multipliers()
+        #~ self.setup_goals()
         return True
         
         
-def write_config_file(path, config, comments, s_order = None, i_orders = None, 
-                            indent = '  ' , header = ''):
-    """
-    write a config yaml file
+#~ def write_config_file(path, config, comments, s_order = None, i_orders = None, 
+                            #~ indent = '  ' , header = ''):
+    #~ """
+    #~ write a config yaml file
     
-    inputs:
-        path: filename to save file at <string>
-        config: dictionary of configs <dict>
-        comments: dictionary of comments <dict>
-        s_order: (optional) order of sections <list>
-        i_orders: (optional) order of items in sections <dict>
-        indent: (optional) indent spacing <sting>
-        header: (optional) header line <string>
+    #~ inputs:
+        #~ path: filename to save file at <string>
+        #~ config: dictionary of configs <dict>
+        #~ comments: dictionary of comments <dict>
+        #~ s_order: (optional) order of sections <list>
+        #~ i_orders: (optional) order of items in sections <dict>
+        #~ indent: (optional) indent spacing <sting>
+        #~ header: (optional) header line <string>
         
-    outputs:
-        saves config .yaml file at path
-    """
-    defaults.save_config(path, config, comments, s_order, 
-                                i_orders, indent, header)
+    #~ outputs:
+        #~ saves config .yaml file at path
+    #~ """
+    #~ defaults.save_config(path, config, comments, s_order, 
+                                #~ i_orders, indent, header)
     
 def script_validator (script_file):
     """

@@ -61,7 +61,7 @@ def growth(xs, ys , x):
 class Preprocessor (object):
     """
     """
-    def __init__ (self, community, data, diag = None, process_intertie = False):
+    def __init__ (self, community, data_dir, diag = None, process_intertie = False):
         """
         
         note on intertie_status and community, GNIS, etc attributes
@@ -82,7 +82,7 @@ class Preprocessor (object):
         if diag == None:
             diag = diagnostics()
         self.diagnostics = diag
-        self.data_dir = os.path.join(os.path.abspath(data),"")
+        self.data_dir = os.path.join(os.path.abspath(data_dir),"")
 
 
         self.intertie_status = self.detrmine_intertie_status(community)
@@ -200,10 +200,18 @@ class Preprocessor (object):
             self.preprocess_component(test, population=100)
         )
         #~ print self.data
+        return self.data
             
-        save_config(
-            './pp2_testing/' +self.community.replace(' ', '_').replace("'", '')\
-            + '_config.yaml',
+            
+    def save_config (self, out_dir):
+        """ Function doc """
+        
+        community = self.community.replace(' ', '_').replace("'", '')
+        if self.process_intertie == True:
+            community += '_intertie'
+        
+        out_path = os.path.join(out_dir, community+'.yaml')
+        save_config(out_path,
             self.data,
             comments = {},
             s_order = ['community', 'Non-residential Energy Efficiency'],
@@ -272,7 +280,7 @@ class Preprocessor (object):
         
         
         
-        return self.data
+
         
     def preprocess_component ( self, component, **kwargs):
         """
@@ -663,9 +671,14 @@ class Preprocessor (object):
             source = data.ix[utility]['Energy Source']
             if not type(source) is str:
                 if 1 != len(set(data.ix[utility]['Energy Source'].values)):
-                    raise StandardError, \
-                        "More Than One Energy Source in Purcased power lib"
-                source = data.ix[utility]['Energy Source'].values[0]
+                    self.diagnostics.add_warning('PCE preprocessing',
+                        "More Than One Energy Source in Purcased power lib, " +\
+                        "defaulting to first in list alphabeticaly"
+                    )
+                    source = sorted(data.ix[utility]['Energy Source'].values)[0]    
+                    
+                else:
+                    source = data.ix[utility]['Energy Source'].values[0]
             
             lib[utility] = source
             
