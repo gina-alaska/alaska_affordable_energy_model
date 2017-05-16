@@ -39,28 +39,18 @@ class Forecast (object):
         if self.diagnostics == None:
             self.diagnostics = diagnostics()
         self.cd = community_data
-        self.fc_specs = self.cd.get_section('forecast')
-        self.start_year = self.fc_specs["end year"]
-        self.end_year = self.fc_specs["end year"]
-        
-        #~ yr = self.cd.get_item('residential buildings', 'data').ix['year']
-        #~ self.base_pop = self.fc_specs['population'].ix[yr].values[0][0]
         
         self.forecast_population()
         
+        ## test block
+        self.forecast_consumption(scalers['kWh consumption'])
+        #~ self.forecast_generation()
+        return
         
         if self.cd.get_item("community","model electricity") is False:
-            #~ self.base_res_consumption = None
-            #~ self.base_non_res_consumption = None
-            #~ self.base_total_consumption = None
             pass
         else:
-            #~ kWh = self.fc_specs["electricity"]
-            #~ self.base_res_consumption = \
-                #~ float(kWh['consumption residential'].ix[yr])
-            #~ self.base_non_res_consumption = \
-                #~ float(kWh['consumption non-residential'].ix[yr])
-            #~ self.base_total_consumption = float(kWh['consumption'].ix[yr])
+
             self.forecast_consumption(scalers['kWh consumption'])
             self.forecast_generation()
             try:
@@ -89,26 +79,26 @@ class Forecast (object):
         self.electric_columns = []
         
 
-    def calc_electricity_values (self):
-        """ 
-        pre:
-            'fc_electricity_used' should contain the kWh used for each key type
-        post:
-            self.electricty_totals is a array of yearly values of total kWh used
-        """
-        kWh = self.fc_specs["electricity"]
+    #~ def calc_electricity_values (self):
+        #~ """ 
+        #~ pre:
+            #~ 'fc_electricity_used' should contain the kWh used for each key type
+        #~ post:
+            #~ self.electricty_totals is a array of yearly values of total kWh used
+        #~ """
+        #~ kWh = self.fc_specs["electricity"]
         #~ print kWh
-        years = kWh.T.keys().values
-        self.yearly_res_kWh = DataFrame({"year":years,
-                          "total":kWh['consumption residential'].values}).set_index("year")
-        self.yearly_total_kWh = DataFrame({"year":years,
-                          "total":kWh['consumption'].values}).set_index("year")
-        self.average_nr_kWh = kWh['consumption non-residential'].values[-3:].mean()
-        if np.isnan(self.average_nr_kWh):
-            temp = kWh['consumption non-residential']
-            self.average_nr_kWh = temp[ np.logical_not(np.isnan(temp))].mean() 
-        self.yearly_nr_kWh = DataFrame({"year":years,
-                          "total":kWh['consumption non-residential'].values}).set_index("year")
+        #~ years = kWh.T.keys().values
+        #~ self.yearly_res_kWh = DataFrame({"year":years,
+                          #~ "total":kWh['consumption residential'].values}).set_index("year")
+        #~ self.yearly_total_kWh = DataFrame({"year":years,
+                          #~ "total":kWh['consumption'].values}).set_index("year")
+        #~ self.average_nr_kWh = kWh['consumption non-residential'].values[-3:].mean()
+        #~ if np.isnan(self.average_nr_kWh):
+            #~ temp = kWh['consumption non-residential']
+            #~ self.average_nr_kWh = temp[ np.logical_not(np.isnan(temp))].mean() 
+        #~ self.yearly_nr_kWh = DataFrame({"year":years,
+                          #~ "total":kWh['consumption non-residential'].values}).set_index("year")
         #~ print self.average_nr_kWh
 
 
@@ -121,18 +111,20 @@ class Forecast (object):
         year between start and end
         """
         # pop forecast is preprocessed now
-        self.p_map = DataFrame(self.fc_specs["population"]\
-                                            ["population_qualifier"])
-        self.population = DataFrame(self.fc_specs["population"]["population"])
-        last_pop_year = self.population.index.tolist()[-1]
-        if self.end_year < last_pop_year:
-            self.population = self.population[:self.end_year]
-        elif self.end_year > last_pop_year:
-            self.diagnostics.add_note("Forecast",
-                    "extending popultation past avaiable data")
-            last_pop = int(round(self.population.ix[last_pop_year]))
-            for i in range(last_pop_year,self.end_year+1):
-                self.population.ix[i] = last_pop
+        population = self.cd.get_item('community',"population")
+        
+        self.p_map = DataFrame(population["population_qualifier"])
+        self.population = DataFrame(population["population"])
+        
+        #~ last_pop_year = self.population.index.tolist()[-1]
+        #~ if self.end_year < last_pop_year:
+            #~ self.population = self.population[:self.end_year]
+        #~ elif self.end_year > last_pop_year:
+            #~ self.diagnostics.add_note("Forecast",
+                    #~ "extending popultation past avaiable data")
+            #~ last_pop = int(round(self.population.ix[last_pop_year]))
+            #~ for i in range(last_pop_year,self.end_year+1):
+                #~ self.population.ix[i] = last_pop
         
         if len(self.p_map[self.p_map == "M"] ) < 10:
             msg = "the data range is < 10 for input population "\
@@ -148,31 +140,41 @@ class Forecast (object):
             self.consumption is a array of estimated kWh consumption for each 
         year between start and end
         """
-        self.calc_electricity_values()
-        idx =  self.yearly_res_kWh.index.values.astype(int).tolist()
+        total_consumption = \
+            self.cd.get_item('community','utility info')['consumption'] \
+            * consumption_sacler
+        residential_consumption = \
+            self.cd.get_item('community','utility info')\
+            ['consumption residential'] * consumption_sacler
+        non_residential_consumption = \
+            self.cd.get_item('community','utility info')\
+            ['consumption non-residential'] * consumption_sacler
+        
+        index = list(residential_consumption.index)
 
-        if len(self.yearly_res_kWh) < 10:
+        if len(residential_consumption) < 10:
             msg = "the data range is < 10 for input consumption "\
                   "check electricity.csv in the models data directory"
-            self.diagnostics.add_warning("forecast", msg)
-        population = self.population.ix[idx]
-        if any(population.isnull()):
-            v= population.isnull().values.T.tolist()[0]
-            for year in population[v].index.values.tolist():
-                idx.remove(year)
+            self.diagnostics.add_warning("Forecast: consumption", msg)
         
-        if any(self.yearly_res_kWh.isnull()):
-            v = self.yearly_res_kWh.isnull().values.T.tolist()[0]
-            for year in self.yearly_res_kWh[v].index.values.tolist():
-                idx.remove(year)
+        population = self.population.ix[index]
+        #~ if any(population.isnull()):
+            #~ v= population.isnull().values.T.tolist()[0]
+            #~ for year in population[v].index.values.tolist():
+                #~ idx.remove(year)
+        
+        #~ if any(residential_consumption.isnull()):
+            #~ v = residential_consumption.isnull().values.T.tolist()[0]
+            #~ for year in self.yearly_res_kWh[v].index.values.tolist():
+                #~ index.remove(year)
         
         self.diagnostics.add_note("forecast", 
-           "years with measured consumption and population " + str(idx) +\
+           "years with measured consumption and population " + str(index) +\
         ". List used to generate fit function")
-        population = self.population.ix[idx]
-        population = self.population.ix[idx].T.values[0]
-        self.measured_consumption = self.yearly_total_kWh.ix[idx] 
-        consumption = self.yearly_res_kWh.ix[idx].T.values[0]
+        population = self.population.ix[index]['population'].values
+        
+        #~ self.measured_consumption = self.yearly_total_kWh.ix[idx] 
+        consumption = residential_consumption.values
 
         if len(population) < 10:
             self.diagnostics.add_warning("forecast", 
@@ -180,72 +182,45 @@ class Forecast (object):
                   "population and consumption "\
                   "check population.csv and electricity.csv "\
                   "in the models data directory")
-        # get slope(m),intercept(b)
-        #~ print population
-        #~ print consumption
+
         try:
             m, b = np.polyfit(population,consumption,1) 
         except TypeError:
             raise RuntimeError, "Known population & consumption do not overlap"
 
-        fc_consumption = (m * self.population + b) + self.average_nr_kWh
-
-        start = int(self.measured_consumption.index[-1] + 1)
-        years= idx +self.population.ix[start:].index.values.astype(int).tolist()
-        cons = (consumption-consumption).tolist() + \
-                                  fc_consumption.ix[start:].T.values[0].tolist()
-                                  
-        self.c_map = DataFrame({'year':years, 'consumption': cons}).\
-                                                        set_index('year').\
-                                                        astype(bool).\
-                                                        astype(str).\
-                                                        replace("True", "P").\
-                                                        replace("False", "M")   
-        self.c_map.columns  = [self.c_map.columns[0] + "_qualifier"]
+        forcasted_consumption = (m * self.population + b) #+ self.average_nr_kWh
+        forcasted_consumption.columns = ['consumption residential']
         
-        cons = self.measured_consumption.T.values.tolist()[0] +\
-                                fc_consumption.ix[start:].values.T.tolist()[0]
+        forcasted_consumption['consumption_qualifer'] = "P"
         
-        nr = np.zeros(len(fc_consumption.ix[start:])-1) + self.average_nr_kWh
-        r = (m * self.population + b).ix[start:]
+        forcasted_consumption['consumption residential']\
+            [residential_consumption.index] = residential_consumption
+        if consumption_scaler != 1.0:
+            ## if the scaler is not 1 then none of the values are really
+            ## measured
+            forcasted_consumption['consumption_qualifer']\
+                [residential_consumption.index] = \
+                (residential_consumption * np.nan).fillna("M")
         
-        r =  self.yearly_res_kWh.ix[idx].T.values.tolist()[0] + \
-             r.values.T.tolist()[0]
         
-        nr = self.yearly_nr_kWh.ix[idx].T.values.tolist()[0] + nr.tolist() 
+        mean_non_res_con = non_residential_consumption.values[-3:].mean()
         
-        if len(nr) < len(r):
-            nr.append(self.average_nr_kWh)
-        if len(nr) > len(r):
-            nr = nr[:-1]
-        consumption = DataFrame({'year':years, 
-                                 'consumption': cons, 
-                                 'res': r,
-                                 'non res' : nr}).set_index('year')
-        consumption *= consumption_sacler
-        consumption = consumption[["consumption", 'res', 'non res']]
-        consumption.columns = ["consumption kWh", 
-                               'residential kWh',
-                               'non-residential kWh']
-        self.consumption_to_save = consumption
+        forcasted_consumption['consumption non-residential'] = mean_non_res_con
+        forcasted_consumption['consumption non-residential']\
+            [non_residential_consumption.index] = non_residential_consumption
+            
         
-        self.consumption = DataFrame({'year':years, 
-                                 'consumption': cons, }).set_index('year') 
-        self.consumption *= consumption_sacler
-        self.consumption.columns = ["consumption kWh"]
-        self.consumption.index = self.consumption.index.values.astype(int)
-        
-        for year in range(min(2010,self.consumption.index[0]),
-                                    self.consumption.index[-1]):
-            try:
-                self.consumption.ix[year]
-            except KeyError:
-                self.consumption.ix[year] = np.nan
-                
-        self.consumption = self.consumption.sort()
-        #~ print self.consumption
-        
-        self.start_year = int(self.yearly_res_kWh.T.keys()[-1])
+        forcasted_consumption['consumption'] = \
+            forcasted_consumption['consumption non-residential'] + \
+            forcasted_consumption['consumption residential'] 
+            
+        forcasted_consumption['consumption non-residential']\
+            [total_consumption.index] = total_consumption
+           
+        ## don't forecast backwards 
+        forcasted_consumption = \
+            forcasted_consumption.ix[residential_consumption.index[0]:]
+        self.consumption = forcasted_consumption
         
     def forecast_generation (self):
         """
@@ -494,7 +469,24 @@ class Forecast (object):
         """
         if end is None:
             return self.population.ix[start].T.values[0]
-        return self.population.ix[start:end-1].T.values[0]
+       
+        ## dynamic extension
+        existing_len = len(self.population.ix[start:end])
+        extend_by = (end + 1) - start - existing_len
+        if extend_by > 0:
+            extend = DataFrame(
+                index=range(
+                    self.population.index[-1]+1,
+                    self.population.index[-1]+extend_by
+                ), 
+                columns=['population'])
+            extend['population'] = self.population.iloc[-1]['population']
+            population = self.population.ix[start:end].append(extend)
+        
+        else:
+            # -1 to ensure same behavour
+            population = self.population.ix[start:end-1]
+        return population['population'].values  
     
     def get_consumption (self, start, end = None):
         """
@@ -507,8 +499,28 @@ class Forecast (object):
             returns a float or list of floats
         """
         if end is None:
-            return self.consumption.ix[start].T.values[0]
-        return self.consumption.ix[start:end-1].T.values[0]
+            return self.consumption.ix[start]['consumption']
+       
+        ## dynamic extension
+        existing_len = len(self.consumption.ix[start:end])
+        extend_by = (end + 1) - start - existing_len
+        if extend_by > 0:
+            extend = DataFrame(
+                index=range(
+                    self.consumption.index[-1]+1,
+                    self.consumption.index[-1]+extend_by
+                ), 
+                columns=['consumption'])
+            extend['consumption'] = self.consumption.iloc[-1]['consumption']
+            consumption = \
+                DataFrame(self.consumption.ix[start:end]['consumption']).\
+                append(extend)
+        
+        else:
+            #  -1 to ensure same behavour
+            consumption = \
+                DataFrame(self.consumption['consumption'].ix[start:end-1])
+        return consumption['consumption'].values  
 
     def get_generation (self, start, end = None):
         """
@@ -630,7 +642,7 @@ class Forecast (object):
         """
         """
         from copy import deepcopy
-        kWh_con = deepcopy(self.consumption_to_save)
+        kWh_con = deepcopy(self.consumption)
         kWh_con.columns = ["total_electricity_consumed [kWh/year]",
                            'residential_electricity_consumed [kWh/year]',
                            'non-residential_electricity_consumed [kWh/year]']
