@@ -11,6 +11,9 @@ from pandas import DataFrame
 
 base_structure = {
     'community': {
+        'model electricity': bool,
+        'file id': str,
+    
         'name': str,
         'alternate name': str,
         'region': str,
@@ -48,6 +51,8 @@ base_structure = {
         'hydro capacity': float,
         'solar capacity': float,
         'wind capacity': float,
+        
+        'max wind generation precent': float,
     }
 
 }

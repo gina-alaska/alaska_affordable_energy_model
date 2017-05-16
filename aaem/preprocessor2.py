@@ -400,6 +400,10 @@ class Preprocessor (object):
         population = self.load_population(**kwargs)
         data = {
             'community': {
+                'model electricity': True,
+                'file id': self.community,
+                
+            
                 'name': self.community,
                 'alternate name': self.aliases[0],
                 'region': self.regions[0],
@@ -414,6 +418,8 @@ class Preprocessor (object):
                 'heating degree days': self.load_heating_degree_days(),
                 'heating fuel premium': self.load_heating_fuel_premium(),
                 'on road system': self.load_road_system_status(),
+                
+                'max wind generation precent': 20,
                 
             },
         }

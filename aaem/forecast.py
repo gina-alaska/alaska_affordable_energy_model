@@ -18,11 +18,6 @@ import copy
 
 from datetime import datetime
 
-
-
-
-
-
 class Forecast (object):
     """ Class doc """
     
@@ -42,10 +37,10 @@ class Forecast (object):
         
         self.forecast_population()
         
-        ## test block
-        self.forecast_consumption(scalers['kWh consumption'])
-        self.forecast_generation()
-        return
+        #~ ## test block
+        #~ self.forecast_consumption(scalers['kWh consumption'])
+        #~ self.forecast_generation()
+        #~ return
         
         if self.cd.get_item("community","model electricity") is False:
             pass
@@ -53,10 +48,10 @@ class Forecast (object):
 
             self.forecast_consumption(scalers['kWh consumption'])
             self.forecast_generation()
-            try:
-                self.forecast_generation_by_type()
-            except IndexError:
-                pass
+            #~ try:
+            self.forecast_generation_by_type()
+            #~ except IndexError:
+                #~ pass
             self.forecast_average_kW()
         
         self.calc_average_diesel_load()
@@ -354,10 +349,10 @@ class Forecast (object):
         pre:
         post:
         """
-        self.average_kW = (self.consumption/ 8760.0)\
+        self.average_kW = (self.consumption['consumption']/ 8760.0)\
                                 /(1-self.cd.get_item('community','line losses'))
         
-        self.average_kW.columns = ["avg. kW"]
+        self.average_kW.columns = ["average load"]
         
     def forecast_households (self):
         """
@@ -365,10 +360,12 @@ class Forecast (object):
         pre:
         post:
         """
-        peps_per_house = float(self.base_pop) / \
-            self.cd.get_item('residential buildings','data').ix['total_occupied']
-        self.households = np.round(self.population / np.float64(peps_per_house))
-        self.households.columns = ["HH"] 
+        peeps_per_house = float(self.base_pop) / \
+            self.cd.get_item('Residential Buildings',
+                'data').ix['total_occupied']
+        self.households = \
+            np.round(self.population / np.float64(peeps_per_house))
+        self.households.columns = ["households"] 
         
     def get_population (self, start, end = None):
         """
@@ -482,7 +479,24 @@ class Forecast (object):
         """
         if end is None:
             return self.households.ix[start].T.values[0]
-        return self.households.ix[start:end-1].T.values[0]
+       
+        ## dynamic extension
+        existing_len = len(self.households.ix[start:end])
+        extend_by = (end + 1) - start - existing_len
+        if extend_by > 0:
+            extend = DataFrame(
+                index=range(
+                    self.households.index[-1],
+                    self.households.index[-1]+extend_by
+                ), 
+                columns=['households'])
+            extend['households'] = self.households.iloc[-1]['households']
+            households = self.households.ix[start:end].append(extend)
+        
+        else:
+            # -1 to ensure same behavour
+            households = self.households.ix[start:end-1]
+        return households['households'].values  
         
     def save_forecast (self, path, png_path = None, do_plots = False):
         """
