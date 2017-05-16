@@ -44,7 +44,7 @@ class Forecast (object):
         
         ## test block
         self.forecast_consumption(scalers['kWh consumption'])
-        #~ self.forecast_generation()
+        self.forecast_generation()
         return
         
         if self.cd.get_item("community","model electricity") is False:
@@ -132,7 +132,7 @@ class Forecast (object):
             self.diagnostics.add_warning("forecast", msg)
         
         
-    def forecast_consumption (self, consumption_sacler = 1.0):
+    def forecast_consumption (self, consumption_scaler = 1.0):
         """
         pre:
             tbd.
@@ -142,13 +142,13 @@ class Forecast (object):
         """
         total_consumption = \
             self.cd.get_item('community','utility info')['consumption'] \
-            * consumption_sacler
+            * consumption_scaler
         residential_consumption = \
             self.cd.get_item('community','utility info')\
-            ['consumption residential'] * consumption_sacler
+            ['consumption residential'] * consumption_scaler
         non_residential_consumption = \
             self.cd.get_item('community','utility info')\
-            ['consumption non-residential'] * consumption_sacler
+            ['consumption non-residential'] * consumption_scaler
         
         index = list(residential_consumption.index)
 
@@ -158,15 +158,15 @@ class Forecast (object):
             self.diagnostics.add_warning("Forecast: consumption", msg)
         
         population = self.population.ix[index]
-        #~ if any(population.isnull()):
-            #~ v= population.isnull().values.T.tolist()[0]
-            #~ for year in population[v].index.values.tolist():
-                #~ idx.remove(year)
+        if any(population.isnull()):
+            v= population.isnull().values.T.tolist()[0]
+            for year in population[v].index.values.tolist():
+                index.remove(year)
         
-        #~ if any(residential_consumption.isnull()):
-            #~ v = residential_consumption.isnull().values.T.tolist()[0]
-            #~ for year in self.yearly_res_kWh[v].index.values.tolist():
-                #~ index.remove(year)
+        if any(residential_consumption.isnull()):
+            v = residential_consumption.isnull().values.T.tolist()[0]
+            for year in self.yearly_res_kWh[v].index.values.tolist():
+                index.remove(year)
         
         self.diagnostics.add_note("forecast", 
            "years with measured consumption and population " + str(index) +\
@@ -174,7 +174,7 @@ class Forecast (object):
         population = self.population.ix[index]['population'].values
         
         #~ self.measured_consumption = self.yearly_total_kWh.ix[idx] 
-        consumption = residential_consumption.values
+        consumption = residential_consumption.ix[index].values
 
         if len(population) < 10:
             self.diagnostics.add_warning("forecast", 
@@ -184,6 +184,7 @@ class Forecast (object):
                   "in the models data directory")
 
         try:
+            #~ print population,consumption
             m, b = np.polyfit(population,consumption,1) 
         except TypeError:
             raise RuntimeError, "Known population & consumption do not overlap"
@@ -194,7 +195,9 @@ class Forecast (object):
         forcasted_consumption['consumption_qualifer'] = "P"
         
         forcasted_consumption['consumption residential']\
-            [residential_consumption.index] = residential_consumption
+            [residential_consumption.ix[index].index] = \
+            residential_consumption.ix[index]
+            
         if consumption_scaler != 1.0:
             ## if the scaler is not 1 then none of the values are really
             ## measured
@@ -207,7 +210,8 @@ class Forecast (object):
         
         forcasted_consumption['consumption non-residential'] = mean_non_res_con
         forcasted_consumption['consumption non-residential']\
-            [non_residential_consumption.index] = non_residential_consumption
+            [non_residential_consumption.ix[index].index] = \
+            non_residential_consumption.ix[index]
             
         
         forcasted_consumption['consumption'] = \
@@ -215,7 +219,7 @@ class Forecast (object):
             forcasted_consumption['consumption residential'] 
             
         forcasted_consumption['consumption non-residential']\
-            [total_consumption.index] = total_consumption
+            [total_consumption.ix[index].index] = total_consumption.ix[index]
            
         ## don't forecast backwards 
         forcasted_consumption = \
@@ -232,208 +236,117 @@ class Forecast (object):
             self.generation is a array of estimated kWh generation for each 
         year between start and end
         """
-        generation = self.consumption/\
-                    (1.0-self.cd.get_item('community','line losses'))
-        self.generation = generation.apply(np.round, args=(-3,))
+        measured_generation = \
+            self.cd.get_item('community','utility info')['net generation']
+        generation = self.consumption['consumption']/\
+                    (1.0-self.cd.get_item('community','line losses')/100.0)
+        generation = DataFrame(generation)
+        generation.columns = ['generation']
+        generation = generation.round(-3)
         
         
-        try:
-            real = self.cd.get_item('community',"generation").ix[2003:]
-            idx = real.index.values.tolist()
-            df = DataFrame(real.ix[idx])
-            df.columns = ['consumption kWh']
-            
-            nas = [] 
-            for i in idx:
-                if np.isnan(float(df.ix[i])):
-                    nas.append(i)
-            idx = set(idx).difference(nas)
-            
-            self.generation.ix[idx] = df.ix[idx]
-        except:
-            pass
-    
-        self.generation.columns = ["kWh generation"]
+        index = set(measured_generation.index) & set(generation.index)
         
+        generation['generation'][index] = measured_generation.ix[index]
         
-    def forecast_generation_by_type (self):
-        """
-        forecasts the generation by each fuel type
+        types = [u'generation diesel', u'generation hydro',
+                u'generation natural gas', u'generation wind',
+                u'generation solar', u'generation biomass'
+            ]
+        generation_types = self.cd.get_item('community','utility info')[types]
         
-        pre:
-            self.generation is calculated
-        post:
-            self.generation_by_type is created and filled 
-        """
-        gen_types = self.cd.get_item('community','generation numbers')
-
-        self.generation_by_type = copy.deepcopy(self.generation)
-        self.generation_by_type.columns = ["generation total"]
-        if (gen_types[['generation natural gas']].fillna(0) != 0).any().bool():
-            msg = "natural gas is fuel used to make up difference" 
-            self.diagnostics.add_note('forecast', msg) 
-            current_type = 'generation natural gas'
-            self.forecast_fuels(current_type)   
+        backup_type = 'generation diesel'
+        if (generation_types[['generation natural gas']].fillna(0)\
+            != 0).any().bool():
+            backup_type = 'generation natural gas'
+        
+        ## forecast each type
+        for fuel in types:
+            current_fuel = generation_types[fuel]
+            #~ print current_rfuel
+            name = fuel.replace('generation ','')
+            print fuel
+            ## get the hypothetical limit
+            try:
+                current_generation = self.cd.get_item('community',
+                    name + ' generation limit')
+            except KeyError:
+                current_generation = 0
+            ## is there a non-zero limit defined 
+            if current_generation != 0:
                 
-        else: 
-            msg = "diesel is fuel used to make up difference" 
-            self.diagnostics.add_note('forecast', msg) 
-            current_type = 'generation diesel'
-            self.forecast_fuels(current_type)  
-        self.correct_generation()
-    
-    def correct_generation (self):
-        """
-            checks generation of RE fuels, and ensures they remain between the 
-        total generation and the 0
+                if fuel == 'generation wind':
+                    measured = \
+                        current_fuel[current_fuel.notnull()].values[-3:].mean()
+                    max_wind_percent = .2
+                    if measured > (current_generation * max_wind_percent):
+                        pass
+                    else:
+                        generation[fuel] = current_generation * max_wind_percent
+                        generation[fuel].ix[index] = current_fuel.ix[index]
+                        continue
+                else:
+                    generation[fuel] = current_generation 
+                    generation[fuel].ix[index] = current_fuel.ix[index] 
+                    continue
+            else:
+                current_generation = \
+                    current_fuel[current_fuel.notnull()].values[-3:].mean()
+                    
         
-        pre:
-            self.generation_by_type should be populated with generation 
-        values for each fuel type
-        post:
-            RE fuel types are 0 < fuel genneration < total generation, and
-        sum(generation[each fuel]) == generation total
-        """
-        fuel_types = ['generation natural gas', 'generation diesel',
-                  'generation hydro','generation wind','generation biomass']
-        
-        total = self.generation_by_type['generation total'].ix[self.start_year:] 
-        
-        
+            print  current_fuel
+                
+            print current_generation
+            ## no generation found
+            if current_generation == 0:
+                generation[fuel] = current_generation
+                continue 
+            
+            if fuel in [ u'generation wind', u'generation hydro' ]:
+                generation[fuel] = current_generation
+                generation[fuel].ix[index] = current_fuel.ix[index] 
+                for i in generation[fuel].ix[current_fuel.index[-1]+1:].index:
+                     generation[fuel].ix[i] = \
+                        generation[fuel].ix[i-3:i-1].mean()
+            else:
+                generation[fuel] = current_generation
+                generation[fuel].ix[index] = current_fuel.ix[index]
+            
+                
+         
+            #~ print fuel, current_generation
+        #~ print generation['generation hydro']
+        ## scale back any excess
         for fuel in ['generation wind','generation hydro','generation biomass']:
-            #~ if any(self.generation_by_type[fuel].ix[self.start_year:] <= 0):
-                #~ continue
-            fuel_sums = \
-                self.generation_by_type[fuel_types].ix[self.start_year:].sum(1) 
-            if any(total.ix[self.start_year:] < fuel_sums.ix[self.start_year:]):
-                if any(total.ix[self.start_year:] < \
-                        self.generation_by_type[fuel].ix[self.start_year:]):
+            current_fuel = generation_types[fuel]
+            fuel_sums = generation[types].sum(1) 
+            #~ print fuel_sums
+            if any(generation['generation'] < fuel_sums):
+                #~ print 'a'
+                if any(generation['generation'] < generation[fuel]):
+                    #~ print 'b'
                     msg = "scaling generation(" + fuel + ") where geneation(" + \
                             fuel + ") > total generation"
                     self.diagnostics.add_note('forecast', msg)   
                             
-                    self.generation_by_type[fuel].ix[self.start_year:] = \
-                            self.generation_by_type[fuel].ix[self.start_year:] -\
-                            (fuel_sums - total.ix[self.start_year:])
-                
-                
-        
-            else:
-                continue
-            if any(self.generation_by_type[fuel].ix[self.start_year:] < 0):
-                msg = "zeroing generation(" + fuel + ") where geneation < 0"
-                self.diagnostics.add_note('forecast', msg)
-            
-            self.generation_by_type[fuel].ix[self.start_year:]\
-            [self.generation_by_type[fuel].ix[self.start_year:] < 0 ] = 0
-
-        
-        
-    def forecast_fuels (self, current_type):
-        """
-        forecast the consumption for each fuel
-        
-        pre:
-            self.generation_by_type should be created but not yet populated
-            current_type is "generation diesel" or "generation natural gas"
-        post:
-            self.generation_by_type will be populated
-        """
-        gen_types = self.cd.get_item('community','generation numbers')
-        self.generation_by_type[current_type] = gen_types[current_type]
-        
-        fuel_types = gen_types.keys().values
-        fuel_types = list(set(fuel_types).difference([current_type]))
-        
-        for fuel in fuel_types:
-            rolling = False
-            self.generation_by_type[fuel] = gen_types[fuel]
-            try:
-                # get the last 3 years of generation  and average them
-                if fuel == 'generation hydro':
-                    generation = self.cd.get_item('community',
-                                                  'hydro generation limit')
-                    if generation == 0:
-                        temp = gen_types[gen_types[fuel].notnull()]\
-                                                    [fuel].values[-3:]
-                        temp = np.mean(temp)
-                        if np.isnan(temp):
-                            generation = 0
-                        else:
-                            msg = "generation(hydro) using rolling average"
-                            self.diagnostics.add_note('forecast', msg)
-                            rolling = True
-                elif fuel == 'generation wind':
-                    generation = self.cd.get_item('community',
-                                                  'wind generation limit')
-                                                  
-                    measured = gen_types[gen_types[fuel].notnull()]\
-                                                    [fuel].values[-3:]
-                    measured = np.mean(measured)
-                    if generation == 0:
-                        
-                        if np.isnan(measured):
-                            generation = 0
-                        else:
-                            msg = "generation(wind) using rolling average"
-                            self.diagnostics.add_note('forecast', msg)
-                            rolling = True
-                    else:
-                        wind_capacity_precent = self.cd.get_item('community',
-                                                    'wind generation precent')
-                        test_limit = wind_capacity_precent * generation
-                        if  measured > test_limit:
-                            msg = "generation(wind) using rolling average"
-                            self.diagnostics.add_note('forecast', msg)
-                            rolling = True
-                        else:
-                            generation = test_limit
-                            
-                else:
-                    if current_type == "generation natural gas" and \
-                            fuel == "generation diesel" \
-                        or current_type == "generation diesel" and \
-                            fuel == "generation natural gas":
-                        continue
-                    else:
-                        generation = gen_types[gen_types[fuel].notnull()]\
-                                                    [fuel].values[-3:]
-                        generation = np.mean(generation)
-                    msg = "generation("+ fuel +") is " + str(generation)
-                    self.diagnostics.add_note('forecast', msg)
+                    self.generation[fuel] = self.generation[fuel] -\
+                            (fuel_sums - genetation['generation'])
                     
-                last_year = self.start_year
-                foreward_years = np.logical_and(\
-                            self.generation_by_type[fuel].isnull(), 
-                            self.generation_by_type[fuel].index > last_year)
-                if not rolling:
-                    self.generation_by_type[fuel][foreward_years] = generation
-                else:
-                    for year in self.generation_by_type.ix[foreward_years].index:
-                        data = self.generation_by_type[fuel].ix[year-3:year-1]
-                        self.generation_by_type[fuel][year] = np.mean(data) 
-            except IndexError as e:
-                #~ print 'INDEXERROR',fuel, e
-                # fuel not found
-                pass
+                    self.generation[fuel][self.generation[fuel] < 0 ] = 0
+                    
+                    self.generation[fuel].ix[index] = current_fuel.ix[index] 
         
-        last_year = self.start_year
-        foreward_years = self.generation_by_type.index>last_year
+        corrected_backup_type = generation['generation'] - \
+            (generation[types].sum(1) - generation[backup_type])
+        #~ print corrected_backup_type
+        corrected_backup_type[corrected_backup_type < 0] = 0 
         
-        other_type_values = \
-                self.generation_by_type[foreward_years ][fuel_types]
-        other_type_values = other_type_values.fillna(0).sum(1)
+        generation[backup_type ] = corrected_backup_type
+        generation[backup_type].ix[index] = generation_types[backup_type].ix[index] 
+              
         
-        foreward_values = \
-                self.generation_by_type[foreward_years ]['generation total']\
-                - other_type_values
-        
-        if any(foreward_values < 0):
-            msg = "zeroing generation("+ current_type +") where generation < 0"
-            self.diagnostics.add_note('forecast', msg)
-        foreward_values[foreward_values < 0] = 0
-        
-        self.generation_by_type.loc[foreward_years,current_type]=foreward_values
+        self.generation = generation
+
         
     def forecast_average_kW (self):
         """
@@ -476,7 +389,7 @@ class Forecast (object):
         if extend_by > 0:
             extend = DataFrame(
                 index=range(
-                    self.population.index[-1]+1,
+                    self.population.index[-1],
                     self.population.index[-1]+extend_by
                 ), 
                 columns=['population'])
@@ -507,7 +420,7 @@ class Forecast (object):
         if extend_by > 0:
             extend = DataFrame(
                 index=range(
-                    self.consumption.index[-1]+1,
+                    self.consumption.index[-1],
                     self.consumption.index[-1]+extend_by
                 ), 
                 columns=['consumption'])
@@ -533,8 +446,29 @@ class Forecast (object):
             returns a float or list of floats
         """
         if end is None:
-            return self.generation.ix[start].T.values[0]
-        return self.generation.ix[start:end-1].T.values[0]
+            return self.generation.ix[start]['generation']
+       
+        ## dynamic extension
+        existing_len = len(self.generation.ix[start:end])
+        extend_by = (end + 1) - start - existing_len
+        if extend_by > 0:
+            extend = DataFrame(
+                index=range(
+                    self.generation.index[-1],
+                    self.generation.index[-1]+extend_by
+                ), 
+                columns=['generation'])
+            extend['generation'] = self.generation.iloc[-1]['generation']
+            print extend
+            generation = \
+                DataFrame(self.generation.ix[start:end]['generation']).\
+                append(extend)
+        
+        else:
+            #  -1 to ensure same behavour
+            generation = \
+                DataFrame(self.generation['generation'].ix[start:end-1])
+        return generation['generation'].values  
 
     def get_households (self, start, end = None):
         """

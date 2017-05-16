@@ -18,19 +18,20 @@ comp_lib = {
     'Diesel Efficiency': 'diesel_efficiency',
         }
 
-comp_order = ["Residential Energy Efficiency",
+comp_order = [##"Residential Energy Efficiency",
               "Non-residential Energy Efficiency",
-              "Water and Wastewater Efficiency",
-              "Wind Power",
-              'Solar Power',
-              'Biomass for Heat (Cordwood)',
-              'Biomass for Heat (Pellet)',
-              'Residential ASHP',
-              'Non-Residential ASHP',
-              'Hydropower',
-              'Transmission and Interties',
-              'Heat Recovery',
-              'Diesel Efficiency']
+              #~ "Water and Wastewater Efficiency",
+              #~ "Wind Power",
+              #~ 'Solar Power',
+              #~ 'Biomass for Heat (Cordwood)',
+              #~ 'Biomass for Heat (Pellet)',
+              #~ 'Residential ASHP',
+              #~ 'Non-Residential ASHP',
+              #~ 'Hydropower',
+              #~ 'Transmission and Interties',
+              #~ 'Heat Recovery',
+              #~ 'Diesel Efficiency'
+    ]
 
 def get_raw_data_files():
     raw_data_files = []

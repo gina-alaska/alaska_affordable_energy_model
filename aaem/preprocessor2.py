@@ -1401,8 +1401,11 @@ class Preprocessor (object):
         
         datafile = os.path.join(self.data_dir, 
             'renewable_generation_capacities.csv')
-        data = read_csv(datafile, comment = '#')
-        
+
+        data = read_csv(datafile, comment = '#', index_col = 0)[
+            ['Resource Type','Resource Sub-Type',
+            'Capacity (kW)','Average Expected Annual Generation (kWh)']
+        ]
 
         ids = self.communities + self.aliases
         #~ print ids
@@ -1415,10 +1418,10 @@ class Preprocessor (object):
                 ids = [self.communities[1], self.aliases[1]]
         ## cleanup ids
         ids = [i for i in ids if i != ""]
-        
         data = data.ix[ids]
-        
+
         data = data.groupby(['Resource Type']).sum()
+
         return data
         
     def process_renewable_capacities (self, **kwargs):
