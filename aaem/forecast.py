@@ -403,8 +403,8 @@ class Forecast (object):
         if extend_by > 0:
             extend = DataFrame(
                 index=range(
-                    self.population.index[-1],
-                    self.population.index[-1]+extend_by
+                    self.population.index[-1] + 1,
+                    self.population.index[-1] + 1+extend_by
                 ), 
                 columns=['population'])
             extend['population'] = self.population.iloc[-1]['population']
@@ -412,7 +412,7 @@ class Forecast (object):
         
         else:
             # -1 to ensure same behavour
-            population = self.population.ix[start:end-1]
+            population = self.population.ix[start:end]
         return population['population'].values  
     
     def get_consumption (self, start, end = None):
@@ -434,8 +434,8 @@ class Forecast (object):
         if extend_by > 0:
             extend = DataFrame(
                 index=range(
-                    self.consumption.index[-1],
-                    self.consumption.index[-1]+extend_by
+                    self.consumption.index[-1] +1,
+                    self.consumption.index[-1]+extend_by+1
                 ), 
                 columns=['consumption'])
             extend['consumption'] = self.consumption.iloc[-1]['consumption']
@@ -446,7 +446,7 @@ class Forecast (object):
         else:
             #  -1 to ensure same behavour
             consumption = \
-                DataFrame(self.consumption['consumption'].ix[start:end-1])
+                DataFrame(self.consumption['consumption'].ix[start:end])
         return consumption['consumption'].values  
 
     def get_generation (self, start, end = None):
@@ -468,8 +468,8 @@ class Forecast (object):
         if extend_by > 0:
             extend = DataFrame(
                 index=range(
-                    self.generation.index[-1],
-                    self.generation.index[-1]+extend_by
+                    self.generation.index[-1] + 1 ,
+                    self.generation.index[-1]+extend_by +1
                 ), 
                 columns=['generation'])
             extend['generation'] = self.generation.iloc[-1]['generation']
@@ -479,9 +479,8 @@ class Forecast (object):
                 append(extend)
         
         else:
-            #  -1 to ensure same behavour
             generation = \
-                DataFrame(self.generation['generation'].ix[start:end-1])
+                DataFrame(self.generation['generation'].ix[start:end])
         return generation['generation'].values  
 
     def get_households (self, start, end = None):
@@ -503,8 +502,8 @@ class Forecast (object):
         if extend_by > 0:
             extend = DataFrame(
                 index=range(
-                    self.households.index[-1],
-                    self.households.index[-1]+extend_by
+                    self.households.index[-1] + 1,
+                    self.households.index[-1]+extend_by +1
                 ), 
                 columns=['households'])
             extend['households'] = self.households.iloc[-1]['households']
@@ -512,7 +511,7 @@ class Forecast (object):
         
         else:
             # -1 to ensure same behavour
-            households = self.households.ix[start:end-1]
+            households = self.households.ix[start:end]
         return households['households'].values  
         
     def save_forecast (self, path, png_path = None, do_plots = False):

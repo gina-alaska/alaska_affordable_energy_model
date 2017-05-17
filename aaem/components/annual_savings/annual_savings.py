@@ -30,9 +30,9 @@ class AnnualSavings (object):
             annual_total_savings will be an array of dollar amounts. 
         """
         print '----------'
-        print self.annual_electric_savings
+        print len(self.annual_electric_savings)
         print '----------'
-        print self.annual_heating_savings
+        print len(self.annual_heating_savings)
         print '----------'
         self.annual_total_savings = self.annual_electric_savings + \
                               self.annual_heating_savings
@@ -55,7 +55,7 @@ class AnnualSavings (object):
         #~ print self.capital_costs
         cost_per_year = -np.pmt(rate, self.actual_project_life, 
                                     self.capital_costs) 
-        cpi= self.forecast.cpi.ix[self.start_year:self.end_year-1].T.values[0]
+        cpi= self.forecast.cpi.ix[self.start_year:self.end_year].T.values[0]
         self.annual_costs = cost_per_year * cpi
         
     
@@ -228,8 +228,8 @@ class AnnualSavings (object):
         if extend_by > 0:
             extend = DataFrame(
                 index=range(
-                    self.diesel_prices.index[-1],
-                     self.diesel_prices.index[-1]+extend_by
+                    self.diesel_prices.index[-1] + 1,
+                     self.diesel_prices.index[-1]+extend_by +1
                 ), 
                 columns=['prices'])
             extend['prices'] =  self.diesel_prices.iloc[-1]['prices']
@@ -239,7 +239,7 @@ class AnnualSavings (object):
         else:
             #  -1 to ensure same behavour
             self.diesel_prices = \
-                DataFrame(self.diesel_prices['prices'].ix[start:end-1])
+                DataFrame(self.diesel_prices['prices'].ix[start:end])
         self.diesel_prices = self.diesel_prices['prices'].values
 
                                                          
@@ -265,8 +265,8 @@ class AnnualSavings (object):
         if extend_by > 0:
             extend = DataFrame(
                 index=range(
-                    self.electricity_prices.index[-1],
-                     self.electricity_prices.index[-1]+extend_by
+                    self.electricity_prices.index[-1] +1 ,
+                     self.electricity_prices.index[-1] + 1+extend_by
                 ), 
                 columns=['prices'])
             extend['prices'] =  self.electricity_prices.iloc[-1]['prices']
@@ -276,7 +276,7 @@ class AnnualSavings (object):
         else:
             #  -1 to ensure same behavour
             self.electricity_prices = \
-                DataFrame(self.electricity_prices['prices'].ix[start:end-1])
+                DataFrame(self.electricity_prices['prices'].ix[start:end])
                 
         self.electricity_prices = self.electricity_prices['prices'].values
         print self.electricity_prices
