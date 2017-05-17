@@ -29,11 +29,6 @@ class AnnualSavings (object):
         post:
             annual_total_savings will be an array of dollar amounts. 
         """
-        print '----------'
-        print len(self.annual_electric_savings)
-        print '----------'
-        print len(self.annual_heating_savings)
-        print '----------'
         self.annual_total_savings = self.annual_electric_savings + \
                               self.annual_heating_savings
     
@@ -279,7 +274,7 @@ class AnnualSavings (object):
                 DataFrame(self.electricity_prices['prices'].ix[start:end])
                 
         self.electricity_prices = self.electricity_prices['prices'].values
-        print self.electricity_prices
+
                                                          
     def save_additional_output(self, directory):
         """

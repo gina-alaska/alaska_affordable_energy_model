@@ -177,7 +177,7 @@ class Forecast (object):
         
         if any(residential_consumption.isnull()):
             v = residential_consumption.isnull().values.T.tolist()[0]
-            for year in self.yearly_res_kWh[v].index.values.tolist():
+            for year in residential_consumption[v].index.values.tolist():
                 index.remove(year)
         
         self.diagnostics.add_note("forecast", 
@@ -277,7 +277,6 @@ class Forecast (object):
             current_fuel = generation_types[fuel]
             #~ print current_rfuel
             name = fuel.replace('generation ','')
-            print fuel
             ## get the hypothetical limit
             try:
                 current_generation = self.cd.get_item('community',
@@ -306,9 +305,7 @@ class Forecast (object):
                     current_fuel[current_fuel.notnull()].values[-3:].mean()
                     
         
-            print  current_fuel
-                
-            print current_generation
+
             ## no generation found
             if current_generation == 0:
                 generation[fuel] = current_generation
@@ -341,12 +338,12 @@ class Forecast (object):
                             fuel + ") > total generation"
                     self.diagnostics.add_note('forecast', msg)   
                             
-                    self.generation[fuel] = self.generation[fuel] -\
-                            (fuel_sums - genetation['generation'])
+                    generation[fuel] = generation[fuel] -\
+                            (fuel_sums - generation['generation'])
                     
-                    self.generation[fuel][self.generation[fuel] < 0 ] = 0
+                    generation[fuel][generation[fuel] < 0 ] = 0
                     
-                    self.generation[fuel].ix[index] = current_fuel.ix[index] 
+                    generation[fuel].ix[index] = current_fuel.ix[index] 
         
         corrected_backup_type = generation['generation'] - \
             (generation[types].sum(1) - generation[backup_type])
@@ -473,7 +470,6 @@ class Forecast (object):
                 ), 
                 columns=['generation'])
             extend['generation'] = self.generation.iloc[-1]['generation']
-            print extend
             generation = \
                 DataFrame(self.generation.ix[start:end]['generation']).\
                 append(extend)

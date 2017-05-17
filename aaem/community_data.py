@@ -45,8 +45,10 @@ class CommunityData (object):
             self.data = self.load_config(community_config, global_config)
             
             
-        print  self.validate_config()
-
+        valid, reason = self.validate_config()
+        if not valid:
+            raise StandardError, 'INVALID CONFIG FILE: ' + reason
+    
 
         self.intertie = None
         

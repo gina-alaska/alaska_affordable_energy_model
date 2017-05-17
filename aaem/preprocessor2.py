@@ -119,8 +119,9 @@ class Preprocessor (object):
         data = self.load_pce()
         if len(data) == 0:
             data = self.load_eia()
+            #~ print data
             if len(data[0]) == 0 or len(data[1]) == 0:
-                source = None
+                source = 'none'
             else:
                 source = 'eia'
                 self.diagnostics.add_note('Generation Data',
@@ -133,7 +134,7 @@ class Preprocessor (object):
             )
         
         ## try paret if source is none and a child
-        if source is None:
+        if source == 'none':
             # TODO, do i use parent or all interttie ?
             ids_to_use = [self.communities[0],self.aliases[0]]
             data = self.load_pce(ids_to_use=ids_to_use) 
@@ -141,7 +142,7 @@ class Preprocessor (object):
                 data = self.load_eia(ids_to_use=ids_to_use)
                 if len(data[0]) == 0 or len(data[1]) == 0:
                     print "No generation data found"
-                    return
+                    source = 'none'
                     #~ raise PreprocessorError, "No generation data found"
                 else:
                     source = 'eia'
@@ -155,11 +156,11 @@ class Preprocessor (object):
                 )
             print "ids used", ids_to_use
         
-        print source
+        
         if source == 'pce':
             generation_data = self.process_generation(pce_data = data) 
             sales_data = self.process_prices(pce_data = data) 
-        else: # 'eia'
+        elif source == 'eia': # 'eia'
             generation_data = self.process_generation(
                 eia_generation = data[0],
                 eia_sales = data[1],
@@ -167,6 +168,11 @@ class Preprocessor (object):
             sales_data = self.process_prices(
                 eia_sales = data[1],
             ) 
+        elif source == 'none':
+            generation_data = self.process_generation()
+            sales_data = self.process_prices()
+        else:
+            raise PreprocessorError, "serious Issues"
         
         #~ print len(generation_data)
         #~ print sales_data
@@ -178,20 +184,26 @@ class Preprocessor (object):
             self.process_diesel_powerhouse_data() )
             
         ## caclulate 'electric non-fuel prices'
-        efficiency = self.data['community']['diesel generation efficiency']
-        percent_diesel = \
-            self.data['community']['utility info']['generation diesel'].fillna(0)\
-            /self.data['community']['utility info']['net generation']
-        percent_diesel = float(percent_diesel.iloc[-1])
+        if not source == 'none':
+            efficiency = self.data['community']['diesel generation efficiency']
+            percent_diesel = \
+                self.data['community']['utility info']['generation diesel']\
+                .fillna(0)\
+                /self.data['community']['utility info']['net generation']
+            percent_diesel = float(percent_diesel.iloc[-1])
         
-        adder = percent_diesel * \
-            self.data['community']['diesel prices'] / efficiency
-        adder = adder.fillna(0)
-        
-        
-        self.data['community']['electric non-fuel prices'] = \
-            self.data['community']['electric non-fuel price'] + adder
+            adder = percent_diesel * \
+                self.data['community']['diesel prices'] / efficiency
+            adder = adder.fillna(0)
             
+            
+            self.data['community']['electric non-fuel prices'] = \
+                self.data['community']['electric non-fuel price'] + adder
+          
+        else:
+            self.data['community']['electric non-fuel prices'] = self.data['community']['electric non-fuel price'] + self.data['community']['diesel prices']
+            percent_diesel = 0
+        
         self.data = merge_configs(self.data,
             {'community': {'percent diesel generation': percent_diesel}})
             
@@ -984,7 +996,9 @@ class Preprocessor (object):
             process_function = self.helper_eia_prices
             data = kwargs['eia_sales']
         else:
-            raise PreprocessorError, "No electric price data avaialbe"
+            process_function = lambda x: (np.nan, np.nan)
+            data = None
+            #~ raise PreprocessorError, "No electric price data avaialbe"
             
         res_nonPCE_price, elec_nonFuel_cost = process_function(data)
         
@@ -1108,7 +1122,16 @@ class Preprocessor (object):
                 kwargs['eia_generation'], 
                 kwargs['eia_sales'] )
         else:
-            raise PreprocessorError, "No generation data avaialbe"
+            data = DataFrame(columns=
+                ["year","generation","consumption","fuel used",
+                "efficiency","line loss","net generation",
+                "consumption residential",
+                "consumption non-residential","kwh_purchased","residential_rate",
+                "diesel_price","generation diesel","generation hydro",
+                "generation natural gas","generation wind","generation solar",
+                "generation biomass"]
+            )
+            #~ raise PreprocessorError, "No generation data avaialbe"
         return data
         
     def process_generation (self, **kwargs):
@@ -1368,9 +1391,27 @@ class Preprocessor (object):
             price_pellet = 0
         
         data = read_csv(datafile_diesel, comment = '#', index_col = 0)
+        data.index = [c.split('-')[0] for c in data.index]
         prices_diesel = data.ix[ids][data.ix[ids].isnull().all(1) == False].T
+        if prices_diesel.empty:
+            if self.intertie_status == 'child':
+                prices_diesel = data.ix[[self.communities[0]]].T
+                self.diagnostics.add_note('prices',
+                    'using parents diesel prices')
+            else:
+                communities = os.path.join(self.data_dir, "community_list.csv")
+                index = read_csv(communities, index_col=2, comment="#")
+                index = index.ix[self.regions[0]]['Community'].values
+                prices_diesel = DataFrame(data.ix[index].mean().T, 
+                    columns =['Regional Average'])
+                
+                self.diagnostics.add_note('Community: Diesel Prices', 
+                        'Not found. Using regional average')
+                #~ raise PreprocessorError, "could not find diesel prices"
         prices_diesel.index.name = 'year'
         prices_diesel.columns.name = None
+        
+        
         
         data = read_csv(datafile_propane, comment = '#', index_col = 0)
         
@@ -1515,8 +1556,13 @@ class Preprocessor (object):
         datafile = os.path.join(self.data_dir, "regional_multipliers.yaml")
         with open(datafile) as fd:
             data = yaml.load(fd)
-            
-        return data[self.regions[0]]
+        
+        r = self.regions[0]
+        if r == 'Kodiak Region':
+            r = 'Kodiak'
+        
+        return data[r]
+        
         
         
         

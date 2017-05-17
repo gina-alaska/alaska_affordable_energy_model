@@ -11,7 +11,7 @@ preprocessing functions for Non-residential Efficiency component
 # preprocessing in preprocessor
 import os
 from pandas import read_csv, concat, DataFrame
-
+import numpy as np
 
 def get_number_buildings (community, data_dir, diagnostics):
     """
@@ -64,18 +64,22 @@ def get_building_inventory (community, data_dir, diagnostics, **kwargs):
     order = ['int_index' , 'Building Type', 'Biomass',
         'Biomass Post', 'Electric', 'Electric Post', 'Fuel Oil',
         'Fuel Oil Post', 'HW District', 'HW District Post', 'Natural Gas',
-        'Natural Gas Post', 'Propane', 'Propane Post', 'Retrofits Done',
+        'Natural Gas Post', 'Propane', 'Propane Post', #'Retrofits Done',
         'Square Feet', 'implementation cost']
     
     try:
         data = data.ix[[community]]
+        numbers = [i for i in order if not i in ['Building Type', 'int_index']]
+        data[numbers] = data[numbers].replace(r'\S+', np.nan, regex=True)
+
     except KeyError:
         diagnostics.add_note(
             'Non-residential Energy Efficiency: Building Inventory',
             'no buildings in inventory creating empty inventory'
         )
         data = DataFrame(columns = order)
-        
+    
+
     #~ print data
     data['int_index'] = range(len(data))
     

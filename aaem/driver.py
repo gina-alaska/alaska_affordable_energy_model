@@ -426,6 +426,8 @@ class Driver (object):
         postconditions:
             None
         """
+        print community_config
+      
         if scalers is None:
             scalers = default_scalers
         
@@ -448,7 +450,8 @@ class Driver (object):
             diagnostics,
             scalers
         )
-        
+        name = community_data.get_item('community', 'file id')
+        print name
         forecast = Forecast(community_data, diagnostics, scalers)
                                                     
         
@@ -458,7 +461,7 @@ class Driver (object):
             diagnostics,
             scalers
         )
-        name = community_data.get_item('community', 'file id')
+        #~ name = community_data.get_item('community', 'file id')
         self.save_components_output(comps_used, name, tag)
         #~ self.save_forecast_output(forecast, name, img_dir, plot, tag)
         self.save_input_files(community_data, name, tag )
@@ -470,15 +473,24 @@ class Driver (object):
         
         self.store_results(comps_used, tag)
         
-    def run_many (self, communities):
+    def run_many (self, directory):
         """
         run a list of communites using default options
         
         inputs:
             communities: a list of communities <list>
         """
+        
+        communities = \
+            [f for f in os.listdir( directory ) \
+            if f.endswith('.yaml') or f.endswith('.yml')]
         for c in communities:
-            self.run(c)
+            try:
+                self.run(os.path.join(directory,c))
+            except (RuntimeError, IOError) as e:
+                print e
+                msg = "RUN ERROR: "+ c + \
+                                    " not a configured community/project"
             
     def run_script(self):
         """
@@ -589,7 +601,7 @@ class Setup (object):
         self.tag = tag
         if tag is None:
             self.tag = self.make_version_tag()
-        self.diagnostics = diagnostics()
+        self.diagnostics = Diagnostics()
                 
                 
     def make_version_tag (self):
@@ -898,7 +910,7 @@ class Setup (object):
                     '---------')
                 preprocessor.run()
                 preprocessor.save_config(f_path)
-            except  PreprocessorError:
+            except PreprocessorError:
                 pass
         
         #~ self.setup_global_config()
