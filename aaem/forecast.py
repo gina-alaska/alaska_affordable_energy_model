@@ -6,7 +6,7 @@ created: 2015/09/18
     forecast
 """
 from community_data import CommunityData
-from diagnostics import diagnostics
+from diagnostics import Diagnostics
 import constants
 import plot
 import colors
@@ -32,7 +32,7 @@ class Forecast (object):
         """
         self.diagnostics = diag
         if self.diagnostics == None:
-            self.diagnostics = diagnostics()
+            self.diagnostics = Diagnostics()
         self.cd = community_data
         
         self.forecast_population()
@@ -48,25 +48,42 @@ class Forecast (object):
 
             self.forecast_consumption(scalers['kWh consumption'])
             self.forecast_generation()
-            #~ try:
-            self.forecast_generation_by_type()
-            #~ except IndexError:
-                #~ pass
+  
             self.forecast_average_kW()
         
         self.calc_average_diesel_load()
         
-        self.cpi = self.cd.load_pp_csv("cpi.csv")
-        
-        last_cpi_year = self.cpi.index.tolist()[-1]
-        if self.end_year < last_cpi_year:
-            self.cpi = self.cpi[:self.end_year]
-        elif self.end_year > last_cpi_year:
-            self.diagnostics.add_note("Forecast",
-                    "extending cpi past avaiable data")
-            last_cpi = float(self.cpi.ix[last_cpi_year])
-            for i in range(last_cpi_year,self.end_year+1):
-                self.cpi.ix[i] = last_cpi
+        self.cpi = DataFrame( [
+            1, 0.9765625, 0.953674316, 0.931322575, 0.909494702, 0.88817842, 
+            0.867361738, 0.847032947, 0.827180613, 0.807793567, 0.788860905, 
+            0.770371978, 0.752316385, 0.734683969, 0.717464814, 0.700649232,
+            0.684227766, 0.668191178, 0.652530447, 0.637236765, 0.622301528,
+            0.607716336, 0.593472984, 0.579563461, 0.565979942, 0.552714788,
+            0.539760535, 0.527109897, 0.514755759, 0.502691171, 0.490909347,
+            0.479403659, 0.468167636, 0.457194957, 0.44647945, 0.436015088,
+            0.425795984, 0.415816391, 0.406070694, 0.396553412, 0.387259192, 
+            0.378182804, 0.369319145, 0.360663227, 0.352210183, 0.343955257,
+            0.335893805, 0.328021294, 0.320333295, 0.312825484, 0.305493636, 
+            0.298333629, 0.291341435, 0.28451312, 0.277844844, 0.271332855, 
+            0.264973491, 0.258763175, 0.252698413, 0.246775794, 0.240991987],
+            index = [
+            2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024,
+            2025, 2026, 2027, 2028, 2029, 2030, 2031, 2032, 2033,
+            2034, 2035, 2036, 2037, 2038, 2039, 2040, 2041, 2042, 
+            2043, 2044, 2045, 2046, 2047, 2048, 2049, 2050, 2051, 
+            2052, 2053, 2054, 2055, 2056, 2057, 2058, 2059, 2060, 2061, 
+            2062, 2063, 2064, 2065, 2066, 2067, 2068, 2069, 2070, 2071, 2072, 
+            2073, 2074, 2075]
+        )
+        #~ last_cpi_year = self.cpi.index.tolist()[-1]
+        #~ if self.end_year < last_cpi_year:
+            #~ self.cpi = self.cpi[:self.end_year]
+        #~ elif self.end_year > last_cpi_year:
+            #~ self.diagnostics.add_note("Forecast",
+                    #~ "extending cpi past avaiable data")
+            #~ last_cpi = float(self.cpi.ix[last_cpi_year])
+            #~ for i in range(last_cpi_year,self.end_year+1):
+                #~ self.cpi.ix[i] = last_cpi
 
         #~ self.forecast_households()
         self.heat_demand_cols = []

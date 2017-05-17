@@ -452,6 +452,7 @@ def electric_price_summary (coms, res_dir):
     out = None
     for c in sorted(coms.keys()):
         #~ print c
+        print dir(coms[c]['community data'])
         try:
             it = coms[c]['community data'].intertie
             if it is None:
@@ -591,7 +592,8 @@ def call_comp_summaries (coms, res_dir):
             log = import_module("aaem.components." +comp_lib[comp]).\
                                                         component_summary
             log(coms, res_dir)
-        except AttributeError:
+        except AttributeError as e:
+            print e
             continue
             
 

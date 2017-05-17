@@ -12,7 +12,7 @@ Non-residential Efficiency configuration
         'com building data'
         'number buildings'
         'com building estimates'
-        'heating cost precent'
+        'heating cost percent'
         'HW District price %'
     
 """
@@ -27,7 +27,7 @@ structure = {
         'start year': int,
         'lifetime': int,
         'average refit cost': float,
-        'cohort savings multiplier': float,
+        'cohort savings percent': float,
         'heating cost percent': float,
         'waste oil cost percent': float,
         'number buildings': int,
@@ -43,7 +43,7 @@ comments = {
         'start year': int,
         'lifetime': int,
         'average refit cost': float,
-        'cohort savings multiplier': float,
+        'cohort savings percent': float,
         'heating cost percent': float,
         'waste oil cost percent': float,
         'number buildings': int,

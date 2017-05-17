@@ -8,7 +8,7 @@ from pandas import DataFrame
 from datetime import datetime
 
 
-class diagnostics (object):
+class Diagnostics (object):
     """
     this class keeps track of the errors and such for the model
     """

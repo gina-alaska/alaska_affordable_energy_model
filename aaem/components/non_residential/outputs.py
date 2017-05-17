@@ -68,7 +68,7 @@ def communities_summary (coms, res_dir):
                 savings,
                 com.baseline_kWh_consumption - com.proposed_kWh_consumption])
         except (KeyError,AttributeError) as e:
-            #~ print c +":"+ str(e)
+            print c +":"+ str(e)
             pass
             
             

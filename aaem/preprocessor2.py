@@ -7,12 +7,14 @@ process data into a format for the model to use
 from pandas import DataFrame,read_csv, concat
 import shutil
 import os.path
-from diagnostics import diagnostics
+from diagnostics import Diagnostics
 import numpy as np
 #~ from forecast import growth
 from datetime import datetime
 from collections import Counter
 from importlib import import_module
+
+import yaml
 
 
 from aaem.components import comp_lib
@@ -61,7 +63,8 @@ def growth(xs, ys , x):
 class Preprocessor (object):
     """
     """
-    def __init__ (self, community, data_dir, diag = None, process_intertie = False):
+    def __init__ (self, community, data_dir, diag = None, 
+        process_intertie = False):
         """
         
         note on intertie_status and community, GNIS, etc attributes
@@ -80,7 +83,7 @@ class Preprocessor (object):
         """
         self.community = community # community of interest
         if diag == None:
-            diag = diagnostics()
+            diag = Diagnostics()
         self.diagnostics = diag
         self.data_dir = os.path.join(os.path.abspath(data_dir),"")
 
@@ -190,14 +193,15 @@ class Preprocessor (object):
             self.data['community']['electric non-fuel price'] + adder
             
         self.data = merge_configs(self.data,
-            {'community': {'precent diesel generation': percent_diesel}})
+            {'community': {'percent diesel generation': percent_diesel}})
             
             
         import aaem.components.non_residential.preprocessing as test
         reload(test)
         
+        population = self.data['community']['population'].ix[2010]['population']
         self.data = merge_configs(self.data, 
-            self.preprocess_component(test, population=100)
+            self.preprocess_component(test, population=population)
         )
         #~ print self.data
         return self.data
@@ -217,9 +221,19 @@ class Preprocessor (object):
             s_order = ['community', 'Non-residential Energy Efficiency'],
             i_orders = {
                 'community': [
+                    'model electricity',
+                    'model financial',
+                    'file id',
+                    'natural gas used',
+                    'interest rate',
+                    'discount rate',
+                    'current year',
+            
+                
                     'name',
                     'alternate name',
                     'region',
+                    'regional construction multiplier',
                     'GNIS ID',
                     'FIPS ID',
                     'senate district',
@@ -249,12 +263,14 @@ class Preprocessor (object):
                     'wind capacity',
                     
                     "utility info",
-                    "precent diesel generation",
+                    "percent diesel generation",
                     "line losses",
                     "diesel generation efficiency",
                     
                     'heat recovery operational',
                     'switchgear suatable for renewables',
+                    
+                    'max wind generation percent'
                 
                 ],
 
@@ -263,7 +279,7 @@ class Preprocessor (object):
                     'start year',
                     'lifetime',
                     'average refit cost',
-                    'cohort savings multiplier',
+                    'cohort savings percent',
                     'heating cost percent',
                     'waste oil cost percent',
                     
@@ -401,12 +417,18 @@ class Preprocessor (object):
         data = {
             'community': {
                 'model electricity': True,
+                'model financial': True,
                 'file id': self.community,
-                
+                'natural gas used': False,
+                'interest rate': .05,
+                'discount rate': .03,
+                'current year': 2016,
             
                 'name': self.community,
                 'alternate name': self.aliases[0],
                 'region': self.regions[0],
+                'regional construction multiplier':
+                     self.load_construction_multiplier(),
                 'GNIS ID': self.GNIS_ids[0],
                 'FIPS ID': self.FIPS_ids[0],
                 'senate district': senate,
@@ -419,7 +441,7 @@ class Preprocessor (object):
                 'heating fuel premium': self.load_heating_fuel_premium(),
                 'on road system': self.load_road_system_status(),
                 
-                'max wind generation precent': 20,
+                'max wind generation percent': 20,
                 
             },
         }
@@ -1487,6 +1509,17 @@ class Preprocessor (object):
             
             }
         }
+    
+    def load_construction_multiplier (self, **kwargs):
+        """ Function doc """
+        datafile = os.path.join(self.data_dir, "regional_multipliers.yaml")
+        with open(datafile) as fd:
+            data = yaml.load(fd)
+            
+        return data[self.regions[0]]
+        
+        
+        
         
         
         

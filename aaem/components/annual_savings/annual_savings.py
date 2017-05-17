@@ -29,6 +29,11 @@ class AnnualSavings (object):
         post:
             annual_total_savings will be an array of dollar amounts. 
         """
+        print '----------'
+        print self.annual_electric_savings
+        print '----------'
+        print self.annual_heating_savings
+        print '----------'
         self.annual_total_savings = self.annual_electric_savings + \
                               self.annual_heating_savings
     
@@ -46,6 +51,8 @@ class AnnualSavings (object):
         """
         #~ print self.component_name, cost_scaler
         self.capital_costs *= cost_scaler
+        #~ print self.actual_project_life
+        #~ print self.capital_costs
         cost_per_year = -np.pmt(rate, self.actual_project_life, 
                                     self.capital_costs) 
         cpi= self.forecast.cpi.ix[self.start_year:self.end_year-1].T.values[0]
@@ -173,7 +180,7 @@ class AnnualSavings (object):
         except (AttributeError, ValueError, np.linalg.linalg.LinAlgError):
             pass
             
-    def set_project_life_details (self, start_year,project_life,fc_period = 25):
+    def set_project_life_details (self, start_year,project_life):
         """
         set the details for the project life time(
         pre:
@@ -186,13 +193,15 @@ class AnnualSavings (object):
         """
         self.start_year = start_year
         
-        # do caclulations for whole forecast period & only save project life
-        self.project_life = fc_period 
-        self.end_year = self.start_year + self.project_life 
+        #~ # do caclulations for whole forecast period & only save project life
+        #~ self.project_life = fc_period 
+        #~ self.end_year = self.start_year + self.project_life 
         
         # remember the actual lifetime
         self.actual_project_life = project_life
+        self.project_life = project_life
         self.actual_end_year = self.start_year + project_life - 1
+        self.end_year = self.start_year + project_life - 1
         
     def get_diesel_prices (self):
         """
@@ -203,16 +212,74 @@ class AnnualSavings (object):
         post:
             self.diesel prices has prices for the project life
         """
-        prices = self.cd["diesel prices"]
-        self.diesel_prices = prices.get_projected_prices(self.start_year,
-                                                         self.end_year)
+        #~ prices = self.cd["diesel prices"]
+        #~ self.diesel_prices = prices.get_projected_prices(self.start_year,
+                                                         #~ self.end_year)
+        self.cd["diesel prices"].index = \
+            self.cd["diesel prices"].index.astype(int)
+        self.cd["diesel prices"] = self.cd["diesel prices"].astype(float)                                               
+        self.diesel_prices = self.cd["diesel prices"].ix[self.start_year:]
+        self.diesel_prices.columns = ['prices']
+        start, end  = self.start_year, self.end_year
+        
+        
+        existing_len = len(self.diesel_prices.ix[start:end])
+        extend_by = (end + 1) - start - existing_len
+        if extend_by > 0:
+            extend = DataFrame(
+                index=range(
+                    self.diesel_prices.index[-1],
+                     self.diesel_prices.index[-1]+extend_by
+                ), 
+                columns=['prices'])
+            extend['prices'] =  self.diesel_prices.iloc[-1]['prices']
+            self.diesel_prices = \
+                DataFrame( self.diesel_prices.ix[start:end]['prices']).\
+                append(extend)
+        else:
+            #  -1 to ensure same behavour
+            self.diesel_prices = \
+                DataFrame(self.diesel_prices['prices'].ix[start:end-1])
+        self.diesel_prices = self.diesel_prices['prices'].values
+
                                                          
     def get_electricity_prices (self):
         """
         """
+        self.cd["electric non-fuel prices"].index = \
+            self.cd["electric non-fuel prices"].index.astype(int)
+        self.cd["electric non-fuel prices"] = \
+            self.cd["electric non-fuel prices"].astype(float)                                               
         prices = self.cd["electric non-fuel prices"]
-        self.electricity_prices = prices.ix[self.start_year:
-                                                         self.end_year-1]
+        self.electricity_prices = prices.ix[self.start_year:]
+        
+        self.cd["electric non-fuel prices"].index = self.cd["electric non-fuel prices"].index.astype(int)
+        self.cd["electric non-fuel prices"] = self.cd["electric non-fuel prices"].astype(float)                                               
+        self.electricity_prices = self.cd["electric non-fuel prices"].ix[self.start_year:]
+        self.electricity_prices.columns = ['prices']
+        start, end  = self.start_year, self.end_year
+        
+        
+        existing_len = len(self.electricity_prices.ix[start:end])
+        extend_by = (end + 1) - start - existing_len
+        if extend_by > 0:
+            extend = DataFrame(
+                index=range(
+                    self.electricity_prices.index[-1],
+                     self.electricity_prices.index[-1]+extend_by
+                ), 
+                columns=['prices'])
+            extend['prices'] =  self.electricity_prices.iloc[-1]['prices']
+            self.electricity_prices = \
+                DataFrame( self.electricity_prices.ix[start:end]['prices']).\
+                append(extend)
+        else:
+            #  -1 to ensure same behavour
+            self.electricity_prices = \
+                DataFrame(self.electricity_prices['prices'].ix[start:end-1])
+                
+        self.electricity_prices = self.electricity_prices['prices'].values
+        print self.electricity_prices
                                                          
     def save_additional_output(self, directory):
         """

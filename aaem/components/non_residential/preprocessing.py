@@ -61,7 +61,7 @@ def get_building_inventory (community, data_dir, diagnostics, **kwargs):
     datafile = os.path.join(data_dir, 'non-res_buildings.csv')
     data = read_csv(datafile, comment = '#', index_col = 0)
     
-    order = ['int_index' , 'Building Type', 'Audited', 'Biomass',
+    order = ['int_index' , 'Building Type', 'Biomass',
         'Biomass Post', 'Electric', 'Electric Post', 'Fuel Oil',
         'Fuel Oil Post', 'HW District', 'HW District Post', 'Natural Gas',
         'Natural Gas Post', 'Propane', 'Propane Post', 'Retrofits Done',
@@ -100,9 +100,9 @@ def preprocess(community, data_dir, diagnostics, **kwargs):
     if 'non-res-refit-cost' in kwargs:
         refit_cost = float(kwargs['non-res-refit-cost'])
     
-    cohort_multiplier = 7.0 
-    if 'non-res-cohort-savings-multiplier' in kwargs:
-        cohort_multiplier = float(kwargs['non-res-cohort-savings-multiplier'])
+    cohort_multiplier = .26 * 100
+    if 'non-res-cohort-savings-percent' in kwargs:
+        cohort_multiplier = float(kwargs['non-res-cohort-savings-percent'])
         
     start_year = 2017
     if 'non-res-start-year' in kwargs:
@@ -130,7 +130,7 @@ def preprocess(community, data_dir, diagnostics, **kwargs):
             'start year': start_year,
             'lifetime': lifetime,
             'average refit cost': refit_cost,
-            'cohort savings multiplier': cohort_multiplier,
+            'cohort savings percent': cohort_multiplier,
             'heating cost percent': heating_cost_percent,
             'waste oil cost percent': waste_oil_cost_precent,
             'number buildings': get_number_buildings(community, 

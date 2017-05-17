@@ -7,7 +7,7 @@ from aaem import summaries, __version__, __download_url__
 from aaem.components import comp_lib, comp_order
 from community_data import CommunityData
 from forecast import Forecast
-from diagnostics import diagnostics
+from diagnostics import Diagnostics
 from preprocessor2 import Preprocessor,  PreprocessorError
 #~ import defaults
 
@@ -69,10 +69,10 @@ class Driver (object):
         self.model_root = model_root
         
         # default locations
-        self.config_dir = os.path.join(model_root, 'config')
+        #~ self.config_dir = os.path.join(model_root, 'config')
         
-        self.global_config = os.path.join(model_root, 
-                                            'config', '__global_config.yaml')
+        #~ self.global_config = os.path.join(model_root, 
+                                            #~ 'config', '__global_config.yaml')
         ### MOVE TO PROCESSOR?? SCALERS??
         self.constuction_multipliers  = os.path.join(model_root, 'config', 
                                             '__regional_multipliers.yaml')
@@ -232,6 +232,7 @@ class Driver (object):
             pass
             
         for comp in comps_used:
+            continue
             comps_used[comp].save_csv_outputs(directory)
             comps_used[comp].save_additional_output(directory)
     
@@ -293,7 +294,7 @@ class Driver (object):
             os.makedirs(os.path.join(directory))
         except OSError:
             pass
-        cd.save_model_inputs(os.path.join(directory,"config_used.yaml"))
+        cd.save(os.path.join(directory,"config_used.yaml"))
     
     def save_diagnostics (self, diag, community, tag = ''):
         """ 
@@ -325,12 +326,11 @@ class Driver (object):
         diag.save_messages(os.path.join(directory, 
                     community.replace(" ","_") + "_runtime_diagnostics.csv"))
                     
-    def store_results (self, name, comps_used, tag = '', overwrite = False):
+    def store_results (self, comps_used, tag = '', overwrite = False):
         """
         store results in binary pickle file
         
         inputs:
-            name: community name or assigned 'name' <string>
             comps_used: a dictionary of excuted components <dictionary>
             tag: (optional) tag for results dir <string>
             overwrite: (optional, default: False) if true overwrite the 
@@ -348,6 +348,8 @@ class Driver (object):
         if tag != '':
             tag = '_' + tag
         directory = os.path.join(self.model_root, 'results' + tag)
+        
+        name = comps_used['community data'].get_item('community', 'file id')
         
         picklename = os.path.join(directory,'binary_results.pkl')
         if overwrite:
@@ -399,25 +401,19 @@ class Driver (object):
                     break
         return results
         
-    def run (self, community, name = None, 
-                    i_dir = None, c_config = None, 
-                    g_config = None, c_mult = None,
-                    tag = '', img_dir = None, plot = False,
-                    scalers = None):
+    def run (self, community_config, global_config = None, tag = '',
+        img_dir = '', plot = False, scalers = None):
         """
         run the model for a community
         
         inputs:
             community: the community <string>
-            name: (optional, default: community) the assinged name for 
-                the run <string>
-            i_dir: (optional, default: none) alternate path to inputs 
-                directory <string> 
             c_config: (optional, default: none) alternate community config 
                 file <string>
             g_config: (optional, default: none) alternat global confing 
                 file <string>
             tag: (optional) tag for results dir <string>
+           
             img_dir: directory to save plots <strings>
             plot: (optional, default False)boolean to plot <bool>
             
@@ -433,8 +429,8 @@ class Driver (object):
         if scalers is None:
             scalers = default_scalers
         
-        if name is None:
-            name = community
+        #~ if name is None:
+            #~ name = community
         
         temp = tag
         if img_dir is None:
@@ -442,19 +438,37 @@ class Driver (object):
                 temp = '_' + tag
             img_dir = os.path.join(self.model_root, 'results' + temp, 'plots')
         
-        cd, fc, diag = self.setup_community(community, i_dir, c_config, 
-                                                    g_config, c_mult, scalers)
+        #~ cd, fc, diag = self.setup_community(community, i_dir, c_config, 
+                                                    #~ g_config, c_mult, scalers)
+                                                    
+        diagnostics = Diagnostics()
+        community_data = CommunityData( 
+            community_config, 
+            global_config, 
+            diagnostics,
+            scalers
+        )
         
-        comps_used = self.run_components(cd, fc, diag, scalers)
+        forecast = Forecast(community_data, diagnostics, scalers)
+                                                    
         
+        comps_used = self.run_components(
+            community_data,
+            forecast,
+            diagnostics,
+            scalers
+        )
+        name = community_data.get_item('community', 'file id')
         self.save_components_output(comps_used, name, tag)
-        self.save_forecast_output(fc, name, img_dir, plot, tag)
-        self.save_input_files(cd, name, tag )
-        self.save_diagnostics(diag, name, tag) 
+        #~ self.save_forecast_output(forecast, name, img_dir, plot, tag)
+        self.save_input_files(community_data, name, tag )
+        self.save_diagnostics(diagnostics, name, tag) 
         
-        comps_used['community data'] = cd
-        comps_used['forecast'] = fc
-        self.store_results(name, comps_used, tag)
+        comps_used['community data'] = community_data
+        comps_used['forecast'] = forecast
+    
+        
+        self.store_results(comps_used, tag)
         
     def run_many (self, communities):
         """
@@ -523,7 +537,7 @@ class Driver (object):
             None
         """
         res = self.load_results(tag)
-        
+        print res
         if tag != '':
             tag = '_' + tag
         directory = os.path.join(self.model_root, 'results' + tag)
@@ -531,7 +545,7 @@ class Driver (object):
             os.makedirs(os.path.join(directory))
         except OSError:
             pass
-        summaries.village_log(res,directory)
+        #~ summaries.village_log(res,directory)
         summaries.building_log(res,directory)
         summaries.fuel_oil_log(res,directory)
         summaries.forecast_comparison_log(res,directory)

@@ -7,6 +7,7 @@ loaded from those snippes back to DataFrames
 
 """
 from pandas import DataFrame
+import numpy as np
 
 def dataframe_to_dict(dataframe):
     """Convert a DataFrame to a dictioanry that is eaisly convertable back to
@@ -74,7 +75,7 @@ def dict_to_dataframe (dictionary):
         the DataFrame created from the dictionary
     """
     index, order, temp = get_metadata_and_data(dictionary)
-    return DataFrame( temp ).set_index(index)[order]
+    return DataFrame( temp ).set_index(index)[order].replace('nan', np.nan)
 
 
 def dict_to_yaml_snippet (dictionary, indent = '  ', level = 2, newline = '\n'):

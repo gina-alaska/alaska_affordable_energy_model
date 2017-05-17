@@ -16,7 +16,8 @@ def read_config (filename):
         for item in conf[section]:
             try:
                 conf[section][item] = dict_to_dataframe(conf[section][item])
-            except (TypeError, KeyError):
+            except (TypeError, KeyError) as e:
+                #~ print e
                 pass
     
     
@@ -189,8 +190,14 @@ def validate_dict(to_validate, validator, level = 0):
                             
                     else:# not a list
                         validator[section](to_validate[section])
-                except ValueError: 
-                    reason = 'Type(' + str(validator[section]) + \
+                except (ValueError, TypeError): 
+                    if type(to_validate[section]) is type:
+                        reason = 'Type(' + str(validator[section]) + \
+                        ') missmatch level: ' + str(level) + '. The type' +\
+                        ' was "type" perhaps you are missing a key (' + \
+                        section + ') in your config file.'
+                    else:
+                        reason = 'Type(' + str(validator[section]) + \
                         ') missmatch level: ' + str(level) + '. Type was ' + \
                         str(type(to_validate[section]))+', and the key was ' + \
                         section

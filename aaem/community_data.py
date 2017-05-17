@@ -14,7 +14,7 @@ import numpy as np
 ## fc - forecast
 ## com - non-residential buildings 
 from defaults import base_structure, base_comments
-from diagnostics import diagnostics
+from diagnostics import Diagnostics
 #~ from preprocessor import MODEL_FILES
 from aaem.components import comp_lib, comp_order
 
@@ -23,31 +23,39 @@ from importlib import import_module
 from aaem.config_IO import read_config, merge_configs, save_config
 from aaem.config_IO import validate_dict
 
+from importlib import import_module
 #~ import aaem.config as config
 
 PATH = os.path.join
 class CommunityData (object):
     """ Class doc """
     
-    def __init__ (self, community_config, global_config = {}, diag = None, 
+    def __init__ (self, community_config, global_config = None, diag = None, 
                         scalers = {'diesel price':1.0, 'diesel price adder':0}):
         """
         """
         self.diagnostics = diag
         if diag == None:
-            self.diagnostics = diagnostics()
+            self.diagnostics = Diagnostics()
             
         if type(community_config) is dict and type(global_config) is dict:
             self.data = merge_configs(self.load_structure(), global_config)
             self.data = merge_configs(self.data, community_config)
         else: 
-            self.data = self.load_config(community_confif, global_config)
+            self.data = self.load_config(community_config, global_config)
             
             
         print  self.validate_config()
 
 
-
+        self.intertie = None
+        
+        intertie = self.get_item('community', 'intertie')
+        if type (intertie) is list:
+            if intertie[0] == self.get_item('community', 'name'):
+                self.intertie = 'parent'
+            else:
+                self.intertie = 'chile'
         
         # modify diesel prices and electric non-fuel prices
         
@@ -119,8 +127,7 @@ class CommunityData (object):
         
         structure = base_structure
         
-        import aaem.components.non_residential.config as test
-        reload(test)
+        test = import_module('aaem.components.non_residential.config')
         
         structure = merge_configs(structure, test.structure)
         self.structure = structure
@@ -141,7 +148,13 @@ class CommunityData (object):
         if not global_file is None:
             global_ = read_config(global_file)
         
-        return merge_configs(merge_configs(load_structure(),global_),community)
+        return merge_configs(
+            merge_configs(
+                self.load_structure(),
+                global_
+            ),
+            community
+        )
         
 
 

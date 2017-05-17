@@ -283,6 +283,11 @@ class CommunityBuildings (AnnualSavings):
             return 
         
         self.update_num_buildings()
+        self.comp_specs['building inventory'] = self.comp_specs['building inventory'].set_index('Building Type')
+        self.comp_specs['building inventory'] = self.comp_specs['building inventory'].astype(float)
+        self.comp_specs["consumption estimates"] = self.comp_specs["consumption estimates"].astype(float)
+        
+        
         #~ self.calc_refit_values()
         
         if len(self.comp_specs['building inventory']) == 0:
@@ -339,10 +344,16 @@ class CommunityBuildings (AnnualSavings):
             
             ## no maintaince cost
             self.calc_levelized_costs(0)
-            heating_cost_percent = self.comp_specs['heating cost percent']
+            heating_cost_percent = self.comp_specs['heating cost percent']/100.0
             #scale by heating_cost_percent
             self.break_even_cost *= heating_cost_percent
-
+            
+        ## revert building invertory structure
+        
+        self.comp_specs['building inventory']['Building Type'] = self.comp_specs['building inventory'].index
+        self.comp_specs['building inventory'].index = range(len(self.comp_specs['building inventory']))
+        self.comp_specs['building inventory'].index.name = "int_index"
+        
     def update_num_buildings (self):
         """ This function compares the counted buildings with the estimated 
         buildings
@@ -424,8 +435,8 @@ class CommunityBuildings (AnnualSavings):
         total_sqft_to_retrofit : float
             sum of all building square footage 
         """
-        sqft_ests = self.comp_specs["com building estimates"]["Sqft"]
-        data = self.comp_specs['com building data']
+        sqft_ests = self.comp_specs["consumption estimates"]["Sqft"]
+        data = self.comp_specs['building inventory']
         
         keys = set(data.T.keys())
         #~ print keys
@@ -505,7 +516,7 @@ class CommunityBuildings (AnnualSavings):
         gal_sf_ests = self.comp_specs["consumption estimates"]["Gal/sf"]
         
         measure = "Fuel Oil"
-        data = self.comp_specs['com building data']
+        data = self.comp_specs['building inventory']
         keys = data.T.keys()
         keys = set(keys)
         
@@ -513,10 +524,10 @@ class CommunityBuildings (AnnualSavings):
         data["GAL/SF"] = 0
         for key in keys:
             try:
-                data["HDD ESTS"].ix[key] = self.cd["HDD"]/HDD_ests[key]
+                data["HDD ESTS"].ix[key] = self.cd["heating degree days"]/HDD_ests[key]
                 data["GAL/SF"].ix[key] = gal_sf_ests.ix[key] 
             except KeyError:
-                data["HDD ESTS"].ix[key] = self.cd["HDD"]/HDD_ests.ix['Other'] # unitless
+                data["HDD ESTS"].ix[key] = self.cd["heating degree days"]/HDD_ests.ix['Other'] # unitless
                 data["GAL/SF"].ix[key] = gal_sf_ests.ix['Other'] # (gal)/sqft
         
         
@@ -566,7 +577,7 @@ class CommunityBuildings (AnnualSavings):
         kwh_sf_ests = self.comp_specs["consumption estimates"]["kWh/sf"]
         
         measure = "Electric"
-        data = self.comp_specs['com building data']
+        data = self.comp_specs['building inventory']
         keys = data.T.keys()
         local_inv = data[["Square Feet", measure]].T.values.tolist()
         local_inv.insert(0,keys.values.tolist())
@@ -646,7 +657,7 @@ class CommunityBuildings (AnnualSavings):
             biomass consumption for heating (cords/year)
         """
         building_data = self.comp_specs['building inventory']
-        percent_savings = self.comp_specs['cohort savings multiplier']
+        percent_savings = self.comp_specs['cohort savings percent'] / 100.0
         #~ fuel_type = 'Fuel Oil'
         #~ try:
         fuel_types = ['Fuel Oil',
@@ -701,7 +712,7 @@ class CommunityBuildings (AnnualSavings):
             (kWh/year)
         """
         building_data = self.comp_specs['building inventory']
-        percent_savings = self.comp_specs['cohort savings multiplier']
+        percent_savings = self.comp_specs['cohort savings percent'] / 100.0
     
         elec_vals = building_data['Electric Post']
         idx = elec_vals.isnull()
@@ -740,7 +751,7 @@ class CommunityBuildings (AnnualSavings):
                         self.proposed_kWh_consumption
         HF_savings = self.baseline_HF_consumption - \
                         self.proposed_HF_consumption
-        heating_cost_percent = self.comp_specs['heating cost percent']
+        heating_cost_percent = self.comp_specs['heating cost percent'] / 100.0
         return {'kWh': (kWh_savings, 1 - heating_cost_percent), 
                 'MMBtu': (HF_savings, heating_cost_percent)
                }
@@ -792,7 +803,8 @@ class CommunityBuildings (AnnualSavings):
             heating savings ($/year) 
         """
         self.hoil_price = (self.diesel_prices + self.cd['heating fuel premium'])
-        hr_price = self.hoil_price * self.comp_specs['waste oil cost percent']
+        hr_price = self.hoil_price * \
+            (self.comp_specs['waste oil cost percent'] / 100.0)
         
         wood_price = self.cd['cordwood price'] 
         LP_price = self.cd['propane price'] 

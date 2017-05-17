@@ -12,11 +12,17 @@ from pandas import DataFrame
 base_structure = {
     'community': {
         'model electricity': bool,
+        'model financial': bool,
         'file id': str,
+        'natural gas used': bool,
+        'interest rate':float,
+        'discount rate':float,
+        'current year': int,
     
         'name': str,
         'alternate name': str,
         'region': str,
+        'regional construction multiplier': float,
         'GNIS ID': int,
         'FIPS ID': int,
         'senate district': list,
@@ -39,7 +45,7 @@ base_structure = {
         
         
         'utility info': DataFrame,
-        'precent diesel generation': float,
+        'percent diesel generation': float,
         'line losses': float,
         'diesel generation efficiency': float,
         'heat recovery operational': bool,
@@ -52,7 +58,7 @@ base_structure = {
         'solar capacity': float,
         'wind capacity': float,
         
-        'max wind generation precent': float,
+        'max wind generation percent': float,
     }
 
 }
@@ -60,9 +66,19 @@ base_structure = {
 
 base_comments = {
     'community': {
+        'model electricity': bool,
+        'model financial': bool,
+        'file id': str,
+        'natural gas used': bool,
+        'interest rate':float,
+        'discount rate':float,
+        'current year': int,
+            
+    
         'name': str,
         'alternate name': str,
         'region': str,
+        'regional construction multiplier': float,
         'GNIS ID': int,
         'FIPS ID': int,
         'senate district': list,
@@ -84,7 +100,7 @@ base_comments = {
         
         
         'untility info': DataFrame,
-        'precent diesel generation': float,
+        'percent diesel generation': float,
         'line losses': float,
         'diesel generation efficiency': float,
         'heat recovery operational': bool,
@@ -96,6 +112,8 @@ base_comments = {
         'hydro capacity': float,
         'solar capacity': float,
         'wind capacity': float,
+        
+        'max wind generation percent': float,
     }
 
 }
