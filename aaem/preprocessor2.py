@@ -120,8 +120,13 @@ class Preprocessor (object):
         if len(data) == 0:
             data = self.load_eia()
             #~ print data
-            if len(data[0]) == 0 or len(data[1]) == 0:
+            if len(data[0]) == 0 and len(data[1]) == 0:
                 source = 'none'
+            elif len(data[0]) == 0 and len(data[1]) != 0:
+                source = 'eia-sales-only'
+                self.diagnostics.add_note('Generation Data',
+                    "Using Generation data in EIA data, sales only"
+                )
             else:
                 source = 'eia'
                 self.diagnostics.add_note('Generation Data',
@@ -132,7 +137,10 @@ class Preprocessor (object):
             self.diagnostics.add_note('Generation Data',
                 "Using Generation data in PCE data"
             )
-        
+            
+        ## need to fix Valdez
+        if self.community == 'Valdez':
+            source = 'none'
         ## try paret if source is none and a child
         if source == 'none':
             # TODO, do i use parent or all interttie ?
@@ -140,10 +148,15 @@ class Preprocessor (object):
             data = self.load_pce(ids_to_use=ids_to_use) 
             if len(data) == 0:
                 data = self.load_eia(ids_to_use=ids_to_use)
-                if len(data[0]) == 0 or len(data[1]) == 0:
+                if len(data[0]) == 0 and len(data[1]) == 0:
                     print "No generation data found"
                     source = 'none'
                     #~ raise PreprocessorError, "No generation data found"
+                elif len(data[0]) == 0 and len(data[1]) != 0:
+                    source = 'eia-sales-only'
+                    self.diagnostics.add_note('Generation Data',
+                        "Using Generation data in EIA data, sales only"
+                    )
                 else:
                     source = 'eia'
                     self.diagnostics.add_note('Generation Data',
@@ -156,13 +169,20 @@ class Preprocessor (object):
                 )
             print "ids used", ids_to_use
         
-        
+        print source
         if source == 'pce':
             generation_data = self.process_generation(pce_data = data) 
             sales_data = self.process_prices(pce_data = data) 
         elif source == 'eia': # 'eia'
             generation_data = self.process_generation(
                 eia_generation = data[0],
+                eia_sales = data[1],
+            ) 
+            sales_data = self.process_prices(
+                eia_sales = data[1],
+            ) 
+        elif source == 'eia-sales-only':
+            generation_data = self.process_generation(
                 eia_sales = data[1],
             ) 
             sales_data = self.process_prices(
@@ -201,8 +221,11 @@ class Preprocessor (object):
                 self.data['community']['electric non-fuel price'] + adder
           
         else:
-            self.data['community']['electric non-fuel prices'] = self.data['community']['electric non-fuel price'] + self.data['community']['diesel prices']
             percent_diesel = 0
+            self.data['community']['electric non-fuel prices'] = \
+                self.data['community']['electric non-fuel price'] + \
+                (self.data['community']['diesel prices'] * percent_diesel)
+            
         
         self.data = merge_configs(self.data,
             {'community': {'percent diesel generation': percent_diesel}})
@@ -213,9 +236,12 @@ class Preprocessor (object):
         
         population = self.data['community']['population'].ix[2010]['population']
         self.data = merge_configs(self.data, 
-            self.preprocess_component(test, population=population)
+            self.preprocess_component(test, **kwargs)
         )
         #~ print self.data
+        
+        
+        
         return self.data
             
             
@@ -313,7 +339,8 @@ class Preprocessor (object):
     def preprocess_component ( self, component, **kwargs):
         """
         """
-        data = component.preprocess(self.community, self.data_dir, self.diagnostics, **kwargs)
+        data = component.preprocess(
+            self, **kwargs)
         return data
         
         
@@ -424,13 +451,15 @@ class Preprocessor (object):
             intertie = self.communities 
         else:
             intertie = "not in intertie"
+        
+        
             
         population = self.load_population(**kwargs)
         data = {
             'community': {
                 'model electricity': True,
                 'model financial': True,
-                'file id': self.community,
+                'file id': self.community.replace(' ','_'),
                 'natural gas used': False,
                 'interest rate': .05,
                 'discount rate': .03,
@@ -457,6 +486,9 @@ class Preprocessor (object):
                 
             },
         }
+        
+        if self.process_intertie == True:
+            data['community']['file id'] += '_intertie'
         
         data = merge_configs(data, self.process_renewable_capacities())
         return data
@@ -516,7 +548,6 @@ class Preprocessor (object):
         
         if not self.process_intertie:
             ids = [ids[0]]
-        #~ ids = [ids[0]]
        
         ## load data & remove name of town
         pops = read_csv(datafile, index_col = 1)
@@ -604,7 +635,11 @@ class Preprocessor (object):
         
         ## Klukwan fix - see not at top of function
         if 'Klukwan' in ids:
-            ids += ["Chilkat Valley"]    
+            ids += ["Chilkat Valley"]   
+            
+        ## dumb 'Iliamna, Newhalen, Nondalton' workaround
+        if 'Newhalen' in ids and not "Iliamna" in ids:
+            ids += ["Iliamna"]
         
         ## get data
         data = data.ix[ids][data.ix[ids].isnull().all(1) == False]
@@ -740,18 +775,6 @@ class Preprocessor (object):
             "unbilled_kwh", "residential_rate", "fuel_price"
         ]]
         
-        ### NOTE: folowing code block (commented) is not nessary at this time
-        ### but would become required if more that one type of 
-        ### pruchaded power is provided to a comunity / intertie
-        #~ purchase_sources = sorted(set(
-            #~ data[data['purchased_from'].notnull()]["purchased_from"].values
-        #~ ))
-        #~ ### DO we need this note
-        #~ self.diagnostics.add_note("Community: generation(PCE)",
-                #~ "Utility list for purchased power " + str(sources)
-        #~ )
-        ### -- End
-        
         ## check purchased power
         purchased_power_lib = self.load_purchased_power_lib()
         if len (purchased_power_lib) == 0 :
@@ -763,12 +786,24 @@ class Preprocessor (object):
                  purchase_type + " Power"
             )
         else:
-            msg = ("At this point it is assumed that all power is purchased "
-                "from one source type. This may not be the case in the future " 
-                "and code for handleing it should be written"
-            )
-            raise PreprocessorError, msg
-        
+            if 'hydro' in set(purchased_power_lib.values()):
+                purchase_type = 'hydro'
+                self.diagnostics.add_note("Community: generation(PCE)",
+                    "Hydro is a type of power utilities  purchase from" +\
+                    " provider, so it is assumed hydro is the main type"
+                )
+            else:
+                purchase_type = set(purchased_power_lib.values()).pop().lower()
+                self.diagnostics.add_note("Community: generation(PCE)",
+                    "Guessing main purchase type as " + purchase_type
+                )
+                
+            #~ msg = ("At this point it is assumed that all power is purchased "
+                #~ "from one source type. This may not be the case in the future " 
+                #~ "and code for handleing it should be written"
+            #~ )
+            #~ raise PreprocessorError, msg
+        print purchase_type
         ### check other sources 1
         other_sources_1 = sorted(
             data[data['other_1_kwh_type'].notnull()]["other_1_kwh_type"].values
@@ -970,7 +1005,7 @@ class Preprocessor (object):
     def helper_eia_prices (self, eia_sales, **kwargs):
         """ Function doc """
         data = eia_sales
-        
+        print len(data)
         data.iloc[-1] 
         try:
             res_nonPCE_price = \
@@ -1112,6 +1147,73 @@ class Preprocessor (object):
         
         return processed_data
         
+    def helper_eia_generation_sales_only(self, eia_sales, **kwargs):
+        """
+        """
+        ### read kwargs
+        #~ phc_percent = kwargs['power_house_consumption_percet'] if \
+            #~ 'power_house_consumption_percet' in kwargs else .03
+        
+        sales = eia_sales
+        
+      
+        data_by_year = []
+        for year in sales.index:
+            
+            years_data = sales.sum(level=0).ix[year]
+            years_data['year'] = year
+            
+            ## setup generation from diesel, hydro, etc
+            years_data['generation diesel'] = np.nan
+            years_data['generation hydro'] = np.nan
+            years_data['generation solar'] = np.nan
+            years_data['generation wind'] = np.nan
+            years_data['generation natural gas'] = np.nan
+            years_data['generation biomass'] = np.nan
+            years_data['fuel used'] = np.nan
+           
+            
+            ## set net_generation and (gross_)generation
+            years_data['net generation'] = np.nan
+                
+            years_data['generation'] = np.nan
+                
+            self.diagnostics.add_note(
+                "Community Generation(EIA)",
+                "No generation data")
+        
+            years_data["consumption"] = \
+                sales.ix[year]["Total Megawatthours"] * 1000.0
+            years_data["consumption residential"] = \
+                sales.ix[year]["Residential Megawatthours"] * 1000.0
+            years_data["consumption non-residential"] = \
+                years_data["consumption"] - \
+                years_data["consumption residential"]
+            
+                
+            ## add calculated stuff
+            years_data['line loss'] = np.nan #1.0 - years_data['consumption']/\
+                                                #years_data['net generation']
+
+            years_data['efficiency'] = np.nan #years_data['generation diesel'] / \
+                                                #        years_data['fuel used']
+            #  zeros
+            years_data['kwh_purchased'] = np.nan
+            
+            
+            data_by_year.append(years_data)
+            
+        ### clean up
+        columns = ["year","generation","consumption","fuel used",
+            "efficiency","line loss","net generation","consumption residential",
+            "consumption non-residential","kwh_purchased",
+            "generation diesel","generation hydro",
+            "generation natural gas","generation wind","generation solar",
+            "generation biomass"]
+        processed_data = DataFrame(data_by_year)[columns]
+        
+        return processed_data
+        
     def helper_yearly_electric_data (self, **kwargs):
         """ Function doc """
         #~ print kwargs.keys()
@@ -1121,6 +1223,8 @@ class Preprocessor (object):
             data = self.helper_eia_generation (
                 kwargs['eia_generation'], 
                 kwargs['eia_sales'] )
+        elif 'eia_sales' in kwargs:
+            data = self.helper_eia_generation_sales_only ( kwargs['eia_sales'] )
         else:
             data = DataFrame(columns=
                 ["year","generation","consumption","fuel used",

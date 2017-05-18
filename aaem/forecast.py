@@ -176,8 +176,10 @@ class Forecast (object):
                 index.remove(year)
         
         if any(residential_consumption.isnull()):
-            v = residential_consumption.isnull().values.T.tolist()[0]
-            for year in residential_consumption[v].index.values.tolist():
+            to_remove = \
+                residential_consumption[residential_consumption.isnull()].index
+            for year in to_remove:
+                #~ print year
                 index.remove(year)
         
         self.diagnostics.add_note("forecast", 

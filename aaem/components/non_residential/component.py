@@ -621,9 +621,10 @@ class CommunityBuildings (AnnualSavings):
                 .ix[self.start_year]['consumption non-residential']
         except AttributeError:
             fc_total = estimated_total
-
+        
         #~ print fc_total, estimated_total
-        ratio =  fc_total/estimated_total
+        ratio = fc_total/estimated_total
+        print ratio
         #~ print ratio
         #~ print kwh_buildings
         # step 1 & 2: loop if consumption known use; other wise scale:

@@ -21,12 +21,18 @@ def get_number_buildings (community, data_dir, diagnostics):
     """
     datafile = os.path.join(data_dir, 'non-res_count.csv')
     try:
-        data = int(read_csv(datafile ,comment = "#", index_col = 0,
-                                             header = 0).ix[community][0])
-    except (KeyError):
+        data = int(
+            read_csv(
+                datafile ,
+                comment = "#", 
+                index_col = 0,
+                header = 0
+            ).ix[community]['Buildings'].sum()
+        )
+    except (KeyError, ValueError):
         data = 0
         diagnostics.add_note("Non-residential Efficiency: Community ",
-            ("" + community + " does not have an entry in "
+            ("" + community[0] + " does not have an entry in "
              "" + os.path.split(datafile)[1] + ", using 0"
         ))
 
@@ -41,6 +47,7 @@ def get_consumption_estimates(data_dir, population, diagnostics):
     units = set(data.ix["Estimate units"])
     l = []
     for itm in units:
+            
         l.append(data.T[data.ix["Estimate units"] == itm]\
                       [(data.T[data.ix["Estimate units"] == itm]\
                       ["Lower Limit"].astype(float) <= population)]\
@@ -59,7 +66,7 @@ def get_consumption_estimates(data_dir, population, diagnostics):
 def get_building_inventory (community, data_dir, diagnostics, **kwargs):
     """ Function doc """
     datafile = os.path.join(data_dir, 'non-res_buildings.csv')
-    data = read_csv(datafile, comment = '#', index_col = 0)
+    data = read_csv(datafile, comment = '#', index_col = 1)
     
     order = ['int_index' , 'Building Type', 'Biomass',
         'Biomass Post', 'Electric', 'Electric Post', 'Fuel Oil',
@@ -67,18 +74,20 @@ def get_building_inventory (community, data_dir, diagnostics, **kwargs):
         'Natural Gas Post', 'Propane', 'Propane Post', #'Retrofits Done',
         'Square Feet', 'implementation cost']
     
+    print community
     try:
-        data = data.ix[[community]]
+        data = data.ix[community]
         numbers = [i for i in order if not i in ['Building Type', 'int_index']]
         data[numbers] = data[numbers].replace(r'\S+', np.nan, regex=True)
-
+        #~ print data
+        data = data[data.isnull().all(1) == False]
     except KeyError:
         diagnostics.add_note(
             'Non-residential Energy Efficiency: Building Inventory',
             'no buildings in inventory creating empty inventory'
         )
         data = DataFrame(columns = order)
-    
+
 
     #~ print data
     data['int_index'] = range(len(data))
@@ -92,13 +101,13 @@ def get_building_inventory (community, data_dir, diagnostics, **kwargs):
     
    
    
-def preprocess(community, data_dir, diagnostics, **kwargs):
+def preprocess(preprocessor, **kwargs):
     """
     """
-    if not 'population' in kwargs:
-        raise StandardError, 'Non-residential preprocessing needs population'
+    #~ if not 'population' in kwargs:
+        #~ raise StandardError, 'Non-residential preprocessing needs population'
         
-    population = kwargs['population']
+    #~ population = kwargs['population']
     
     refit_cost = 7.0 
     if 'non-res-refit-cost' in kwargs:
@@ -126,7 +135,18 @@ def preprocess(community, data_dir, diagnostics, **kwargs):
     if 'non-res-waste-oil-cost-precent' in kwargs:
         waste_oil_cost_precent = float(kwargs['non-res-waste-oil-cost-precent']) 
     
-   
+    inventory_ids = preprocessor.GNIS_ids
+    count_ids = preprocessor.communities
+    if not preprocessor.process_intertie:
+        if preprocessor.intertie_status == 'child':
+            inventory_ids = [inventory_ids[1]]
+            count_ids = [count_ids[1]]
+        else:
+            inventory_ids = [inventory_ids[0]]
+            count_ids = [count_ids[0]]
+    
+    population = \
+        preprocessor.data['community']['population'].ix[2010]['population']
     
     data = {
         'Non-residential Energy Efficiency':{
@@ -137,12 +157,19 @@ def preprocess(community, data_dir, diagnostics, **kwargs):
             'cohort savings percent': cohort_multiplier,
             'heating cost percent': heating_cost_percent,
             'waste oil cost percent': waste_oil_cost_precent,
-            'number buildings': get_number_buildings(community, 
-                data_dir, diagnostics),
-            'consumption estimates':  get_consumption_estimates(data_dir,
-                population, diagnostics),
-            'building inventory': get_building_inventory(community,
-                data_dir, diagnostics)
+            'number buildings': get_number_buildings(
+                count_ids, 
+                preprocessor.data_dir, 
+                preprocessor.diagnostics
+            ),
+            'consumption estimates':  get_consumption_estimates(
+                preprocessor.data_dir,
+                population, 
+                preprocessor.diagnostics),
+            'building inventory': get_building_inventory(
+                inventory_ids,
+                preprocessor.data_dir, 
+                preprocessor.diagnostics)
         }
     }
     return data

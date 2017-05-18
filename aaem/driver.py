@@ -488,9 +488,12 @@ class Driver (object):
             try:
                 self.run(os.path.join(directory,c))
             except (RuntimeError, IOError) as e:
+                print '------------------------'
                 print e
                 msg = "RUN ERROR: "+ c + \
                                     " not a configured community/project"
+                print msg
+                print '------------------------'
             
     def run_script(self):
         """
