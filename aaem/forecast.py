@@ -220,7 +220,16 @@ class Forecast (object):
                 (residential_consumption * np.nan).fillna("M")
         
         
-        mean_non_res_con = non_residential_consumption.values[-3:].mean()
+        mean_non_res_con  = non_residential_consumption.values[-3:].mean()
+        if np.isnan(mean_non_res_con):
+            self.diagnostics.add_note('Forecast',
+                ('Average of last 3 known years was null,'
+                ' averaging all non null years')
+            )
+            mean_non_res_con = \
+                non_residential_consumption\
+                [ ~non_residential_consumption.isnull()].mean() 
+        
         print non_residential_consumption.values
         print mean_non_res_con
         

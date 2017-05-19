@@ -594,7 +594,7 @@ class CommunityBuildings (AnnualSavings):
 
 
         if not self.intertie_data is None:
-            #~ print 'Loading intertie' 
+            print 'Loading intertie' 
             intertie_component = CommunityBuildings(
                 self.intertie_data,
                 self.forecast, 
@@ -662,7 +662,7 @@ class CommunityBuildings (AnnualSavings):
                 ).consumption
             fc_total = \
                 forecast.ix[self.start_year]['consumption non-residential']
-            print forecast
+            #~ print forecast
         except AttributeError:
             fc_total = estimated_total
         

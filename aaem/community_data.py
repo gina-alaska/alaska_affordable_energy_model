@@ -88,7 +88,9 @@ class CommunityData (object):
             elif os.path.isfile(community_config):
                 rt_path = os.path.split(community_config)
                 it_file = \
-                    self.get_item('community','intertie')[0] + '_intertie.yaml'
+                    self.get_item('community','intertie')[0].\
+                        replace(' ','_').replace("'",'')\
+                     + '_intertie.yaml'
                 it_file = os.path.join(rt_path[0], it_file)
                 if os.path.isfile(it_file):
                     self.diagnostics.add_note(
