@@ -826,7 +826,7 @@ class CommunityBuildings (AnnualSavings):
             elec_price = intertie_component.electricity_prices
         self.elec_price = elec_price
 
-
+        #~ print self.elec_price
         #~ print self.elec_price
         #~ print 
         
@@ -857,6 +857,7 @@ class CommunityBuildings (AnnualSavings):
             heating savings ($/year) 
         """
         self.hoil_price = (self.diesel_prices + self.cd['heating fuel premium'])
+        #~ print self.hoil_price
         hr_price = self.hoil_price * \
             (self.comp_specs['waste oil cost percent'] / 100.0)
         
@@ -887,6 +888,7 @@ class CommunityBuildings (AnnualSavings):
             self.baseline_fuel_propane_consumption * LP_price + \
             self.baseline_fuel_biomass_consumption * wood_price
         
+        #~ print self.baseline_HF_cost,  self.proposed_HF_cost
         self.annual_heating_savings = self.baseline_HF_cost - \
                                             self.proposed_HF_cost
         

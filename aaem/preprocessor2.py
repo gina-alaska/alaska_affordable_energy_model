@@ -210,6 +210,8 @@ class Preprocessor (object):
                 self.data['community']['utility info']['generation diesel']\
                 .fillna(0)\
                 /self.data['community']['utility info']['net generation']
+                
+            print percent_diesel
             percent_diesel = float(percent_diesel.iloc[-1])
         
             adder = percent_diesel * \
@@ -1000,6 +1002,15 @@ class Preprocessor (object):
         
         
         generation = read_csv(datafile_generation, comment = '#', index_col=3)
+        
+        generation = generation.ix[ids]
+        if any(generation['NET GENERATION (megawatthours)'] < 0):
+            self.diagnostics.add_note("EIA Electricity",
+                "Negative generation values have been set to 0")
+            idx = generation['NET GENERATION (megawatthours)'] < 0
+            generation['NET GENERATION (megawatthours)'][idx] = 0
+            
+        
         generation = generation.ix[ids].\
             groupby(['Year','Reported Fuel Type Code']).sum()[[
                 'TOTAL FUEL CONSUMPTION QUANTITY',
@@ -1008,7 +1019,7 @@ class Preprocessor (object):
                 'ELEC FUEL CONSUMPTION MMBTUS',
                 'NET GENERATION (megawatthours)'
             ]]
-            
+        
         sales = read_csv(datafile_sales, comment = '#', index_col=2)
 
         sales = sales.ix[ids].groupby('Data Year').sum()[[
@@ -1517,6 +1528,9 @@ class Preprocessor (object):
                 prices_diesel = data.ix[[self.communities[0]]].T
                 self.diagnostics.add_note('prices',
                     'using parents diesel prices')
+                ## dumb Nondalton, Ilimiana fix
+                if 'Nondalton' in self.communities:
+                    prices_diesel = data.ix[['Iliamna']].T
             else:
                 communities = os.path.join(self.data_dir, "community_list.csv")
                 index = read_csv(communities, index_col=2, comment="#")

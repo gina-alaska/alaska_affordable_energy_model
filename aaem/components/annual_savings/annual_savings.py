@@ -29,6 +29,7 @@ class AnnualSavings (object):
         post:
             annual_total_savings will be an array of dollar amounts. 
         """
+        #~ print self.annual_electric_savings, self.annual_heating_savings
         self.annual_total_savings = self.annual_electric_savings + \
                               self.annual_heating_savings
     
@@ -86,6 +87,8 @@ class AnnualSavings (object):
 
         self.benefit_npv = np.npv(rate, 
                            np.append(yts, self.annual_total_savings[:end]))
+        #~ print end
+        #~ print self.annual_total_savings[:end]
         self.cost_npv = np.npv(rate, np.append(yts, self.annual_costs[:end]))
         self.benefit_cost_ratio = self.benefit_npv/self.cost_npv 
         self.net_npv = np.npv(rate, 
