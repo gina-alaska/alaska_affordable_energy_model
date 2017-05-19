@@ -553,8 +553,13 @@ class Preprocessor (object):
         
         ids = self.GNIS_ids
         
-        if not self.process_intertie:
+        #~ if not self.process_intertie:
+        
+        if self.intertie_status == 'child':
+            ids = [ids[1]]
+        else:
             ids = [ids[0]]
+            
             
         if 'population_ids_to_use' in kwargs:
             ids = kwargs['population_ids_to_use']

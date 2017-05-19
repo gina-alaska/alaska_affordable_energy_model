@@ -250,7 +250,8 @@ class CommunityBuildings (AnnualSavings):
                                 "_buildings_summary.csv"))
         
     
-    def run (self, scalers = {'capital costs':1.0}, calc_sqft_only = False):
+    def run (self, scalers = {'capital costs':1.0, 'kWh consumption':1.0},
+        calc_sqft_only = False):
         """runs the component. The Annual Total Savings,Annual Costs, 
         Annual Net Benefit, NPV Benefits, NPV Costs, NPV Net Benefits, 
         Benefit Cost Ratio, Levelized Cost of Energy, 
@@ -305,7 +306,7 @@ class CommunityBuildings (AnnualSavings):
             return
         
         
-        self.calc_baseline_kWh_consumption()
+        self.calc_baseline_kWh_consumption(scalers)
         self.calc_proposed_kWh_consumption()
         
         self.calc_baseline_HF_consumption()
@@ -571,7 +572,7 @@ class CommunityBuildings (AnnualSavings):
 
             
         
-    def calc_baseline_kWh_consumption (self):
+    def calc_baseline_kWh_consumption (self, scalers):
         """calculate baseline electricity use from all buildings in community
         (or intertie) from measured values and 
         estimates(updates values for each building)
@@ -597,7 +598,8 @@ class CommunityBuildings (AnnualSavings):
             intertie_component = CommunityBuildings(
                 self.intertie_data,
                 self.forecast, 
-                self.diagnostics
+                self.diagnostics,
+                scalers
             )
             intertie_component.run(calc_sqft_only = True)
             
@@ -622,7 +624,7 @@ class CommunityBuildings (AnnualSavings):
             try:
                 kwh_sf = kwh_sf_ests.ix[k] # (kWh)/sqft
             except KeyError:
-                print 'KeyError', k
+                #~ print 'KeyError', k
                 kwh_sf = kwh_sf_ests.ix['Other'] # (kwh)/sqft
             
             idx = np.logical_and(local_inv[:,0] == k, 
@@ -650,12 +652,20 @@ class CommunityBuildings (AnnualSavings):
         estimated_total = inv[:,2].astype(np.float64).sum()
         # Trend total
         try:
-            fc_total = self.forecast.consumption\
-                .ix[self.start_year]['consumption non-residential']
+            if self.intertie_data is None:
+                forecast = self.forecast.consumption
+            else:
+                forecast = Forecast(
+                    self.intertie_data,
+                    self.diagnostics,
+                    scalers
+                ).consumption
+            fc_total = \
+                forecast.ix[self.start_year]['consumption non-residential']
         except AttributeError:
             fc_total = estimated_total
         
-        #~ print fc_total, estimated_total
+        print fc_total, estimated_total
         ratio = fc_total/estimated_total
         print ratio
         #~ print ratio
