@@ -31,7 +31,8 @@ class CommunityData (object):
     """ Class doc """
     
     def __init__ (self, community_config, global_config = None, diag = None, 
-                        scalers = {'diesel price':1.0, 'diesel price adder':0}):
+        scalers = {'diesel price':1.0, 'diesel price adder':0},
+        intertie_config = None):
         """
         """
         self.diagnostics = diag
@@ -48,16 +49,68 @@ class CommunityData (object):
         valid, reason = self.validate_config()
         if not valid:
             raise StandardError, 'INVALID CONFIG FILE: ' + reason
-    
 
         self.intertie = None
         
         intertie = self.get_item('community', 'intertie')
         if type (intertie) is list:
-            if intertie[0] == self.get_item('community', 'name'):
+            if self.get_item('community', 'model as intertie') :
                 self.intertie = 'parent'
             else:
-                self.intertie = 'chile'
+                self.intertie = 'child'
+         
+        self.intertie_data = None
+        
+        ## load if community is part of an intertie but not the intertie 
+        ## it's self. I.E. load info for Bethel or Oscarville,
+        ## but not Bethel_intertie
+        if not self.intertie is None and \
+                not self.get_item('community', 'model as intertie'):
+            self.diagnostics.add_note(
+                'Community Data',
+                'Attempting to find intertie data'
+            )
+            ## is the intertie_config a dict of file, also use same globals
+            if type(intertie_config) is dict \
+                    or (type(intertie_config) is str \
+                    and os.path.isfile(intertie_config)):
+                self.diagnostics.add_note(
+                    'Community Data',
+                    'using provided intertie_config argument'
+                )
+                self.intertie_data = CommunityData(
+                    intertie_config, 
+                    global_config,
+                    self.diagnostics,
+                    scalers
+                )
+            ## try to find the file
+            elif os.path.isfile(community_config):
+                rt_path = os.path.split(community_config)
+                it_file = rt_path[1].split('.')[0] + '_intertie.yaml'
+                it_file = os.path.join(rt_path[0], it_file)
+                if os.path.isfile(it_file):
+                    self.diagnostics.add_note(
+                        'Community Data',
+                        'Found interte data at ' + it_file
+                    )
+                    
+                    self.intertie_data = CommunityData(
+                        it_file,
+                        global_config,
+                        self.diagnostics,
+                        scalers
+                    )
+            else:
+                self.diagnostics.add_note(
+                    'Community Data',
+                    'Could not find intertie_data Leaving it as None'
+                )
+                ## self.intertie_data = None is initlized 
+                
+                        
+                        
+            
         
         # modify diesel prices and electric non-fuel prices
         

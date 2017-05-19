@@ -261,6 +261,7 @@ class Preprocessor (object):
                 'community': [
                     'model electricity',
                     'model financial',
+                    'model as intertie',
                     'file id',
                     'natural gas used',
                     'interest rate',
@@ -276,9 +277,10 @@ class Preprocessor (object):
                     'FIPS ID',
                     'senate district',
                     'house district',
+                    'intertie',
                     
                     'population',
-                    'intertie',
+                    
                     'heating degree days',
                     'heating fuel premium',
                     'on road system',
@@ -459,12 +461,13 @@ class Preprocessor (object):
             'community': {
                 'model electricity': True,
                 'model financial': True,
+                'model as intertie': self.process_intertie,
                 'file id': self.community.replace(' ','_'),
                 'natural gas used': False,
-                'interest rate': .05,
-                'discount rate': .03,
                 'current year': 2016,
-            
+                
+               
+                
                 'name': self.community,
                 'alternate name': self.aliases[0],
                 'region': self.regions[0],
@@ -477,6 +480,10 @@ class Preprocessor (object):
                 'intertie': intertie,
                 
                 'population':population,
+                
+                'interest rate': .05,
+                'discount rate': .03,
+                
                 
                 'heating degree days': self.load_heating_degree_days(),
                 'heating fuel premium': self.load_heating_fuel_premium(),
@@ -548,6 +555,9 @@ class Preprocessor (object):
         
         if not self.process_intertie:
             ids = [ids[0]]
+            
+        if 'population_ids_to_use' in kwargs:
+            ids = kwargs['population_ids_to_use']
        
         ## load data & remove name of town
         pops = read_csv(datafile, index_col = 1)

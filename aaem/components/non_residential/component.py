@@ -82,6 +82,7 @@ class CommunityBuildings (AnnualSavings):
         if self.diagnostics == None:
             self.diagnostics = diagnostics()
         self.cd = community_data.get_section('community')
+        self.intertie_data = community_data.intertie_data
         self.comp_specs =community_data.get_section(COMPONENT_NAME)
         
         #~ self.intertie = community_data.intertie
@@ -249,7 +250,7 @@ class CommunityBuildings (AnnualSavings):
                                 "_buildings_summary.csv"))
         
     
-    def run (self, scalers = {'capital costs':1.0}):
+    def run (self, scalers = {'capital costs':1.0}, calc_sqft_only = False):
         """runs the component. The Annual Total Savings,Annual Costs, 
         Annual Net Benefit, NPV Benefits, NPV Costs, NPV Net Benefits, 
         Benefit Cost Ratio, Levelized Cost of Energy, 
@@ -296,6 +297,12 @@ class CommunityBuildings (AnnualSavings):
             return 
         
         self.calc_total_sqft_to_retrofit()
+        
+        if calc_sqft_only:
+            self.comp_specs['building inventory']['Building Type'] = self.comp_specs['building inventory'].index
+            self.comp_specs['building inventory'].index = range(len(self.comp_specs['building inventory']))
+            self.comp_specs['building inventory'].index.name = "int_index"
+            return
         
         
         self.calc_baseline_kWh_consumption()
@@ -583,18 +590,28 @@ class CommunityBuildings (AnnualSavings):
         local_inv.insert(0,keys.values.tolist())
         local_inv = np.array(local_inv).T
         inv = local_inv
-        #~ print inv
-        #~ print self.intertie 
-        #~ if self.intertie != 'none':
-            #~ keys = self.intertie_inventory.T.keys()
-            ##print keys
-            #~ it_inv = self.intertie_inventory[["Square Feet", 
-                                                #~ measure]].T.values.tolist()
-            #~ it_inv.insert(0,keys.values.tolist())
-            #~ it_inv = np.array(it_inv).T
-            #~ kwh_sf_ests = self.intertie_estimates["kWh/sf"]
+
+
+        if not self.intertie_data is None:
+            print 'Loading intertie' 
+            intertie_component = CommunityBuildings(
+                self.intertie_data,
+                self.forecast, 
+                self.diagnostics
+            )
+            intertie_component.run(calc_sqft_only = True)
             
-            #~ inv = it_inv
+            it_inv = intertie_component.comp_specs['building inventory']
+            keys = it_inv['Building Type'].values
+    
+            it_inv = it_inv[["Square Feet", measure]].T.values.tolist()
+            it_inv.insert(0,keys)
+            it_inv = np.array(it_inv).T
+            kwh_sf_ests = \
+                intertie_component.comp_specs['consumption estimates']["kWh/sf"]
+            
+            inv = it_inv
+
         #~ print inv
         keys = set(keys)
         keys.add('Average')
@@ -605,13 +622,29 @@ class CommunityBuildings (AnnualSavings):
             try:
                 kwh_sf = kwh_sf_ests.ix[k] # (kWh)/sqft
             except KeyError:
+                print 'KeyError', k
                 kwh_sf = kwh_sf_ests.ix['Other'] # (kwh)/sqft
             
             idx = np.logical_and(local_inv[:,0] == k, 
                                 np.isnan(local_inv[:,2].astype(float)))
             sqft = local_inv[idx, 1].astype(np.float64) #sqft
             local_inv[idx, 2] = sqft * kwh_sf # kWh
-            
+        
+        ## *** possibly could be done better, but is fine    
+        if not self.intertie_data is None:
+            for k in keys:
+                try:
+                    kwh_sf = kwh_sf_ests.ix[k] # (kWh)/sqft
+                except KeyError:
+                    kwh_sf = kwh_sf_ests.ix['Other'] # (kwh)/sqft
+                     
+                idx = np.logical_and(inv[:,0] == k, 
+                                    np.isnan(inv[:,2].astype(float)))
+                sqft = inv[idx, 1].astype(np.float64) #sqft
+                inv[idx, 2] = sqft * kwh_sf # kWh
+        else:
+            inv = local_inv
+        ### end ***
 
         
         estimated_total = inv[:,2].astype(np.float64).sum()
@@ -636,7 +669,6 @@ class CommunityBuildings (AnnualSavings):
         #~ print kwh_buildings
         data[measure] =  kwh_buildings[:,2].astype(np.float64)  
         self.baseline_kWh_consumption = data[measure].sum()
-        #~ print self.baseline_kWh_consumption
         
     def calc_proposed_HF_consumption (self):
         """Calculate proposed HF  consumption from known values and 

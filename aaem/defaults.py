@@ -13,6 +13,7 @@ base_structure = {
     'community': {
         'model electricity': bool,
         'model financial': bool,
+        'model as intertie': bool,
         'file id': str,
         'natural gas used': bool,
         'interest rate':float,
