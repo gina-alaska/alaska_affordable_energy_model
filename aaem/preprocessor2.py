@@ -1372,6 +1372,7 @@ class Preprocessor (object):
             'efficiency'
         ]]
         generation.index = generation.index.astype(int)
+        generation = generation.sort_index()
         return generation.round(3)
         
         

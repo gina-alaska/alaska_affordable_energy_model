@@ -221,6 +221,8 @@ class Forecast (object):
         
         
         mean_non_res_con = non_residential_consumption.values[-3:].mean()
+        print non_residential_consumption.values
+        print mean_non_res_con
         
         forcasted_consumption['consumption non-residential'] = mean_non_res_con
         forcasted_consumption['consumption non-residential']\
