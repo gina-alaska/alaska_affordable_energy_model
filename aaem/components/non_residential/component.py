@@ -340,7 +340,7 @@ class CommunityBuildings (AnnualSavings):
             self.get_electricity_prices() 
             
             self.calc_capital_costs()
-            self.calc_annual_electric_savings()
+            self.calc_annual_electric_savings(scalers)
             self.calc_annual_heating_savings()
             self.calc_annual_total_savings()
             
@@ -594,7 +594,7 @@ class CommunityBuildings (AnnualSavings):
 
 
         if not self.intertie_data is None:
-            print 'Loading intertie' 
+            #~ print 'Loading intertie' 
             intertie_component = CommunityBuildings(
                 self.intertie_data,
                 self.forecast, 
@@ -662,6 +662,7 @@ class CommunityBuildings (AnnualSavings):
                 ).consumption
             fc_total = \
                 forecast.ix[self.start_year]['consumption non-residential']
+            print forecast
         except AttributeError:
             fc_total = estimated_total
         
@@ -799,7 +800,7 @@ class CommunityBuildings (AnnualSavings):
                 'MMBtu': (HF_savings, heating_cost_percent)
                }
     
-    def calc_annual_electric_savings (self):
+    def calc_annual_electric_savings (self, scalers):
         """calculate annual electric savings created by the project
             
         Attributes
@@ -813,6 +814,16 @@ class CommunityBuildings (AnnualSavings):
         and proposed fuel costs
         """
         elec_price = self.electricity_prices
+        if not self.intertie_data is None:
+            #~ print 'Loading intertie' 
+            intertie_component = CommunityBuildings(
+                self.intertie_data,
+                self.forecast, 
+                self.diagnostics,
+                scalers
+            )
+            intertie_component.get_electricity_prices()
+            elec_price = intertie_component.electricity_prices
         self.elec_price = elec_price
 
 
