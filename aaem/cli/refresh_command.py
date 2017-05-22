@@ -72,7 +72,7 @@ class RefreshCommand(pycommand.CommandBase):
                          comment="#",index_col=0).Community.tolist()
     
         #~ coms = ['Brevig Mission']
-        my_setup = driver.Setup(model_root, sorted(coms), repo, tag)
+        my_setup = driver.Setup(model_root, repo, sorted(coms), tag)
         if not my_setup.setup(force):
             pth = os.path.join(model_root, my_setup.tag)
             msg = "REFRESH ERRO: " + pth + \

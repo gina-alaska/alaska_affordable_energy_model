@@ -84,22 +84,12 @@ class CommunityBuildings (AnnualSavings):
         self.cd = community_data.get_section('community')
         self.intertie_data = community_data.intertie_data
         self.comp_specs =community_data.get_section(COMPONENT_NAME)
-        
-        #~ self.intertie = community_data.intertie
-        #~ if self.intertie is None:
-            #~ self.intertie = 'none'
-        #~ else:
-            #~ # get the intertie building inventory
-            #~ self.get_intertie_builing_inventory(community_data)
+
         
         self.comp_specs =community_data.get_section(COMPONENT_NAME)
         self.percent_diesel = self.cd['percent diesel generation']
         self.component_name = COMPONENT_NAME
         self.forecast = forecast
-        #~ print self.comp_specs['average refit cost']
-        #~ print community_data.get_section('construction multipliers')[self.cd["region"]]
-        #~ print self.comp_specs['average refit cost'] * \
-      #~ community_data.get_section('construction multipliers')[self.cd["region"]]
         
         self.refit_cost_rate = self.comp_specs['average refit cost'] * \
                 community_data.get_item('community',
@@ -108,7 +98,6 @@ class CommunityBuildings (AnnualSavings):
             self.comp_specs["start year"],
             self.comp_specs["lifetime"])
          
-        #~ print self.refit_cost_rate 
         self.buildings_df = deepcopy(self.comp_specs["building inventory"])
         self.buildings_df = self.buildings_df.set_index('Building Type')
         freq = {}
@@ -121,69 +110,6 @@ class CommunityBuildings (AnnualSavings):
         self.buildings_df = \
                     self.buildings_df.groupby(self.buildings_df.index).sum()
         self.buildings_df = concat([df,self.buildings_df],axis=1)
-        
-    #~ def get_intertie_builing_inventory(self, community_data):
-        #~ """load building inventory for interties
-        
-        #~ Parameters
-        #~ ----------
-        #~ commnity_data : CommunityData
-            #~ CommintyData Object for a community
-        
-        #~ Attributes
-        #~ ----------
-        #~ intertie_inventory : DataFrame
-            #~ builing inventory for the intertie
-        #~ """
-        #~ data_dir = os.path.split(community_data.data_dir)[0]
-        #~ parent = community_data.parent
-        #~ it_path = os.path.join(data_dir, parent.replace(' ','_') + '_intertie')
-        #~ ## function is at top of this file
-        #~ self.intertie_inventory = load_building_data(it_path)
-        #~ self.intertie_estimates = load_building_estimates(it_path)
-        #~ self.intertie_count = load_num_buildings(it_path)
-        
-        
-        
-        #~ #add extra buildings
-        #~ additional_buildings = \
-            #~ max(self.intertie_count - len(self.intertie_inventory),0)
-       
-        #~ if additional_buildings > 0:
-            #~ l = []
-            #~ for i in range(additional_buildings):
-                #~ l.append(DataFrame({"Square Feet":np.nan,}, 
-                                                        #~ index = ["Average"]))
-            #~ self.intertie_inventory = self.intertie_inventory.append(l)
-            
-        #~ ### estimate the square footage for the intertie inventory
-        #~ sqft_ests = self.intertie_estimates["Sqft"]
-        #~ measure = "Square Feet"
-        #~ for k in keys:
-            #~ try:
-                #~ # more than one item for each k 
-                #~ self.intertie_inventory.loc[:,measure].loc[k] = \
-                            #~ self.intertie_inventory.loc[:,measure].loc[k].\
-                                                        #~ fillna(sqft_ests.ix[k])
-            #~ except AttributeError:
-                #~ # only one item 
-                #~ if np.isnan(self.intertie_inventory.ix[k][measure]):
-                    #~ try:
-                        #~ self.intertie_inventory[measure][k] = sqft_ests.ix[k]
-                    #~ except KeyError:
-                        #~ self.diagnostics.add_note(self.component_name, 
-                            #~ "Building Type: " + k +\
-                            #~ " not valid. Using 'other's estimates")
-                        #~ self.intertie_inventory.ix[k][measure] = \
-                                                    #~ sqft_ests.ix['Other']
-            #~ except KeyError:
-                #~ self.diagnostics.add_note(self.component_name, 
-                 #~ "Building Type: " + k + " not valid. Using 'other's estimates")
-                #~ self.intertie_inventory.loc[:,measure].loc[k] = \
-                    #~ self.intertie_inventory.loc[:,measure].loc[k].\
-                                                #~ fillna(sqft_ests.ix['Other'])        
-       
-        
         
     def save_building_summay(self, file_name):
         """save builing summary for community
@@ -289,9 +215,12 @@ class CommunityBuildings (AnnualSavings):
             return 
         
         self.update_num_buildings()
-        self.comp_specs['building inventory'] = self.comp_specs['building inventory'].set_index('Building Type')
-        self.comp_specs['building inventory'] = self.comp_specs['building inventory'].astype(float)
-        self.comp_specs["consumption estimates"] = self.comp_specs["consumption estimates"].astype(float)
+        self.comp_specs['building inventory'] = \
+            self.comp_specs['building inventory'].set_index('Building Type')
+        self.comp_specs['building inventory'] = \
+            self.comp_specs['building inventory'].astype(float)
+        self.comp_specs["consumption estimates"] = \
+            self.comp_specs["consumption estimates"].astype(float)
         
         
         #~ self.calc_refit_values()
@@ -304,8 +233,10 @@ class CommunityBuildings (AnnualSavings):
         self.calc_total_sqft_to_retrofit()
         
         if calc_sqft_only:
-            self.comp_specs['building inventory']['Building Type'] = self.comp_specs['building inventory'].index
-            self.comp_specs['building inventory'].index = range(len(self.comp_specs['building inventory']))
+            self.comp_specs['building inventory']['Building Type'] = \
+                self.comp_specs['building inventory'].index
+            self.comp_specs['building inventory'].index = \
+                range(len(self.comp_specs['building inventory']))
             self.comp_specs['building inventory'].index.name = "int_index"
             return
         
@@ -362,8 +293,10 @@ class CommunityBuildings (AnnualSavings):
             
         ## revert building invertory structure
         
-        self.comp_specs['building inventory']['Building Type'] = self.comp_specs['building inventory'].index
-        self.comp_specs['building inventory'].index = range(len(self.comp_specs['building inventory']))
+        self.comp_specs['building inventory']['Building Type'] = \
+            self.comp_specs['building inventory'].index
+        self.comp_specs['building inventory'].index = \
+            range(len(self.comp_specs['building inventory']))
         self.comp_specs['building inventory'].index.name = "int_index"
         
     def update_num_buildings (self):
@@ -387,7 +320,7 @@ class CommunityBuildings (AnnualSavings):
             self.diagnostics.add_note(self.component_name, 
             "# buildings estimated does not match # buildings actual. "+\
             "Estimated: " + str(self.comp_specs["number buildings"]) +\
-            ". Actual: " + str(len(self.comp_specs['building inventory'])) + ".")
+            ". Actual: " + str(len(self.comp_specs['building inventory']))+ ".")
             
             if len(self.comp_specs['building inventory']) < \
                 self.comp_specs["number buildings"]:
@@ -536,10 +469,12 @@ class CommunityBuildings (AnnualSavings):
         data["GAL/SF"] = 0
         for key in keys:
             try:
-                data["HDD ESTS"].ix[key] = self.cd["heating degree days"]/HDD_ests[key]
+                data["HDD ESTS"].ix[key] = \
+                    self.cd["heating degree days"]/HDD_ests[key]
                 data["GAL/SF"].ix[key] = gal_sf_ests.ix[key] 
             except KeyError:
-                data["HDD ESTS"].ix[key] = self.cd["heating degree days"]/HDD_ests.ix['Other'] # unitless
+                data["HDD ESTS"].ix[key] = \
+                    self.cd["heating degree days"]/HDD_ests.ix['Other']#unitless
                 data["GAL/SF"].ix[key] = gal_sf_ests.ix['Other'] # (gal)/sqft
         
         

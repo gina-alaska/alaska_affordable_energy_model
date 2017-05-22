@@ -893,13 +893,14 @@ class Setup (object):
             self.load_communities()
         
         for community in self.communities:
+            #~ print community
             f_path = os.path.join(self.model_root, self.tag, 'config')
             preprocessor = Preprocessor(community,
                 self.data_dir, 
                 diag = self.diagnostics, 
                 process_intertie = False)
             self.diagnostics.add_note('Preprocessing ' + community, '---------')
-            preprocessor.run()
+            preprocessor.run(show=True)
             
             preprocessor.save_config(f_path)
             
@@ -911,7 +912,7 @@ class Setup (object):
                     process_intertie = True)
                 self.diagnostics.add_note('Preprocessing ' + community,
                     '---------')
-                preprocessor.run()
+                preprocessor.run(show=True)
                 preprocessor.save_config(f_path)
             except PreprocessorError:
                 pass
@@ -923,27 +924,6 @@ class Setup (object):
         #~ self.setup_construction_multipliers()
         #~ self.setup_goals()
         return True
-        
-        
-#~ def write_config_file(path, config, comments, s_order = None, i_orders = None, 
-                            #~ indent = '  ' , header = ''):
-    #~ """
-    #~ write a config yaml file
-    
-    #~ inputs:
-        #~ path: filename to save file at <string>
-        #~ config: dictionary of configs <dict>
-        #~ comments: dictionary of comments <dict>
-        #~ s_order: (optional) order of sections <list>
-        #~ i_orders: (optional) order of items in sections <dict>
-        #~ indent: (optional) indent spacing <sting>
-        #~ header: (optional) header line <string>
-        
-    #~ outputs:
-        #~ saves config .yaml file at path
-    #~ """
-    #~ defaults.save_config(path, config, comments, s_order, 
-                                #~ i_orders, indent, header)
     
 def script_validator (script_file):
     """

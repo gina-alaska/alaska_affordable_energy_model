@@ -113,7 +113,8 @@ class Preprocessor (object):
         """Run the preprocessor
         
         """
-        #~ print self.community, 'Intertie' if self.process_intertie else ''
+        if 'show' in kwargs and kwargs['show'] == True:
+            print self.community, 'Intertie' if self.process_intertie else ''
         
         data = self.load_pce()
         if len(data) == 0:
@@ -148,7 +149,7 @@ class Preprocessor (object):
             if len(data) == 0:
                 data = self.load_eia(ids_to_use=ids_to_use)
                 if len(data[0]) == 0 and len(data[1]) == 0:
-                    print "No generation data found"
+                    #~ print "No generation data found"
                     source = 'none'
                     #~ raise PreprocessorError, "No generation data found"
                 elif len(data[0]) == 0 and len(data[1]) != 0:
@@ -331,7 +332,7 @@ class Preprocessor (object):
         id_cols = [c for c in data.columns if c != 'Energy Region']
         ids = data[data[id_cols].isin(self.intertie).any(axis=1)]
         if len(ids) != len(communities):
-            print ids, communities
+            #~ print ids, communities
             raise PreprocessorError, "Could not find community ID info"
         ids = ids.set_index('Community').ix[self.intertie]
         return list(ids.index), \
@@ -989,7 +990,7 @@ class Preprocessor (object):
     def helper_eia_prices (self, eia_sales, **kwargs):
         """ Function doc """
         data = eia_sales
-        print len(data)
+        #~ print len(data)
         data.iloc[-1] 
         try:
             res_nonPCE_price = \

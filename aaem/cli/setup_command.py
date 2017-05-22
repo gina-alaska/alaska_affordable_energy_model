@@ -71,7 +71,7 @@ class SetupCommand(pycommand.CommandBase):
                                     comment="#",index_col=0).Community.tolist()
             print "Setting up ..."
 
-            my_setup = driver.Setup(model_root, coms, repo, tag)
+            my_setup = driver.Setup(model_root, repo, sorted(coms), tag)
             if not my_setup.setup(force):
                 pth = os.path.join(model_root, my_setup.tag)
                 msg = "SETUP ERROR: " + pth + \
