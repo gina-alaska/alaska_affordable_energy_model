@@ -155,7 +155,7 @@ def preprocess(preprocessor, **kwargs):
             'lifetime': lifetime,
             'average refit cost': refit_cost,
             'cohort savings percent': cohort_multiplier,
-            'heating cost percent': heating_cost_percent,
+            'heating percent': heating_cost_percent,
             'waste oil cost percent': waste_oil_cost_precent,
             'number buildings': get_number_buildings(
                 count_ids, 

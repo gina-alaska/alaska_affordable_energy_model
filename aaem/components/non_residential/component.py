@@ -110,6 +110,7 @@ class CommunityBuildings (AnnualSavings):
          
         #~ print self.refit_cost_rate 
         self.buildings_df = deepcopy(self.comp_specs["building inventory"])
+        self.buildings_df = self.buildings_df.set_index('Building Type')
         freq = {}
         for item in self.buildings_df.index.tolist():
             try:
@@ -196,6 +197,7 @@ class CommunityBuildings (AnnualSavings):
             return
             
         with_estimates = deepcopy(self.comp_specs["building inventory"])
+        with_estimates = with_estimates.set_index('Building Type')
         try:
             if 'Average' in set(with_estimates.ix['Average'].index) :
                 num = len(with_estimates.ix['Average'])
@@ -209,6 +211,8 @@ class CommunityBuildings (AnnualSavings):
                 [c+" with estimates" for c in with_estimates.columns]
         
         summary = concat([self.buildings_df,with_estimates],axis=1)
+        #~ print summary
+        #~ summary = summary
         cols = self.buildings_df.columns[1:]
         cols = list(set(cols).difference("Water & Sewer"))
         order = ["count"] 
@@ -352,7 +356,7 @@ class CommunityBuildings (AnnualSavings):
             
             ## no maintaince cost
             self.calc_levelized_costs(0)
-            heating_cost_percent = self.comp_specs['heating cost percent']/100.0
+            heating_cost_percent = self.comp_specs['heating percent']/100.0
             #scale by heating_cost_percent
             self.break_even_cost *= heating_cost_percent
             
@@ -795,7 +799,7 @@ class CommunityBuildings (AnnualSavings):
                         self.proposed_kWh_consumption
         HF_savings = self.baseline_HF_consumption - \
                         self.proposed_HF_consumption
-        heating_cost_percent = self.comp_specs['heating cost percent'] / 100.0
+        heating_cost_percent = self.comp_specs['heating percent'] / 100.0
         return {'kWh': (kWh_savings, 1 - heating_cost_percent), 
                 'MMBtu': (HF_savings, heating_cost_percent)
                }

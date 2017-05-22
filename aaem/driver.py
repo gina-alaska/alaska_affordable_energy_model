@@ -232,7 +232,7 @@ class Driver (object):
             pass
             
         for comp in comps_used:
-            continue
+            #~ continue
             comps_used[comp].save_csv_outputs(directory)
             comps_used[comp].save_additional_output(directory)
     

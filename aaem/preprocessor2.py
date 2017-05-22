@@ -17,10 +17,11 @@ from importlib import import_module
 import yaml
 
 
-from aaem.components import comp_lib
+from aaem.components import comp_lib, comp_order
 import aaem.yaml_dataframe as yd
 import aaem.constants as constants
 from aaem.config_IO import save_config
+from aaem.defaults import base_order
 
 GENERATION_AVG = .03
 
@@ -105,16 +106,14 @@ class Preprocessor (object):
 
         ## all communities on the interties to make loading more standard
         self.communities, self.regions ,self.GNIS_ids, self.FIPS_ids, \
-            self.aliases = \
-            self.load_ids(
-                os.path.join(self.data_dir, "community_list.csv"),
-                self.intertie
-            )
+            self.aliases = self.load_ids(self.intertie)
         self.data = {}
         
     def run (self, **kwargs):
-        """ Function doc """
-        print self.community, 'Intertie' if self.process_intertie else ''
+        """Run the preprocessor
+        
+        """
+        #~ print self.community, 'Intertie' if self.process_intertie else ''
         
         data = self.load_pce()
         if len(data) == 0:
@@ -167,9 +166,9 @@ class Preprocessor (object):
                 self.diagnostics.add_note('Generation Data',
                     "Using Generation data in PCE data"
                 )
-            print "ids used", ids_to_use
+            #~ print "ids used", ids_to_use
         
-        print source
+        #~ print source
         if source == 'pce':
             generation_data = self.process_generation(pce_data = data) 
             sales_data = self.process_prices(pce_data = data) 
@@ -210,8 +209,6 @@ class Preprocessor (object):
                 self.data['community']['utility info']['generation diesel']\
                 .fillna(0)\
                 /self.data['community']['utility info']['net generation']
-                
-            print percent_diesel
             percent_diesel = float(percent_diesel.iloc[-1])
         
             adder = percent_diesel * \
@@ -233,124 +230,103 @@ class Preprocessor (object):
             {'community': {'percent diesel generation': percent_diesel}})
             
             
-        import aaem.components.non_residential.preprocessing as test
-        reload(test)
-        
-        population = self.data['community']['population'].ix[2010]['population']
-        self.data = merge_configs(self.data, 
-            self.preprocess_component(test, **kwargs)
-        )
-        #~ print self.data
-        
-        
-        
-        return self.data
+        for comp in comp_lib:
+            module = self.import_component(comp_lib[comp])
             
+            #~ population = self.data['community']['population'].ix[2010]['population']
+            self.data = merge_configs(self.data, 
+                self.preprocess_component(module.preprocessing, **kwargs)
+            )
             
     def save_config (self, out_dir):
-        """ Function doc """
+        """Save the configuration yaml file
+        
+        parameters
+        ----------
+        out_dir: path
+            path to directory to save the config in 
+        """
         
         community = self.community.replace(' ', '_').replace("'", '')
         if self.process_intertie == True:
             community += '_intertie'
+            
+        s_order = ['community'] + comp_order
+        i_order = {'community': base_order}
+        comments = {}
+        for comp in comp_lib:
+            module = self.import_component(comp_lib[comp])
+            i_order[comp] = module.config.order
+            comments[comp] = module.config.comments
         
         out_path = os.path.join(out_dir, community+'.yaml')
         save_config(out_path,
             self.data,
-            comments = {},
-            s_order = ['community', 'Non-residential Energy Efficiency'],
-            i_orders = {
-                'community': [
-                    'model electricity',
-                    'model financial',
-                    'model as intertie',
-                    'file id',
-                    'natural gas used',
-                    'interest rate',
-                    'discount rate',
-                    'current year',
-            
-                
-                    'name',
-                    'alternate name',
-                    'region',
-                    'regional construction multiplier',
-                    'GNIS ID',
-                    'FIPS ID',
-                    'senate district',
-                    'house district',
-                    'intertie',
-                    
-                    'population',
-                    
-                    'heating degree days',
-                    'heating fuel premium',
-                    'on road system',
-                    
-                    'diesel prices',
-                    'electric non-fuel prices',
-                    
-                    'residential non-PCE electric price',
-                    'electric non-fuel price',
-                    'propane price',
-                    'cordwood price',
-                    'pellet price',
-                    'natural gas price',
-                    
-                    'hydro generation limit',
-                    'solar generation limit',
-                    'wind generation limit',
-                    'hydro capacity',
-                    'solar capacity',
-                    'wind capacity',
-                    
-                    "utility info",
-                    "percent diesel generation",
-                    "line losses",
-                    "diesel generation efficiency",
-                    
-                    'heat recovery operational',
-                    'switchgear suatable for renewables',
-                    
-                    'max wind generation percent'
-                
-                ],
-
-                'Non-residential Energy Efficiency': [
-                    'enabled',
-                    'start year',
-                    'lifetime',
-                    'average refit cost',
-                    'cohort savings percent',
-                    'heating cost percent',
-                    'waste oil cost percent',
-                    
-                    'number buildings',
-                    'consumption estimates',
-                    'building inventory'
-                ]
-            }
+            comments = comments,
+            s_order = s_order,
+            i_orders = i_order,
+            header = ''
         )
-        
-        
-        
-        
-        
-        
-        
 
+    def import_component(self, component):
+        """import a component
+        
+        Parameters
+        ----------
+        component: str
+            name of the component
+        
+        Returns
+        -------
+        an AAEM component
+        """
+        try:
+            return self.components_modules[component]
+        except AttributeError:
+            self.components_modules = {}
+        
+        self.components_modules[component] = \
+            import_module('aaem.components.' + component)
+        return self.components_modules[component]
         
     def preprocess_component ( self, component, **kwargs):
+        """Run the prerocess function for a component
+        
+        Parameters
+        ----------
+        component: a components preprocessing submodule
+            
+        Returns
+        -------
+        data: dict
+            the preprocessed data
         """
-        """
-        data = component.preprocess(
-            self, **kwargs)
+        data = component.preprocess(self, **kwargs)
         return data
         
         
-    def load_ids (self, datafile, communities):
-        """get a communities id information
+    def load_ids (self, communities):
+        """get a communities id information from "community_list.csv"
+        
+        Parameters
+        ----------
+        communities: list of str
+            communities to load ids for
+            
+        Returns
+        -------
+        ids: list of str
+            primary ids (community names)
+        regions: list of str
+            energy regions 
+        gins_ids: list of int
+            GNIS ids
+        fips_ids: list of int
+            FIPS ids
+        aliases: list of str
+            any other names for communities
         """
+        datafile = os.path.join(self.data_dir, "community_list.csv")
         data = read_csv(datafile, comment = '#')
         id_cols = [c for c in data.columns if c != 'Energy Region']
         ids = data[data[id_cols].isin(self.intertie).any(axis=1)]
@@ -445,10 +421,6 @@ class Preprocessor (object):
         dict: 
             the community section of a confinguration object
         """
-        
-        ## TODO modify all code format to support the new tags and the 
-        ## reworked intertie format
-        
         senate, house = self.load_election_divisions()
         
         if self.intertie_status != "not in intertie":
@@ -456,8 +428,6 @@ class Preprocessor (object):
         else:
             intertie = "not in intertie"
         
-        
-            
         population = self.load_population(**kwargs)
         data = {
             'community': {
@@ -467,8 +437,6 @@ class Preprocessor (object):
                 'file id': self.community.replace(' ','_'),
                 'natural gas used': False,
                 'current year': 2016,
-                
-               
                 
                 'name': self.community,
                 'alternate name': self.aliases[0],
@@ -486,7 +454,6 @@ class Preprocessor (object):
                 'interest rate': .05,
                 'discount rate': .03,
                 
-                
                 'heating degree days': self.load_heating_degree_days(),
                 'heating fuel premium': self.load_heating_fuel_premium(),
                 'on road system': self.load_road_system_status(),
@@ -501,24 +468,6 @@ class Preprocessor (object):
         
         data = merge_configs(data, self.process_renewable_capacities())
         return data
-        
-        
-    #~ def create_forecast_section (self, **kwargs):
-        #~ """create forecast section
-        
-        #~ Returns
-        #~ -------
-        #~ dict: 
-            #~ the forecast section of a confinguration object 
-        #~ """
-        #~ population = self.load_population(**kwargs)
-        #~ data = {
-            #~ 'forecast': {
-                #~ 'population':population
-            #~ }
-        #~ }
-        
-        #~ return data
         
         
     def load_population (self, **kwargs):
@@ -619,12 +568,6 @@ class Preprocessor (object):
             the PCE Data for the community (or intertie if 
             process_intertie is True)
         """
-        
-        
-        
-        ### TODO fix weird cases
-        # "Klukwan": [["Klukwan","Chilkat Valley"]]
-            
         ###
         datafile = os.path.join(self.data_dir, 
             "power-cost-equalization-pce-data.csv")
@@ -633,7 +576,6 @@ class Preprocessor (object):
         data.index = [i.split(',')[0] for i in data.index]
         
         ## get ids
-        
         if "ids_to_use" in kwargs:
             ids = kwargs["ids_to_use"]
         else:
@@ -682,11 +624,10 @@ class Preprocessor (object):
             
         Returns
         -------
-        dict
-            configuration values in community section with keys
-            residential non-PCE electric price and electric non-fuel price
-        
-        
+        res_nonPCE_price: float
+            residential Non pce electric price
+        elec_nonFuel_cost : float
+            electric non fuel cost
         """
         ## get_columns
         data = pce_data[[
@@ -728,8 +669,6 @@ class Preprocessor (object):
             "calculated elec non-fuel cost: " + str(elec_nonFuel_cost))
             
         return res_nonPCE_price, elec_nonFuel_cost 
-        
-    
     
     def load_purchased_power_lib (self, **kwargs):
         """load pruchaced power lib for pce data
@@ -776,11 +715,29 @@ class Preprocessor (object):
         return lib
     
     def helper_pce_generation (self, pce_data, **kwargs):
-        """
+        """process PCE data into a dataframe with yearly data for:
+        "generation", "consumption", "fuel used", "efficiency", "line loss",
+        "net generation", "consumption residential",
+        "consumption non-residential", "kwh_purchased", "residential_rate",
+        "diesel_price", "generation diesel", "generation hydro",
+        "generation natural gas", "generation wind", "generation solar",
+        "generation biomass"
+        
+        Parameters
+        ----------
+        pce_data: DataFrame
+            data as loaded from the PCE data file
+        power_house_consumption_percent: float
+            a percentage > 0 of the gross generation used by power house
+            
+        Returns 
+        -------
+        DataFrame
+            yearly electic data for pce
         """
         ### read kwargs
-        phc_percent = kwargs['power_house_consumption_percet'] if \
-            'power_house_consumption_percet' in kwargs else .03
+        phc_percent = kwargs['power_house_consumption_percent']/ 100 if \
+            'power_house_consumption_percent' in kwargs else .03
         
         data = pce_data[[
             "year","month","diesel_kwh_generated", "powerhouse_consumption_kwh",
@@ -813,13 +770,7 @@ class Preprocessor (object):
                 self.diagnostics.add_note("Community: generation(PCE)",
                     "Guessing main purchase type as " + purchase_type
                 )
-                
-            #~ msg = ("At this point it is assumed that all power is purchased "
-                #~ "from one source type. This may not be the case in the future " 
-                #~ "and code for handleing it should be written"
-            #~ )
-            #~ raise PreprocessorError, msg
-        print purchase_type
+
         ### check other sources 1
         other_sources_1 = sorted(
             data[data['other_1_kwh_type'].notnull()]["other_1_kwh_type"].values
@@ -975,7 +926,15 @@ class Preprocessor (object):
         return processed_data
         
     def load_eia (self, **kwargs):
-        """"""
+        """Load EIA Data, for a community or intertie
+        
+        Returns
+        -------
+        Generation: DataFrame
+            Data fram of EIA generation data, grouped by type and year
+        Sales: DataFrame
+            Data fram of EIA sales data, grouped by year
+        """
         datafile_generation = os.path.join(self.data_dir, 'eia_generation.csv')
         datafile_sales = os.path.join(self.data_dir, 'eia_sales.csv')
         
@@ -997,7 +956,7 @@ class Preprocessor (object):
                 
         if 'Glennallen' in ids:
             ids.append( "Copper Valley" )
-        print ids
+        #~ print ids
         
         
         generation = read_csv(datafile_generation, comment = '#', index_col=3)
@@ -1047,7 +1006,20 @@ class Preprocessor (object):
         return res_nonPCE_price, elec_nonFuel_cost 
     
     def helper_electric_prices(self, **kwargs):
-        """
+        """Calculates the electric prices
+        
+        Parameters
+        ----------
+        pce_data: DataFrame
+            PCE data
+        eia_sales:
+            EIA Sales Data
+        
+        Returns
+        -------
+        dict
+            configuration values in community section with keys
+            residential non-PCE electric price and electric non-fuel price
         """
         if 'pce_data' in kwargs:
             process_function = self.helper_pce_prices
@@ -1061,17 +1033,34 @@ class Preprocessor (object):
             #~ raise PreprocessorError, "No electric price data avaialbe"
             
         res_nonPCE_price, elec_nonFuel_cost = process_function(data)
-        
-        ## TODO change these name in other code
+
         return {
             'community': {
-                'residential non-PCE electric price' :  res_nonPCE_price, # was res non-PCE elec cost 
-                'electric non-fuel price': elec_nonFuel_cost, # was elec non-fuel cost
+                'residential non-PCE electric price' :  res_nonPCE_price, 
+                'electric non-fuel price': elec_nonFuel_cost, 
             }
         }
         
     def helper_eia_generation(self, eia_generation, eia_sales, **kwargs):
-        """
+        """process EIA data into a dataframe with yearly data for:
+        "generation", "consumption", "fuel used", "efficiency", "line loss",
+        "net generation", "consumption residential",
+        "consumption non-residential", "kwh_purchased", "residential_rate",
+        "diesel_price", "generation diesel", "generation hydro",
+        "generation natural gas", "generation wind", "generation solar",
+        "generation biomass". For both generation and sales data 
+        
+        Parameters
+        ----------
+        eia_generation: DataFrame
+            data as loaded from the eia generation data file
+        eia_sales: DataFrame
+            data as loaded from the eia sales data file
+            
+        Returns 
+        -------
+        DataFrame
+            yearly electic data for EIA
         """
         ### read kwargs
         phc_percent = kwargs['power_house_consumption_percet'] if \
@@ -1173,15 +1162,26 @@ class Preprocessor (object):
         return processed_data
         
     def helper_eia_generation_sales_only(self, eia_sales, **kwargs):
-        """
-        """
-        ### read kwargs
-        #~ phc_percent = kwargs['power_house_consumption_percet'] if \
-            #~ 'power_house_consumption_percet' in kwargs else .03
+        """process EIA data into a dataframe with yearly data for:
+        "generation", "consumption", "fuel used", "efficiency", "line loss",
+        "net generation", "consumption residential",
+        "consumption non-residential", "kwh_purchased", "residential_rate",
+        "diesel_price", "generation diesel", "generation hydro",
+        "generation natural gas", "generation wind", "generation solar",
+        "generation biomass". if only eia sales data is available
         
+        Parameters
+        ----------
+        eia_sales: DataFrame
+            data as loaded from the eia sales data file
+            
+        Returns 
+        -------
+        DataFrame
+            yearly electic data for EIA
+        """
         sales = eia_sales
         
-      
         data_by_year = []
         for year in sales.index:
             
@@ -1217,12 +1217,8 @@ class Preprocessor (object):
             
                 
             ## add calculated stuff
-            years_data['line loss'] = np.nan #1.0 - years_data['consumption']/\
-                                                #years_data['net generation']
-
-            years_data['efficiency'] = np.nan #years_data['generation diesel'] / \
-                                                #        years_data['fuel used']
-            #  zeros
+            years_data['line loss'] = np.nan
+            years_data['efficiency'] = np.nan 
             years_data['kwh_purchased'] = np.nan
             
             
@@ -1240,7 +1236,30 @@ class Preprocessor (object):
         return processed_data
         
     def helper_yearly_electric_data (self, **kwargs):
-        """ Function doc """
+        """Create yearly electric data from available PCE or EIA data. will 
+        create empty structure if no data found
+        
+        Parameters
+        ----------
+        pce_data: DataFrame
+            data as loaded from the PCE data file
+        eia_generation: DataFrame
+            data as loaded from the eia generation data file
+        eia_sales: DataFrame
+            data as loaded from the eia sales data file
+            
+        Returns
+        -------
+        data: DataFrame
+            Yearly Electric Data for:
+            "generation","consumption","fuel used",
+            "efficiency","line loss","net generation",
+            "consumption residential",
+            "consumption non-residential","kwh_purchased","residential_rate",
+            "diesel_price","generation diesel","generation hydro",
+            "generation natural gas","generation wind","generation solar",
+            "generation biomass"
+        """
         #~ print kwargs.keys()
         if 'pce_data' in kwargs:
             data = self.helper_pce_generation(kwargs['pce_data'])
@@ -1264,7 +1283,12 @@ class Preprocessor (object):
         return data
         
     def process_generation (self, **kwargs):
-        """
+        """Preprocess generation data
+        
+        Returns
+        -------
+        data: Dict
+            data for linelosses, diesel generation efficiency, and utility data
         """
         
         data = self.helper_yearly_electric_data(**kwargs)
@@ -1281,9 +1305,24 @@ class Preprocessor (object):
         return data
         
     def helper_line_losses (self, electric_data, **kwargs):
-        """
-        """
+        """caclulates the average line loss percent from last N years
         
+        Parameters
+        ----------
+        electic_data: DataFrame
+            yearly electric data
+        max_line_loss: int 
+            maximum limit on the line losses
+        default_line_loss: int 
+            default line losses when a nan is caclulated
+        years_to_average: int 
+            years of data to use in average (N)
+            
+        Returns 
+        -------
+        float
+            Average line loss percentage
+        """
         #~ default_line_losses: default max is 40
         max_line_losses = \
             kwargs['max_line_loss'] if 'max_line_loss' in kwargs else 40
@@ -1325,9 +1364,24 @@ class Preprocessor (object):
         
         
     def helper_diesel_efficiency (self, electric_data, **kwargs):
+        """caclulates the average diesel (kWh/gal) from last N years
         
-        default_efficiency = kwargs['default_diesl_efficieny']\
-            if 'default_diesl_efficieny' in kwargs else 12
+        Parameters
+        ----------
+        electic_data: DataFrame
+            yearly electric data
+        default_diesel_efficieny: int 
+            default line losses when a nan is caclulated
+        years_to_average: int 
+            years of data to use in average (N)
+            
+        Returns 
+        -------
+        float
+            Average diesel efficiency
+        """
+        default_efficiency = kwargs['default_diesel_efficieny']\
+            if 'default_diesel_efficieny' in kwargs else 12
         ## last n years of measured data to average for value to use 
         ## the -1 is to allow index of last n vals
         years = -1 * \
@@ -1353,8 +1407,19 @@ class Preprocessor (object):
         
         
     def helper_generation (self, electric_data, **kwargs):
+        """creates utility info dataFrame
         
-        
+        Parameters
+        ----------
+        electic_data: DataFrame
+            yearly electric data
+
+            
+        Returns 
+        -------
+        DataFrame
+            the utility info
+        """
         ## todo combine generation and generation numbers in the other places 
         generation = electric_data.set_index('year')[[
             'consumption',
@@ -1376,7 +1441,13 @@ class Preprocessor (object):
         
         
     def load_heating_degree_days (self, **kwargs):
-        """ Function doc """
+        """Load heating degree day data for a community
+        
+        returns 
+        -------
+        float
+            heating degree days
+        """
         datafile = os.path.join(self.data_dir, "heating_degree_days.csv")
         data = read_csv(datafile, index_col=0, comment = "#", header=0)
         
@@ -1407,7 +1478,13 @@ class Preprocessor (object):
         return data.ix[ids]['HDD in ARIS equations']
         
     def load_heating_fuel_premium (self, **kwargs):
-        """
+        """load heating fuel premium
+        
+        Returns
+        -------
+        float
+            the addition cost for heating fuel on top of the diesel price 
+        for the region community is in.
         """
         datafile = os.path.join(self.data_dir,"heating_fuel_premium.csv")
         data = read_csv(datafile, index_col=0, comment='#')
@@ -1421,7 +1498,14 @@ class Preprocessor (object):
         return premium 
         
     def load_election_divisions (self, **kwargs):
-        """
+        """load the data for a communites election districts
+        
+        Returns
+        -------
+        senate: list
+            list of state senate districs 
+        house: list
+            list of state house districs 
         """
         datafile = os.path.join(self.data_dir,'election-divisions.csv')
         data = read_csv(datafile, index_col=0, comment='#')
@@ -1433,7 +1517,12 @@ class Preprocessor (object):
         return senate, house
     
     def load_road_system_status (self, **kwargs):
-        """
+        """load boolead for if community has acces to road system 
+        or marine highway
+        
+        Returns
+        -------
+        status: bool
         """
         datafile = os.path.join(self.data_dir,"road_system.csv")
         data = read_csv(datafile ,comment = '#',index_col = 0)
@@ -1450,7 +1539,11 @@ class Preprocessor (object):
 
     
     def load_diesel_powerhouse_data (self, **kwargs):
-        """
+        """Load diesel power house data
+        
+        Returns 
+        -------
+        DataFrame
         """
         datafile = os.path.join(self.data_dir, "diesel_powerhouse_data.csv")
         data = read_csv(datafile, comment = '#', index_col = 0)
@@ -1466,6 +1559,14 @@ class Preprocessor (object):
         return data
         
     def process_diesel_powerhouse_data (self, **kwargs):
+        """preprocess diesel power house data
+        
+        Returns
+        -------
+        Dict:
+            community section with heat recovery operational and 
+        switchgear suatable for renewables data
+        """
         data = self.load_diesel_powerhouse_data()
         
         hr_operational = data['Waste Heat Recovery Opperational'].values[0]
@@ -1482,6 +1583,19 @@ class Preprocessor (object):
         }
         
     def load_fuel_prices (self, **kwargs):
+        """load all fuel prices for community
+        
+        Returns
+        -------
+        price_cord: float
+            price of cordwood ($/cord)
+        price_pellet: float 
+            price of pellets ($/ton)
+        prices_diesel: DataFrame
+            prics of diesel per year ($/gal)/year
+        price_propane: float
+            price of propane per gallon ($/gal)
+        """
         datafile_biomass = os.path.join(self.data_dir, "biomass_prices.csv")
         datafile_diesel = os.path.join(self.data_dir, "diesel_fuel_prices.csv")
         datafile_propane = os.path.join(self.data_dir,
@@ -1567,9 +1681,16 @@ class Preprocessor (object):
         
     
     def helper_fuel_prices (self, ** kwargs):
+        """process fuel prices in to dictionay section
+        
+        Returns
+        -------
+        Dict
+            community section with keys 'diesel prices', 'propane price'
+        'cordwood price', 'pellet price', 'natural gas price'
+        """
         price_cord, price_pellet, prices_diesel, price_propane = \
             self.load_fuel_prices()
-        
         
         ## todo add statment to fix for nuqisu.. and Barrow
         price_ng = 0
@@ -1585,7 +1706,12 @@ class Preprocessor (object):
         }
         
     def process_prices (self, **kwargs):
+        """process electic and heating fuel prices
         
+        returns 
+        dict:
+            data for prices
+        """
         
         electric_prices = self.helper_electric_prices(**kwargs)
         fuel_prices = self.helper_fuel_prices()
@@ -1596,10 +1722,13 @@ class Preprocessor (object):
         data['community']['electric non-fuel prices'] = electric_non_fuel_prices
         return data
         
-        
-        
-        
     def load_renewable_capacities (self, **kwargs):
+        """load renewable energy capacities
+        
+        Returns
+        -------
+        DataFrame
+        """
         
         datafile = os.path.join(self.data_dir, 
             'renewable_generation_capacities.csv')
@@ -1627,7 +1756,11 @@ class Preprocessor (object):
         return data
         
     def process_renewable_capacities (self, **kwargs):
-        """
+        """Process reneable capacities
+        
+        Returns 
+        -------
+        Dict
         """
         ## in kW
         hydro_capacity = 0
@@ -1685,7 +1818,13 @@ class Preprocessor (object):
         }
     
     def load_construction_multiplier (self, **kwargs):
-        """ Function doc """
+        """Load construction multipliers
+        
+        Retruns 
+        -------
+        float
+            regional multiplier for community
+        """
         datafile = os.path.join(self.data_dir, "regional_multipliers.yaml")
         with open(datafile) as fd:
             data = yaml.load(fd)
@@ -1695,15 +1834,6 @@ class Preprocessor (object):
             r = 'Kodiak'
         
         return data[r]
-        
-        
-        
-        
-        
-        
-        
-    
-        
         
         
         

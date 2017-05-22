@@ -7,7 +7,57 @@ for generating default config structures
 
 from pandas import DataFrame
 
+base_order = [
+    'model electricity',
+    'model financial',
+    'model as intertie',
+    'file id',
+    'natural gas used',
+    'interest rate',
+    'discount rate',
+    'current year',
 
+    'name',
+    'alternate name',
+    'region',
+    'regional construction multiplier',
+    'GNIS ID',
+    'FIPS ID',
+    'senate district',
+    'house district',
+    'population',
+    'intertie', 
+    'heating degree days',
+    'heating fuel premium',
+    'on road system',
+    
+    'diesel prices',
+    'electric non-fuel prices',
+    
+    'residential non-PCE electric price',
+    'electric non-fuel price',
+    'propane price',
+    'cordwood price',
+    'pellet price',
+    'natural gas price',
+    
+    
+    'utility info',
+    'percent diesel generation',
+    'line losses',
+    'diesel generation efficiency',
+    'heat recovery operational',
+    'switchgear suatable for renewables',
+    
+    'hydro generation limit',
+    'solar generation limit',
+    'wind generation limit',
+    'hydro capacity',
+    'solar capacity',
+    'wind capacity',
+    
+    'max wind generation percent',
+]
 
 base_structure = {
     'community': {
