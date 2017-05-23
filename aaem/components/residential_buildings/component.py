@@ -228,7 +228,10 @@ class ResidentialBuildings(AnnualSavings):
         #~ r_con = self.forecast.base_res_consumption
         avg_con = float(self.comp_specs['data']['average kWh per house'])
         if not self.intertie_data is None:
-            avg_con = self.intertie_data.get_item('Residential Energy Efficiency','data')['average kWh per house']
+            avg_con = self.intertie_data.get_item(
+                'Residential Energy Efficiency',
+                'data'
+            )['average kWh per house']
         
         #~ self.avg_monthly_consumption = ave_con/12
         if (avg_con < con_threshold) or np.isnan(avg_con):
