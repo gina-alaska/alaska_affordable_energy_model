@@ -20,32 +20,37 @@ COMPONENT_NAME = 'Water and Wastewater Efficiency'
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
 
-## List of yaml key/value pairs
-yaml = {'enabled': False,
-        'lifetime': 'ABSOLUTE DEFAULT',
-        'start year': 'ABSOLUTE DEFAULT',
-        'audit cost': 10000,
-        'average refit cost': 360.00,
-        'data': 'IMPORT',
-        'electricity refit reduction': .25,
-        'heating fuel refit reduction': .35,
-        'heat recovery multiplier': {True: .5, False: 1.0},
-        'heating cost precent': .5,
-            }
+order = [
+    'enabled',
+    'lifetime',
+    'start year',
+    'audit cost',
+    'average refit cost',
+    'electricity refit reduction',
+    'heating fuel refit reduction',
+    'heat recovery multiplier',
+    'heating cost percent',
+    'data'
+]
 
-## default values for yaml key/Value pairs
-yaml_defaults = {'enabled': True,
-        'lifetime': 15,
-        'start year': 2017,
-        }
+structure = {
+    'Water and Wastewater Efficiency': {
+        'enabled': bool, 
+        'start year': int,
+        'lifetime': int, 
+        'audit cost': float,
+        'average refit cost': float, 
+        'electricity refit reduction': float,
+        'heating fuel refit reduction': float,
+        'heat recovery multiplier': float, 
+        'heating cost percent': float,
+        'data': dict
+    }
+}
 
-## order to save yaml
-yaml_order = ['enabled','lifetime','start year','audit cost',
-             'average refit cost', 'data', 'electricity refit reduction',
-             'heating fuel refit reduction', 'heat recovery multiplier']
 
 ## comments for the yaml key/value pairs
-yaml_comments = {
+comments = {
     'enabled':'',
     'lifetime': 'number years <int>',
     'start year': 'start year <int>',
@@ -53,9 +58,9 @@ yaml_comments = {
     'average refit cost': 'cost/per person <float>',
     'data': '',
     'electricity refit reduction': 
-        'decimal precent <float> percent saved by preforming electricity refit',
+        'precent <float> percent saved by preforming electricity refit',
     'heating fuel refit reduction': 
-        'decimal precent <float> percent saved by heating fuel refit',
+         'precent <float> percent saved by heating fuel refit',
     'heat recovery multiplier': ''
     }
     

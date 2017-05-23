@@ -11,7 +11,7 @@ import os
 from aaem.components.annual_savings import AnnualSavings
 from aaem.community_data import CommunityData
 from aaem.forecast import Forecast
-from aaem.diagnostics import diagnostics
+from aaem.diagnostics import Diagnostics
 import aaem.constants as constants
 from config import COMPONENT_NAME, UNKNOWN
 
@@ -83,17 +83,18 @@ class WaterWastewaterSystems (AnnualSavings):
         self.comp_specs = community_data.get_section(COMPONENT_NAME)
         self.forecast = forecast
         
-        self.set_project_life_details(self.comp_specs["start year"],
-                                      self.comp_specs["lifetime"],
-                        self.forecast.end_year - self.comp_specs["start year"])
+        self.set_project_life_details(
+            self.comp_specs["start year"],
+            self.comp_specs["lifetime"]
+        )
         
         average = self.comp_specs['average refit cost']
-        mult = community_data.get_item('community','construction multiplier')
+        mult = community_data.get_item('community','regional construction multiplier')
         self.cost_per_person = average * mult 
         
         
         
-        self.hdd = self.cd["HDD"]
+        self.hdd = self.cd["heating degree days"]
         
         
         #~ print self.comp_specs['data']['value']
@@ -126,7 +127,7 @@ class WaterWastewaterSystems (AnnualSavings):
             current cost of generation ($/year)
         """
         kWh_cost = self.cd["electric non-fuel prices"].\
-                                            ix[self.start_year:self.end_year-1]
+                                            ix[self.start_year:self.end_year]
         kWh_cost = kWh_cost.T.values[0]
         self.elec_price = kWh_cost
         # kWh/yr*$/kWh
@@ -141,7 +142,7 @@ class WaterWastewaterSystems (AnnualSavings):
             current cost of generation ($/year)
         """
         kWh_cost = self.cd["electric non-fuel prices"].\
-                                            ix[self.start_year:self.end_year-1]
+                                            ix[self.start_year:self.end_year]
         kWh_cost = kWh_cost.T.values[0]
         # kWh/yr*$/kWh
         self.proposed_kWh_cost = self.proposed_kWh_consumption * kWh_cost
@@ -238,18 +239,18 @@ class WaterWastewaterSystems (AnnualSavings):
             self.calc_proposed_HF_consumption()
             self.calc_savings_HF_consumption()
     
-            years = range(self.start_year,self.end_year)
-            self.forecast.add_heating_fuel_column(\
-                        "heating_fuel_water-wastewater_consumed [gallons/year]",
-                         years, 
-                         self.baseline_HF_consumption*constants.mmbtu_to_gal_HF)
-            self.forecast.add_heating_fuel_column(\
-                   "heating_fuel_water-wastewater_consumed [mmbtu/year]", years,
-                    self.baseline_HF_consumption)
+            #~ years = range(self.start_year,self.end_year)
+            #~ self.forecast.add_heating_fuel_column(\
+                        #~ "heating_fuel_water-wastewater_consumed [gallons/year]",
+                         #~ years, 
+                         #~ self.baseline_HF_consumption*constants.mmbtu_to_gal_HF)
+            #~ self.forecast.add_heating_fuel_column(\
+                   #~ "heating_fuel_water-wastewater_consumed [mmbtu/year]", years,
+                    #~ self.baseline_HF_consumption)
             
-            self.forecast.add_heat_demand_column(\
-                        "heat_energy_demand_water-wastewater [mmbtu/year]",
-                     years, self.baseline_HF_consumption)
+            #~ self.forecast.add_heat_demand_column(\
+                        #~ "heat_energy_demand_water-wastewater [mmbtu/year]",
+                     #~ years, self.baseline_HF_consumption)
         
         if self.cd["model financial"]:
             self.calc_capital_costs()
@@ -312,7 +313,9 @@ class WaterWastewaterSystems (AnnualSavings):
                     ((self.population_fc - self.pop) * pop_coeff)
         else:
             hr = self.comp_specs['data']["HR Installed"] == "TRUE"
-            hr_coeff =  self.comp_specs['heat recovery multiplier'][hr]
+            hr_coeff = 1.0
+            if hr:
+                hr_coeff =  self.comp_specs['heat recovery multiplier']
             self.baseline_HF_consumption = \
                     ((self.hdd * hdd_coeff+ self.pop * pop_coeff)  +\
                     ((self.population_fc - self.pop) * pop_coeff))* hr_coeff
@@ -341,7 +344,7 @@ class WaterWastewaterSystems (AnnualSavings):
         proposed_kWh_consumption : np.array 
             kWh/year values(floats) over the project lifetime
         """
-        percent = 1 - self.comp_specs['electricity refit reduction']
+        percent = 1 - (self.comp_specs['electricity refit reduction']/100.0)
         con = np.float64(self.comp_specs['data']['kWh/yr'])
         retro_con = np.float64(self.comp_specs['data']['kWh/yr w/ retro']) 
         if (not (np.isnan(con) and np.isnan(retro_con))) and \
@@ -362,7 +365,7 @@ class WaterWastewaterSystems (AnnualSavings):
         proposed_HF_consumption : np.array 
             mmbtu/year values(floats) over the project lifetime
         """
-        percent = 1 - self.comp_specs['heating fuel refit reduction']
+        percent = 1 - (self.comp_specs['heating fuel refit reduction']/100.0)
         if (not (np.isnan(np.float64(self.comp_specs['data']['HF w/Retro']))\
             and np.isnan(np.float64(self.comp_specs['data']['HF Used']))))\
             and (np.float64(self.comp_specs['data']['HF Used']) != 0 and\
@@ -464,7 +467,8 @@ class WaterWastewaterSystems (AnnualSavings):
         kWh_savings = self.savings_kWh_consumption[:self.actual_project_life]
         HF_savings = self.savings_HF_consumption[:self.actual_project_life]
         try:
-            heating_cost_percent = self.comp_specs['heating cost precent']
+            heating_cost_percent = \
+                (self.comp_specs['heating cost percent']/100.0)
         except KeyError:
             heating_cost_percent = .5
         return {'kWh': (kWh_savings, 1 - heating_cost_percent), 

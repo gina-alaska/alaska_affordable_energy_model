@@ -5,7 +5,7 @@ import definitions as definitions
 comp_lib = {
     "Residential Energy Efficiency": "residential_buildings",
     "Non-residential Energy Efficiency": "non_residential",
-    #~ "Water and Wastewater Efficiency": "wastewater",
+    "Water and Wastewater Efficiency": "wastewater",
     #~ "Wind Power": "wind_power",
     #~ 'Solar Power': "solar_power",
     #~ 'Biomass for Heat (Cordwood)': "biomass_wood",
@@ -20,7 +20,7 @@ comp_lib = {
 
 comp_order = ["Residential Energy Efficiency",
               "Non-residential Energy Efficiency",
-              #~ "Water and Wastewater Efficiency",
+              "Water and Wastewater Efficiency",
               #~ "Wind Power",
               #~ 'Solar Power',
               #~ 'Biomass for Heat (Cordwood)',
