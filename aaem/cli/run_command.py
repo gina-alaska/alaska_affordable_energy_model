@@ -146,11 +146,11 @@ class RunCommand(pycommand.CommandBase):
                     cli_lib.print_error_message(msg)
                     return 0
             # other options
-            plot = False
-            img_dir = None
-            if not self.flags.plot is None:
-                plot = True    
-                img_dir = self.flags.plot
+            #~ plot = False
+            #~ img_dir = None
+            #~ if not self.flags.plot is None:
+                #~ plot = True    
+                #~ img_dir = self.flags.plot
             
             tag = ''
             if not self.flags.tag is None:
@@ -187,6 +187,7 @@ class RunCommand(pycommand.CommandBase):
                 return 0
             
             ## Run 
+            print sorted(coms)
             run_driver = driver.Driver(base)
             for com in sorted(coms):
                 if com == 'Barrow':
@@ -194,8 +195,8 @@ class RunCommand(pycommand.CommandBase):
                 else:
                     print com
                 try:
-                    run_driver.run(com, img_dir = img_dir,
-                                    plot = plot, tag = tag, scalers = scalers)
+                    pth = os.path.join(base,'config',com + '.yaml')
+                    run_driver.run(pth, tag = tag, scalers = scalers)
                                     
                 except (RuntimeError, IOError) as e:
                     print e

@@ -249,7 +249,7 @@ def get_config_coms (base):
     """
     config = os.path.join(base,"config")
     gc = '__global_config.yaml'
-    s_text = '_config.yaml'
+    s_text = '.yaml'
     return [a.split(s_text)[0]\
                     for a in os.listdir(config) if (s_text in a and gc != a)]
     

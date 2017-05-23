@@ -401,8 +401,7 @@ class Driver (object):
                     break
         return results
         
-    def run (self, community_config, global_config = None, tag = '',
-        img_dir = '', plot = False, scalers = None):
+    def run (self, community_config, global_config = None, tag = '', scalers = None):
         """
         run the model for a community
         
@@ -435,10 +434,10 @@ class Driver (object):
             #~ name = community
         
         temp = tag
-        if img_dir is None:
-            if temp != '':
-                temp = '_' + tag
-            img_dir = os.path.join(self.model_root, 'results' + temp, 'plots')
+        #~ if img_dir is None:
+            #~ if temp != '':
+                #~ temp = '_' + tag
+            #~ img_dir = os.path.join(self.model_root, 'results' + temp, 'plots')
         
         #~ cd, fc, diag = self.setup_community(community, i_dir, c_config, 
                                                     #~ g_config, c_mult, scalers)
