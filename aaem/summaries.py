@@ -538,6 +538,53 @@ def genterate_npv_summary (coms, res_dir):
                          columns = cols).set_index('Component')
         npvs.to_csv(f_name)
         
+def community_forcast_summary (coms, res_dir):
+    """
+    """
+    for community in ['Adak']:
+        #~ print community
+        components = coms[community]
+        data = components['forecast'].population
+        data['community'] = community
+        #~ print list(data.columns)[::-1]
+        data = data[['community', 'population']]
+        data['population_qualifier'] = 'I'
+        components['forecast'].consumption.columns
+        data[components['forecast'].consumption.columns] =\
+            components['forecast'].consumption
+            
+        data['generation'] = components['forecast'].generation['generation']
+            
+        
+        data.columns = ['community',
+            'population',
+            'population_qualifier',
+            'residential_electricity_consumed [kWh/year]',
+            'electricity_consumed/generation_qualifier',
+            'non-residential_electricity_consumed [kWh/year]',
+            'total_electricity_consumption [kWh/year]',
+            'total_electricity_generation [kWh/year]']
+        data = data[['community',
+            'population',
+            'population_qualifier',
+            'total_electricity_consumption [kWh/year]',
+            'residential_electricity_consumed [kWh/year]',
+            'non-residential_electricity_consumed [kWh/year]',
+            'total_electricity_generation [kWh/year]',
+            'electricity_consumed/generation_qualifier']]
+    
+        f_name = os.path.join(res_dir,community.replace(' ','_'),
+            community.replace(' ','_') + '_electricity_forecast.csv')
+        data.to_csv(f_name)
+        
+        #~ data = data[['community',
+            #~ 'population', 
+            #~ 'population_qualifier',
+            #~ 'electricity_consumed/generation_qualifier']]
+        #~ data2 = components['forecast'].generation
+        #~ data2[data.
+        
+        
 def consumption_summary (coms, res_dir):
     """ Function doc """
     consumption = []

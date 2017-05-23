@@ -212,11 +212,10 @@ class Forecast (object):
             [residential_consumption.ix[index].index] = \
             residential_consumption.ix[index]
             
-        if consumption_scaler != 1.0:
+        if consumption_scaler == 1.0:
             ## if the scaler is not 1 then none of the values are really
             ## measured
-            forcasted_consumption['consumption_qualifer']\
-                [residential_consumption.index] = \
+            forcasted_consumption['consumption_qualifer'].ix[index] = \
                 (residential_consumption * np.nan).fillna("M")
         
         
