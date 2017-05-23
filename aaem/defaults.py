@@ -9,6 +9,7 @@ from pandas import DataFrame
 
 base_order = [
     'model electricity',
+    'model heating fuel',
     'model financial',
     'model as intertie',
     'file id',
@@ -62,6 +63,7 @@ base_order = [
 base_structure = {
     'community': {
         'model electricity': bool,
+        'model heating fuel': bool,
         'model financial': bool,
         'model as intertie': bool,
         'file id': str,

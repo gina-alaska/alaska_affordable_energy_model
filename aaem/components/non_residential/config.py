@@ -18,6 +18,7 @@ Non-residential Efficiency configuration
 """
 from pandas import DataFrame
 from aaem.components import definitions
+
 COMPONENT_NAME = "Non-residential Energy Efficiency"
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"

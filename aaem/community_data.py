@@ -185,9 +185,11 @@ class CommunityData (object):
         
         structure = base_structure
         
-        test = import_module('aaem.components.non_residential.config')
-        
-        structure = merge_configs(structure, test.structure)
+        for comp in comp_lib:
+            module = \
+                import_module('aaem.components.' + comp_lib[comp] + '.config')
+            structure = merge_configs(structure, module.structure)
+            
         self.structure = structure
         return structure
         

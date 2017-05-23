@@ -3,7 +3,7 @@ import definitions as definitions
 
 
 comp_lib = {
-    #~ "Residential Energy Efficiency": "residential_buildings",
+    "Residential Energy Efficiency": "residential_buildings",
     "Non-residential Energy Efficiency": "non_residential",
     #~ "Water and Wastewater Efficiency": "wastewater",
     #~ "Wind Power": "wind_power",
@@ -18,7 +18,7 @@ comp_lib = {
     #~ 'Diesel Efficiency': 'diesel_efficiency',
         }
 
-comp_order = [##"Residential Energy Efficiency",
+comp_order = ["Residential Energy Efficiency",
               "Non-residential Energy Efficiency",
               #~ "Water and Wastewater Efficiency",
               #~ "Wind Power",

@@ -232,6 +232,7 @@ class Preprocessor (object):
             
             
         for comp in comp_lib:
+            print comp
             module = self.import_component(comp_lib[comp])
             
             #~ population = self.data['community']['population'].ix[2010]['population']
@@ -285,7 +286,11 @@ class Preprocessor (object):
             return self.components_modules[component]
         except AttributeError:
             self.components_modules = {}
+        except KeyError:
+            pass
         
+        #~ print component
+        #~ print 'aaem.components.' + component
         self.components_modules[component] = \
             import_module('aaem.components.' + component)
         return self.components_modules[component]
@@ -433,6 +438,7 @@ class Preprocessor (object):
         data = {
             'community': {
                 'model electricity': True,
+                'model heating fuel': True,
                 'model financial': True,
                 'model as intertie': self.process_intertie,
                 'file id': self.community.replace(' ','_'),

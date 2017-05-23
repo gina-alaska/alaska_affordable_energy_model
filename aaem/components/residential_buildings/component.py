@@ -10,7 +10,7 @@ import os
 from aaem.components.annual_savings import AnnualSavings
 from aaem.community_data import CommunityData
 from aaem.forecast import Forecast
-from aaem.diagnostics import diagnostics
+from aaem.diagnostics import Diagnostics
 import aaem.constants as constants
 from config import COMPONENT_NAME, UNKNOWN
 
@@ -75,20 +75,27 @@ class ResidentialBuildings(AnnualSavings):
         self.diagnostics = diag
         if self.diagnostics == None:
             self.diagnostics = diagnostics()
+        self.intertie_data = community_data.intertie_data
         self.cd = community_data.get_section('community')
-        self.copied_elec = community_data.copies.\
-                                    ix["yearly electric summary"].values[0]
+        #~ self.copied_elec = community_data.copies.\
+                                    #~ ix["yearly electric summary"].values[0]
 
         if self.cd["model electricity"]:
-            self.elec_prices = community_data.electricity_price
+            self.elec_prices = community_data.get_item('community',
+                'electric non-fuel prices')
         self.comp_specs = community_data.get_section(COMPONENT_NAME)
         self.component_name = COMPONENT_NAME
         self.forecast = forecast
-        self.refit_cost_rate = self.comp_specs['average refit cost'] * \
-                community_data.get_item('community','construction multiplier')
-        self.set_project_life_details(self.comp_specs["start year"],
-                                      self.comp_specs["lifetime"],
-                        self.forecast.end_year - self.comp_specs["start year"])
+        self.refit_cost_rate = \
+            self.comp_specs['average refit cost'] * \
+            community_data.get_item(
+                'community',
+                'regional construction multiplier'
+            )
+        self.set_project_life_details(
+            self.comp_specs["start year"],
+            self.comp_specs["lifetime"]
+        )
                         
         #~ print self.comp_specs['data']
         yr = int(self.comp_specs['data']['Year'])
@@ -100,7 +107,7 @@ class ResidentialBuildings(AnnualSavings):
             self.comp_specs['data']['Total Occupied']
         households = np.round(self.forecast.population / np.float64(peps_per_house))
         households.columns = ["HH"] 
-        self.households = households.ix[self.start_year:self.end_year-1].T.values[0]
+        self.households = households.ix[self.start_year:self.end_year].T.values[0]
         
         
         val = self.forecast.get_population(self.start_year)
@@ -153,7 +160,7 @@ class ResidentialBuildings(AnnualSavings):
             self.calc_init_consumption()
             self.calc_baseline_fuel_consumption()
             self.calc_proposed_fuel_consumption()
-            self.set_forecast_columns()
+            #~ self.set_forecast_columns()
         
         if self.cd["model financial"]:
             self.calc_capital_costs()
@@ -220,8 +227,11 @@ class ResidentialBuildings(AnnualSavings):
         #~ houses = int(self.comp_specs['data']['Total Occupied'])
         #~ r_con = self.forecast.base_res_consumption
         avg_con = float(self.comp_specs['data']['average kWh per house'])
+        if not self.intertie_data is None:
+            avg_con = self.intertie_data.get_item('Residential Energy Efficiency','data')['average kWh per house']
+        
         #~ self.avg_monthly_consumption = ave_con/12
-        if (avg_con < con_threshold) or self.copied_elec or np.isnan(avg_con):
+        if (avg_con < con_threshold) or np.isnan(avg_con):
             avg_con = con_threshold
             self.diagnostics.add_note(self.component_name, 
                     ("Average residential Electric consumption"
@@ -489,7 +499,6 @@ class ResidentialBuildings(AnnualSavings):
         LP_price = self.cd['propane price'] 
         gas_price = self.cd['natural gas price'] 
         
-        
         self.baseline_HF_cost = \
             self.baseline_fuel_Hoil_consumption * HF_price + \
             self.baseline_fuel_wood_consumption * wood_price + \
@@ -506,10 +515,15 @@ class ResidentialBuildings(AnnualSavings):
         baseline_kWh_cost : np.array
             baseline cost of electricity per year
         """
-        kWh_cost = self.cd["electric non-fuel prices"].\
-                                            ix[self.start_year:self.end_year-1]
-        kWh_cost = kWh_cost.T.values[0]
+        self.cd["electric non-fuel prices"].index = \
+            self.cd["electric non-fuel prices"].index.astype(int)
+                                            
+        #~ kWh_cost = kWh_cost.T.values[0]
         # kWh/yr*$/kWh
+        #~ print len(self.baseline_kWh_consumption)
+        kWh_cost = self.cd["electric non-fuel prices"]\
+            .ix[self.start_year:self.end_year].T.values[0]
+        #~ print len(kWh_cost)
         self.baseline_kWh_cost = self.baseline_kWh_consumption * kWh_cost
 
     def calc_proposed_fuel_consumption (self):
@@ -590,7 +604,7 @@ class ResidentialBuildings(AnnualSavings):
             proposed electricity cost
         """
         kWh_cost = self.cd["electric non-fuel prices"].\
-                                            ix[self.start_year:self.end_year-1]
+                                            ix[self.start_year:self.end_year]
         kWh_cost = kWh_cost.T.values[0]
         # kWh/yr*$/kWh
         self.proposed_kWh_cost = self.proposed_kWh_consumption * kWh_cost
@@ -687,8 +701,8 @@ class ResidentialBuildings(AnnualSavings):
         if self.cd["model financial"]:
             HF_price = (self.diesel_prices + self.cd['heating fuel premium'])
             wood_price = self.cd['cordwood price'] 
-            elec_price = self.elec_prices[self.start_year-self.start_year:
-                                             self.end_year-self.start_year]
+            elec_price = self.cd["electric non-fuel prices"]\
+                .ix[self.start_year:self.end_year].T.values[0]
             LP_price = self.cd['propane price'] 
             gas_price = self.cd['natural gas price'] 
         else:

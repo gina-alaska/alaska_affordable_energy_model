@@ -15,11 +15,6 @@ from aaem.diagnostics import Diagnostics
 import aaem.constants as constants
 from config import COMPONENT_NAME, UNKNOWN
 
-from inputs import load_building_data
-from inputs import load_num_buildings
-from inputs import load_building_estimates 
-
-
 class CommunityBuildings (AnnualSavings):
     """Non-residential Efficiency component of the Alaska Affordable Eenergy 
     Model

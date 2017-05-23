@@ -61,60 +61,60 @@ class RunCommand(pycommand.CommandBase):
         
         if os.path.isfile(base):
         #run script
-            print 'Runnint script ...'
+            print 'Runnint script ... need to reimplement'
             
-            try:
-                script  = driver.script_validator(base)
-            except StandardError as e:
-                cli_lib.print_error_message('SCRIPT ERROR:\n' + str(e))
-                return 0
+            #~ try:
+                #~ script  = driver.script_validator(base)
+            #~ except StandardError as e:
+                #~ cli_lib.print_error_message('SCRIPT ERROR:\n' + str(e))
+                #~ return 0
             
-            ## check exitsing results
-            res_dir = 'results'
-            if script['global']['results tag']:
-                res_dir += '_' + script['global']['results tag']
-            base = script['global']['root']
+            #~ ## check exitsing results
+            #~ res_dir = 'results'
+            #~ if script['global']['results tag']:
+                #~ res_dir += '_' + script['global']['results tag']
+            #~ base = script['global']['root']
             
-            #~ print os.path.join(base, res_dir)
-            if os.path.exists(os.path.join(base, res_dir)) and force:
-                shutil.rmtree(os.path.join(base, res_dir))
-            elif os.path.exists(os.path.join(base, res_dir)):
-                msg =  "RUN ERROR: " + os.path.join(base, res_dir) + \
-                            " exists. Use force flag (-f) to overwrite"
-                cli_lib.print_error_message(msg, RunCommand.usagestr)
-                return 0
+            ## print os.path.join(base, res_dir)
+            #~ if os.path.exists(os.path.join(base, res_dir)) and force:
+                #~ shutil.rmtree(os.path.join(base, res_dir))
+            #~ elif os.path.exists(os.path.join(base, res_dir)):
+                #~ msg =  "RUN ERROR: " + os.path.join(base, res_dir) + \
+                            #~ " exists. Use force flag (-f) to overwrite"
+                #~ cli_lib.print_error_message(msg, RunCommand.usagestr)
+                #~ return 0
             
-            # run
-            run_driver = driver.Driver(base)
+            #~ # run
+            #~ run_driver = driver.Driver(base)
             
-            for com in script['communities']:
-                print 'community:', com['community'], 'name:', com['name']
-                try:
-                    mult = script['global']['construction multipliers']
-                    run_driver.run(com['community'], com['name'],
-                                   i_dir = com['input files'],
-                                   c_config = com['config'],
-                                   g_config = script['global']['config'],
-                                   img_dir = script['global']['image diretory'],
-                                   plot = script['global']['plot'],
-                                   tag = script['global']['results tag'],
-                                   c_mult = mult,
-                                   scalers = com['scalers'])
-                except (RuntimeError, IOError) as e:
-                    print e
-                    msg = "RUN ERROR: "+ com['community'] + \
-                                " not a configured community/project"
-                    cli_lib.print_error_message(msg)
+            #~ for com in script['communities']:
+                #~ print 'community:', com['community'], 'name:', com['name']
+                #~ try:
+                    #~ mult = script['global']['construction multipliers']
+                    #~ run_driver.run(com['community'], com['name'],
+                                   #~ i_dir = com['input files'],
+                                   #~ c_config = com['config'],
+                                   #~ g_config = script['global']['config'],
+                                   #~ img_dir = script['global']['image diretory'],
+                                   #~ plot = script['global']['plot'],
+                                   #~ tag = script['global']['results tag'],
+                                   #~ c_mult = mult,
+                                   #~ scalers = com['scalers'])
+                #~ except (RuntimeError, IOError) as e:
+                    #~ print e
+                    #~ msg = "RUN ERROR: "+ com['community'] + \
+                                #~ " not a configured community/project"
+                    #~ cli_lib.print_error_message(msg)
                 
-            # save Summaries
-            try:
-                run_driver.save_summaries(script['global']['results tag'])
-            except IOError as e :
-                #~ print e
-                msg = "RUN ERROR: No valid communities/projects provided"
-                cli_lib.print_error_message(msg)
-                return 0
-            run_driver.save_metadata(script['global']['results tag'])
+            #~ # save Summaries
+            #~ try:
+                #~ run_driver.save_summaries(script['global']['results tag'])
+            #~ except IOError as e :
+                ## print e
+                #~ msg = "RUN ERROR: No valid communities/projects provided"
+                #~ cli_lib.print_error_message(msg)
+                #~ return 0
+            #~ run_driver.save_metadata(script['global']['results tag'])
                     
         else:
             # run regular
@@ -127,7 +127,8 @@ class RunCommand(pycommand.CommandBase):
                 coms = self.args[1:]
                 if len(coms) == 1:
                     if coms[0][-1] == '*':
-                        coms = [c for c in cli_lib.get_config_coms(base) if c.find(coms[0][:-1]) != -1]
+                        coms = [c for c in cli_lib.get_config_coms(base) \
+                            if c.find(coms[0][:-1]) != -1]
                         #~ print coms
                     else:
                         # Regional coms
