@@ -29,7 +29,7 @@ order = [
     'proposed generation',
     'generation capital cost',
     'transmission capital cost',
-    'expected years to operation',
+    #~ 'expected years to operation',
     'source',
 
     'percent o&m',
@@ -49,7 +49,7 @@ structure = {
         'proposed generation': [str, float],
         'generation capital cost': [str, float],
         'transmission capital cost': [str, float],
-        'expected years to operation': [str, int],
+        #~ 'expected years to operation': [str, int],
         'source': str,
         
         'percent o&m': float,
@@ -69,7 +69,7 @@ comments = {
     'proposed generation': '',
     'generation capital cost': '',
     'transmission capital cost': '',
-    'expected years to operation': '',
+    #~ 'expected years to operation': '',
     'source': '',
     
     'percent o&m': '',

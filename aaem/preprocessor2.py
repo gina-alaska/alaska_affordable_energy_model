@@ -288,8 +288,8 @@ class Preprocessor (object):
         """
         community = self.data['community']['file id']\
             .replace(' ', '_').replace("'", '')
-        if self.process_intertie == True:
-            community += '_intertie'
+        #~ if self.process_intertie == True:
+            #~ community += '_intertie'
             
         s_order = ['community'] + comp_order
         i_order = {'community': base_order}

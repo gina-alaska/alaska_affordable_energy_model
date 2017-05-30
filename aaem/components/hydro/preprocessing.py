@@ -65,27 +65,33 @@ def preprocess (preprocessor, **kwargs):
     if preprocessor.intertie_status == 'child':
         ids = []
         
-    
+    #~ print ids
     
     try:
         project_data = project_data.ix[ids]
         #~ print project_data
         project_data = \
-            project_data[project_data.ix[ids].isnull().all(1) == False]
+            project_data[project_data.isnull().all(1) == False]
         if len(project_data.T) == 1 :
             project_data = project_data.T
-    except (ValueError, KeyError):
+    except (ValueError, KeyError) as e:
+        #~ print e
         project_data = []
         
     names = []
     #~ print project_data
     for p_idx in range(len(project_data)):
         cp = project_data.iloc[p_idx]
+        
         #~ print '--------'
         #~ print cp.values
         #~ print '--------'
-        p_name = 'hydro+project_' + str(p_idx) 
         
+        p_name = 'hydro+project_' + str(p_idx) 
+        if cp.name not in \
+            [preprocessor.communities[0], preprocessor.aliases[0]]:
+            p_name +=  '_' + cp.name
+            
         phase = cp['Phase Completed']
         try:
             phase = phase[0].upper() + phase[1:]
@@ -102,7 +108,7 @@ def preprocess (preprocessor, **kwargs):
         generation_capital_cost = float(cp['Construction Cost (2014$)'])
         transmission_capital_cost = float(cp['Transmission Cost (current)'])
         source = cp['Source']
-        expected_years_to_operation = UNKNOWN
+        #~ expected_years_to_operation = UNKNOWN
         if phase == "0":
             preprocessor.diagnostics.add_note('Hydropower Projects', 
                                             '"0" corrected to Reconnaissance')
@@ -121,7 +127,8 @@ def preprocess (preprocessor, **kwargs):
         if a_name.find(str(cp['Stream'])) == -1 and str(cp['Stream']) != 'nan':
             a_name += ' -- ' + str(cp['Stream'])
         #~ print a_name
-        a_name = a_name.decode('unicode_escape').encode('ascii','ignore')
+        a_name = \
+            '"' + a_name.decode('unicode_escape').encode('ascii','ignore') + '"'
         #~ print a_name
         project = copy.deepcopy(base)
         project['Hydropower'].update({
@@ -132,7 +139,7 @@ def preprocess (preprocessor, **kwargs):
             'proposed generation': proposed_generation,
             'generation capital cost': generation_capital_cost,
             'transmission capital cost': transmission_capital_cost,
-            'expected years to operation': expected_years_to_operation,
+            #~ 'expected years to operation': expected_years_to_operation,
             'source':source
         })
         #~ print project 
@@ -141,7 +148,7 @@ def preprocess (preprocessor, **kwargs):
 
     
     p_data['no project'] = base
-    
+    #~ print p_data
     return p_data
     
 

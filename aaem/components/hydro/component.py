@@ -219,22 +219,23 @@ class Hydropower (AnnualSavings):
             
         else:
             self.load_offset_proposed = \
-                    self.comp_specs['proposed capacity']
+                   float( self.comp_specs['proposed capacity'])
             self.gross_generation_proposed = \
-                    self.comp_specs['proposed generation']
-            tansmission_losses = self.cd['line losses'] *\
+                    float(self.comp_specs['proposed generation'])
+            #~ print self.gross_generation_proposed, self.load_offset_proposed, self.comp_specs['proposed capacity']
+                    
+            tansmission_losses = (self.cd['line losses'] / 100.0) *\
                 self.gross_generation_proposed
             exess_energy = \
                 (self.gross_generation_proposed - tansmission_losses) * \
                 (self.cd['percent excess energy'] / 100.0)
-            print 'exess_energy', self.gross_generation_proposed, tansmission_losses,(self.cd['percent excess energy'] / 100.0), exess_energy
             self.percent_excess_energy = exess_energy / \
                 self.gross_generation_proposed   
             
             self.net_generation_proposed = self.gross_generation_proposed -\
                                            tansmission_losses -\
                                            exess_energy
-        
+            #~ print  self.net_generation_proposed
             if self.net_generation_proposed > self.generation:
                 self.net_generation_proposed = self.generation
                                            
