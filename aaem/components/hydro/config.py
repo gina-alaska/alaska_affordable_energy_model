@@ -17,29 +17,67 @@ COMPONENT_NAME = "Hydropower"
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
 
-## List of yaml key/value pairs
-yaml = {'enabled': False,
-        "project details": IMPORT,
-        'lifetime': 'ABSOLUTE DEFAULT',
-        'start year': 'ABSOLUTE DEFAULT',
 
-        'percent o&m': .01,
-        'percent heat recovered': .15,
-        }
+order = [
+    'enabled',
+    'lifetime',
+    'start year',
 
-## default values for yaml key/Value pairs
-yaml_defaults = {'enabled': True,
-        'lifetime': 50,
-        #~ 'start year': 2017,
-        }
+    'name',
+    'phase',
+    'proposed capacity',
+    'proposed generation',
+    'generation capital cost',
+    'transmission capital cost',
+    'expected years to operation',
+    'source',
+
+    'percent o&m',
+    'percent heat recovered',
     
-## order to save yaml
-yaml_order = ['enabled', 'lifetime', 'start year']
+]
 
-## comments for the yaml key/value pairs
-yaml_comments = {'enabled': '',
-        'lifetime': 'number years <int>',
-        'start year': 'start year <int>'}
+structure = {
+    'Hydropower': {
+        'enabled': bool, 
+        'start year': int,
+        'lifetime': int, 
+        
+        'name': [unicode, str],
+        'phase': str,
+        'proposed capacity': [str, float],
+        'proposed generation': [str, float],
+        'generation capital cost': [str, float],
+        'transmission capital cost': [str, float],
+        'expected years to operation': [str, int],
+        'source': str,
+        
+        'percent o&m': float,
+        'percent heat recovered': float,
+    }
+}
+
+comments = {
+    'enabled': '', 
+    'start year': '',
+    'lifetime': '', 
+    'project details': '',
+    
+    'name': '',
+    'phase': '',
+    'proposed capacity': '',
+    'proposed generation': '',
+    'generation capital cost': '',
+    'transmission capital cost': '',
+    'expected years to operation': '',
+    'source': '',
+    
+    'percent o&m': '',
+    'percent heat recovered': '',
+}
+
+
+
         
 
 ## list of prerequisites for module

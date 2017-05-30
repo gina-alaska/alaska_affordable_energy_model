@@ -58,6 +58,13 @@ base_order = [
     'wind capacity',
     
     'max wind generation percent',
+    
+    'percent excess energy',
+    'percent excess energy capturable',
+    'efficiency electric boiler',
+    'efficiency heating oil boiler',
+    
+    'diesel generator o&m cost percent',
 ]
 
 base_structure = {
@@ -112,6 +119,13 @@ base_structure = {
         'wind capacity': float,
         
         'max wind generation percent': float,
+        
+        'percent excess energy': float,
+        'percent excess energy capturable': float,
+        'efficiency electric boiler': float,
+        'efficiency heating oil boiler': float,
+        
+        'diesel generator o&m cost percent':float,
     }
 
 }
@@ -167,6 +181,13 @@ base_comments = {
         'wind capacity': float,
         
         'max wind generation percent': float,
+        
+        'percent excess energy': float,
+        'percent excess energy capturable': float,
+        'efficiency electric boiler': float,
+        'efficiency heating oil boiler': float,
+        
+        'diesel generator o&m cost percent':float,
     }
 
 }

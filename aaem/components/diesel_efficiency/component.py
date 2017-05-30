@@ -11,7 +11,7 @@ import os
 from aaem.components.annual_savings import AnnualSavings
 from aaem.community_data import CommunityData
 from aaem.forecast import Forecast
-from aaem.diagnostics import diagnostics
+from aaem.diagnostics import Diagnostics
 import aaem.constants as constants
 from config import COMPONENT_NAME, UNKNOWN
 
@@ -83,9 +83,10 @@ class DieselEfficiency(AnnualSavings):
         self.comp_specs["start year"] = self.cd['current year'] + \
             self.comp_specs["project details"]['expected years to operation']
 
-        self.set_project_life_details(self.comp_specs["start year"],
-                                      self.comp_specs["lifetime"],
-                        self.forecast.end_year - self.comp_specs["start year"])
+        self.set_project_life_details(
+            self.comp_specs["start year"],
+            self.comp_specs["lifetime"]
+        )
         
         
     def run (self, scalers = {'capital costs':1.0}):

@@ -107,7 +107,7 @@ def generate_web_summary (web_object, community):
     for p in order:
         project = projects[p]
         try:
-            name = project.comp_specs['project details']['name'].decode('unicode_escape').encode('ascii','ignore')
+            name = project.comp_specs['name'].decode('unicode_escape').encode('ascii','ignore')
         except KeyError:
             name = 'nan'
         if name == 'nan':
@@ -161,17 +161,17 @@ def create_project_details_list (project):
         A dictionary with values used by summary
     """
 
-    cost = project.comp_specs['project details']['generation capital cost'] +\
-           project.comp_specs['project details']['transmission capital cost'] 
+    cost = project.comp_specs['generation capital cost'] +\
+           project.comp_specs['transmission capital cost'] 
     
-    pen = project.comp_specs['project details']['proposed generation']/\
+    pen = project.comp_specs['proposed generation']/\
           float(project.forecast.cd.get_item('community',
                                                 'generation').iloc[-1:])
     pen *= 100
     
     try:
         source = "<a href='" + \
-            project.comp_specs['project details']['source'] + "'> link </a>"
+            project.comp_specs['source'] + "'> link </a>"
     except StandardError as e:
         source = "unknown"
     
@@ -186,14 +186,12 @@ def create_project_details_list (project):
             'value': '{:,.1f}'.format(project.get_BC_ratio())},
         {'words':'Proposed nameplate capacity', 
             'value': 
-            '{:,.0f} kW'.format(project.comp_specs['project details']\
-            ['proposed capacity'])},
+            '{:,.0f} kW'.format(project.comp_specs['proposed capacity'])},
         {'words':'Expected yearly generation', 
          'value': 
-         '{:,.0f} kWh/year'.format(project.comp_specs['project details']\
-                                ['proposed generation'])},
+         '{:,.0f} kWh/year'.format(project.comp_specs['proposed generation'])},
         {'words':'Phase', 
-         'value': project.comp_specs['project details']['phase']},
+         'value': project.comp_specs['phase']},
         {'words':'Total capital cost', 
             'value': '${:,.0f}'.format(cost)},
         {'words':'Estimated hydro penetration level', 

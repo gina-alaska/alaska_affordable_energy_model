@@ -103,8 +103,14 @@ def save_config (filename, config, comments, s_order = None, i_orders = None,
                         print config[section][item]
                         raise TypeError, "Bad DataFrame"
                 #### section is a value
+                elif type(None) is type(config[section][item]):
+                    text += indent + str(item) + ': '
+                    try:
+                        text +=  ' # ' +  str(comments[section][item]) + nl
+                    except KeyError:
+                        text += nl
                 else:
-                    #~ print section, config[section][item]
+                    #~ print config[section][item]
                     text += indent + str(item) + ': ' + \
                         str(config[section][item]) 
                     try:

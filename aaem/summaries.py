@@ -452,7 +452,7 @@ def electric_price_summary (coms, res_dir):
     out = None
     for c in sorted(coms.keys()):
         #~ print c
-        print dir(coms[c]['community data'])
+        #~ print dir(coms[c]['community data'])
         try:
             it = coms[c]['community data'].intertie
             if it is None:

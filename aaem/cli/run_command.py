@@ -188,7 +188,7 @@ class RunCommand(pycommand.CommandBase):
                 return 0
             
             ## Run 
-            print sorted(coms)
+            #~ print sorted(coms)
             run_driver = driver.Driver(base)
             for com in sorted(coms):
                 if com == 'Barrow':

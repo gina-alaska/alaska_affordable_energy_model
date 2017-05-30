@@ -11,7 +11,7 @@ import os
 from aaem.components.annual_savings import AnnualSavings
 from aaem.community_data import CommunityData
 from aaem.forecast import Forecast
-from aaem.diagnostics import diagnostics
+from aaem.diagnostics import Diagnostics
 import aaem.constants as constants
 from config import COMPONENT_NAME, UNKNOWN
 
@@ -82,16 +82,19 @@ class ASHPBase (AnnualSavings):
         except AttributeError:
             self.comp_specs = community_data.get_section(COMPONENT_NAME)
 
-        self.set_project_life_details(self.comp_specs["start year"],
-                                      self.comp_specs["lifetime"],
-                        self.forecast.end_year - self.comp_specs["start year"])
+        self.set_project_life_details(
+            self.comp_specs["start year"],
+            self.comp_specs["lifetime"]
+        )
 
         self.ashp_sector_system = "N/a"
 
         ### ADD other intiatzation stuff
         self.load_prerequisite_variables(prerequisites)
         self.regional_multiplier = \
-                community_data.get_item('community','construction multiplier')
+                community_data.get_item('community',
+                'regional construction multiplier'
+                )
 
     def load_prerequisite_variables (self, comps):
         """Load variables from prerequisites, placeholder for child

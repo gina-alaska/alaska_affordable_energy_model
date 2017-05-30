@@ -13,6 +13,7 @@ import numpy as np
 from datetime import datetime
 from collections import Counter
 from importlib import import_module
+import copy
 
 import yaml
 
@@ -108,6 +109,7 @@ class Preprocessor (object):
         self.communities, self.regions ,self.GNIS_ids, self.FIPS_ids, \
             self.aliases = self.load_ids(self.intertie)
         self.data = {}
+        self.projects = {}
         
     def run (self, **kwargs):
         """Run the preprocessor
@@ -235,10 +237,18 @@ class Preprocessor (object):
             print comp
             module = self.import_component(comp_lib[comp])
             
-            #~ population = self.data['community']['population'].ix[2010]['population']
-            self.data = merge_configs(self.data, 
-                self.preprocess_component(module.preprocessing, **kwargs)
-            )
+            data = self.preprocess_component(module.preprocessing, **kwargs)
+            #~ print data
+            if len(data) == 1:
+                try:
+                    data = data['no project']
+                except KeyError:
+                    pass
+                self.data = merge_configs(self.data, data)
+            else:
+                self.data = merge_configs(self.data, data['no project'])
+                del data['no project']
+                self.projects.update( data )
             
     def save_config (self, out_dir):
         """Save the configuration yaml file
@@ -248,8 +258,36 @@ class Preprocessor (object):
         out_dir: path
             path to directory to save the config in 
         """
+        if len(self.projects) == 0:
+            self.save_single(out_dir)
+        else:
+            self.save_projects(out_dir)
+            
+    def save_projects (self, out_dir):
+        """
+        """
+        original_tag = self.data['community']['file id']
+        self.save_single(out_dir)
+        my_copy = copy.deepcopy(self.data)
+        for project in self.projects:
+            self.data['community']['file id'] = original_tag + '+' + project
+            #~ print self.projects[project]
+            self.data = merge_configs(self.data, self.projects[project])
+            self.save_single(out_dir)
         
-        community = self.community.replace(' ', '_').replace("'", '')
+        self.data = my_copy
+        #~ self.data['community']['file id'] = original_tag
+        
+    def save_single (self, out_dir):
+        """Save the configuration yaml file
+        
+        parameters
+        ----------
+        out_dir: path
+            path to directory to save the config in 
+        """
+        community = self.data['community']['file id']\
+            .replace(' ', '_').replace("'", '')
         if self.process_intertie == True:
             community += '_intertie'
             
@@ -466,6 +504,13 @@ class Preprocessor (object):
                 'on road system': self.load_road_system_status(),
                 
                 'max wind generation percent': 20,
+                
+                'percent excess energy': 15,
+                'percent excess energy capturable': 70,
+                'efficiency electric boiler': 0.99,
+                'efficiency heating oil boiler': 0.8,
+                
+                'diesel generator o&m cost percent': 2,
                 
             },
         }

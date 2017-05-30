@@ -229,8 +229,8 @@ class Forecast (object):
                 non_residential_consumption\
                 [ ~non_residential_consumption.isnull()].mean() 
         
-        print non_residential_consumption.values
-        print mean_non_res_con
+        #~ print non_residential_consumption.values
+        #~ print mean_non_res_con
         
         forcasted_consumption['consumption non-residential'] = mean_non_res_con
         forcasted_consumption['consumption non-residential']\
@@ -741,7 +741,7 @@ class Forecast (object):
     def generate_generation_forecast_dataframe(self):
         """
         """
-        data = copy.deepcopy(self.generation_by_type)
+        data = copy.deepcopy(self.generation)
         g_map = copy.deepcopy(self.c_map)
         g_map.columns = ["generation_qualifier"]
         
@@ -1102,7 +1102,7 @@ class Forecast (object):
         """
         #~ self.average_diesel_load = 0
         try:
-            generation = self.generation_by_type['generation diesel']
+            generation = self.generation['generation diesel']
         except AttributeError:
             self.diagnostics.add_error('Forecast', 
                                         ('no generation diesel to caclulate'

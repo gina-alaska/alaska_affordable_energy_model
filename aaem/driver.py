@@ -358,7 +358,8 @@ class Driver (object):
             mode = 'ab'
             
         with open(picklename, mode) as pkl:
-             pickle.dump([name, comps_used], pkl, pickle.HIGHEST_PROTOCOL)
+            #~ print comps_used
+            pickle.dump([name, comps_used], pkl, pickle.HIGHEST_PROTOCOL)
              
     def load_results (self, tag = ''):
         """
@@ -551,7 +552,7 @@ class Driver (object):
             None
         """
         res = self.load_results(tag)
-        print res
+        #~ print res
         if tag != '':
             tag = '_' + tag
         directory = os.path.join(self.model_root, 'results' + tag)
