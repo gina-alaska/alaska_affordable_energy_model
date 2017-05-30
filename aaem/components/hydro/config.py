@@ -13,6 +13,8 @@ Hydropower configuration
     
     
 """
+from aaem.components import definitions
+
 COMPONENT_NAME = "Hydropower"
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
@@ -29,7 +31,6 @@ order = [
     'proposed generation',
     'generation capital cost',
     'transmission capital cost',
-    #~ 'expected years to operation',
     'source',
 
     'percent o&m',
@@ -49,7 +50,6 @@ structure = {
         'proposed generation': [str, float],
         'generation capital cost': [str, float],
         'transmission capital cost': [str, float],
-        #~ 'expected years to operation': [str, int],
         'source': str,
         
         'percent o&m': float,
@@ -58,22 +58,22 @@ structure = {
 }
 
 comments = {
-    'enabled': '', 
-    'start year': '',
-    'lifetime': '', 
-    'project details': '',
+    'enabled': definitions.ENABLED,
+    'start year': definitions.START_YEAR_WITH_TYPE,
+    'lifetime': definitions.LIFETIME,
     
-    'name': '',
-    'phase': '',
-    'proposed capacity': '',
-    'proposed generation': '',
-    'generation capital cost': '',
-    'transmission capital cost': '',
-    #~ 'expected years to operation': '',
-    'source': '',
+    'name': '[str] name of project',
+    'phase': '[str] current project phase',
+    'proposed capacity': '[float] proposed generation capacity in kW',
+    'proposed generation': '[float] proposed generation per year in kWh',
+    'generation capital cost': 
+        '[float] cost of installing generation infrastructure',
+    'transmission capital cost': 
+        '[float] cost of installing any transmission infrastructure',
+    'source': '[str] link to source document',
     
-    'percent o&m': '',
-    'percent heat recovered': '',
+    'percent o&m': '[float] percent of capital costs used for annual o&m costs',
+    'percent heat recovered': '[float] percent heat recovery by hydro system',
 }
 
 

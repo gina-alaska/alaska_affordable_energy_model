@@ -87,8 +87,6 @@ class AnnualSavings (object):
 
         self.benefit_npv = np.npv(rate, 
                            np.append(yts, self.annual_total_savings[:end]))
-        #~ print end
-        #~ print self.annual_total_savings[:end]
         self.cost_npv = np.npv(rate, np.append(yts, self.annual_costs[:end]))
         self.benefit_cost_ratio = self.benefit_npv/self.cost_npv 
         self.net_npv = np.npv(rate, 

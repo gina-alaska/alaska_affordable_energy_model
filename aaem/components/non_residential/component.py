@@ -528,7 +528,7 @@ class CommunityBuildings (AnnualSavings):
 
 
         if not self.intertie_data is None:
-            print 'Loading intertie' 
+            #~ print 'Loading intertie' 
             intertie_component = CommunityBuildings(
                 self.intertie_data,
                 self.forecast, 
@@ -600,9 +600,9 @@ class CommunityBuildings (AnnualSavings):
         except AttributeError:
             fc_total = estimated_total
         
-        print fc_total, estimated_total
+        #~ print fc_total, estimated_total
         ratio = fc_total/estimated_total
-        print ratio
+        #~ print ratio
         #~ print ratio
         #~ print kwh_buildings
         # step 1 & 2: loop if consumption known use; other wise scale:

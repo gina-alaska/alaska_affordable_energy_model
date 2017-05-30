@@ -82,7 +82,7 @@ class Hydropower (AnnualSavings):
         self.cd = community_data.get_section('community')
         #~ print self.cd
         self.comp_specs = community_data.get_section(COMPONENT_NAME)
-        print self.comp_specs
+        #~ print self.comp_specs
         self.component_name = COMPONENT_NAME
         
         ## moved to preprocessor
@@ -222,8 +222,7 @@ class Hydropower (AnnualSavings):
                    float( self.comp_specs['proposed capacity'])
             self.gross_generation_proposed = \
                     float(self.comp_specs['proposed generation'])
-            #~ print self.gross_generation_proposed, self.load_offset_proposed, self.comp_specs['proposed capacity']
-                    
+                                        
             tansmission_losses = (self.cd['line losses'] / 100.0) *\
                 self.gross_generation_proposed
             exess_energy = \
