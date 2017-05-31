@@ -159,23 +159,6 @@ class WindPower(AnnualSavings):
             self.calc_loss_heat_recovery()
             self.calc_reduction_diesel_used()
             
-            
-           
-            if self.cd["model electricity"]:
-                # change these below
-                #~ self.calc_baseline_kWh_consumption()
-                #~ self.calc_retrofit_kWh_consumption()
-                #~ self.calc_savings_kWh_consumption()
-                # NOTE*:
-                #   some times is it easier to find the savings and use that to
-                # calculate the retro fit values. If so, flip the function calls 
-                # around, and change the functionality of
-                # self.calc_savings_kWh_consumption() below
-                pass
-            
-            if self.cd["model heating fuel"]:
-                pass
-                # see NOTE*
         
             if self.cd["model financial"]:
                 # AnnualSavings functions (don't need to write)
@@ -462,9 +445,6 @@ class WindPower(AnnualSavings):
                 distance = \
                     float(self.comp_specs['project details']\
                         ['distance to resource'])
-                distance = distance * constants.feet_to_mi
-            else:
-                distance = self.comp_specs['default distance to resource']
             transmission_line_cost = distance*\
             self.comp_specs['est. transmission line cost'][road_needed]
         

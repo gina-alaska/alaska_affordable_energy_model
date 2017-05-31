@@ -13,13 +13,17 @@ import numpy as np
 
 
 def preprocess (preprocessor, **kwargs):
-    """preprocess data solar power data in solar_resource_data.csv, and
-    solar_existing_systems.csv
+    """preprocess data solar power data in solar_resource_data.csv
     
     Parameters
     ----------
     preprocessor: preprocessor.Proprocessor
         a preprocessor object
+        
+    Returns
+    -------
+    dict
+        preprocessed data
     
     """
     
@@ -38,7 +42,7 @@ def preprocess (preprocessor, **kwargs):
         'Solar Power': {
             'enabled': True,
             'lifetime': 20,
-            'start year': 2020,
+            'start year': 2016,
             'average load limit': 50.0,
             'percent generation to offset': 15,
             
@@ -58,6 +62,4 @@ def preprocess (preprocessor, **kwargs):
         }
     }
     
-
-
-
+    
