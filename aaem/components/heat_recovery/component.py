@@ -144,7 +144,7 @@ class HeatRecovery (AnnualSavings):
             self.diagnostics.add_note(self.component_name, self.reason)
             return 
         
-        tag = self.cd['name'].split('+')
+        tag = self.cd['file id'].split('+')
         if len(tag) > 1 and tag[1] != PROJECT_TYPE:
             self.run = False
             self.reason = "Not a " + "Heat recovery" + " project."

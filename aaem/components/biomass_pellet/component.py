@@ -109,7 +109,7 @@ class BiomassPellet (bmb.BiomassBase):
         self.run = True
         self.reason = "OK"
         
-        tag = self.cd['name'].split('+')
+        tag = self.cd['file id'].split('+')
         if len(tag) > 1 and tag[1] != 'biomass_pellet':
             self.run = False
             self.reason = ("Not a biomass pellet project.")

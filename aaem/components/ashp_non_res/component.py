@@ -112,7 +112,7 @@ class ASHPNonResidential (ashp_base.ASHPBase):
                 if 'Non-residential Energy Efficiency' component not found.
         
         """
-        tag = self.cd['name'].split('+')
+        tag = self.cd['file id'].split('+')
         if len(tag) > 1 and tag[1].split('_')[0] != 'ASHP_res':
             return 
         non_res = comps['Non-residential Energy Efficiency']
@@ -173,7 +173,7 @@ class ASHPNonResidential (ashp_base.ASHPBase):
         self.run = True
         self.reason = "OK"
         
-        tag = self.cd['name'].split('+')
+        tag = self.cd['file id'].split('+')
         if len(tag) > 1 and tag[1] != 'ASHP_non-res':
             self.run = False
             self.reason = "Not a non-residential air source heat pump project."

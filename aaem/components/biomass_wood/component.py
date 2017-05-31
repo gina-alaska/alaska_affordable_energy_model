@@ -111,7 +111,7 @@ class BiomassCordwood (bmb.BiomassBase):
         """
         s_key = 'Sufficient Biomass for 30% of Non-residential buildings'
         
-        tag = self.cd['name'].split('+')
+        tag = self.cd['file id'].split('+')
         if len(tag) > 1 and tag[1] != 'biomass_wood':
             self.run = False
             self.reason = "Not a biomass cordwood project."

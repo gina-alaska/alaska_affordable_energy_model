@@ -219,7 +219,7 @@ class WaterWastewaterSystems (AnnualSavings):
         -----
             Accepted scalers: capital costs.
         """
-        tag = self.cd['name'].split('+')
+        tag = self.cd['file id'].split('+')
         
         self.run = True
         self.reason = "OK"

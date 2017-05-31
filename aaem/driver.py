@@ -426,7 +426,7 @@ class Driver (object):
         postconditions:
             None
         """
-        print community_config
+        #~ print community_config
       
         if scalers is None:
             scalers = default_scalers
@@ -451,7 +451,7 @@ class Driver (object):
             scalers
         )
         name = community_data.get_item('community', 'file id')
-        print name
+        #~ print name
         forecast = Forecast(community_data, diagnostics, scalers)
                                                     
         

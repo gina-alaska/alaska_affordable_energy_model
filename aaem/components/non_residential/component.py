@@ -203,7 +203,7 @@ class CommunityBuildings (AnnualSavings):
         self.run = True
         self.reason = "OK"
         
-        tag = self.cd['name'].split('+')
+        tag = self.cd['file id'].split('+')
         if len(tag) > 1 and tag[1] != 'non-residential':
             self.run = False
             self.reason = "Not a non-residential project."

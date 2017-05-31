@@ -133,7 +133,7 @@ class ComponentName (AnnualSavings):
         """
         self.run = True
         self.reason = "OK"
-        tag = self.cd['name'].split('+')
+        tag = self.cd['file id'].split('+')
         
         ### UPDATE PROJECT TYPE to a string represeting the project tag
         if len(tag) > 1 and tag[1] != PROJECT_TYPE:

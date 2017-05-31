@@ -103,7 +103,7 @@ class BiomassBase (AnnualSavings):
         comps : Dict
             Dictionary of components
         """
-        tag = self.cd['name'].split('+')
+        tag = self.cd['file id'].split('+')
         
         if len(tag) > 1 and tag[1].split('_')[0] != 'biomass':
             return 
