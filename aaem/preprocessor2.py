@@ -1836,8 +1836,8 @@ class Preprocessor (object):
                     'No hydro data found. Values have been set to 0')
             ## solar 
             try:
-                hydro_capacity = data.ix['Solar']['Capacity (kW)']
-                hydro_generation = \
+                solar_capacity = data.ix['Solar']['Capacity (kW)']
+                solar_generation = \
                     data.ix['Solar']['Average Expected Annual Generation (kWh)']
             except KeyError:
                 self.diagnostics.add_note('Community: Renewable Capacities',
@@ -1845,8 +1845,8 @@ class Preprocessor (object):
             
             ## wind
             try:
-                hydro_capacity = data.ix['wind']['Capacity (kW)']
-                hydro_generation = \
+                wind_capacity = data.ix['Wind']['Capacity (kW)']
+                wind_generation = \
                     data.ix['Wind']['Average Expected Annual Generation (kWh)']
             except KeyError:
                 self.diagnostics.add_note('Community: Renewable Capacities',

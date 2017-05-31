@@ -115,7 +115,7 @@ class SolarPower (AnnualSavings):
         self.reason = "OK"
         
         
-        tag = self.cd['name'].split('+')
+        tag = self.cd['file id'].split('+')
         if len(tag) > 1 and tag[1] != 'solar':
             self.run = False
             self.reason = "Not a solar project."
@@ -202,10 +202,10 @@ class SolarPower (AnnualSavings):
             Proposed sloar power generatiod (kWh/yr)
         """
         self.proposed_load = self.average_load * \
-                        self.comp_specs['percent generation to offset']
+            (self.comp_specs['percent generation to offset'] / 100.0)
         #~ print self.proposed_load
-        existing_RE = self.comp_specs['data']['Installed Capacity'] + \
-                      self.comp_specs['data']['Wind Capacity']
+        existing_RE = self.cd['solar capacity'] + \
+                      self.cd['wind capacity']
         #~ print existing_RE, self.comp_specs['data']['Installed Capacity'], self.comp_specs['data']['Wind Capacity']
         self.proposed_load = max(self.proposed_load - existing_RE, 0)
         
@@ -213,17 +213,18 @@ class SolarPower (AnnualSavings):
                         #~ self.comp_specs['data']['Installed Capacity']               
         
         self.generation_proposed = self.proposed_load *\
-                        self.comp_specs['data']['Output per 10kW Solar PV'] /\
-                        10
+                        self.comp_specs['output per 10kW solar PV'] / 10.0
                         
         self.generation_proposed = self.generation_proposed *\
-                            self.comp_specs['percent solar degradation']**\
-                            np.arange(self.project_life)
+            ((100 - self.comp_specs['percent solar degradation'])/100.0)**\
+            np.arange(self.project_life)
         #~ print 'self.calc_proposed_generation'
         #~ print self.proposed_load
         #~ print self.generation_proposed
         
     def calc_generation_fuel_used (self):
+        """
+        """
         gen_eff = self.cd["diesel generation efficiency"]
         self.generation_fuel_used = self.generation_proposed/gen_eff
         
@@ -250,7 +251,7 @@ class SolarPower (AnnualSavings):
             maintenance cost as a percentage of the captial costs
         """
         self.maintenance_cost = self.capital_costs * \
-                    self.comp_specs['percent o&m']
+            (self.comp_specs['percent o&m']/100.0)
         #~ print "self.calc_maintenance_cost"
         #~ print self.maintenance_cost
     
@@ -268,7 +269,7 @@ class SolarPower (AnnualSavings):
             component_cost = self.proposed_load * self.comp_specs['cost per kW']
             
         powerhouse_cost = 0
-        if not self.cd['switchgear suatable for RE'] and \
+        if not self.cd['switchgear suatable for renewables'] and \
             self.comp_specs['switch gear needed for solar']:
             powerhouse_cost = self.cd['switchgear cost']
             
