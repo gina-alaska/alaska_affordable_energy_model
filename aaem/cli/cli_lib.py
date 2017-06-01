@@ -7,7 +7,7 @@ import os
 import shutil
 from pandas import read_csv, concat
 from aaem import summaries, __version__
-from aaem.components import get_raw_data_files
+
 import zipfile
 from datetime import datetime
    

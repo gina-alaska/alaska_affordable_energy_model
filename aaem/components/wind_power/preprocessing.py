@@ -224,7 +224,6 @@ def preprocess (preprocessor, **kwargs):
         except (TypeError, KeyError):
             yto = 0
         preprocessor.data['community']['current year']
-        print preprocessor.data['community']['current year'], yto, preprocessor.data['community']['current year'] + yto
         start_year = preprocessor.data['community']['current year'] + yto
 
         project = copy.deepcopy(base)

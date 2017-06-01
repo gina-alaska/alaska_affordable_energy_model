@@ -33,14 +33,6 @@ comp_order = ["Residential Energy Efficiency",
               #~ 'Diesel Efficiency'
     ]
 
-def get_raw_data_files():
-    raw_data_files = []
-    for comp in comp_lib:
-        try:
-            raw_data_files += \
-                import_module("aaem.components." +comp_lib[comp]).raw_data_files
-        except AttributeError:
-            pass
-    return raw_data_files
+
     
 
