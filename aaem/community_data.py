@@ -112,7 +112,16 @@ class CommunityData (object):
                 ## self.intertie_data = None is initlized 
                 
                         
-                        
+        ## component spesifc plugins
+        for comp in comp_order:
+            config = import_module("aaem.components." + comp_lib[comp]).config
+            try:
+                plugins = config.plugins
+            except AttributeError:
+                continue
+                
+            for plugin in plugins:
+                plugin(self, community_config, global_config, scalers)
             
         
         # modify diesel prices and electric non-fuel prices
