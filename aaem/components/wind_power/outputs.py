@@ -58,16 +58,13 @@ def communities_summary (coms, res_dir):
             start_yr = wind.comp_specs['start year']
             wind.get_diesel_prices()
             diesel_price = float(wind.diesel_prices[0].round(2))
-            phase = wind.comp_specs["project details"]['phase']
+            phase = wind.comp_specs['phase']
             average_load = wind.average_load
-            existing_load = wind.comp_specs['resource data']\
-                                            ['existing wind']
-            existing_solar = wind.comp_specs['resource data']['existing solar']
-            wind_class = float(wind.comp_specs['resource data']\
-                                                ['Assumed Wind Class']) 
+            existing_load = wind.cd['wind capacity']
+            existing_solar = wind.cd['solar capacity']
+            wind_class = float(wind.comp_specs['wind class']) 
             proposed_load =  wind.load_offset_proposed
-            cap_fac = float(wind.comp_specs['resource data']\
-                                            ['assumed capacity factor'])
+            cap_fac = float(wind.comp_specs['capacity factor'])
             heat_rec_opp = wind.cd['heat recovery operational']
             try:
                 #~ offset = wind.load_offset_proposed

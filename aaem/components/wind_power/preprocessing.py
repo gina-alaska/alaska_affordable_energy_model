@@ -74,6 +74,9 @@ def preprocess (preprocessor, **kwargs):
             'average load limit': 100.0,
             'percent generation to offset': 150,
             
+            'name': '',
+            'source': '',
+            'notes': '',
             'proposed capacity': UNKNOWN,
             'generation capital cost': UNKNOWN,
             'operational costs': UNKNOWN,
@@ -85,7 +88,7 @@ def preprocess (preprocessor, **kwargs):
             
             'wind class': wind_class,
             'capacity factor': capa,
-            'percent heat recovered': 2,
+            'percent heat recovered': 20,
             'secondary load': True,
             
             
@@ -152,8 +155,9 @@ def preprocess (preprocessor, **kwargs):
         transmission_capital_cost = cp['Transmission CAPEX']
         operational_costs = cp['Operational Costs / year']
 
-        source = cp['link']
-        notes = cp['notes']
+        name = str(cp['Project Name'])
+        source = str(cp['link'])
+        notes = str(cp['notes'])
 
 
         try:
@@ -219,11 +223,15 @@ def preprocess (preprocessor, **kwargs):
             yto = int(round(float(timeframes[phase])))
         except (TypeError, KeyError):
             yto = 0
-        
-        start_year = base['Wind Power']['start year'] + yto
+        preprocessor.data['community']['current year']
+        print preprocessor.data['community']['current year'], yto, preprocessor.data['community']['current year'] + yto
+        start_year = preprocessor.data['community']['current year'] + yto
 
         project = copy.deepcopy(base)
         project['Wind Power'].update({
+            'name': name,
+            'source': source,
+            'notes': notes,
             'start year': start_year,
             'phase': phase,
             'proposed capacity': proposed_capacity  ,

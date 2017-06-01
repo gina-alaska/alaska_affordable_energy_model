@@ -78,9 +78,7 @@ class WindPower(AnnualSavings):
        
         self.comp_specs = community_data.get_section(COMPONENT_NAME)
         self.component_name = COMPONENT_NAME
-        #~ print self.cd['current year']
-        self.comp_specs["start year"] = self.cd['current year'] + \
-            self.comp_specs["project details"]['expected years to operation']
+
         self.set_project_life_details(
             self.comp_specs["start year"],
             self.comp_specs["lifetime"]
@@ -114,8 +112,6 @@ class WindPower(AnnualSavings):
         -----
             Accepted scalers: capital costs.
         """
-        #~ #~ print self.comp_specs['resource data']
-        #~ return
         
         self.run = True
         self.reason = "OK"
@@ -140,12 +136,12 @@ class WindPower(AnnualSavings):
         
  
         
-        #~ #~ print self.comp_specs['resource data']['Assumed Wind Class'] 
+        #~ #~ print self.comp_specs['wind class'] 
         # ??? some kind of failure message
         if self.average_load is None or \
             (self.average_load > self.comp_specs['average load limit'] and \
             self.load_offset_proposed > 0):
-            #~ float(self.comp_specs['resource data']['Assumed Wind Class']) > \
+            #~ float(self.comp_specs['wind class']) > \
                 #~ self.comp_specs['minimum wind class'] and \
                
         # if the average load is greater that the lower limit run this component
@@ -200,9 +196,9 @@ class WindPower(AnnualSavings):
         average_load : float 
             average disel load of current system
         """
-        if self.comp_specs["project details"]['proposed capacity'] != UNKNOWN:
+        if self.comp_specs['proposed capacity'] != UNKNOWN:
             self.average_load = None
-        self.generation = self.forecast.generation_by_type['generation diesel']\
+        self.generation = self.forecast.generation['generation diesel']\
                                                             [self.start_year]
         self.average_load = \
                 self.forecast.yearly_average_diesel_load.ix[self.start_year]
@@ -218,16 +214,16 @@ class WindPower(AnnualSavings):
         generation_wind_proposed : float
             kWh/year
         """
-        if self.comp_specs["project details"]['proposed capacity'] != UNKNOWN:
+        if self.comp_specs['proposed capacity'] != UNKNOWN:
             self.load_offset_proposed = \
-                    self.comp_specs["project details"]['proposed capacity']
+                    self.comp_specs['proposed capacity']
             self.generation_wind_proposed = \
-                    self.comp_specs["project details"]['proposed generation']
+                    self.comp_specs['proposed generation']
             
             if self.generation_wind_proposed == UNKNOWN:
                 self.generation_wind_proposed = self.load_offset_proposed *\
-                                    float(self.comp_specs['resource data']\
-                                        ['assumed capacity factor'])*\
+                                    float(self.comp_specs\
+                                        ['capacity factor'])*\
                                     constants.hours_per_year
             
             return
@@ -235,7 +231,7 @@ class WindPower(AnnualSavings):
         self.load_offset_proposed = 0
         
         offset = self.average_load*\
-                self.comp_specs['percent generation to offset']
+            (self.comp_specs['percent generation to offset'] / 100.0)
         #~ print self.forecast.generation_by_type['generation hydro'].sum()
         
         # removed on purpose
@@ -246,8 +242,8 @@ class WindPower(AnnualSavings):
         
         # existing very variable RE
         existing_RE = \
-            int(float(self.comp_specs['resource data']['existing wind'])) + \
-            int(float(self.comp_specs['resource data']['existing solar']))
+            int(float(self.cd['wind capacity'])) + \
+            int(float(self.cd['solar capacity']))
         
         if existing_RE < (round(offset/25) * 25): # ???
             #~ print "True"
@@ -257,10 +253,10 @@ class WindPower(AnnualSavings):
         
         # not needed for now
         #~ self.total_wind_generation = self.generation_load_proposed + \
-                    #~ int(self.comp_specs['resource data']['existing wind'])
+                    #~ int(self.comp_specs['wind capacity'])
         
         self.generation_wind_proposed =  self.load_offset_proposed * \
-            float(self.comp_specs['resource data']['assumed capacity factor'])*\
+            float(self.comp_specs['capacity factor'])*\
                                     constants.hours_per_year
         #~ print 'self.load_offset_proposed',self.load_offset_proposed
         #~ print 'self.generation_wind_proposed',self.generation_wind_proposed 
@@ -275,7 +271,7 @@ class WindPower(AnnualSavings):
         """
         #~ print self.generation_wind_proposed, self.cd['line losses']
         self.transmission_losses = self.generation_wind_proposed * \
-                                                        self.cd['line losses']
+            (self.cd['line losses'] / 100.0)
         #~ print 'self.transmission_losses',self.transmission_losses
         
     def calc_exess_energy (self):
@@ -289,7 +285,7 @@ class WindPower(AnnualSavings):
         #~ print sorted(self.cd.keys())
         self.exess_energy = \
             (self.generation_wind_proposed - self.transmission_losses) * \
-            self.cd['percent excess energy']
+            (self.cd['percent excess energy'] / 100.0)
         #~ print 'self.exess_energy',self.exess_energy
             
     def calc_net_generation_wind (self):
@@ -334,7 +330,7 @@ class WindPower(AnnualSavings):
         else:
             exess_percent = self.exess_energy / self.generation_wind_proposed
         exess_captured_percent = exess_percent * \
-                    self.cd['percent excess energy capturable']
+            (self.cd['percent excess energy capturable'] / 100.0)
         if self.comp_specs['secondary load']:
             net_exess_energy = exess_captured_percent * \
                                 self.generation_wind_proposed 
@@ -362,7 +358,7 @@ class WindPower(AnnualSavings):
         self.loss_heat_recovery = 0
         if hr_used:# == 'Yes': 
             self.loss_heat_recovery = self.electric_diesel_reduction * \
-                self.comp_specs['percent heat recovered']
+                (self.comp_specs['percent heat recovered'] / 100.0)
         #~ print 'self.loss_heat_recovery',self.loss_heat_recovery
         
     def calc_reduction_diesel_used (self):
@@ -407,13 +403,13 @@ class WindPower(AnnualSavings):
              generagion costs
         """
         
-        if str(self.comp_specs['project details']['operational costs']) \
+        if str(self.comp_specs['operational costs']) \
                                                                 != 'UNKNOWN':
             self.maintainance_cost = \
-                self.comp_specs['project details']['operational costs']
+                self.comp_specs['operational costs']
         else:
             self.maintainance_cost = \
-                self.comp_specs['percent o&m'] * self.capital_costs
+                (self.comp_specs['percent o&m'] / 100.0) * self.capital_costs
         #~ print 'self.maintainance_cost',self.maintainance_cost
         
 
@@ -429,43 +425,43 @@ class WindPower(AnnualSavings):
              total cost of improvments ($),
         """
         powerhouse_control_cost = 0
-        if not self.cd['switchgear suatable for RE']:
+        if not self.cd['switchgear suatable for renewables']:
             powerhouse_control_cost = self.cd['switchgear cost']
         
-        road_needed = self.comp_specs['road needed for transmission line']
+        #~ road_needed = self.comp_specs['road needed for transmission line']
         
 
-        if str(self.comp_specs['project details']['transmission capital cost'])\
+        if str(self.comp_specs['transmission capital cost'])\
            != 'UNKNOWN':
             transmission_line_cost = \
-            int(self.comp_specs['project details']['transmission capital cost'])
+            int(self.comp_specs['transmission capital cost'])
         else:
-            if str(self.comp_specs['project details']['distance to resource']) \
+            if str(self.comp_specs['distance to resource']) \
                 != 'UNKNOWN':
                 distance = \
-                    float(self.comp_specs['project details']\
+                    float(self.comp_specs\
                         ['distance to resource'])
-            transmission_line_cost = distance*\
-            self.comp_specs['est. transmission line cost'][road_needed]
+            transmission_line_cost = \
+                distance*self.comp_specs['est. transmission line cost']
         
         secondary_load_cost = 0
         if self.comp_specs['secondary load']:
             secondary_load_cost = self.comp_specs['secondary load cost']
         
-        if str(self.comp_specs['project details']['generation capital cost']) \
+        if str(self.comp_specs['generation capital cost']) \
             != 'UNKNOWN':
             wind_cost = \
-              int(self.comp_specs['project details']['generation capital cost'])
+              int(self.comp_specs['generation capital cost'])
         else:
-            for i in range(len(self.comp_specs['costs'])):
-                if int(self.comp_specs['costs'].iloc[i].name) < \
+            for i in range(len(self.comp_specs['estimated costs'])):
+                if int(self.comp_specs['estimated costs'].iloc[i].name) < \
                                             self.load_offset_proposed:
-                    if i == len(self.comp_specs['costs']) - 1:
-                        cost = float(self.comp_specs['costs'].iloc[i])
+                    if i == len(self.comp_specs['estimated costs']) - 1:
+                        cost = float(self.comp_specs['estimated costs'].iloc[i])
                         break
                     continue
                
-                cost = float(self.comp_specs['costs'].iloc[i])
+                cost = float(self.comp_specs['estimated costs'].iloc[i])
                 break
             
             wind_cost = self.load_offset_proposed * cost
@@ -561,8 +557,7 @@ class WindPower(AnnualSavings):
                     ' (gallons of heating oil equivalent)':
                                                     self.diesel_equiv_captured,
                 'Wind: Assumed capacity factor':
-                    float(self.comp_specs['resource data']\
-                                                ['assumed capacity factor']),
+                    float(self.comp_specs['capacity factor']),
                 'Wind: Utility Diesel Displaced (gallons/year)':
                                             self.electric_diesel_reduction,
                 'Wind: Heat Recovery Lost (gallons/year)':

@@ -511,6 +511,7 @@ class Preprocessor (object):
                 'efficiency heating oil boiler': 0.8,
                 
                 'diesel generator o&m cost percent': 2,
+                'switchgear cost': 150000,
                 
             },
         }
@@ -1789,7 +1790,7 @@ class Preprocessor (object):
             ['Resource Type','Resource Sub-Type',
             'Capacity (kW)','Average Expected Annual Generation (kWh)']
         ]
-
+        data.index = [i.replace('_',' ') for i in data.index]
         ids = self.communities + self.aliases
         #~ print ids
         if not self.process_intertie:

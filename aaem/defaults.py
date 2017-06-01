@@ -65,6 +65,7 @@ base_order = [
     'efficiency heating oil boiler',
     
     'diesel generator o&m cost percent',
+    'switchgear cost',
 ]
 
 base_structure = {
@@ -125,7 +126,8 @@ base_structure = {
         'efficiency electric boiler': float,
         'efficiency heating oil boiler': float,
         
-        'diesel generator o&m cost percent':float,
+        'diesel generator o&m cost percent': float,
+        'switchgear cost': float,
     }
 
 }
@@ -188,6 +190,7 @@ base_comments = {
         'efficiency heating oil boiler': float,
         
         'diesel generator o&m cost percent':float,
+        'switchgear cost': float,
     }
 
 }

@@ -34,6 +34,10 @@ order = [
     'average load limit',
     'percent generation to offset',
     
+    
+    'name',
+    'source',
+    'notes',
     'phase',
     'proposed capacity',
     'generation capital cost',
@@ -62,6 +66,9 @@ structure = {
         'average load limit': float,
         'percent generation to offset': float,
         
+        'name': str,
+        'source': str,
+        'notes': str,
         'phase': str,
         'proposed capacity': [float, str],
         'generation capital cost': [float, str],
@@ -91,6 +98,10 @@ comments = {
     'average load limit': 'float',
     'percent generation to offset': 'float',
     
+    
+    'name': 'str',
+    'source': 'str',
+    'notes': 'str',
     'phase': 'str',
     'proposed capacity': 'f[float, str]',
     'generation capital cost': 'f[float, str]',
