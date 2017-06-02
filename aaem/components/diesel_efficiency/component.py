@@ -130,6 +130,7 @@ class DieselEfficiency(AnnualSavings):
             # change these below
             
         self.calc_average_load()
+        #~ print  self.average_load
         if np.isnan( self.average_load ):
             self.run = False
             self.reason = (

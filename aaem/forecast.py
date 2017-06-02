@@ -45,11 +45,22 @@ class Forecast (object):
         if self.cd.get_item("community","model electricity") is False:
             pass
         else:
-
-            self.forecast_consumption(scalers['kWh consumption'])
-            self.forecast_generation()
+            try:
+                self.forecast_consumption(scalers['kWh consumption'])
+                self.forecast_generation()
   
-            self.forecast_average_kW()
+                self.forecast_average_kW()
+            except RuntimeError:
+                self.cd.set_item("community", "model financial", False)
+                self.cd.set_item("community", "model electricity", False)
+                self.diagnostics.add_warning('Forecast',
+                    (
+                        'Electricity data was insufficient to model'
+                        ' electricity or financial values. In community data'
+                        ' model financial, and model electricity have been'
+                        ' set to false.'
+                    )
+                )
         
         self.calc_average_diesel_load()
         
