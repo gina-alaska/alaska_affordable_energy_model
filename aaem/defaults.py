@@ -49,6 +49,7 @@ base_order = [
     'diesel generation efficiency',
     'heat recovery operational',
     'switchgear suatable for renewables',
+    'total capacity',
     
     'hydro generation limit',
     'solar generation limit',
@@ -111,6 +112,7 @@ base_structure = {
         'diesel generation efficiency': float,
         'heat recovery operational': bool,
         'switchgear suatable for renewables': bool,
+        'total capacity': float,
         
         'hydro generation limit': float,
         'solar generation limit': float,
@@ -174,6 +176,7 @@ base_comments = {
         'diesel generation efficiency': float,
         'heat recovery operational': bool,
         'switchgear suatable for renewables': bool,
+        'total capacity': float,
         
         'hydro generation limit': float,
         'solar generation limit': float,

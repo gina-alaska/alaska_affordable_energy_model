@@ -61,8 +61,7 @@ def communities_summary (coms, res_dir):
             except AttributeError:
                 average_load = np.nan
             try:
-                current_capacity = comp.comp_specs['data']\
-                                            ['Total Capacity (in kW)']
+                current_capacity = comp.cd['total capacity']
             except AttributeError:
                 current_capacity = np.nan
             try:

@@ -1628,10 +1628,17 @@ class Preprocessor (object):
         switchgear_status = True if  switchgear_status.lower() == 'yes' \
             else False
             
+        total_capacity = data['Total Capacity (in kW)'].values[0]
+        try:
+            float(total_capacity)
+        except:
+            total_capacity = np.nan 
+            
         return {
             'community': {
                 'heat recovery operational': hr_operational,
                 'switchgear suatable for renewables': switchgear_status,
+                'total capacity': total_capacity
             }
         }
         

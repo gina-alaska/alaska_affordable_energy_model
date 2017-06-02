@@ -145,6 +145,6 @@ def create_project_details_list (project):
             'value': '{:,.1f}'.format(project.get_BC_ratio())},
         {'words':'Improvment in generation efficiency', 
             'value': '{:,.0f}%'.format((project.comp_specs\
-            ['efficiency improvment'] - 1 )* 100)},
+            ['efficiency improvment']))},
         
             ]

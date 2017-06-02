@@ -15,7 +15,7 @@ comp_lib = {
     'Hydropower': 'hydro',
     'Transmission and Interties': 'transmission',
     'Heat Recovery': 'heat_recovery',
-    #~ 'Diesel Efficiency': 'diesel_efficiency',
+    'Diesel Efficiency': 'diesel_efficiency',
         }
 
 comp_order = ["Residential Energy Efficiency",
@@ -30,7 +30,7 @@ comp_order = ["Residential Energy Efficiency",
               'Hydropower',
               'Transmission and Interties',
               'Heat Recovery',
-              #~ 'Diesel Efficiency'
+              'Diesel Efficiency'
     ]
 
 

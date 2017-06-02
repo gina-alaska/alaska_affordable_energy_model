@@ -17,36 +17,34 @@ COMPONENT_NAME = "Diesel Efficiency"
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
 
-## List of yaml key/value pairs
-yaml = {'enabled': False,
-        "project details": {'phase': 'Reconnaissance',
-                            'capital costs': UNKNOWN,
-                            'operational costs': UNKNOWN,
-                            'expected years to operation': 3,
-                            },
-        'data': IMPORT,
-        'lifetime': 'ABSOLUTE DEFAULT',
-        'start year': 'ABSOLUTE DEFAULT',
-        'efficiency improvment': 1.1,
-        'o&m costs': {150: 84181.00,
-                      360: 113410.00,
-                      600: 134434.00,
-                      'else':103851.00 }
-        }
+order = [
+    'enabled',
+    'lifetime', 
+    'start year',
+    'efficiency improvment',
+    'o&m costs'
+]
 
-## default values for yaml key/Value pairs
-yaml_defaults = {'enabled': True,
-        'lifetime': 20,
-        #~ 'start year': 2017,
-        }
-    
-## order to save yaml
-yaml_order = ['enabled', 'lifetime', 'start year']
+structure = {
+    'Diesel Efficiency' : {
+        'enabled': bool,
+        'lifetime': int, 
+        'start year': int,
+        'efficiency improvment': float,
+        'o&m costs': dict
+    }
+}
 
-## comments for the yaml key/value pairs
-yaml_comments = {'enabled': '',
-        'lifetime': 'number years <int>',
-        'start year': 'start year <int>'}
+comments = {
+    'enabled': '[bool]',
+    'lifetime': '[int]', 
+    'start year': '[int]',
+    'efficiency improvment': '[float]',
+    'o&m costs': '[dict]'
+
+}
+
+
 
 
 ## list of prerequisites for module

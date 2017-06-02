@@ -105,7 +105,7 @@ comments = {
     'estimate cost/building': '[float] $/building',
     'o&m per year': '[float] $' ,
     
-    'name': '[str] mame of project',
+    'name': '[str] name of project',
     'buildings': '[list]',
     'phase': '[str]',
     'project type': '[str] New/Repair/Extension',
