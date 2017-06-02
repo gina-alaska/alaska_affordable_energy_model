@@ -46,6 +46,12 @@ def preprocess (preprocessor, **kwargs):
             'percent heat recovered': 15,
         }
     }
+    if preprocessor.intertie_status == 'child':
+        return base
+    if preprocessor.intertie_status == 'parent' and\
+        preprocessor.process_intertie == False:
+        return base
+    
     projects = []
     p_data = {}
  

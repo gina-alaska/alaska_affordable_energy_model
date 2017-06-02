@@ -14,7 +14,7 @@ comp_lib = {
     #~ 'Non-Residential ASHP': 'ashp_non_res',
     'Hydropower': 'hydro',
     'Transmission and Interties': 'transmission',
-    #~ 'Heat Recovery': 'heat_recovery',
+    'Heat Recovery': 'heat_recovery',
     #~ 'Diesel Efficiency': 'diesel_efficiency',
         }
 
@@ -29,7 +29,7 @@ comp_order = ["Residential Energy Efficiency",
               #~ 'Non-Residential ASHP',
               'Hydropower',
               'Transmission and Interties',
-              #~ 'Heat Recovery',
+              'Heat Recovery',
               #~ 'Diesel Efficiency'
     ]
 
