@@ -9,10 +9,24 @@ Air Source Heat Pump Non-residential preprocessing
 
 """
 import aaem.components.ashp_base as ashp_base
-from copy import deepcopy
+import config
 
-## list of data files
-raw_data_files = deepcopy(ashp_base.raw_data_files)
-
-## list of wind preprocessing functions
-preprocess_funcs = [deepcopy(ashp_base.preprocess)]
+def preprocess (preprocessor, **kwargs):
+    """preprocess data related to existing projects
+    
+    Parameters
+    ----------
+    preprocessor: preprocessor.Proprocessor
+        a preprocessor object
+        
+    Returns
+    -------
+    list
+        project names
+    
+    """
+    kwargs['ashp_type'] = config.COMPONENT_NAME
+    kwargs['ashp_cost_per_btu_hrs'] = 25000 
+    kwargs['ashp_btu_hrs'] = 90000
+    return ashp_base.preprocess(preprocessor, **kwargs)
+    

@@ -513,6 +513,9 @@ class Preprocessor (object):
                 'diesel generator o&m cost percent': 2,
                 'switchgear cost': 150000,
                 
+                'assumed percent non-residential sqft heat displacement': 30,
+                'heating oil efficiency': 0.75, # % as decimal <float>
+                
             },
         }
         

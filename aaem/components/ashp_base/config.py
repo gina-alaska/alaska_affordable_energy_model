@@ -14,32 +14,55 @@ Air Sorce Heat Pump Base Configuration
         o&m per year: cost of maintainence
         
 """
+from aaem.components import definitions
+    
+from pandas import DataFrame
+
 COMPONENT_NAME = "air source heat pumps base"
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
 
-## List of yaml key/value pairs
-yaml = {'enabled': False,
-        'lifetime': 'ABSOLUTE DEFAULT',
-        'start year': 'ABSOLUTE DEFAULT',
-        'perfromance data': 'IMPORT',
-        'data':'IMPORT',
-        'o&m per year': 320
-        }
+order = [
+    'enabled',
+    'lifetime',
+    'start year',
+    'btu/hrs',
+    'cost per btu/hrs',
+    'o&m per year',
+    'data',
+    'perfromance data'
+]
 
-## default values for yaml key/Value pairs
-yaml_defaults = {'enabled': True,
-        'lifetime': 15,
-        'start year': 2017,
-        }
+structure = {
+    COMPONENT_NAME: {
+        'enabled': bool, # 
+        'lifetime': int, # number years <int>
+        'start year': int, # start year <int>
+        'btu/hrs': float,
+        'cost per btu/hrs': float,
+        'o&m per year': float,
+        
+        'data': DataFrame,
+        'perfromance data': {
+            'COP': list,
+            'Temperature': list,
+            'Percent of Total Capacity': list,
+       } 
+    }
+}
+
+
+comments = {
+    'enabled': definitions.ENABLED,  
+    'lifetime': definitions.LIFETIME,
+    'start year': definitions.START_YEAR_WITH_TYPE,
+    'btu/hrs': '[float]',
+    'cost per btu/hrs': '[float]',
+    'o&m per year':'[float]',
     
-## order to save yaml
-yaml_order = ['enabled', 'lifetime', 'start year']
-
-## comments for the yaml key/value pairs
-yaml_comments = {'enabled': '',
-        'lifetime': 'number years <int>',
-        'start year': 'start year <int>'}
+    'data': '[DataFrame]',
+    'perfromance data': '[dict]'
+}
 
 ## list of prerequisites for module
 prereq_comps = []

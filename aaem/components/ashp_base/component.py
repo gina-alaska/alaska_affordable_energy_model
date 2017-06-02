@@ -304,9 +304,10 @@ class ASHPBase (AnnualSavings):
             cost of electricity for ASHP operation per year ($/kWh)
         """
         self.get_electricity_prices()
+        #~ print self.electricity_prices, self.electric_consumption
         cost = self.electricity_prices * self.electric_consumption +\
                                        self.comp_specs["o&m per year"]
-        self.proposed_ashp_operation_cost = cost.values.T[0].tolist()
+        self.proposed_ashp_operation_cost = cost.tolist()
 
     def calc_ashp_system_pramaters (self):
         """Calls each of the functions for caculating the ASHP

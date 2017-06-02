@@ -60,11 +60,15 @@ def communities_summary (coms, res_dir):
                                 (24 * 31)
             try:
                 tcr = ashp.total_cap_required
-                price =  float(ashp.electricity_prices.ix[ashp.start_year])
-                #~ print float(ashp.electricity_prices.ix[ashp.start_year])
-            except AttributeError:
-                price = 0
+            except AttributeError:  
                 tcr = 0
+            try:
+                #~ ashp.get_electricity_prices()
+                price =  ashp.electricity_prices[0]
+                #~ print float(ashp.electricity_prices.ix[ashp.start_year])
+            except AttributeError:  
+                price = 0
+                
 
             try:
                 intertie = coms[c]['community data'].parent

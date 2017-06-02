@@ -166,7 +166,7 @@ class ASHPResidential (ashp_base.ASHPBase):
                         self.electric_heat_energy_reduction * \
                         self.electricity_prices
         self.electric_heat_energy_savings = \
-                        self.electric_heat_energy_savings.values.T[0]
+                        self.electric_heat_energy_savings#.values.T[0]
         #~ print self.electric_heat_energy_savings
         
         

@@ -67,6 +67,9 @@ base_order = [
     
     'diesel generator o&m cost percent',
     'switchgear cost',
+    
+    'assumed percent non-residential sqft heat displacement',
+    'heating oil efficiency'
 ]
 
 base_structure = {
@@ -130,6 +133,9 @@ base_structure = {
         
         'diesel generator o&m cost percent': float,
         'switchgear cost': float,
+        
+        'assumed percent non-residential sqft heat displacement': float,
+        'heating oil efficiency': float
     }
 
 }
@@ -194,6 +200,9 @@ base_comments = {
         
         'diesel generator o&m cost percent':float,
         'switchgear cost': float,
+        
+        'assumed percent non-residential sqft heat displacement': float,
+        'heating oil efficiency': float
     }
 
 }
