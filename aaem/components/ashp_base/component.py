@@ -384,7 +384,6 @@ class ASHPBase (AnnualSavings):
         """
         self.annual_heating_savings = self.baseline_heating_oil_cost - \
                                       self.proposed_ashp_operation_cost
-        print self.baseline_heating_oil_cost, self.proposed_ashp_operation_cost
 
     def get_fuel_total_saved (self):
         """Get total fuel saved

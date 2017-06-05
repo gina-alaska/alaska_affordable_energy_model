@@ -228,6 +228,11 @@ class Preprocessor (object):
                 self.data['community']['electric non-fuel price'] + \
                 (self.data['community']['diesel prices'] * percent_diesel)
             
+        if self.data['community']["region"] == "North Slope":
+            N_slope_price = .15
+            self.data['community']['electric non-fuel prices'] = \
+                (self.data['community']['electric non-fuel prices'] * 0) +\
+                 N_slope_price
         
         self.data = merge_configs(self.data,
             {'community': {'percent diesel generation': percent_diesel}})
