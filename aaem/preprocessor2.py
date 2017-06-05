@@ -245,10 +245,12 @@ class Preprocessor (object):
                 except KeyError:
                     pass
                 self.data = merge_configs(self.data, data)
+                
             else:
                 self.data = merge_configs(self.data, data['no project'])
                 del data['no project']
                 self.projects.update( data )
+            #~ del data
             
     def save_config (self, out_dir):
         """Save the configuration yaml file
@@ -1550,7 +1552,12 @@ class Preprocessor (object):
             ids = self.regions[1].replace(' Region','') 
         
         premium = float(data.ix[ids])
-        
+        if premium < 0:
+            self.diagnostics.add_note('Heating Fuel Premium',
+                ('Value was less than 0. Premium must be greater'
+                ' than or equal to 0, seting to 0')
+            )
+            premium = 0 
         return premium 
         
     def load_election_divisions (self, **kwargs):

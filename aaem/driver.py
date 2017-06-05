@@ -560,7 +560,7 @@ class Driver (object):
             os.makedirs(os.path.join(directory))
         except OSError:
             pass
-        #~ summaries.village_log(res,directory)
+        summaries.village_log(res,directory)
         summaries.building_log(res,directory)
         summaries.fuel_oil_log(res,directory)
         summaries.forecast_comparison_log(res,directory)

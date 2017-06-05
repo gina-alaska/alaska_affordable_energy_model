@@ -242,6 +242,8 @@ class CommunityBuildings (AnnualSavings):
         self.calc_baseline_HF_consumption()
         self.calc_proposed_HF_consumption()
         
+        
+        
         #~ print self.comp_specs['building inventory']
         #~ import sys
         #~ sys.exit()
@@ -293,6 +295,7 @@ class CommunityBuildings (AnnualSavings):
         self.comp_specs['building inventory'].index = \
             range(len(self.comp_specs['building inventory']))
         self.comp_specs['building inventory'].index.name = "int_index"
+        #~ print self.comp_specs['building inventory'] 
         
     def update_num_buildings (self):
         """ This function compares the counted buildings with the estimated 
@@ -403,6 +406,7 @@ class CommunityBuildings (AnnualSavings):
                  "Building Type: " + k + " not valid. Using 'other's estimates")
                 data.loc[:,measure].loc[k] = \
                     data.loc[:,measure].loc[k].fillna(sqft_ests.ix['Other'])
+        #~ print data
         self.total_sqft_to_retrofit = data[measure].sum()
         
     
@@ -459,10 +463,10 @@ class CommunityBuildings (AnnualSavings):
         data = self.comp_specs['building inventory']
         keys = data.T.keys()
         keys = set(keys)
-        
         data["HDD ESTS"] = 0
         data["GAL/SF"] = 0
         for key in keys:
+            #~ print key
             try:
                 data["HDD ESTS"].ix[key] = \
                     self.cd["heating degree days"]/HDD_ests[key]
@@ -610,7 +614,7 @@ class CommunityBuildings (AnnualSavings):
             if np.isnan(kwh_buildings[idx, 2].astype(float)):
                 kwh_buildings[idx, 2] = ratio * local_inv[idx, 2].astype(float)
                 
-                
+        #~ print data
         #~ print kwh_buildings
         data[measure] =  kwh_buildings[:,2].astype(np.float64)  
         self.baseline_kWh_consumption = data[measure].sum()

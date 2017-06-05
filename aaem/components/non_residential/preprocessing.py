@@ -12,6 +12,7 @@ preprocessing functions for Non-residential Efficiency component
 import os
 from pandas import read_csv, concat, DataFrame
 import numpy as np
+import copy
 
 def get_number_buildings (community, data_dir, diagnostics):
     """Load # buildings from file
@@ -67,27 +68,28 @@ def get_consumption_estimates(data_dir, population, diagnostics):
         estimate data
     """
     datafile = os.path.join(data_dir, 'non-res_consumption_estimates.csv')
-    data = read_csv(datafile ,comment = u"#",index_col = 0, header = 0)
+    data = read_csv(datafile ,comment = "#",index_col = 0, header = 0)
 
     units = set(data.ix["Estimate units"])
     l = []
     for itm in units:
-            
-        l.append(data.T[data.ix["Estimate units"] == itm]\
+        col = data.T[data.ix["Estimate units"] == itm]\
                       [(data.T[data.ix["Estimate units"] == itm]\
                       ["Lower Limit"].astype(float) <= population)]\
                       [data.ix["Estimate units"] == itm]\
                       [(data.T[data.ix["Estimate units"] == itm]\
-                      ["Upper Limit"].astype(float) > population)])
+                      ["Upper Limit"].astype(float) > population)]
+        l.append(col)
 
-    df = concat(l).set_index("Estimate units")
-    del(df["Lower Limit"])
-    del(df["Upper Limit"])
-    df = df.T
+    data = concat(l).set_index("Estimate units")
+    del( data["Lower Limit"])
+    del( data["Upper Limit"])
+    data =  data.T
     
-    df.index.name = 'building type'
-    return df
+    data.index.name = 'building type'
 
+    return data
+    
 def get_building_inventory (community, data_dir, diagnostics, **kwargs):
     """load the building inventory
     

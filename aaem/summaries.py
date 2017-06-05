@@ -33,17 +33,23 @@ def building_log(coms, res_dir):
     
     """
     out = []
+    #~ print 'NRB LOG'
     for c in sorted(coms.keys()):
         if c.find('+') != -1 or c.find("_intertie") != -1:
             continue
         try:
             com = coms[c]['Non-residential Energy Efficiency']
             
-            
+            #~ print  coms[c]['community data'].get_section('Non-residential Energy Efficiency')
             types = coms[c]['community data'].get_item('Non-residential Energy Efficiency',
-                                                "com building estimates").index
-            estimates =coms[c]['community data'].get_item('Non-residential Energy Efficiency',
-                                                "com building data").fillna(0)
+                                                "consumption estimates").index
+            estimates = deepcopy(com.comp_specs["building inventory"]).fillna(0)
+            
+            estimates = estimates.set_index('Building Type')
+            estimates = estimates.astype(float)
+
+            
+            #~ print estimates
             
             num  = 0
             try:
@@ -96,6 +102,7 @@ def building_log(coms, res_dir):
                             estimates['Propane'][t]/mmbtu_to_gal_LP + \
                             estimates['HW District'][t]/mmbtu_to_gal_HF +\
                             estimates['Biomass'][t]/mmbtu_to_cords
+                        #~ print hf_used
                         elec_used = estimates['Electric'][t]/mmbtu_to_kWh
                     
                     
@@ -194,7 +201,10 @@ def village_log (coms, res_dir):
         try:
             start_year = coms[c]['community data'].get_item('community', 
                                                         'current year')
-            consumption = int(coms[c]['forecast'].consumption.ix[start_year])
+            #~ print coms[c]['forecast'].consumption.ix[start_year]['consumption']
+            consumption = \
+                int(coms[c]['forecast']\
+                .consumption.ix[start_year]['consumption'])
             population = int(coms[c]['forecast'].population.ix[start_year])
             try:
                 res = coms[c]['Residential Energy Efficiency']

@@ -135,12 +135,13 @@ def merge_configs (bottom, top):
     'bottom' if two keys are the same
     """
     # make an explict copy
-    bottom = copy.deepcopy(bottom)
+    bottom = copy.copy(bottom)
     to_overload = set(top.keys()).intersection( set(bottom.keys()) )
     to_add = set(top.keys()).difference( set(bottom.keys()) )
     #~ print to_overload, to_add
     
     for section in to_overload:
+        #~ print section
         if type(bottom[section]) is dict:
             try:
                 bottom[section] = merge_configs(bottom[section], top[section])

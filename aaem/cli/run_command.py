@@ -208,7 +208,8 @@ class RunCommand(pycommand.CommandBase):
             # save summaries
             try:
                 run_driver.save_summaries(tag)
-            except IOError:
+            except IOError as e:
+                print e
                 msg = "RUN ERROR: No valid communities/projects provided"
                 cli_lib.print_error_message(msg)
                 return 0
