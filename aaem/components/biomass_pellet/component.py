@@ -143,7 +143,6 @@ class BiomassPellet (bmb.BiomassBase):
             self.calc_heat_displaced_sqft()
             self.calc_energy_output()
             efficiency = self.comp_specs["pellet efficiency"]
-            print efficiency
             self.calc_max_boiler_output(efficiency)
             factor = self.comp_specs['capacity factor']
             self.calc_biomass_fuel_consumed(factor)

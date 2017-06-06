@@ -142,8 +142,11 @@ class BiomassBase (AnnualSavings):
         heat_displaced_sqft : float
             Square footage assumed to be heated by biomass.
         """
-        self.heat_displaced_sqft = self.non_res_sqft * \
-            self.cd['assumed percent non-residential sqft heat displacement']
+        percent = \
+            (self.cd['assumed percent non-residential sqft heat displacement']\
+            /100.0)
+        self.heat_displaced_sqft = self.non_res_sqft * percent
+            
         
     def calc_energy_output (self):
         """Calculate the net and monthly energy output of heating oil.
@@ -198,8 +201,7 @@ class BiomassBase (AnnualSavings):
         self.biomass_fuel_consumed = capacity_factor * self.max_boiler_output *\
                                      constants.hours_per_year /\
                                      self.comp_specs['energy density']
-        print  self.biomass_fuel_consumed
-        
+                                             
     def calc_diesel_displaced (self):
         """Calculate the disel of set by biomass
         
