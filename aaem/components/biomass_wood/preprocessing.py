@@ -32,14 +32,14 @@ def preprocess (preprocessor, **kwargs):
     kwargs['biomass_cost_per_btu_hrs'] = .6
     kwargs['biomass_energy_density'] = 16000000
     
-    config = bmb.preprocessing.preprocess(preprocessor, **kwargs)
+    my_config = bmb.preprocessing.preprocess(preprocessor, **kwargs)
 
-    config[config.COMPONENT_NAME]["hours of storage for peak"] = 4
-    config[config.COMPONENT_NAME]["percent at max output"] = .5 * 100
-    config[config.COMPONENT_NAME]["cordwood system efficiency"] = .88
-    config[config.COMPONENT_NAME]["hours operation per cord"] = 5.0
-    config[config.COMPONENT_NAME]["operation cost per hour"] = 20.00
-    config[config.COMPONENT_NAME]["boiler assumed output"] = 325000
+    my_config[config.COMPONENT_NAME]["hours of storage for peak"] = 4
+    my_config[config.COMPONENT_NAME]["percent at max output"] = .5 * 100
+    my_config[config.COMPONENT_NAME]["cordwood system efficiency"] = .88
+    my_config[config.COMPONENT_NAME]["hours operation per cord"] = 5.0
+    my_config[config.COMPONENT_NAME]["operation cost per hour"] = 20.00
+    my_config[config.COMPONENT_NAME]["boiler assumed output"] = 325000
     
-    return config
+    return my_config
     

@@ -132,8 +132,9 @@ class BiomassPellet (bmb.BiomassBase):
             self.calc_heat_displaced_sqft()
             self.calc_energy_output()
             efficiency = self.comp_specs["pellet efficiency"]
+            print efficiency
             self.calc_max_boiler_output(efficiency)
-            factor = self.comp_specs['data']['Capacity Factor']
+            factor = self.comp_specs['capacity factor']
             self.calc_biomass_fuel_consumed(factor)
             self.calc_diesel_displaced()
             
@@ -184,6 +185,6 @@ class BiomassPellet (bmb.BiomassBase):
             caclulated captial costs for heat recovery ($)
         """
         self.capital_costs = self.max_boiler_output * \
-                                self.comp_specs["cost per btu/hr"]
+                                self.comp_specs["cost per btu/hrs"]
         #~ print self.capital_costs
 

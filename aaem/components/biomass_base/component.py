@@ -160,7 +160,7 @@ class BiomassBase (AnnualSavings):
                                     constants.hours_per_year) * \
                                     self.cd['heating oil efficiency']
         self.peak_monthly_energy_output = self.average_net_energy_output * 12 *\
-                                self.comp_specs['data']['Peak Month % of total']
+                                self.comp_specs['peak month % of total']
         
     def calc_max_boiler_output (self, efficiency):
         """Calculate the max boiler output.
@@ -177,8 +177,9 @@ class BiomassBase (AnnualSavings):
         max_boiler_output_per : float
             boiler energy output (mmbtu/hr)
         """
-        self.max_boiler_output_per_sf = self.peak_monthly_energy_output / \
-                                        efficiency
+        print self.peak_monthly_energy_output
+        self.max_boiler_output_per_sf = \
+            float(self.peak_monthly_energy_output) / efficiency
         self.max_boiler_output = self.max_boiler_output_per_sf * \
                                     self.heat_displaced_sqft
         

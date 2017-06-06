@@ -29,9 +29,9 @@ def preprocess (preprocessor, **kwargs):
     kwargs['biomass_cost_per_btu_hrs'] = .54
     kwargs['biomass_energy_density'] =  17600000
     
-    config = bmb.preprocessing.preprocess(preprocessor, **kwargs)
+    my_config = bmb.preprocessing.preprocess(preprocessor, **kwargs)
 
-    config[config.COMPONENT_NAME]["pellet efficiency"] = .8
-    config[config.COMPONENT_NAME]["default pellet price"] = 400
+    my_config[config.COMPONENT_NAME]["pellet efficiency"] = .8
+    my_config[config.COMPONENT_NAME]["default pellet price"] = 400
     
-    return config
+    return my_config

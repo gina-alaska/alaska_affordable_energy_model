@@ -43,10 +43,11 @@ def preprocess (preprocessor, **kwargs):
     bio_data = data.ix[ids][data.ix[ids].isnull().all(1) == False]
     
     if len(bio_data) != 0:
+        bio_data = bio_data.iloc[0]
         sufficient = \
             bio_data['Sufficient Biomass for 30% of Non-residential buildings']
         sufficient = True if sufficient.lower() == 'yes' else False
-        peak = data['Peak Month % of total']
+        peak = bio_data['Peak Month % of total']
         cap_factor = bio_data['Capacity Factor']
     else:
         sufficient = False
@@ -63,32 +64,13 @@ def preprocess (preprocessor, **kwargs):
             'cost per btu/hrs': cost_per_btu_hrs,
             'o&m per year': 320,
             
-            'Sufficient Biomass for 30% of Non-residential buildings': 
+            'sufficient biomass': 
                 sufficient,
-            'Peak Month % of total': peak,
-            'Capacity Factor': cap_factor,
+            'peak month % of total': peak,
+            'capacity factor': cap_factor,
             
             'energy density': energy_density , 
-
-            }
-            
         }
+            
     }
   
-
-  hours of storage for peak: 4 # <float>
-  percent at max output: 0.5 # <float>
-  cordwood system efficiency: 0.88 # <float>
-  hours operation per cord: 5.0 # <float>
-  operation cost per hour: 20.0 # <float>
-  boiler assumed output: 325000 # <float>
-
-
-  
-  pellet efficiency: 0.8 # effcicieny of pellets (% as decimal) <float>
-
-  default pellet price: 400 # pellet cost per ton ($) <float>
-
-
-## list of wind preprocessing functions
-preprocess_funcs = [preprocess]
