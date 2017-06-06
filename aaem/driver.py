@@ -8,7 +8,7 @@ from aaem.components import comp_lib, comp_order
 from community_data import CommunityData
 from forecast import Forecast
 from diagnostics import Diagnostics
-from preprocessor2 import Preprocessor,  PreprocessorError
+from preprocessor import Preprocessor,  PreprocessorError
 #~ import defaults
 
 import yaml
