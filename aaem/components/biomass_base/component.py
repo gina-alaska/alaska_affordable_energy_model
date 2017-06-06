@@ -177,7 +177,6 @@ class BiomassBase (AnnualSavings):
         max_boiler_output_per : float
             boiler energy output (mmbtu/hr)
         """
-        print self.peak_monthly_energy_output
         self.max_boiler_output_per_sf = \
             float(self.peak_monthly_energy_output) / efficiency
         self.max_boiler_output = self.max_boiler_output_per_sf * \
@@ -199,6 +198,7 @@ class BiomassBase (AnnualSavings):
         self.biomass_fuel_consumed = capacity_factor * self.max_boiler_output *\
                                      constants.hours_per_year /\
                                      self.comp_specs['energy density']
+        print  self.biomass_fuel_consumed
         
     def calc_diesel_displaced (self):
         """Calculate the disel of set by biomass

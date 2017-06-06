@@ -131,11 +131,13 @@ class BiomassCordwood (bmb.BiomassBase):
             self.calc_energy_output()
             
             percent_max = (self.comp_specs["percent at max output"] / 100.0)
-            
+            print percent_max
             efficiency = percent_max * \
                 self.comp_specs["cordwood system efficiency"]
+            print efficiency
             self.calc_max_boiler_output(efficiency)
             factor = percent_max * self.comp_specs['capacity factor']
+            print factor
             self.calc_biomass_fuel_consumed(factor)
             self.calc_diesel_displaced()
             

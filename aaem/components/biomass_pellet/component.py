@@ -127,6 +127,17 @@ class BiomassPellet (bmb.BiomassBase):
               "Not on road or marine highway system, so it is assumed that" +\
               " pellets cannot be delivered cost effectively."
             return
+            
+        if np.isnan(float(self.comp_specs['peak month % of total'])):
+            self.diagnostics.add_warning(self.component_name, 
+                "bad config value for 'peak month % of total'")
+            self.max_boiler_output = 0
+            self.heat_displaced_sqft = 0
+            self.biomass_fuel_consumed = 0
+            self.fuel_price_per_unit = 0
+            self.heat_diesel_displaced = 0
+            self.reason = "bad config value for 'peak month % of total'"
+            return
         
         if self.cd["model heating fuel"]:
             self.calc_heat_displaced_sqft()

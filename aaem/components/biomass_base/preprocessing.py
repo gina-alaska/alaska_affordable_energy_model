@@ -47,8 +47,8 @@ def preprocess (preprocessor, **kwargs):
         sufficient = \
             bio_data['Sufficient Biomass for 30% of Non-residential buildings']
         sufficient = True if sufficient.lower() == 'yes' else False
-        peak = bio_data['Peak Month % of total']
-        cap_factor = bio_data['Capacity Factor']
+        peak = float(bio_data['Peak Month % of total'])
+        cap_factor = float(bio_data['Capacity Factor'])
     else:
         sufficient = False
         peak = np.nan
