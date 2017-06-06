@@ -11,10 +11,35 @@ Biomass Cordwood preprocessing
 #~ import os.path
 #~ from pandas import read_csv
 import aaem.components.biomass_base as bmb
+import config
 from copy import deepcopy
 
-# data files for preprocessing
-raw_data_files = deepcopy(bmb.raw_data_files)
+def preprocess (preprocessor, **kwargs):
+    """preprocess data related to existing projects
+    
+    Parameters
+    ----------
+    preprocessor: preprocessor.Proprocessor
+        a preprocessor object
+        
+    Returns
+    -------
+    list
+        project names
+    
+    """
+    kwargs['biomass_type'] = config.COMPONENT_NAME
+    kwargs['biomass_cost_per_btu_hrs'] = .6
+    kwargs['biomass_energy_density'] = 16000000
+    
+    config = bmb.preprocessing.preprocess(preprocessor, **kwargs)
 
-## list of wind preprocessing functions
-preprocess_funcs = [deepcopy(bmb.preprocess)]
+    config[config.COMPONENT_NAME]["hours of storage for peak"] = 4
+    config[config.COMPONENT_NAME]["percent at max output"] = .5 * 100
+    config[config.COMPONENT_NAME]["cordwood system efficiency"] = .88
+    config[config.COMPONENT_NAME]["hours operation per cord"] = 5.0
+    config[config.COMPONENT_NAME]["operation cost per hour"] = 20.00
+    config[config.COMPONENT_NAME]["boiler assumed output"] = 325000
+    
+    return config
+    

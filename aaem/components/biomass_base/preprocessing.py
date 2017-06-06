@@ -27,8 +27,6 @@ def preprocess (preprocessor, **kwargs):
     cost_per_btu_hrs = kwargs['biomass_cost_per_btu_hrs']
     energy_density = kwargs['biomass_energy_density']
     #~ btu_hrs = kwargs['ashp_btu_hrs']
-    boiler_assumed_output = kwargs['biomass_boiler_output']
-    
     
     start_year = preprocessor.data['community']['current year'] + 1
     
@@ -70,6 +68,7 @@ def preprocess (preprocessor, **kwargs):
             'Peak Month % of total': peak,
             'Capacity Factor': cap_factor,
             
+            'energy density': energy_density , 
 
             }
             

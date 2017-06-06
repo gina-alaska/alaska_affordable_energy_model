@@ -8,13 +8,30 @@ Biomass Pellet preprocessing
         Uses Biomass Base preprocessor functions  
 
 """
-import os.path
-from pandas import read_csv
 import aaem.components.biomass_base as bmb
-from copy import deepcopy
+import config
 
-# data files for preprocessing
-raw_data_files = deepcopy(bmb.raw_data_files)
+def preprocess (preprocessor, **kwargs):
+    """preprocess data related to existing projects
+    
+    Parameters
+    ----------
+    preprocessor: preprocessor.Proprocessor
+        a preprocessor object
+        
+    Returns
+    -------
+    list
+        project names
+    
+    """
+    kwargs['biomass_type'] = config.COMPONENT_NAME
+    kwargs['biomass_cost_per_btu_hrs'] = .54
+    kwargs['biomass_energy_density'] =  17600000
+    
+    config = bmb.preprocessing.preprocess(preprocessor, **kwargs)
 
-## list of wind preprocessing functions
-preprocess_funcs = [deepcopy(bmb.preprocess)]
+    config[config.COMPONENT_NAME]["pellet efficiency"] = .8
+    config[config.COMPONENT_NAME]["default pellet price"] = 400
+    
+    return config
