@@ -239,7 +239,7 @@ class Preprocessor (object):
             
             
         for comp in comp_lib:
-            print comp
+            #~ print comp
             module = self.import_component(comp_lib[comp])
             
             data = self.preprocess_component(module.preprocessing, **kwargs)

@@ -815,31 +815,33 @@ class Setup (object):
             #~ os.rename(os.path.join(input_path,diagf),
                         #~ os.path.join(diag_path,diagf))
           
-    #~ def write_input_files_metadata (self, input_path):
-        #~ """ 
-        #~ write data metadata
+    def write_preprocessor_metadata (self, save_path):
+        """ 
+        write data metadata
         
-        #~ inputs:
-            #~ input_path: path to inputs directory <string>
+        inputs:
+            input_path: path to inputs directory <string>
             
-        #~ outputs:
-            #~ saves 'input_files_metadata.yaml' in "__metadata" subdirectory
-        #~ """
-        #~ data_version_file = os.path.join(self.data_repo, 'VERSION')
-        #~ with open(data_version_file, 'r') as fd:
-            #~ ver = fd.read().replace("\n", "")
+        outputs:
+            saves 'input_files_metadata.yaml' in "__metadata" subdirectory
+        """
+        data_version_file = os.path.join(self.data_dir, 'VERSION')
+        with open(data_version_file, 'r') as fd:
+            ver = fd.read().replace("\n", "")
             
-        #~ md_dir = os.path.join(input_path, "__metadata")
-        #~ try:
-            #~ os.makedirs(md_dir)
-        #~ except OSError:
-            #~ pass
-        #~ m = 'w'
-        #~ with open(os.path.join(md_dir, 'input_files_metadata.yaml'), m) as meta:
-            #~ meta.write(yaml.dump({'upadted': datetime.strftime(datetime.now(),
-                                                        #~ "%Y-%m-%d %H:%M:%S"),
-                                  #~ 'data version': ver},
-                                  #~ default_flow_style = False))
+        md_dir = os.path.join(save_path, "__metadata")
+        try:
+            os.makedirs(md_dir)
+        except OSError:
+            pass
+        m = 'w'
+        with open(
+            os.path.join(md_dir, 'preprocessor_metadata.yaml'),
+             m) as meta:
+            meta.write(yaml.dump({'upadted': datetime.strftime(datetime.now(),
+                                                        "%Y-%m-%d %H:%M:%S"),
+                                  'data version': ver},
+                                  default_flow_style = False))
                                   
     #~ def archive_input_files_raw_data (self, input_path):
         #~ """
@@ -892,9 +894,10 @@ class Setup (object):
         if self.communities is None:
             self.load_communities()
         
+        f_path = os.path.join(self.model_root, self.tag, 'config')
         for community in self.communities:
             #~ print community
-            f_path = os.path.join(self.model_root, self.tag, 'config')
+            #~ f_path = os.path.join(self.model_root, self.tag, 'config')
             preprocessor = Preprocessor(community,
                 self.data_dir, 
                 diag = self.diagnostics, 
@@ -923,6 +926,7 @@ class Setup (object):
         
         #~ self.setup_construction_multipliers()
         #~ self.setup_goals()
+        self.write_preprocessor_metadata(f_path)
         return True
     
 def script_validator (script_file):
