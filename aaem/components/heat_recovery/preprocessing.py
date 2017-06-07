@@ -62,6 +62,9 @@ def preprocess (preprocessor, **kwargs):
             'lifetime': 20, # number years <int>
             'start year': 2016, # start year <int>
             
+            
+            'est. current annual heating fuel gallons displaced': UNKNOWN,
+            
             'estimate pipe distance': 1500,
             'estimate pipe cost/ft': 135,
             'estimate buildings to heat': 2,
@@ -95,7 +98,8 @@ def preprocess (preprocessor, **kwargs):
         'Total Round-trip Distance of Piping (feet)', 
         'Number of Buildings/Facilities', 'Buildings/Facilities to be Served',
         'Proposed Gallons of Diesel Offset', 'Proposed Maximum Btu/hr',
-        'Total CAPEX', 'Source', 'Link', 'Notes']
+        'Total CAPEX', 'Source', 'Link', 'Notes', 
+        'Est. current annual heating fuel gallons displaced']
     project_data = read_csv(
         os.path.join(
             preprocessor.data_dir, 
@@ -104,6 +108,8 @@ def preprocess (preprocessor, **kwargs):
         comment = '#',
         index_col = 0
     )[proj_cols]
+    
+    
         
     data_file = os.path.join(
         preprocessor.data_dir,
@@ -116,6 +122,19 @@ def preprocess (preprocessor, **kwargs):
     ids = [preprocessor.communities[0], preprocessor.aliases[0]]
     if preprocessor.intertie_status == 'child':
         ids = [preprocessor.communities[1], preprocessor.aliases[1]]
+    
+    current = \
+        project_data['Est. current annual heating fuel gallons displaced']\
+        [project_data.isnull().all(1) == False]
+    try:
+        float(current)
+        base['Heat Recovery']\
+            ['est. current annual heating fuel gallons displaced'] = current
+    except:
+        pass
+        
+    
+    del project_data['Est. current annual heating fuel gallons displaced']
     
     try:
         project_data = project_data.ix[ids]

@@ -36,6 +36,8 @@ order = [
     'lifetime', # number years <int>
     'start year', # start year <int>
     
+    'est. current annual heating fuel gallons displaced',
+    
     'estimate pipe distance',
     'estimate pipe cost/ft',
     'estimate buildings to heat',
@@ -62,6 +64,8 @@ structure = {
         'enabled': bool,
         'lifetime': int, 
         'start year': int, 
+        
+        'est. current annual heating fuel gallons displaced': [float, str],
         
         'estimate pipe distance': float,
         'estimate pipe cost/ft': float,
@@ -92,6 +96,8 @@ comments = {
     'enabled': definitions.ENABLED,
     'lifetime': definitions.LIFETIME,
     'start year': definitions.START_YEAR_WITH_TYPE,
+    
+    'est. current annual heating fuel gallons displaced': '[float, str]',
     
     'estimate pipe distance': 
         ('[float] esitmated pipe distince in feet if'

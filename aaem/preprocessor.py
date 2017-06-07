@@ -205,6 +205,9 @@ class Preprocessor (object):
         self.data = merge_configs(self.data, 
             self.process_diesel_powerhouse_data() )
             
+        self.data = merge_configs(self.data,
+            self.load_measured_heating_fuel_prices())
+            
         ## caclulate 'electric non-fuel prices'
         if not source == 'none':
             efficiency = self.data['community']['diesel generation efficiency']
@@ -480,6 +483,8 @@ class Preprocessor (object):
             intertie = "not in intertie"
         
         population = self.load_population(**kwargs)
+        
+        c_goals, r_goals = self.load_goals()
         data = {
             'community': {
                 'model electricity': True,
@@ -497,9 +502,11 @@ class Preprocessor (object):
                      self.load_construction_multiplier(),
                 'GNIS ID': self.GNIS_ids[0],
                 'FIPS ID': self.FIPS_ids[0],
+                'intertie': intertie,
                 'senate district': senate,
                 'house district': house,
-                'intertie': intertie,
+                'community goals': c_goals, 
+                'regional goals': r_goals,
                 
                 'population':population,
                 
@@ -897,6 +904,13 @@ class Preprocessor (object):
             years_data['year'] = year
             years_data = years_data.fillna(0)
             
+            years_data['residential rate'] = \
+                data.ix[year]['residential_rate'].mean()
+            years_data["diesel price"] = data.ix[year]["fuel_price"].mean()
+                
+            years_data["kwh purchased"] = years_data["kwh_purchased"]
+            
+            
             ## add total generation
             years_data['generation'] = years_data[['diesel_kwh_generated',
                 "powerhouse_consumption_kwh", "hydro_kwh_generated",
@@ -910,7 +924,6 @@ class Preprocessor (object):
             years_data['generation wind'] = 0
             years_data['generation natural gas'] = 0
             years_data['generation biomass'] = 0
-            
             
             
             ## add generation from purchases
@@ -980,10 +993,10 @@ class Preprocessor (object):
         ### clean up
         columns = ["year","generation","consumption","fuel used",
             "efficiency","line loss","net generation","consumption residential",
-            "consumption non-residential","kwh_purchased","residential_rate",
+            "consumption non-residential","kwh_purchased","residential rate",
             "diesel_price","generation diesel","generation hydro",
             "generation natural gas","generation wind","generation solar",
-            "generation biomass"]
+            "generation biomass", "diesel price"]
         processed_data = DataFrame(data_by_year)[columns]
         
         return processed_data
@@ -1151,6 +1164,9 @@ class Preprocessor (object):
             years_data = generation.sum(level=0).ix[year]
             years_data['year'] = year
             
+            years_data["residential rate"] = np.nan
+            years_data["diesel price"] = np.nan
+            
             ## setup generation from diesel, hydro, etc
             years_data['generation diesel'] = 0
             years_data['generation hydro'] = 0
@@ -1219,7 +1235,7 @@ class Preprocessor (object):
             "consumption non-residential","kwh_purchased",
             "generation diesel","generation hydro",
             "generation natural gas","generation wind","generation solar",
-            "generation biomass"]
+            "generation biomass", "residential rate", 'diesel price']
         processed_data = DataFrame(data_by_year)[columns]
         
         return processed_data
@@ -1250,6 +1266,9 @@ class Preprocessor (object):
             
             years_data = sales.sum(level=0).ix[year]
             years_data['year'] = year
+            
+            years_data["residential rate"] = np.nan
+            years_data["diesel price"] = np.nan
             
             ## setup generation from diesel, hydro, etc
             years_data['generation diesel'] = np.nan
@@ -1293,7 +1312,7 @@ class Preprocessor (object):
             "consumption non-residential","kwh_purchased",
             "generation diesel","generation hydro",
             "generation natural gas","generation wind","generation solar",
-            "generation biomass"]
+            "generation biomass", "residential rate", 'diesel price']
         processed_data = DataFrame(data_by_year)[columns]
         
         return processed_data
@@ -1337,10 +1356,10 @@ class Preprocessor (object):
                 ["year","generation","consumption","fuel used",
                 "efficiency","line loss","net generation",
                 "consumption residential",
-                "consumption non-residential","kwh_purchased","residential_rate",
+                "consumption non-residential","kwh purchased","residential rate",
                 "diesel_price","generation diesel","generation hydro",
                 "generation natural gas","generation wind","generation solar",
-                "generation biomass"]
+                "generation biomass", "diesel price"]
             )
             #~ raise PreprocessorError, "No generation data avaialbe"
         return data
@@ -1496,7 +1515,9 @@ class Preprocessor (object):
             'generation solar',
             'generation biomass',
             'line loss',
-            'efficiency'
+            'efficiency',
+            'residential rate',
+            'diesel price',
         ]]
         generation.index = generation.index.astype(int)
         generation = generation.sort_index()
@@ -1583,6 +1604,40 @@ class Preprocessor (object):
         senate = data.ix[[self.community]]['Senate'].values.tolist()
         house = data.ix[[self.community]]['House District'].values.tolist()
         return senate, house
+        
+    def load_goals (self, **kwargs):
+        """load the goals
+        
+        Returns
+        -------
+        community: list
+            list of community goals
+        house: list
+            list of state regional goals
+        """
+        datafile = os.path.join(self.data_dir,'goals_community.csv')
+        data = read_csv(datafile, index_col=0, comment='#')
+        #~ data.index = [i.replace(' (part)','') for i in data.index]
+        idx = 1 if self.intertie_status == 'child' else 0  
+        ids = [self.community, self.aliases[idx]]
+        ids = [ i for i in ids if i != '' ]
+        
+        community = data.ix[ids][data.ix[ids].isnull().all(1) == False]
+        community = community.T
+        community = community[community.columns[0]]
+        community = community[~community.isnull()]
+        region = community['Region']
+
+        community = [g.decode('unicode_escape').encode('ascii','ignore') \
+            for g in community.values[1:]]
+        datafile = os.path.join(self.data_dir,'goals_regional.csv')
+        data = read_csv(datafile, index_col=0, comment='#')
+        regional = data.ix[region]
+        regional = regional[~regional.isnull()]
+        regional = [g.decode('unicode_escape').encode('ascii','ignore') \
+            for g in regional.values[1:]]
+    
+        return community, regional
     
     def load_road_system_status (self, **kwargs):
         """load boolead for if community has acces to road system 
@@ -1642,6 +1697,8 @@ class Preprocessor (object):
         switchgear_status = data['Switchgear Suitable'].values[0]
         switchgear_status = True if  switchgear_status.lower() == 'yes' \
             else False
+        
+        total = data['Total Number of generators'].values[0]
             
         total_capacity = data['Total Capacity (in kW)'].values[0]
         try:
@@ -1649,11 +1706,17 @@ class Preprocessor (object):
         except:
             total_capacity = np.nan 
             
+        largest = data['Largest generator (in kW)'].values[0]
+        size = data['Sizing'].values[0]
+            
         return {
             'community': {
                 'heat recovery operational': hr_operational,
                 'switchgear suatable for renewables': switchgear_status,
-                'total capacity': total_capacity
+                'total capacity': total_capacity,
+                'number diesel generators': total,
+                'largest generator': largest,
+                'diesel generator sizing': size,
             }
         }
         
@@ -1754,7 +1817,42 @@ class Preprocessor (object):
         
         return price_cord, price_pellet, prices_diesel, price_propane
         
-    
+    def load_measured_heating_fuel_prices (self, **kwargs):
+        """Load the known heating fuel prices
+        
+        Returns
+        -------
+        DataFrame
+            measured fuel price data
+        """
+        datafile = os.path.join(self.data_dir, "fuel-price-survey-data.csv")
+        fuel_prices = read_csv(datafile, index_col = 1)
+        
+        ids = self.GNIS_ids
+        if not self.process_intertie:
+            if self.intertie_status == 'child':
+                ids = [ids[1]]
+            else:
+                ids = [ids[0]]
+        
+        ids = ids[0]
+        #~ print ids
+        current_year = self.data['community']['current year']
+        fuel_prices = fuel_prices[fuel_prices['year'] < current_year]
+        #~ data = [] 
+        try:
+            data = fuel_prices.ix[ids].groupby('year').mean()[[
+                'no_1_fuel_oil_price','no_2_fuel_oil_price']].mean(1)
+
+            data = DataFrame(data)
+            data.columns = ['average price']
+        except (KeyError, ValueError):
+            data = DataFrame(columns = ['average price'])
+            data.index.name = 'year'
+        
+        return {'community': {'heating fuel prices': data}}
+        
+
     def helper_fuel_prices (self, ** kwargs):
         """process fuel prices in to dictionay section
         

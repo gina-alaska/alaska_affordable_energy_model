@@ -173,6 +173,8 @@ class Forecast (object):
             self.cd.get_item('community','utility info')\
             ['consumption non-residential'] * consumption_scaler
         
+        #~ print self.cd.get_item('community','utility info')
+        
         index = list(residential_consumption.index)
 
         if len(residential_consumption) < 10:
@@ -217,7 +219,7 @@ class Forecast (object):
         forcasted_consumption = (m * self.population + b) #+ self.average_nr_kWh
         forcasted_consumption.columns = ['consumption residential']
         
-        forcasted_consumption['consumption_qualifer'] = "P"
+        forcasted_consumption['consumption_qualifier'] = "P"
         
         forcasted_consumption['consumption residential']\
             [residential_consumption.ix[index].index] = \
@@ -226,7 +228,7 @@ class Forecast (object):
         if consumption_scaler == 1.0:
             ## if the scaler is not 1 then none of the values are really
             ## measured
-            forcasted_consumption['consumption_qualifer'].ix[index] = \
+            forcasted_consumption['consumption_qualifier'].ix[index] = \
                 (residential_consumption * np.nan).fillna("M")
         
         
@@ -244,6 +246,7 @@ class Forecast (object):
         #~ print mean_non_res_con
         
         forcasted_consumption['consumption non-residential'] = mean_non_res_con
+        #~ print forcasted_consumption
         forcasted_consumption['consumption non-residential']\
             [non_residential_consumption.ix[index].index] = \
             non_residential_consumption.ix[index]
@@ -253,13 +256,14 @@ class Forecast (object):
             forcasted_consumption['consumption non-residential'] + \
             forcasted_consumption['consumption residential'] 
             
-        forcasted_consumption['consumption non-residential']\
-            [total_consumption.ix[index].index] = total_consumption.ix[index]
+        #~ forcasted_consumption['consumption non-residential']\
+            #~ [total_consumption.ix[index].index] = total_consumption.ix[index]
            
         ## don't forecast backwards 
         forcasted_consumption = \
             forcasted_consumption.ix[residential_consumption.index[0]:]
         self.consumption = forcasted_consumption
+        #~ print self.consumption
         
     def forecast_generation (self):
         """

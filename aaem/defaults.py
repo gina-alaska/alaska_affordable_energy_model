@@ -24,15 +24,19 @@ base_order = [
     'regional construction multiplier',
     'GNIS ID',
     'FIPS ID',
+    'intertie',
     'senate district',
     'house district',
+    'community goals',
+    'regional goals',
     'population',
-    'intertie', 
+     
     'heating degree days',
     'heating fuel premium',
     'on road system',
     
     'diesel prices',
+    'heating fuel prices',
     'electric non-fuel prices',
     
     'residential non-PCE electric price',
@@ -67,6 +71,9 @@ base_order = [
     
     'diesel generator o&m cost percent',
     'switchgear cost',
+    'number diesel generators',
+    'largest generator',
+    'diesel generator sizing',
     
     'assumed percent non-residential sqft heat displacement',
     'heating oil efficiency'
@@ -92,6 +99,8 @@ base_structure = {
         'FIPS ID': int,
         'senate district': list,
         'house district': list,
+        'community goals': list,
+        'regional goals': list,
         'population': DataFrame,
         'intertie': [list, str], 
         'heating degree days': float,
@@ -99,6 +108,7 @@ base_structure = {
         'on road system': bool,
         
         'diesel prices': DataFrame,
+        'heating fuel prices': DataFrame,
         'electric non-fuel prices': DataFrame,
         
         'residential non-PCE electric price': float,
@@ -133,6 +143,9 @@ base_structure = {
         
         'diesel generator o&m cost percent': float,
         'switchgear cost': float,
+        'number diesel generators': [int, str],
+        'largest generator': [int, str],
+        'diesel generator sizing': str,
         
         'assumed percent non-residential sqft heat displacement': float,
         'heating oil efficiency': float
@@ -160,6 +173,8 @@ base_comments = {
         'FIPS ID': int,
         'senate district': list,
         'house district': list,
+        'community goals': list,
+        'regional goals': list,
         'population': DataFrame,
         'intertie': [list, str], 
         'heating degree days': float,
@@ -167,6 +182,7 @@ base_comments = {
         'on road system': bool,
         
         'diesel prices': DataFrame,
+        'heating fuel prices': '[DataFrame] known heating fuel prices',
         'electric non-fuel prices': DataFrame,
         
         'electric non-fuel price': float,
@@ -200,6 +216,9 @@ base_comments = {
         
         'diesel generator o&m cost percent':float,
         'switchgear cost': float,
+        'number diesel generators': [int, str],
+        'largest generator': int,
+        'diesel generator sizing': str,
         
         'assumed percent non-residential sqft heat displacement': float,
         'heating oil efficiency': float
