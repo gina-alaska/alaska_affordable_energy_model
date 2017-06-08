@@ -1690,7 +1690,7 @@ class WebSummary(object):
                     name = c.comp_specs['name']
                 except (KeyError, TypeError):
                     name = comp
-                if name == 'None':
+                if name == 'None' or name == 'none' or name is None:
                     name = comp
                 
                 name = name.decode('unicode_escape').encode('ascii','ignore')
