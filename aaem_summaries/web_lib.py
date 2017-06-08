@@ -73,6 +73,8 @@ def make_costs_table (community, comp, projects, base_cost, directory):
             name = 'nan'
         if name == 'nan':
             name = p.replace('+', ' ').replace('_',' ')
+        if name is None:
+            name = p
         net_benefit = DataFrame([range(project.start_year,
                                        project.actual_end_year+1),
                                  project.get_net_benefit()\
@@ -138,6 +140,8 @@ def make_consumption_table (community, comp, projects, base_con,
             name = 'nan'
         if name == 'nan':
             name = p.replace('+', ' ').replace('_',' ')
+        if name is None:
+            name = p
         reduction = DataFrame([range(project.start_year,
                                 project.actual_end_year+1)],['Year']).T
                                 

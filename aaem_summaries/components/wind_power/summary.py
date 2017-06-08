@@ -47,6 +47,7 @@ def generate_web_summary (web_object, community):
     projects, s1, e1 = wl.get_projects(web_object, community, 
                                        COMPONENT_NAME, 'wind')
       
+    
     start_year, end_year = wl.correct_dates(modeled.start_year, s1,
                                          modeled.actual_end_year, e1)
     
@@ -66,6 +67,7 @@ def generate_web_summary (web_object, community):
     diesel_price = web_object.results[community]['community data'].\
                             get_item('community','diesel prices').\
                             ix[start_year: end_year]#values
+    diesel_price = diesel_price[diesel_price.columns[0]]
 
     ## get diesel generator efficiency
     eff = modeled.cd['diesel generation efficiency']
@@ -161,24 +163,23 @@ def create_project_details_list (project):
         A dictionary with values used by summary
     """
     try:
-        wind_class = int(float(project.comp_specs['resource data']\
-                                            ['Assumed Wind Class']))
+        wind_class = int(float(project.comp_specs['wind class']))
     except ValueError:
         wind_class = 0
     
     pen = project.generation_wind_proposed/\
           float(project.forecast.cd.get_item('community',
-                                                'generation').iloc[-1:])
+        'utility info')['net generation'].iloc[-1:])
     pen *= 100  
     
     try:
-        notes = project.comp_specs['project details']['notes']
+        notes = project.comp_specs['notes']
     except:
         notes = ''
     
     try:
         source = "<a href='" + \
-            project.comp_specs['project details']['source'] + "'> link </a>"
+            project.comp_specs['source'] + "'> link </a>"
     except StandardError as e:
         source = "unknown"  
     
@@ -201,7 +202,7 @@ def create_project_details_list (project):
         {'words':'Estimated wind lass', 'value': wind_class},
         {'words':'Estimated Capacity Factor', 
             'value': 
-                project.comp_specs['resource data']['assumed capacity factor']},
+                project.comp_specs['capacity factor']},
         {'words':'Estimated wind penetration level', 
             'value': '{:,.2f}%'.format(pen)},
         {'words':'Notes', 
