@@ -47,13 +47,13 @@ def generate_web_summary (web_object, community):
     ## get forecast stuff (consumption, generation, etc)
     fc = modeled.forecast
 
-    generation = fc.generation_by_type.\
+    generation = fc.generation.\
                                         ix[start_year:end_year].sum(1)
     
     ## get the diesel prices
     diesel_price = web_object.results[community]['community data'].\
                             get_item('community','diesel prices').\
-                            get_projected_prices(start_year, end_year+1)
+                            ix[start_year: end_year]
            
     ## get diesel generator efficiency
     eff = modeled.cd['diesel generation efficiency']

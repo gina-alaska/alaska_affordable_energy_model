@@ -57,13 +57,13 @@ def generate_web_summary (web_object, community):
     fc = modeled.forecast
    
     
-    generation = fc.generation_by_type['generation diesel'].\
+    generation = fc.generation['generation diesel'].\
                                         ix[start_year:end_year]
     
     ## get the diesel prices
     diesel_price = web_object.results[community]['community data'].\
                             get_item('community','diesel prices').\
-                            get_projected_prices(start_year, end_year+1)#values
+                            ix[start_year: end_year]#values
 
     ## get diesel generator efficiency
     eff = modeled.cd['diesel generation efficiency']
@@ -74,7 +74,7 @@ def generate_web_summary (web_object, community):
     ## get generation fuel costs per year (modeled)
     base_cost = generation/eff * diesel_price
     base_cost.name = 'Base Cost'
-
+    print base_cost
     
     table1 = wl.make_costs_table(community, COMPONENT_NAME, projects, base_cost,
                               web_object.directory)
