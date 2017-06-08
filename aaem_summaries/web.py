@@ -1687,7 +1687,7 @@ class WebSummary(object):
   
                 
                 try:
-                    name = c.comp_specs['project details']['name']
+                    name = c.comp_specs['name']
                 except (KeyError, TypeError):
                     name = comp
                 if name == 'None':
