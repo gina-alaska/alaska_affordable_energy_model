@@ -53,7 +53,8 @@ def generate_web_summary (web_object, community):
     ## get the diesel prices
     diesel_price = web_object.results[community]['community data'].\
                             get_item('community','diesel prices').\
-                            ix[start_year: end_year]
+                            ix[start_year: end_year]#values
+    diesel_price = diesel_price[diesel_price.columns[0]]
            
     ## get diesel generator efficiency
     eff = modeled.cd['diesel generation efficiency']
@@ -136,7 +137,7 @@ def create_project_details_list (project):
     """
     pen = project.generation_proposed/\
           float(project.forecast.cd.get_item('community',
-                                                'generation').iloc[-1:])
+        'utility info')['net generation'].iloc[-1:])
     pen *= 100
     pen = pen[0]
    
@@ -156,8 +157,8 @@ def create_project_details_list (project):
                 '{:,.0f} kWh/year'.format(project.generation_proposed[0])},
 
         {'words':'Output per 10kW Solar PV', 
-            'value': '{:,.0f} kWh/year'.format(project.comp_specs['data']\
-                                         ['Output per 10kW Solar PV'])},
+            'value': '{:,.0f} kWh/year'.format(project.comp_specs\
+                                         ['output per 10kW solar PV'])},
         {'words':'Estimated Solar Penetration Level', 
             'value': '{:,.0f}%'.format(pen)},
             ]

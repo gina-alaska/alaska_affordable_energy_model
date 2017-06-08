@@ -114,7 +114,7 @@ class WebSummary(object):
             
             lock = Lock()
     
-            for com in ['Adak']: #keys: #["Stebbins","Adak","Brevig_Mission"]:
+            for com in keys: #["Stebbins","Adak","Brevig_Mission"]:
                 while len(active_children()) >= cpu_count():
                     continue
                 lock.acquire()
@@ -315,7 +315,7 @@ class WebSummary(object):
                 self.get_web_summary(comp_lib[comp])(self, com)
             except (AttributeError, RuntimeError) as e:
                 ## if it cant be run
-                print e
+                #~ print e
                 template = self.no_results_html
                 pth = os.path.join(
                     self.directory,

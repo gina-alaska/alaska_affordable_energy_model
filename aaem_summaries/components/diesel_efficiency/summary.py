@@ -53,7 +53,8 @@ def generate_web_summary (web_object, community):
     ## get the diesel prices
     diesel_price = web_object.results[community]['community data'].\
                             get_item('community','diesel prices').\
-                            ix[start_year: end_year]
+                            ix[start_year: end_year]#values
+    diesel_price = diesel_price[diesel_price.columns[0]]
            
     ## get diesel generator efficiency
     eff = modeled.cd['diesel generation efficiency']
