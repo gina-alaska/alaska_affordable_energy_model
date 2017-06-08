@@ -18,10 +18,19 @@ from pickle import PicklingError
 import copy
 
 class WebSummary(object):
-    """ Class doc """
-    
+    """Tool for generating html web summaries """
     def __init__ (self, model_root, directory, tag = ''):
-        """ Class initialiser """
+        """Tool for generating html web summaries
+        
+        Parameters
+        ----------
+        model_root: path
+            path to model version to create summaries for
+        directory: path
+            output path
+        tag: str
+            resultes tag to use
+        """
         self.max_year = 2040
         self.viable_communities = {"Residential Energy Efficiency":set(),
               "Non-residential Energy Efficiency":set(),
@@ -44,14 +53,13 @@ class WebSummary(object):
             "This community is known to have missing/incomplete data."
         self.bad_data_coms = []
         try:
-            inputs = os.path.join(self.model_root, 'input_files')
-            for d in os.listdir(inputs):
+            for c in self.get_coms():
+                if len(self.results[c]['community data'].get_item('community',
+                    'utility info')) == 0:
+                    self.bad_data_coms.append(c)
             
-                if os.path.isdir(os.path.join(inputs,d)) and d.find('__') == -1:
-                    
-                    if len(os.listdir(os.path.join(inputs,d))) < 29:
-                        self.bad_data_coms.append(d)       
-        except:
+        except StandardError as e:
+            #~ print e
             print "Could not analyze bad commuities"
             pass
         self.version = model_version
@@ -87,202 +95,140 @@ class WebSummary(object):
         self.tech_html = self.env.get_template('tech.html')
         self.get_ratios_greater_than_limit()
     
-    def get_ratios_greater_than_limit (self, limit = 1.0):
-        """ Function doc """
-        #~ keys = sorted([k for k in self.results.keys() if k.find('+') == -1])
-        for com in self.results.keys():
-            for comp in self.results[com]:
-                try:
-                    
-                    
-                    it = self.results[com]['community data'].intertie
-                    if not it is None:
-                        if it == 'parent' and not comp in ["Wind Power",
-                                                 'Solar Power',
-                                                  'Hydropower',
-                                                 'Transmission and Interties',
-                                                 'Diesel Efficiency']:
-                            continue
-                        if it == 'child' and comp in ["Wind Power",
-                                                 'Solar Power',
-                                                  'Hydropower',
-                                                 'Transmission and Interties',
-                                                 'Diesel Efficiency']:
-                            continue
-                    
-                    ratio =  self.results[com][comp].get_BC_ratio()
-                    if ratio == 'N/A':
-                        continue
-                    if ratio > limit:
-                        #~ print ratio, type(ratio)
-                        #~ self.viable_communities[comp].add(com.split('+')[0])
-                        self.viable_communities[comp].add(com.split('+')[0].replace("_intertie",""))
-                except AttributeError as e:
-                    #~ print e
-                    pass
-
-                
-        #~ print self.viable_communities
-        
-
-    def get_viable_components (self, com, cutoff = 1):
-        """ Function doc """
-        l = []
-        for comp in self.results[com]:
-            try:
-                if self.results[com][comp].get_BC_ratio() == 'N/A':
-                    continue
-                if self.results[com][comp].get_BC_ratio() >= cutoff:
-                    l.append(comp)
-            except AttributeError as e:
-                #~ print e
-                pass
-        
-        return l
-        
-        
-    def generate_web_summaries (self, com):
-        """
-        """
-        os.makedirs(os.path.join(self.directory, com.replace("'",""), 'csv'))
-        self.overview(com)
-        self.finances_demo_summary(com)
-        self.consumption_summary(com)
-        self.generation_summary(com)
-        self.projects_summary(com)
-        components = set(comp_order)
-        
-        it = self.results[com]['community data'].intertie
-        if not it is None:
-            if it == 'parent':
-                components = set(["Wind Power", 'Solar Power',  'Hydropower',
-                              'Transmission and Interties','Diesel Efficiency'])
-            else:
-                components = set(comp_order) - set(["Wind Power", 'Solar Power', 
-                                                    'Hydropower',
-                                                'Transmission and Interties',
-                                                    'Diesel Efficiency'])
-        
-        
-        re_dirs = set(comp_order) - components
-        
-        ## generate the component pages
-        for comp in components:
-            c_clean = comp.replace(' ','_').\
-                           replace('(','').replace(')','').lower()
-            #~ print comp
-            try:
-                ## try to run the components generate web summary function
-                self.get_web_summary(comp_lib[comp])(self, com)
-            except (AttributeError, RuntimeError) as e:
-                ## if it cant be run 
-                #~ print comp, e
-                template = self.no_results_html
-                #~ if comp in ['Solar Power','Wind Power','Heat Recovery'] :
-                pth = os.path.join(self.directory, com.replace("'",""), c_clean +'.html')
-
-
-                msg = None
-                if com in self.bad_data_coms:
-                    msg = self.bad_data_msg
-                with open(pth, 'w') as html:
-                    reason = self.results[com][comp].reason
-                    if reason.lower() == 'ok':
-                        reason = "The component has a bad motivator"
-                        
-                    # make a proper sentence.
-                    #~ reason = reason[0].upper() + reason[1:].lower()
-                    html.write(template.render( 
-                                    type = comp, 
-                                    com = com.replace("'",'') ,
-                                    reason = reason,
-                                    sections = self.get_summary_pages(),
-                                    communities = self.get_cleanded_coms(),
-                                    metadata = self.metadata,
-                                    message = msg))
-                                   
-        ## geneate redirect pages for intertie related pages
-        template = self.comp_redir_html
-        for comp in re_dirs:
-            c_clean = comp.replace(' ','_').\
-                           replace('(','').replace(')','').lower()
-            pth = os.path.join(self.directory, com.replace("'",""), c_clean +'.html')
-
-            with open(pth, 'w') as html:
-                
-                parent = True
-                intertie =  [i for i in self.results[com]['community data'].intertie_list if i != "''"]
-                if it == "child":
-                    parent = False
-                    intertie = [ self.results[com]['community data'].parent +"_intertie"]
-                    
-                
-                msg = None
-                if com in self.bad_data_coms:
-                    msg = self.bad_data_msg
-    
-                
-                html.write(template.render( 
-                                type = comp, 
-                                com = com.replace("'",'') ,
-                                sections = self.get_summary_pages(),
-                                communities = self.get_cleanded_coms(),
-                                metadata = self.metadata,
-                                message = msg,
-                                parent = parent,
-                                intertie = intertie
-                                ))
-
-
-
-    def copy_etc (self):
-        """
-        copy all of the css stuff
-        """
-        pth = os.path.dirname(__file__)
-        shutil.copytree(os.path.join(pth,'templates','css'),
-                                        os.path.join(self.directory,'css'))
-        shutil.copytree(os.path.join(pth,'templates','js'),
-                                        os.path.join(self.directory,'js'))
-        shutil.copytree(os.path.join(pth,'templates','fonts'),
-                                        os.path.join(self.directory,'fonts'))
-        shutil.copy(os.path.join(pth,'templates','summary.css'),self.directory)
-        shutil.copy(os.path.join(pth,'templates','footer.css'),self.directory)
-        shutil.copy(os.path.join(pth,'templates','dropdown.css'),self.directory)
-        shutil.copy(os.path.join(pth,'templates','map.js'),self.directory)
-        shutil.copy(os.path.join(pth,'templates','tech_map.js'),self.directory)
-        shutil.copy(os.path.join(pth,'templates','leaflet.ajax.min.js'),self.directory)
-        template = self.env.get_template('navbar.js')
-        
-        
-        
-        #~ print self.get_house_dists()
-        techs = []
-
-        for comp in sorted(self.viable_communities.keys()):
-            temp = []
-            for com in sorted(self.viable_communities[comp]):
-                try:
-                    temp.append(com.replace("'",''))
-                except:
-                    temp = [com.replace("'",'')]
+    #### -----------------------------------------------------------------------
+    #### Driving functions
+    #### -----------------------------------------------------------------------
+    def generate_all (self):
+        """Generate all html summaries and support files"""
+        keys = sorted([k for k in self.results.keys() if k.find('+') == -1])
+        self.copy_static()
+        self.generate_tech_summaries()
+        self.create_index()
+        self.generate_regional_summaries()
+        #~ import sys
+        #~ sys.exit()
+        try:
+            ### try Multiprocessing
+            os.fork
+            from multiprocessing import Process, Lock,active_children, cpu_count
             
-            techs.append({'communities':temp,
-                          'clean': comp.replace('(','').\
-                                        replace(')','').replace(' ','_'),
-                          'district': comp})
-
+            lock = Lock()
+    
+            for com in keys: #["Stebbins","Adak","Brevig_Mission"]:
+                while len(active_children()) >= cpu_count():
+                    continue
+                lock.acquire()
+                print com, "started"
+                lock.release()
+                Process(
+                    target=self.multiprocess_community_summaries,
+                    args=(com, lock)
+                ).start()
+                
+            while len(active_children()) > 0:
+                continue
+        except (ImportError,
+            NotImplementedError,
+            PicklingError,
+            AttributeError):
+            ### do it one at a time.
+            for com in keys: #["Stebbins","Adak","Brevig_Mission"]:
+                start = datetime.now()
+                self.generate_community_summaries(com)
+                print com, datetime.now() - start
+    
+    
+    #### -----------------------------------------------------------------------
+    #### "index" pages
+    #### -----------------------------------------------------------------------
+    def create_index (self):
+        """Generate index page
+        """
+        pth = os.path.join(self.directory, 'index.html')
+        regions = []
+        with open(pth, 'w') as html:
+            html.write(self.index_html.render( type = 'index', 
+                       #~ summary_pages = ['Summary'] + comp_order ,
+                       #~ com = 'index',
+                       sections = self.get_summary_pages(),
+                       communities = self.get_cleanded_coms(),
+                       regions = regions,
+                       metadata = self.metadata,
+                       in_root = True,
+                                ))
+    
+    def generate_regional_summaries (self):
+        """Generate regional summaries
+        """
+        template = self.general_summaries_html
+        regions = self.get_regions()
         
-        with open(os.path.join(self.directory,'navbar.js'), 'w') as html:
-            html.write(template.render(communities = self.get_cleanded_coms(),
-                                       regions=self.get_regions(),
-                                       senate_dist=self.get_senate_dists(),
-                                       house_dist=self.get_house_dists(),
-                                       techs = techs
-                        ))
-                        
+        for reg in regions:
+            charts = []
+            name = reg['region']
+            coms = reg['communities']
+            
+            
+            table = []
+            for com in coms:
+                table.append({'url': com + "/overview.html", 
+                                            'text':com.replace('_',' ')})
+            charts.append({'name':'coms', 'data':table, 
+                        'title':'Communities in region',
+                        'links_list': True,})
+            
+        
+            try:
+                goals = read_csv(os.path.join(self.model_root,'input_files', 
+                                            '__goals_regional.csv'),
+                                comment='#', index_col=0)
+            
+                key = name
+                if key == 'Copper River/Chugach':
+                    key = 'Copper River'
+                elif key == 'Kodiak':
+                    key = 'Kodiak Region'
+                goals = goals.ix[key].fillna('')
+            except IOError: 
+                goals = None
+               
+            if goals is None:
+                charts.append({'name':'goals', 
+                        'data':"Regional Goals not avaialble", 
+                        'title':'Regional Goals',
+                        })
+            else:
+                table = [[True,'Priority','Goal']]
+                p = 1
+                for g in goals['Priority 1':]:
+                    if g == '':
+                        break
+                    #~ print type(g)
+                    table.append([False, p, g.decode('unicode_escape').\
+                                              encode('ascii','ignore')])
+                    p += 1
+                
+                
+                charts.append({'name':'goals', 'data':table, 
+                        'title':'Regional Goals',
+                        'table': True,})
+    
+            pth = os.path.join(self.directory,
+                name.replace(' ','_').replace('(','').replace(')','').\
+                replace('/','_').lower() + '.html')
+            with open(pth, 'w') as html:
+                html.write(template.render( type = 'Region', 
+                                        com = name ,
+                                        charts = charts,
+                                        summary_pages = [],
+                                        sections = [],
+                                        metadata = self.metadata,
+                                        in_root=True
+                                        ))
+   
     def generate_tech_summaries (self):
-        
+        """Generate tech related summaries
+        """
         for comp in comp_order:
             #~ try:
             coms = str(list(self.viable_communities[comp])).replace('_', ' ')
@@ -319,231 +265,429 @@ class WebSummary(object):
                                     bc_limit = 1.0,
                                     in_root=True))
                 
-                
-                
             #~ except StandardError as e:
                 #~ print e
-            
-            
-            
+                
+                
+    #### -----------------------------------------------------------------------
+    #### community summaries
+    #### ----------------------------------------------------------------------- 
+    def generate_community_summaries (self, com):
+        """generate all summaries for a community
         
-    
-    def get_tech_summary(self, component):
+        Parameters
+        ----------
+        com: str
+            a community or project in the results
         """
-        """
-        try:
-            return self.tech_summaries[component]
-        except AttributeError as e:
-            #~ print e
-            self.tech_summaries = {}
-        except KeyError as e:
-            #~ print e
-            pass
-
-        ## get regional summaries from main component
-        self.tech_summaries[component] = \
-                    import_module("aaem.components." + component).create_regional_summary(self.results)
-        return self.tech_summaries[component]
+        os.makedirs(os.path.join(self.directory, com.replace("'",""), 'csv'))
+        
+        ## General summaries
+        self.create_community_overview(com)
+        self.create_community_finances_demo_summary(com)
+        self.create_community_consumption_summary(com)
+        self.create_community_generation_summary(com)
+        self.create_community_projects_summary(com)
+        
+        ## tech/componet summaries
+        components = set(comp_order)
+        it = self.results[com]['community data'].intertie
+        if not it is None:
+            if it == 'parent':
+                components = set(["Wind Power", 'Solar Power',  'Hydropower',
+                              'Transmission and Interties','Diesel Efficiency'])
+            else:
+                components = set(comp_order) - set(["Wind Power", 'Solar Power', 
+                                                    'Hydropower',
+                                                'Transmission and Interties',
+                                                    'Diesel Efficiency'])
         
         
-    def get_web_summary(self, component):
-        """
-        """
-        try:
-            return self.imported_summaries[component].generate_web_summary
-        except AttributeError as e:
-            #~ print e
-            self.imported_summaries = {}
-        except KeyError as e:
-            #~ print e
-            pass
-            
-        self.imported_summaries[component] = \
-                    import_module("aaem_summaries.components." + component).summary
-        return self.imported_summaries[component].generate_web_summary
-    
-    
-    def get_cleanded_coms (self):
-        """ Function doc """
-        return sorted([k.replace("'",'') for k in self.get_coms()])
+        re_dirs = set(comp_order) - components
         
-    def get_coms (self):
-        return sorted([k for k in self.results.keys() if k.find('+') == -1])
-    
-    def get_regions (self):
-        try:
-            return self.regions 
-        except AttributeError:
-            pass
-            
-        
-        temp = {}
-        for com in self.get_coms():
-            reg = self.results[com]['community data']\
-                                            .get_item('community', 'region')
+        ## generate the component pages
+        for comp in components:
+            c_clean = comp.replace(' ','_').\
+                           replace('(','').replace(')','').lower()
+            #~ print comp
             try:
-                temp[reg].append(com.replace("'",''))
-            except:
-                temp[reg] = [com.replace("'",'')]
-                
-        
-        regions = []
-        for k in sorted(temp.keys()):
-            regions.append({"region":k, "communities":temp[k], 
-                            "clean": k.replace(' ','_').replace('(','').\
-                                replace(')','').replace('/','_').lower()})
-        
-        
-        self.regions = regions
-        #~ print self.regions
-        return self.regions 
+                ## try to run the components generate web summary function
+                self.get_web_summary(comp_lib[comp])(self, com)
+            except (AttributeError, RuntimeError) as e:
+                ## if it cant be run
+                template = self.no_results_html
+                pth = os.path.join(
+                    self.directory,
+                    com.replace("'",""),
+                    c_clean +'.html'
+                )
+                msg = None
+                if com in self.bad_data_coms:
+                    msg = self.bad_data_msg
+                with open(pth, 'w') as html:
+                    reason = self.results[com][comp].reason
+                    if reason.lower() == 'ok':
+                        reason = "The component could not be run"
+                    # make a proper sentence.
+                    html.write(template.render( 
+                                    type = comp, 
+                                    com = com.replace("'",'') ,
+                                    reason = reason,
+                                    sections = self.get_summary_pages(),
+                                    communities = self.get_cleanded_coms(),
+                                    metadata = self.metadata,
+                                    message = msg))
+                                   
+        ## geneate redirect pages for intertie related pages
+        template = self.comp_redir_html
+        for comp in re_dirs:
+            c_clean = comp.replace(' ','_').\
+                replace('(','').replace(')','').lower()
+            pth = os.path.join(
+                self.directory, 
+                com.replace("'",""),
+                c_clean +'.html'
+            )
+
+            with open(pth, 'w') as html:
+                parent = True
+                intertie = self.results[com]['community data'].\
+                    get_item('community','intertie')
+                if it == "child":
+                    parent = False
+                    intertie = [ intertie[0] +"_intertie"]
+                    
+                msg = None
+                if com in self.bad_data_coms:
+                    msg = self.bad_data_msg
     
-    def get_senate_dists (self):
+                html.write(
+                    template.render( 
+                        type = comp, 
+                        com = com.replace("'",'') ,
+                        sections = self.get_summary_pages(),
+                        communities = self.get_cleanded_coms(),
+                        metadata = self.metadata,
+                        message = msg,
+                        parent = parent,
+                        intertie = intertie
+                    )
+                )
+
+    def create_community_overview (self, com):
+        """Generate overview.html for the community
+        
+        Parameters
+        ----------
+        com: str
+            community in question
+        
+        """
+        template = self.general_summaries_html
+        res = self.results[com]
+        charts = []
+        
+        ## Community overview table
+        #### Demographics section
+        pop = res['community data'].get_item('community','population')\
+            .ix[2010]['population']
+        hh = res['Residential Energy Efficiency']\
+            .comp_specs['data']['Total Occupied']
+            
+        #### Financial section
+        ###### get data
+        diesel = res['community data'].get_item('community','diesel prices')
+        fuel_year = diesel.index[0]
+        diesel_c = float(diesel.ix[fuel_year])
+        HF_c = diesel_c + \
+            res['community data'].get_item('community','heating fuel premium')
+        elec_price = res['community data'].get_item('community',
+            'electric non-fuel prices')
+        ###### as strings
+        diesel_c = '${:,.2f}/gallon'.format(diesel_c)
+        HF_c = '${:,.2f}/gallon'.format(HF_c)
+        
+        elec_price = float(elec_price.ix[fuel_year])
+        if np.isnan( elec_price ):
+            elec_c = "unknown"
+        else:
+            elec_c = '${:,.2f}/kWh'.format(elec_price)
+         
+        #### Consumption & Generation sections
+        ###### measured consumption & generation
         try:
-            return self.senate
+            c_map = res['forecast'].consumption['consumption_qualifier']
+            year = c_map[c_map == 'M'].index.max()
+
+            gen = '{:,.0f} kWh'.format(res['forecast'].\
+                generation.ix[year].values[0])
+            gen_year = year
+        
+            int_con = res['forecast'].consumption['consumption'].ix[year]
+            con = '{:,.0f} kWh'.format(int_con)
+            con_year = year 
         except AttributeError:
-            pass
+            c_map = None
+            gen_year = ''
+            con_year = ''
+            gen = "unknown"
+            con = gen
+          
+        ###### forecasted residential (first year)
+        oil_year = res['Residential Energy Efficiency'].start_year
+        if hasattr(res['Residential Energy Efficiency'], 
+            'baseline_fuel_Hoil_consumption'):
+            res_gal = res['Residential Energy Efficiency'].\
+                baseline_fuel_Hoil_consumption[0]
+            res_gal = '{:,.0f} gallons'.format(res_gal)
+        else:
+            res_gal = "unknown"
+        
+        ###### forecasted non-residential (first year) -- NR + WWW
+        if hasattr(res['Non-residential Energy Efficiency'], 
+            'baseline_fuel_Hoil_consumption'):
+            nr_gal = res['Non-residential Energy Efficiency'].\
+                baseline_fuel_Hoil_consumption
+        else:
+            nr_gal = 0
+        
+        if hasattr(res['Water and Wastewater Efficiency'], 
+            'baseline_fuel_Hoil_consumption'):
+            nr_gal +=  res['Water and Wastewater Efficiency'].\
+                baseline_fuel_Hoil_consumption[0]
+        else:
+           nr_gal += 0
+           
+        if nr_gal != 0:
+            nr_gal = '{:,.0f} gallons'.format(nr_gal)
+        else:
+            nr_gal = "unknown"
+        
             
-        temp = {}
-        for com in self.get_coms():
-            reg = self.results[com]['community data']\
-                                            .get_item('community', 
-                                                        'senate district')
-            for d in reg:
-                try:
-                    temp[d.replace("'",'')].append(com.replace("'",''))
-                except:
-                    temp[d.replace("'",'')] = [com.replace("'",'')]
+        
+        ###### diesel generator efficiency
+        eff = res['community data'].get_item('community',
+            'diesel generation efficiency')
+         
+        ###### forecasted utility diesel (first year)    
+        if hasattr(res['forecast'], 'generation'):
+            if eff == 0:
+                eff = np.nan
             
-        senate = []
-        for k in sorted(temp.keys()):
-            senate.append({"district":k, "communities":temp[k], 
-                            "clean": k.replace(' ','_').replace('(','').\
-                                replace(')','').replace('/','_').lower()})
+            utility = res['forecast'].generation["generation diesel"].iloc[0]
+            utility /= eff
+            utility = '{:,.0f} gallons'.format(utility)
+        else:
+            utility = "unknown"  
+           
+        if np.isnan(eff):
+            eff = 0;
+            
         
+        ###### efficiency and line loss
+        yes = res['community data'].get_item('community','utility info')    
         
-        self.senate = senate
-        return self.senate
-        
-    def get_house_dists (self):
         try:
-            return self.house
-        except AttributeError:
-            pass
+            leff_year = int(max(yes.index))
+            eff = '{:,.2f} kWh/gallons'.format(yes['efficiency'].values[-1])
+            ll = '{:,.2f}%'.format(yes['line loss'].values[-1]*100)
+        except ValueError:
+            leff_year = ""
+            eff = res['community data']\
+                .get_item('community','diesel generation efficiency')
+            eff = '{:,.1f} kWh/gallons'.format(eff)
+            ll = "unknown"
             
-        temp = {}
-        for com in self.get_coms():
-            reg = self.results[com]['community data']\
-                                            .get_item('community', 
-                                                        'house district')
-            for d in reg:
-                try:
-                    temp[d].append(com.replace("'",''))
-                except:
-                    temp[d] = [com.replace("'",'')]
+        
+                #~ res['forecast'].generate_generation_forecast_dataframe()
+        #~ c_map = res['forecast'].consumption['consumption_qualifier']
+        if not c_map is None:
+            g_year = c_map[c_map == 'M'].index.max()
+                
+            generation = res['forecast'].\
+                generation[[
+                    'generation diesel',
+                    'generation hydro',
+                    'generation natural gas',
+                    'generation wind',
+                    'generation solar',
+                    'generation biomass'
+                ]].loc[g_year]
+                                                                    
+            g_diesel = '{:,.0f} kWh'.\
+                format(generation['generation diesel'])
+            g_hydro = '{:,.0f} kWh'.\
+                format(generation['generation hydro'])
+            #~ g_ng = generation['generation natural gas']
+            g_wind = '{:,.0f} kWh'.\
+                format(generation['generation wind'])
+            #~ g_solar = generation['generationsolar']
+            #~ g_biomass = generation['generation biomass']
+                
+        else:
+            g_year = ''
+            g_diesel = "unknown"
+            g_hydro = "unknown"
+            #~ g_ng = "unknown"
+            g_wind = "unknown"
+            #~ g_solar = "unknown"
+            #~ g_biomass = "unknown"
             
-        house = []
-        for k in sorted(temp.keys()):
-            house.append({"district":str(k), "communities":temp[k], 
-                            "clean": str(k)})
-        
-        
-        self.house = house
-        return self.house
-    
-    def get_summary_pages (self):
-        """
-        get the summary pages for the secondary nav for the community summaries
-        """
-        return [{'name':'Summary', 'pages':['Overview',
-                                            'Financial and Demographic',
-                                            'Consumption',
-                                            'Generation',
-                                            'Potential Projects']}, 
-                {'name':'Efficiency Projects',
-                 'pages':["Residential Energy Efficiency",
-                          "Non-residential Energy Efficiency",
-                          "Water and Wastewater Efficiency"]
-                },
-                {'name':'Electricity Projects', 
-                 'pages':["Wind Power",
-                         'Solar Power',
-                          'Hydropower',
-                         'Transmission and Interties',
-                         'Diesel Efficiency']
-                },
-                {'name':'Heating Projects', 
-                 'pages':['Biomass for Heat (Cordwood)',
-                          'Biomass for Heat (Pellet)',
-                          'Residential ASHP',
-                          'Non-Residential ASHP',
-                          'Heat Recovery']
-                }
-               ]
-
-
-    def generate_all (self):
-        """ Function doc """
-        keys = sorted([k for k in self.results.keys() if k.find('+') == -1])
-        self.copy_etc()
-        self.generate_tech_summaries()
-        self.generate_index()
-        self.generate_regional_summaries()
-        #~ import sys
-        #~ sys.exit()
         try:
-            os.fork
-            from multiprocessing import Process, Lock,active_children, cpu_count
-            
-            lock = Lock()
-    
-            for com in keys: #["Stebbins","Adak","Brevig_Mission"]:
-                while len(active_children()) >= cpu_count():
-                    continue
-                lock.acquire()
-                print com, "started"
-                lock.release()
-                Process(target=self.generate_com_mc, args=(com, lock)).start()
-                
-            while len(active_children()) > 0:
-                continue
-        except (ImportError, NotImplementedError, PicklingError, AttributeError):
-            for com in keys: #["Stebbins","Adak","Brevig_Mission"]:
-                start = datetime.now()
-                self.generate_web_summaries(com)
-                print com, datetime.now() - start
-                
-        #~ print self.viable_communities
-    
-    
-    def generate_com_mc (self, com, lock):
-        """ Function doc """
-        start = datetime.now()
-        self.generate_web_summaries(com)
-        lock.acquire()
-        print com, datetime.now() - start
-        lock.release()
-    
+            al = str(int(int_con/hours_per_year))  + ' kW'
+        except StandardError as e:
+            #~ print e
+            al = "unknown"
+        
+        ### create table
+        fuel_year = '(' + str(fuel_year) + ')'
+        con_year = '(' + str(con_year) + ')'
+        oil_year = '(' + str(oil_year) + ')'
+        gen_year = '(' + str(gen_year) + ')'
+        g_year = '(' + str(g_year) + ')'
+        leff_year = '(' + str(leff_year) + ')'
+        
+        if res['community data'].intertie != 'child':
+            table = [
+             [ False, "<b>Demographics</b>", "", "[DIVIDER]",
+                "<b>Generation</b>", ""],
+             [ False, "Population (2010)", int(pop),"[DIVIDER]", 
+                "Total generation " + str(gen_year), gen],
+             [ False, "Households (2010)", int(hh),"[DIVIDER]", 
+                "Average load " + str(gen_year), al],
+             [ False, "<b>Financial</b>", "","[DIVIDER]", 
+                "Generation from diesel " + str(g_year), g_diesel],
+             [ False, "Forecasted diesel fuel cost " + str(fuel_year),
+                diesel_c,"[DIVIDER]", 
+                "Generation from hydropower " + str(g_year), g_hydro],
+             [ False, "Forecasted heating fuel cost " + str(fuel_year),
+                HF_c, "[DIVIDER]",
+                "Generation from wind " + str(g_year), g_wind],
+             [ False, "Forecasted electricity cost " + str(fuel_year),
+                elec_c,"[DIVIDER]",  
+                "Diesel generator efficiency " + str(leff_year) , eff],
+             [ False, "<b>Consumption</b>", "", "[DIVIDER]",
+                "Line losses estimated " + str(leff_year), ll],
+             [ False, "Total electricity consumption " + str(con_year), con,
+                "[DIVIDER]",'',''],
+             [ False, 
+                "Estimated residential heating fuel " + str(oil_year),
+                res_gal, "[DIVIDER]",'',''],
+             [ False, 
+                "Estimated non-residential heating fuel " + str(oil_year),
+                nr_gal, "[DIVIDER]",'',''],
+             [ False,
+                "Estimated utility diesel " + str(oil_year),
+                utility, "[DIVIDER]",'',''],
+        ]
+        else:
+            # -> parent is in first position of 'intertie' list
+            parent = res['community data'].get_item('community','intertie')[0]
+            link = '../' + parent.replace(' ','_') +\
+                "_intertie/overview.html"
+            link_text = "See " + parent + " intertie"
+            link_element = '<a href="' + link + '">' + link_text + '</a>'
+            table = [
+             [ False, "<b>Demographics</b>", "", "[DIVIDER]",
+                "<b>Generation</b>", ""],
+             [ False, "Population (2010)", int(pop),"[DIVIDER]",
+                "Total generation " + str(gen_year), link_element],
+             [ False, "Households (2010)", int(hh),"[DIVIDER]",
+                "Average load " + str(gen_year), link_element],
+             [ False, "<b>Financial</b>", "","[DIVIDER]",
+                "Generation from diesel " + str(g_year), link_element],
+             [ False,
+                "Forecasted diesel fuel cost " + str(fuel_year),
+                diesel_c,"[DIVIDER]",
+                "Generation from hydropower " + str(g_year), link_element],
+             [ False,
+                "Forecasted heating fuel cost " + str(fuel_year),
+                 HF_c, "[DIVIDER]", "Generation from wind " + str(g_year),
+                link_element],
+             [ False, "Forecasted electricity cost " + str(fuel_year),
+                elec_c,"[DIVIDER]",
+                "Diesel generator efficiency " + str(leff_year), link_element],
+             [ False, "<b>Consumption</b>", "", "[DIVIDER]",
+                "Line losses estimated " + str(leff_year),
+                link_element],
+             [ False, "Total electricity consumption " + str(con_year), 
+                link_element, 
+                "[DIVIDER]", "",""],#,'',''],
+             [ False, 
+                "Estimated residential heating fuel " + str(oil_year),
+                res_gal, "[DIVIDER]",'',''],
+             [ False, 
+                "Estimated non-residential heating fuel " + str(oil_year),
+                nr_gal, "[DIVIDER]",'',''],
+             [ False,
+                "Estimated utility diesel " + str(oil_year),
+                link_element,
+                "[DIVIDER]",'',''],
+        ]     
+                 
+        #### insert into page
+        charts.insert(0,{'name':'overview', 'data':table, 
+                    'title': 'Community Overview',
+                    'table': True,})
+        
+        ## END community overview table
+        
+        
+        
+        #### Goals Table
+        goals = res['community data'].get_item('community','community goals')
+         
+        if goals == []:
+            goals = None
+           
+        if goals is None:
+            charts.append({'name':'goals', 
+                    'data':"Community Goals not avaialble", 
+                    'title':'Community Goals',
+                    })
+        else:
+            table = [[True,'Priority','Goal']]
+            p = 1
+            for g in goals:
+                table.append([False, p, g])
+                p += 1
+            charts.append({'name':'goals', 'data':table, 
+                    'title':'Community Goals',
+                    'table': True,})
+        
+        ## Intertie Info
+        it = self.results[com]['community data'].intertie
+        if it != 'not in intertie':
+            intertie = res['community data'].get_item('community','intertie')
+            table = [[True, 'Community', 'Primary or Secondary Generator'],
+                     [False, intertie[0], 'Primary']]
+            for i in intertie[1:]:
+                table.append([False, i, 'Secondary'])
+                                                    
+            charts.append({'name':'interties', 'data':table, 
+                    'title':'Intertied Communities',
+                    'table': True,})
 
-    def generate_index (self):
-        """ 
-        generate index page
-        """
-        pth = os.path.join(self.directory, 'index.html')
-        regions = []
+            
+        msg = None
+        if com in self.bad_data_coms:
+            msg = self.bad_data_msg
+        
+        pth = os.path.join(self.directory, com.replace("'",""),
+                    'Overview'.replace(' ','_').replace('(','').\
+                    replace(')','').lower() + '.html')
         with open(pth, 'w') as html:
-            html.write(self.index_html.render( type = 'index', 
-                       #~ summary_pages = ['Summary'] + comp_order ,
-                       #~ com = 'index',
-                       sections = self.get_summary_pages(),
-                       communities = self.get_cleanded_coms(),
-                       regions = regions,
-                       metadata = self.metadata,
-                       in_root = True,
-                                ))
-                                     
-                                        
-    def finances_demo_summary (self, com):
+            html.write(template.render( type = 'Overview', 
+                                    com = com.replace("'",'') ,
+                                    charts = charts,
+                                    summary_pages = ['Summary'] + comp_order ,
+                                    sections = self.get_summary_pages(),
+                                    communities = self.get_cleanded_coms(),
+                                    metadata = self.metadata,
+                                    message = msg
+                                    ))
+                                    
+    def create_community_finances_demo_summary (self, com):
         """Generate financial_and_demographic.html for the community
         
         Parameters
@@ -692,8 +836,7 @@ class WebSummary(object):
                                 message = msg
                                 ))
                                 
-                                
-    def consumption_summary (self, com):
+    def create_community_consumption_summary (self, com):
         """Generate consumption.html for the community
         
         Parameters
@@ -750,13 +893,10 @@ class WebSummary(object):
         nr = res['Non-residential Energy Efficiency']
         measurments = nr.buildings_df
         estimates = copy.copy(nr.comp_specs["building inventory"]).fillna(0)
-        
-        estimates = estimates.set_index('Building Type')
-        estimates = estimates.astype(float)
-        
         num = 0
-        
-        try:
+        if len(estimates) != 0:
+            estimates = estimates.set_index('Building Type')
+            estimates = estimates.astype(float)
             try:
                 if 'Average' in set(estimates.ix['Average'].index):
                     num = len(estimates.ix['Average'])
@@ -819,21 +959,19 @@ class WebSummary(object):
                 'plot':True,
                 'type': "'pie'",
                 'description': description})
-        except (ZeroDivisionError):
+        else:
             charts.append({'name':'non_residential_buildings', 
                 'data': "No Building data avaialble." ,
                 'title':'Non-residential Buildings'})
         
         ## Consumption chart
-        if res['community data'].intertie == 'child': 
-            url = '../' + res['community data'].parent.lower() +\
-                "_intertie/consumption.html"
-                #~ print url
-
+        if res['community data'].intertie == 'child':
+            parent = res['community data'].get_item('community','intertie')[0]
+            url = '../' + parent.lower()  + "_intertie/consumption.html"
+            
             charts.append({'name':'consumption', 'data': 
                                 [{'url': url, 
-                                    'text': "See " +\
-                                     res['community data'].parent + \
+                                    'text': "See " + parent + \
                                      " intertie for consumption plot for" + \
                                      " all communities on the intertie."}
                                     ],
@@ -927,34 +1065,40 @@ class WebSummary(object):
         else:
             diesel_consumption['Utility Diesel (gallons)'] = np.nan
          
-            
-            
         diesel_consumption = diesel_consumption[['year'] + \
-            list(diesel_consumption.columns)[1:][::-1]]
+                list(diesel_consumption.columns)[1:][::-1]]
+        
+
+        if not diesel_consumption[diesel_consumption.columns[1:]]\
+            .isnull().all().any():    
             
-        diesel_consumption_table = self.make_plot_table(
-            diesel_consumption, 
-            sigfig = 2, 
-            community = com, 
-            fname = com+"_diesel_consumption.csv"
-        )
-        
-        
-        dt2 = [[diesel_consumption_type] for \
-            diesel_consumption_type in diesel_consumption.columns]
-        for idx in range(len(dt2)):
-            dt2[idx].append(float(diesel_consumption[dt2[idx][0]].iloc[0]))
-        diesel_consumption_table = dt2[1:]
-        diesel_consumption_table.insert(0,['name','value'])
-        
-        charts.append({'name':'diesel_consumption',
-                        'data': str(diesel_consumption_table),
-                        'title':'Energy Consumption by sector',
-                        'pie': True,
-                        'plot':True,
-                        'type': "'pie'",})  
-        #~ except AttributeError:
-            #~ pass
+            diesel_consumption_table = self.make_plot_table(
+                diesel_consumption, 
+                sigfig = 2, 
+                community = com, 
+                fname = com+"_diesel_consumption.csv"
+            )
+            
+            
+            dt2 = [[diesel_consumption_type] for \
+                diesel_consumption_type in diesel_consumption.columns]
+            for idx in range(len(dt2)):
+                dt2[idx].append(float(diesel_consumption[dt2[idx][0]].iloc[0]))
+            diesel_consumption_table = dt2[1:]
+            diesel_consumption_table.insert(0,['name','value'])
+            
+            charts.append({'name':'diesel_consumption',
+                            'data': str(diesel_consumption_table),
+                            'title':'Energy Consumption by sector',
+                            'pie': True,
+                            'plot':True,
+                            'type': "'pie'",})  
+        else:
+            charts.append({
+                'name':'diesel_consumption',
+                'data': 'Data not available',
+                'title':'Energy Consumption by sector',
+            })    
         
         ## costs by sector pie chart
         ## ========================= Start Energy costs by Sector ==============
@@ -1004,31 +1148,34 @@ class WebSummary(object):
             
 
         costs = costs[['year'] + list(costs.columns)[1:][::-1]]
+        if not costs[costs.columns[1:]].isnull().all().all():
        
-        costs_table = self.make_plot_table(
-            costs,
-            sigfig = 2,
-            community = com,
-            fname = com+"_costs.csv")
-        
-        #~ print costs_table[0]
-        #~ costs_table
-        ct2 = [[cost_type] for cost_type in costs.columns]
-        for idx in range(len(ct2)):
-            ct2[idx].append(float(costs[ct2[idx][0]].iloc[0]))
-        costs_table = ct2[1:]
-        costs_table.insert(0,['name','value'])
-        #~ if costs_data:
-        charts.append({'name':'costs', 'data': str(costs_table),
-                            'title':'Energy costs by Sector',
-                            'type': "'percent'",
-                            'pie': True,
-                            'plot':True,
-                            'type': "'pie'",})  
-        #~ else:
-            #~ charts.append({'name':'e_price', 'data': str(e), 
-                        #~ 'title':'Electricity Price ($/kWh)',
-                        #~ 'type': "'currency'",})    
+            costs_table = self.make_plot_table(
+                costs,
+                sigfig = 2,
+                community = com,
+                fname = com+"_costs.csv")
+            
+            
+            #~ print costs_table[0]
+            #~ costs_table
+            ct2 = [[cost_type] for cost_type in costs.columns]
+            for idx in range(len(ct2)):
+                ct2[idx].append(float(costs[ct2[idx][0]].iloc[0]))
+            costs_table = ct2[1:]
+            costs_table.insert(0,['name','value'])
+            #~ if costs_data:
+            charts.append({'name':'costs', 'data': str(costs_table),
+                                'title':'Energy costs by Sector',
+                                'type': "'percent'",
+                                'pie': True,
+                                'plot':True,
+                                'type': "'pie'",})  
+        else:
+            charts.append({
+                'name':'costs',
+                'data': 'Data not available',
+                'title':'Energy costs by Sector',})    
         ## ========================= END Energy costs by Sector ================
 
         ## save to page
@@ -1050,8 +1197,7 @@ class WebSummary(object):
                                     message = msg
                                     ))
         
-        
-    def generation_summary (self, com):
+    def create_community_generation_summary (self, com):
         """Generate generation.html for the community
         
         Parameters
@@ -1197,8 +1343,10 @@ class WebSummary(object):
             #~ else:
             start = res['community data'].get_item('community',
                     'current year')
-            
-            end = res['forecast'].consumption.index[-1]
+            try:
+                end = res['forecast'].consumption.index[-1]
+            except AttributeError:
+                end = self.max_year
             years = range(int(start),int(end))
             
             line_loss = DataFrame(years, columns = ['year'], index = years)
@@ -1263,12 +1411,16 @@ class WebSummary(object):
             
             total_cap = \
                 res['community data'].get_item('community','total capacity')
+            if np.isnan(float(total_cap)):
+                total_cap = 'N/a'
             try:
                 cap = '{:,.0f} kW'.format(float(total_cap))
                 c2 = float(total_cap)
             except ValueError:
                 c2 = 0
                 cap = total_cap
+            
+            
                 
             try:
                 largest = '{:,.0f} kW'.format(\
@@ -1307,35 +1459,27 @@ class WebSummary(object):
             
             w_fac = float(wind['capacity factor'])
             
-            
-                
             solar = res['community data'].get_section('Solar Power')
                                                       
             s_cap = float(res['community data'].get_item('community',
                 'solar capacity'))
             s_pv = solar['output per 10kW solar PV']
             
-            
             h_cap = float(res['community data'].get_item('community',
                 'hydro capacity'))
                                             
-            
-            
             try:
                 w_gen = float(res['community data'].get_item('community',
                     'utility info')['generation wind'].iloc[-1:])
                 s_gen = float(res['community data'].get_item('community',
                     'utility info')['generation solar'].iloc[-1:])
-                    
                 h_gen = float(res['community data'].get_item('community',
                     'utility info')['generation hydro'].iloc[-1:])
                 
                 if  np.isnan(w_gen):
                     w_gen = 0
-                    
                 if  np.isnan(s_gen):
                     s_gen = 0
-                    
                 if  np.isnan(h_gen):
                     h_gen = 0
                     
@@ -1381,13 +1525,13 @@ class WebSummary(object):
                     'title':'Generation Overview',
                     'table': True,})
         else:
-            url = '../' + res['community data'].parent.lower() +\
-                "_intertie/generation.html"
+            parent = res['community data'].get_item('community','intertie')[0]
+            url = '../' + parent.lower()  + "_intertie/generation.html"
                 #~ print url
             charts.append({'name':'generation', 'data': 
                                 [{'url': url, 
                                     'text': "See " +\
-                                     res['community data'].parent + \
+                                     parent + \
                                      " intertie for generation plot for" + \
                                      " all communities on the intertie."}
                                     ],
@@ -1395,15 +1539,17 @@ class WebSummary(object):
                                 'links_list': True,})
         
         ## Intertie list
-        try:
-            if res['community data'].get_item('community','intertie') != []:
+        intertie = res['community data'].get_item('community','intertie')
+        if intertie != 'not in intertie':
+            
+            if intertie != []:
                 table = [
                     [True, "Community", "Parent/Child"],
-                    [False, res['community data'].parent, 'Parent']
+                    [False, intertie[0], 'Parent']
                     ]
                 
                 
-                for c in res['community data'].get_item('community','intertie'):
+                for c in intertie[1:]:
                     if c == "''":
                         break
                     table.append([False,c,'Child'])
@@ -1411,12 +1557,7 @@ class WebSummary(object):
                 charts.insert(0,{'name':'it_l', 'data':table, 
                     'title':'Intertied Communities',
                     'table': True,})
-            
-        except AttributeError:
-            pass
-        #~ else:
-            #~ charts.insert(0,{'name':'it_l', 'data':"Community not on intertie",
-                #~ 'title':'Intertied Communities'})
+        
         ## End Intertie list
         
         ## save to page
@@ -1428,19 +1569,28 @@ class WebSummary(object):
             'Generation'.replace(' ','_').replace('(','').\
             replace(')','').lower() + '.html')
         with open(pth, 'w') as html:
-            html.write(template.render( type = 'Generation', 
-                                    com = com.replace("'",'') ,
-                                    charts = charts,
-                                    summary_pages = ['Summary'] + comp_order ,
-                                    sections = self.get_summary_pages(),
-                                    communities = self.get_cleanded_coms(),
-                                    metadata = self.metadata,
-                                    message = msg
-                                    ))
+            html.write(
+                template.render( 
+                    type = 'Generation', 
+                    com = com.replace("'",'') ,
+                    charts = charts,
+                    summary_pages = ['Summary'] + comp_order ,
+                    sections = self.get_summary_pages(),
+                    communities = self.get_cleanded_coms(),
+                    metadata = self.metadata,
+                    message = msg
+                )
+            )
         
+    def create_community_projects_summary (self, com):
+        """Generate potential_projects.html for the community
         
-    def projects_summary (self, com):
-        """ Function doc """
+        Parameters
+        ----------
+        com: str
+            community in question
+        
+        """
         template = self.potential_projects_html
         res = self.results[com]
        
@@ -1603,403 +1753,73 @@ class WebSummary(object):
                                     bc_limit = 1.0
                                     ))
                                     
-    def overview (self, com):
-        """Generate overview.html for the community
+
+    #### -----------------------------------------------------------------------
+    #### Helper and utility functions
+    #### -----------------------------------------------------------------------
+    def copy_static (self):
+        """copy all of the css and js stuff
+        """
+        pth = os.path.dirname(__file__)
+        shutil.copytree(os.path.join(pth,'templates','css'),
+                                        os.path.join(self.directory,'css'))
+        shutil.copytree(os.path.join(pth,'templates','js'),
+                                        os.path.join(self.directory,'js'))
+        shutil.copytree(os.path.join(pth,'templates','fonts'),
+                                        os.path.join(self.directory,'fonts'))
+        shutil.copy(os.path.join(pth,'templates','summary.css'),self.directory)
+        shutil.copy(os.path.join(pth,'templates','footer.css'),self.directory)
+        shutil.copy(os.path.join(pth,'templates','dropdown.css'),self.directory)
+        shutil.copy(os.path.join(pth,'templates','map.js'),self.directory)
+        shutil.copy(os.path.join(pth,'templates','tech_map.js'),self.directory)
+        shutil.copy(os.path.join(pth,'templates',
+            'leaflet.ajax.min.js'),self.directory)
+        template = self.env.get_template('navbar.js')
+        
+        
+        
+        #~ print self.get_house_dists()
+        techs = []
+
+        for comp in sorted(self.viable_communities.keys()):
+            temp = []
+            for com in sorted(self.viable_communities[comp]):
+                try:
+                    temp.append(com.replace("'",''))
+                except:
+                    temp = [com.replace("'",'')]
+            
+            techs.append({'communities':temp,
+                          'clean': comp.replace('(','').\
+                                        replace(')','').replace(' ','_'),
+                          'district': comp})
+
+        
+        with open(os.path.join(self.directory,'navbar.js'), 'w') as html:
+            html.write(template.render(communities = self.get_cleanded_coms(),
+                                       regions=self.get_regions(),
+                                       senate_dist=self.get_senate_dists(),
+                                       house_dist=self.get_house_dists(),
+                                       techs = techs
+                        ))
+                        
+    def make_plot_table (self, xs, ys = None, names = None, sigfig=0,
+                         community = None, fname = None):
+        """make a table for a plot
         
         Parameters
         ----------
-        com: str
-            community in question
+        xs: list
+        ys: list
+        name: list
+        sigfig: int
+        community: str
+        fname: str
         
-        """
-        template = self.general_summaries_html
-        res = self.results[com]
-        charts = []
-        
-        ## Community overview table
-        #### Demographics section
-        pop = res['community data'].get_item('community','population')\
-            .ix[2010]['population']
-        hh = res['Residential Energy Efficiency']\
-            .comp_specs['data']['Total Occupied']
-            
-        #### Financial section
-        ###### get data
-        diesel = res['community data'].get_item('community','diesel prices')
-        fuel_year = diesel.index[0]
-        diesel_c = float(diesel.ix[fuel_year])
-        HF_c = diesel_c + \
-            res['community data'].get_item('community','heating fuel premium')
-        elec_price = res['community data'].get_item('community',
-            'electric non-fuel prices')
-        ###### as strings
-        diesel_c = '${:,.2f}/gallon'.format(diesel_c)
-        HF_c = '${:,.2f}/gallon'.format(HF_c)
-        elec_c = '${:,.2f}/kWh'.format(float(elec_price.ix[fuel_year]))
-        #~ if type( elec_price ) is str:
-            #~ elec_c = "unknown"
-        #~ else:
-            #~ elec_c = '${:,.2f}/kWh'.format(float(elec_price.iloc[0]))
-         
-        #### Consumption & Generation sections
-        ###### measured consumption & generation
-        try:
-            c_map = res['forecast'].consumption['consumption_qualifier']
-            year = c_map[c_map == 'M'].index.max()
-
-            gen = '{:,.0f} kWh'.format(res['forecast'].\
-                generation.ix[year].values[0])
-            gen_year = year
-        
-            int_con = res['forecast'].consumption['consumption'].ix[year]
-            con = '{:,.0f} kWh'.format(int_con)
-            con_year = year 
-        except AttributeError:
-            gen_year = ''
-            con_year = ''
-            gen = "unknown"
-            con = gen
-          
-        ###### forecasted residential (first year)
-        oil_year = res['Residential Energy Efficiency'].start_year
-        if hasattr(res['Residential Energy Efficiency'], 
-            'baseline_fuel_Hoil_consumption'):
-            res_gal = res['Residential Energy Efficiency'].\
-                baseline_fuel_Hoil_consumption[0]
-            res_gal = '{:,.0f} gallons'.format(res_gal)
-        else:
-            res_gal = "unknown"
-        
-        ###### forecasted non-residential (first year) -- NR + WWW
-        if hasattr(res['Non-residential Energy Efficiency'], 
-            'baseline_fuel_Hoil_consumption'):
-            nr_gal = res['Non-residential Energy Efficiency'].\
-                baseline_fuel_Hoil_consumption
-        else:
-            nr_gal = 0
-        
-        if hasattr(res['Water and Wastewater Efficiency'], 
-            'baseline_fuel_Hoil_consumption'):
-            nr_gal +=  res['Water and Wastewater Efficiency'].\
-                baseline_fuel_Hoil_consumption[0]
-        else:
-           nr_gal += 0
-           
-        if nr_gal != 0:
-            nr_gal = '{:,.0f} gallons'.format(nr_gal)
-        else:
-            nr_gal = "unknown"
-        
-            
-        
-        ###### diesel generator efficiency
-        eff = res['community data'].get_item('community',
-            'diesel generation efficiency')
-         
-        ###### forecasted utility diesel (first year)    
-        if hasattr(res['forecast'], 'generation'):
-            if eff == 0:
-                eff = np.nan
-            
-            utility = res['forecast'].generation["generation diesel"].iloc[0]
-            utility /= eff
-            utility = '{:,.0f} gallons'.format(utility)
-        else:
-            utility = "unknown"  
-           
-        if np.isnan(eff):
-            eff = 0;
-            
-            
-        #~ try:
-            #~ yes = read_csv(os.path.join(self.model_root,'input_files', com, 
-                #~ 'yearly_electricity_summary.csv'),comment='#')
-            #~ print yes.columns
-        #~ except IOError: 
-            #~ yes = None
-        
-        ###### efficiency and line loss
-        yes = res['community data'].get_item('community','utility info')    
-        leff_year = int(max(yes.index))
-        eff = '{:,.2f} kWh/gallons'.format(yes['efficiency'].values[-1])
-        ll = '{:,.2f}%'.format(yes['line loss'].values[-1]*100)
-        
-            
-            
-
-        #~ leff_year = ""
-        #~ eff = '{:,.1f} kWh/gallons'.format(eff)
-        
-        #~ ll = res['community data'].get_item('community','line losses')
-        #~ try:
-            #~ ll = '{:,.2f}%'.format(ll*100)
-        #~ except:
-            #~ ll = "unknown"
-        
-                #~ res['forecast'].generate_generation_forecast_dataframe()
-        #~ c_map =  res['forecast'].consumption['consumption_qualifier']
-        g_year = c_map[c_map == 'M'].index.max()
-            
-        generation = res['forecast'].\
-            generation[[
-                'generation diesel',
-                'generation hydro',
-                'generation natural gas',
-                'generation wind',
-                'generation solar',
-                'generation biomass'
-            ]].loc[g_year]
-                                                                
-        g_diesel = '{:,.0f} kWh'.\
-            format(generation['generation diesel'])
-        g_hydro = '{:,.0f} kWh'.\
-            format(generation['generation hydro'])
-        #~ g_ng = generation['generation natural gas']
-        g_wind = '{:,.0f} kWh'.\
-            format(generation['generation wind'])
-        #~ g_solar = generation['generationsolar']
-        #~ g_biomass = generation['generation biomass']
-            
-        #~ else:
-            #~ g_diesel = "unknown"
-            #~ g_hydro = "unknown"
-            #~ g_ng = "unknown"
-            #~ g_wind = "unknown"
-            #~ g_solar = "unknown"
-            #~ g_biomass = "unknown"
-            
-        try:
-            al = str(int(int_con/hours_per_year))  + ' kW'
-        except StandardError as e:
-            #~ print e
-            al = "unknown"
-        
-        ### create table
-        fuel_year = '(' + str(fuel_year) + ')'
-        con_year = '(' + str(con_year) + ')'
-        oil_year = '(' + str(oil_year) + ')'
-        gen_year = '(' + str(gen_year) + ')'
-        g_year = '(' + str(g_year) + ')'
-        leff_year = '(' + str(leff_year) + ')'
-        
-        if res['community data'].intertie != 'child':
-            table = [
-             [ False, "<b>Demographics</b>", "", "[DIVIDER]",
-                "<b>Generation</b>", ""],
-             [ False, "Population (2010)", int(pop),"[DIVIDER]", 
-                "Total generation " + str(gen_year), gen],
-             [ False, "Households (2010)", int(hh),"[DIVIDER]", 
-                "Average load " + str(gen_year), al],
-             [ False, "<b>Financial</b>", "","[DIVIDER]", 
-                "Generation from diesel " + str(g_year), g_diesel],
-             [ False, "Forecasted diesel fuel cost " + str(fuel_year),
-                diesel_c,"[DIVIDER]", 
-                "Generation from hydropower " + str(g_year), g_hydro],
-             [ False, "Forecasted heating fuel cost " + str(fuel_year),
-                HF_c, "[DIVIDER]",
-                "Generation from wind " + str(g_year), g_wind],
-             [ False, "Forecasted electricity cost " + str(fuel_year),
-                elec_c,"[DIVIDER]",  
-                "Diesel generator efficiency " + str(leff_year) , eff],
-             [ False, "<b>Consumption</b>", "", "[DIVIDER]",
-                "Line losses estimated " + str(leff_year), ll],
-             [ False, "Total electricity consumption " + str(con_year), con,
-                "[DIVIDER]",'',''],
-             [ False, 
-                "Estimated residential heating fuel " + str(oil_year),
-                res_gal, "[DIVIDER]",'',''],
-             [ False, 
-                "Estimated non-residential heating fuel " + str(oil_year),
-                nr_gal, "[DIVIDER]",'',''],
-             [ False,
-                "Estimated utility diesel " + str(oil_year),
-                utility, "[DIVIDER]",'',''],
-        ]
-        else:
-            link = '../' + res['community data'].parent.replace(' ','_') +\
-                "_intertie/overview.html"
-            link_text = "See " + res['community data'].parent + " intertie"
-            link_element = '<a href="' + link + '">' + link_text + '</a>'
-            table = [
-             [ False, "<b>Demographics</b>", "", "[DIVIDER]",
-                "<b>Generation</b>", ""],
-             [ False, "Population (2010)", int(pop),"[DIVIDER]",
-                "Total generation " + str(gen_year), link_element],
-             [ False, "Households (2010)", int(hh),"[DIVIDER]",
-                "Average load " + str(gen_year), link_element],
-             [ False, "<b>Financial</b>", "","[DIVIDER]",
-                "Generation from diesel " + str(g_year), link_element],
-             [ False,
-                "Forecasted diesel fuel cost " + str(fuel_year),
-                diesel_c,"[DIVIDER]",
-                "Generation from hydropower " + str(g_year), link_element],
-             [ False,
-                "Forecasted heating fuel cost " + str(fuel_year),
-                 HF_c, "[DIVIDER]", "Generation from wind " + str(g_year),
-                link_element],
-             [ False, "Forecasted electricity cost " + str(fuel_year),
-                elec_c,"[DIVIDER]",
-                "Diesel generator efficiency " + str(leff_year), link_element],
-             [ False, "<b>Consumption</b>", "", "[DIVIDER]",
-                "Line losses estimated " + str(leff_year),
-                link_element],
-             [ False, "Total electricity consumption " + str(con_year), 
-                link_element, 
-                "[DIVIDER]", "",""],#,'',''],
-             [ False, 
-                "Estimated residential heating fuel " + str(oil_year),
-                res_gal, "[DIVIDER]",'',''],
-             [ False, 
-                "Estimated non-residential heating fuel " + str(oil_year),
-                nr_gal, "[DIVIDER]",'',''],
-             [ False,
-                "Estimated utility diesel " + str(oil_year),
-                link_element,
-                "[DIVIDER]",'',''],
-        ]     
-                 
-        #### insert into page
-        charts.insert(0,{'name':'overview', 'data':table, 
-                    'title': 'Community Overview',
-                    'table': True,})
-        
-        ## END community overview table
-        
-        
-        
-        #### Goals Table
-        goals = res['community data'].get_item('community','community goals')
-         
-        if goals == []:
-            goals = None
-           
-        if goals is None:
-            charts.append({'name':'goals', 
-                    'data':"Community Goals not avaialble", 
-                    'title':'Community Goals',
-                    })
-        else:
-            table = [[True,'Priority','Goal']]
-            p = 1
-            for g in goals:
-                table.append([False, p, g])
-                p += 1
-            charts.append({'name':'goals', 'data':table, 
-                    'title':'Community Goals',
-                    'table': True,})
-        
-        ## Intertie Info
-        it = self.results[com]['community data'].intertie
-        if not it is None:
-            intertie =  [i for i in res['community data'].\
-                get_item('community','intertie')]
-            table = [[True, 'Community', 'Primary or Secondary Generator'],
-                     [False, res['community data'].parent, 'Primary']]
-            for i in intertie:
-                table.append([False, i, 'Secondary'])
-                                                    
-            charts.append({'name':'interties', 'data':table, 
-                    'title':'Intertied Communities',
-                    'table': True,})
-
-            
-        msg = None
-        if com in self.bad_data_coms:
-            msg = self.bad_data_msg
-        
-        pth = os.path.join(self.directory, com.replace("'",""),
-                    'Overview'.replace(' ','_').replace('(','').\
-                    replace(')','').lower() + '.html')
-        with open(pth, 'w') as html:
-            html.write(template.render( type = 'Overview', 
-                                    com = com.replace("'",'') ,
-                                    charts = charts,
-                                    summary_pages = ['Summary'] + comp_order ,
-                                    sections = self.get_summary_pages(),
-                                    communities = self.get_cleanded_coms(),
-                                    metadata = self.metadata,
-                                    message = msg
-                                    ))
-                                    
-    def generate_regional_summaries (self):
-        """
-        """
-        template = self.general_summaries_html
-        regions = self.get_regions()
-        
-        for reg in regions:
-            charts = []
-            name = reg['region']
-            coms = reg['communities']
-            
-            
-            table = []
-            for com in coms:
-                table.append({'url': com + "/overview.html", 
-                                            'text':com.replace('_',' ')})
-            charts.append({'name':'coms', 'data':table, 
-                        'title':'Communities in region',
-                        'links_list': True,})
-            
-        
-            try:
-                goals = read_csv(os.path.join(self.model_root,'input_files', 
-                                            '__goals_regional.csv'),
-                                comment='#', index_col=0)
-            
-                key = name
-                if key == 'Copper River/Chugach':
-                    key = 'Copper River'
-                elif key == 'Kodiak':
-                    key = 'Kodiak Region'
-                goals = goals.ix[key].fillna('')
-            except IOError: 
-                goals = None
-               
-            if goals is None:
-                charts.append({'name':'goals', 
-                        'data':"Regional Goals not avaialble", 
-                        'title':'Regional Goals',
-                        })
-            else:
-                table = [[True,'Priority','Goal']]
-                p = 1
-                for g in goals['Priority 1':]:
-                    if g == '':
-                        break
-                    #~ print type(g)
-                    table.append([False, p, g.decode('unicode_escape').\
-                                              encode('ascii','ignore')])
-                    p += 1
-                
-                
-                charts.append({'name':'goals', 'data':table, 
-                        'title':'Regional Goals',
-                        'table': True,})
-    
-            pth = os.path.join(self.directory,
-                        name.replace(' ','_').replace('(','').replace(')','').replace('/','_').lower() + '.html')
-            with open(pth, 'w') as html:
-                html.write(template.render( type = 'Region', 
-                                        com = name ,
-                                        charts = charts,
-                                        summary_pages = [],
-                                        sections = [],
-                                        metadata = self.metadata,
-                                        in_root=True
-                                        ))
-            
-                                        
-
-    def make_plot_table (self, xs, ys = None, names = None, sigfig=0,
-                         community = None, fname = None):
-        """
-        make a table
-        
-        inputs:
-        outputs:    
-            returns plotting_table, a table that can be used to make a google 
-        chart
+        Returns
+        -------    
+        plotting_table, List of lists,
+            a table that can be used to make a google chart plot
         """
         if type(xs) == DataFrame and len(xs.columns) > 1:
             x_name = xs.columns[0]
@@ -2022,7 +1842,10 @@ class WebSummary(object):
                 header.append("{type: 'string', role: 'annotation'}")
                 anno = name
             else:
-                header.append("{label: '"+name[0].upper() + name[1:].lower()+"', type: 'number'}")
+                header.append(
+                    "{label: '" +name[0].upper() + name[1:].lower()+ \
+                    "', type: 'number'}"
+                )
         
         if not anno is None:
             xs[anno+'_text'] = xs[anno] 
@@ -2042,23 +1865,31 @@ class WebSummary(object):
         if not community is None and not fname is None:
             cols = [c for c in \
                     xs.columns if c.lower().find('annotation_text') == -1]
-            xs[cols].round(sigfig).to_csv(os.path.join(self.directory,
-                                             community.replace("'",""),'csv', fname),
-                                index=False)
+            xs[cols].round(sigfig).to_csv(
+                os.path.join(
+                    self.directory, community.replace("'",""),'csv', fname),
+                index=False)
         plotting_table.insert(0,header)
         #~ print plotting_table
         return plotting_table 
         
-    
     def make_table (self, xs, ys = None, names = None, sigfig=0,
                     community = None, fname = None):
-        """
-        make a table
+        """make a table for a google charts table
         
-        inputs:
-        outputs:    
-            returns plotting_table, a table that can be used to make a google 
-        chart
+        Parameters
+        ----------
+        xs: list
+        ys: list
+        name: list
+        sigfig: int
+        community: str
+        fname: str
+        
+        Returns
+        -------    
+        plotting_table, List of lists,
+            a table that can be used to make a google chart table
         """
         if type(xs) == DataFrame and len(xs.columns) > 1:
             x_name = xs.columns[0]
@@ -2098,6 +1929,235 @@ class WebSummary(object):
         plotting_table.insert(0,header)
         return plotting_table 
     
-                                        
+    def multiprocess_community_summaries (self, com, lock, log = True):
+        """Multi-processing helper
+        
+        Parameters
+        ----------
+        com: str
+            a community
+        lock: Lock
+            a lock for multiprocessing
+        log: bool
+            log the data
+        """
+        start = datetime.now()
+        self.generate_community_summaries(com)
+        if log:
+            lock.acquire()
+            print com, datetime.now() - start
+            lock.release()
+
+    def get_tech_summary(self, component):
+        """get the tech summaries
+        
+        Parameters
+        ----------
+        component: str
+            name of a component
+            
+        Returns
+        -------
+        tech summary info
+        """
+        try:
+            return self.tech_summaries[component]
+        except AttributeError as e:
+            #~ print e
+            self.tech_summaries = {}
+        except KeyError as e:
+            #~ print e
+            pass
+
+        ## get regional summaries from main component
+        self.tech_summaries[component] = \
+            import_module("aaem.components." + component).\
+            create_regional_summary(self.results)
+        return self.tech_summaries[component]
+        
+    def get_web_summary(self, component):
+        """
+        """
+        try:
+            return self.imported_summaries[component].generate_web_summary
+        except AttributeError as e:
+            #~ print e
+            self.imported_summaries = {}
+        except KeyError as e:
+            #~ print e
+            pass
+            
+        self.imported_summaries[component] = \
+            import_module("aaem_summaries.components." + component).summary
+        return self.imported_summaries[component].generate_web_summary
+    
+    def get_cleanded_coms (self):
+        """ Function doc """
+        return sorted([k.replace("'",'') for k in self.get_coms()])
+        
+    def get_coms (self):
+        return sorted([k for k in self.results.keys() if k.find('+') == -1])
+    
+    def get_regions (self):
+        try:
+            return self.regions 
+        except AttributeError:
+            pass
+            
+        
+        temp = {}
+        for com in self.get_coms():
+            reg = self.results[com]['community data']\
+                                            .get_item('community', 'region')
+            try:
+                temp[reg].append(com.replace("'",''))
+            except:
+                temp[reg] = [com.replace("'",'')]
+                
+        
+        regions = []
+        for k in sorted(temp.keys()):
+            regions.append({"region":k, "communities":temp[k], 
+                            "clean": k.replace(' ','_').replace('(','').\
+                                replace(')','').replace('/','_').lower()})
+        
+        self.regions = regions
+        #~ print self.regions
+        return self.regions 
+    
+    def get_senate_dists (self):
+        try:
+            return self.senate
+        except AttributeError:
+            pass
+            
+        temp = {}
+        for com in self.get_coms():
+            reg = self.results[com]['community data']\
+                                            .get_item('community', 
+                                                        'senate district')
+            for d in reg:
+                try:
+                    temp[d.replace("'",'')].append(com.replace("'",''))
+                except:
+                    temp[d.replace("'",'')] = [com.replace("'",'')]
+            
+        senate = []
+        for k in sorted(temp.keys()):
+            senate.append({"district":k, "communities":temp[k], 
+                            "clean": k.replace(' ','_').replace('(','').\
+                                replace(')','').replace('/','_').lower()})
+        
+        
+        self.senate = senate
+        return self.senate
+        
+    def get_house_dists (self):
+        try:
+            return self.house
+        except AttributeError:
+            pass
+            
+        temp = {}
+        for com in self.get_coms():
+            reg = self.results[com]['community data']\
+                                            .get_item('community', 
+                                                        'house district')
+            for d in reg:
+                try:
+                    temp[d].append(com.replace("'",''))
+                except:
+                    temp[d] = [com.replace("'",'')]
+            
+        house = []
+        for k in sorted(temp.keys()):
+            house.append({"district":str(k), "communities":temp[k], 
+                            "clean": str(k)})
+        
+        
+        self.house = house
+        return self.house
+    
+    def get_summary_pages (self):
+        """
+        get the summary pages for the secondary nav for the community summaries
+        """
+        return [{'name':'Summary', 'pages':['Overview',
+                                            'Financial and Demographic',
+                                            'Consumption',
+                                            'Generation',
+                                            'Potential Projects']}, 
+                {'name':'Efficiency Projects',
+                 'pages':["Residential Energy Efficiency",
+                          "Non-residential Energy Efficiency",
+                          "Water and Wastewater Efficiency"]
+                },
+                {'name':'Electricity Projects', 
+                 'pages':["Wind Power",
+                         'Solar Power',
+                          'Hydropower',
+                         'Transmission and Interties',
+                         'Diesel Efficiency']
+                },
+                {'name':'Heating Projects', 
+                 'pages':['Biomass for Heat (Cordwood)',
+                          'Biomass for Heat (Pellet)',
+                          'Residential ASHP',
+                          'Non-Residential ASHP',
+                          'Heat Recovery']
+                }
+               ]
+
+    def get_viable_components (self, com, cutoff = 1):
+        """ Function doc """
+        l = []
+        for comp in self.results[com]:
+            try:
+                if self.results[com][comp].get_BC_ratio() == 'N/A':
+                    continue
+                if self.results[com][comp].get_BC_ratio() >= cutoff:
+                    l.append(comp)
+            except AttributeError as e:
+                #~ print e
+                pass
+        
+        return l
+        
+    def get_ratios_greater_than_limit (self, limit = 1.0):
+        """ Function doc """
+        #~ keys = sorted([k for k in self.results.keys() if k.find('+') == -1])
+        for com in self.results.keys():
+            for comp in self.results[com]:
+                try:
+                    
+                    
+                    it = self.results[com]['community data'].intertie
+                    if not it is None:
+                        if it == 'parent' and not comp in ["Wind Power",
+                                                 'Solar Power',
+                                                  'Hydropower',
+                                                 'Transmission and Interties',
+                                                 'Diesel Efficiency']:
+                            continue
+                        if it == 'child' and comp in ["Wind Power",
+                                                 'Solar Power',
+                                                  'Hydropower',
+                                                 'Transmission and Interties',
+                                                 'Diesel Efficiency']:
+                            continue
+                    
+                    ratio =  self.results[com][comp].get_BC_ratio()
+                    if ratio == 'N/A':
+                        continue
+                    if ratio > limit:
+                        #~ print ratio, type(ratio)
+                        #~ self.viable_communities[comp].add(com.split('+')[0])
+                        self.viable_communities[comp].add(com.split('+')[0].replace("_intertie",""))
+                except AttributeError as e:
+                    #~ print e
+                    pass
+                
+        #~ print self.viable_communities
+        
 
 
