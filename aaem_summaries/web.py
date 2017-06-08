@@ -397,7 +397,9 @@ class WebSummary(object):
             
         #### Financial section
         ###### get data
-        diesel = res['community data'].get_item('community','diesel prices')
+        diesel = copy.deepcopy(
+            res['community data'].get_item('community','diesel prices')
+        )
         fuel_year = diesel.index[0]
         diesel_c = float(diesel.ix[fuel_year])
         HF_c = diesel_c + \
@@ -762,7 +764,9 @@ class WebSummary(object):
         
         diesel_data['year'] = utility_data.index
 
-        diesel = res['community data'].get_item('community','diesel prices')
+        diesel = copy.deepcopy(
+            res['community data'].get_item('community','diesel prices')
+        )
         diesel.columns = ['Diesel Price ($/gal)']
 
         diesel['year'] = diesel.index

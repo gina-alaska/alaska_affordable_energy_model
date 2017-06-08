@@ -64,17 +64,21 @@ def generate_web_summary (web_object, community):
     diesel_price = web_object.results[community]['community data'].\
                             get_item('community','diesel prices').\
                             ix[start_year: end_year]#values
+    diesel_price = diesel_price[diesel_price.columns[0]]
 
     ## get diesel generator efficiency
     eff = modeled.cd['diesel generation efficiency']
     
     
-    
+    #~ print diesel_price, generation
     
     ## get generation fuel costs per year (modeled)
     base_cost = generation/eff * diesel_price
     base_cost.name = 'Base Cost'
-    print base_cost
+    
+    fix_index = base_cost[base_cost.isnull()].index
+    base_cost.ix[fix_index] = generation[fix_index]/eff * diesel_price.iloc[-1]
+    #~ print base_cost
     
     table1 = wl.make_costs_table(community, COMPONENT_NAME, projects, base_cost,
                               web_object.directory)
@@ -107,7 +111,10 @@ def generate_web_summary (web_object, community):
     for p in order:
         project = projects[p]
         try:
-            name = project.comp_specs['name'].decode('unicode_escape').encode('ascii','ignore')
+            name = \
+                project.comp_specs['name'].\
+                decode('unicode_escape').\
+                encode('ascii','ignore')
         except KeyError:
             name = 'nan'
         if name == 'nan':
@@ -165,8 +172,8 @@ def create_project_details_list (project):
            project.comp_specs['transmission capital cost'] 
     
     pen = project.comp_specs['proposed generation']/\
-          float(project.forecast.cd.get_item('community',
-                                                'generation').iloc[-1:])
+        float(project.forecast.cd.get_item('community',
+            'utility info')['net generation'].iloc[-1:])
     pen *= 100
     
     try:
