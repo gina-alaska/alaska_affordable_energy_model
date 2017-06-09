@@ -49,12 +49,10 @@ def generate_web_summary (web_object, community):
     fuel_consumed = nr_comp.baseline_HF_consumption 
 
     ## get the diesel prices
-    diesel_price = web_object.results[community]['community data'].\
-                            get_item('community','diesel prices').\
-                            ix[start_year: end_year] + \
-                        web_object.results[community]['community data'].\
-                            get_item('community','heating fuel premium')
-    diesel_price = diesel_price[diesel_price.columns[0]]
+    diesel_price = \
+        modeled.cd['diesel prices'] + modeled.cd['heating fuel premium']
+    diesel_price = \
+        diesel_price[diesel_price.columns[0]].ix[start_year:end_year]
     ## get diesel generator efficiency
     eff = modeled.cd['diesel generation efficiency']
     

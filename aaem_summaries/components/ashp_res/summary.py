@@ -41,7 +41,6 @@ def generate_web_summary (web_object, community):
     modeled = web_object.results[community][COMPONENT_NAME]
     start_year = modeled.start_year
     end_year = modeled.actual_end_year
-    
     ## for make table functions
     projects = {'Modeled ' + COMPONENT_NAME:  modeled}
     
@@ -50,18 +49,18 @@ def generate_web_summary (web_object, community):
     fuel_consumed = r_comp.baseline_HF_consumption 
     
     ## get the diesel prices
-    diesel_price = web_object.results[community]['community data'].\
-                            get_item('community','diesel prices').\
-                            ix[start_year: end_year] + \
-                        web_object.results[community]['community data'].\
-                            get_item('community','heating fuel premium')
-    diesel_price = diesel_price[diesel_price.columns[0]]
+    diesel_price = \
+        modeled.cd['diesel prices'] + modeled.cd['heating fuel premium']
+    #~ print diesel_price
+    diesel_price = diesel_price[diesel_price.columns[0]].ix[start_year:end_year]
+    
     ## get diesel generator efficiency
     eff = modeled.cd['diesel generation efficiency']
     
     
     
     ## get generation fuel costs per year (modeled)
+    #~ print diesel_price
     base_cost = fuel_consumed  * diesel_price
     base_cost.name = 'Base Cost'
     

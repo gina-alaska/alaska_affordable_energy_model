@@ -89,6 +89,8 @@ class Transmission (AnnualSavings):
             self.comp_specs["lifetime"]
         )
         
+        
+        
     def run (self, scalers = {'capital costs':1.0}):
         """Runs the component. The Annual Total Savings,Annual Costs, 
         Annual Net Benefit, NPV Benefits, NPV Costs, NPV Net Benefits, 

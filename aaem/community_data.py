@@ -122,8 +122,13 @@ class CommunityData (object):
                 
             for plugin in plugins:
                 plugin(self, community_config, global_config, scalers)
-            
-        
+         
+        convert = self.data['community']['diesel prices']
+        convert.index = [int(y) for y in convert.index]
+        convert.index.name = 'year'
+        convert = self.data['community']['electric non-fuel prices']
+        convert.index = [int(y) for y in convert.index]
+        convert.index.name = 'year'
         # modify diesel prices and electric non-fuel prices
         
 

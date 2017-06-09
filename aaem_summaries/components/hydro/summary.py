@@ -167,11 +167,10 @@ def create_project_details_list (project):
     -------
         A dictionary with values used by summary
     """
-
-    cost = project.comp_specs['generation capital cost'] +\
-           project.comp_specs['transmission capital cost'] 
+    cost = float(project.comp_specs['generation capital cost']) +\
+           float(project.comp_specs['transmission capital cost'])
     
-    pen = project.comp_specs['proposed generation']/\
+    pen = float(project.comp_specs['proposed generation'])/\
         float(project.forecast.cd.get_item('community',
             'utility info')['net generation'].iloc[-1:])
     pen *= 100
@@ -192,11 +191,13 @@ def create_project_details_list (project):
         {'words':'Benefit-cost ratio', 
             'value': '{:,.1f}'.format(project.get_BC_ratio())},
         {'words':'Proposed nameplate capacity', 
-            'value': 
-            '{:,.0f} kW'.format(project.comp_specs['proposed capacity'])},
+        'value': 
+            '{:,.0f} kW'.\
+                format(float(project.comp_specs['proposed capacity']))},
         {'words':'Expected yearly generation', 
          'value': 
-         '{:,.0f} kWh/year'.format(project.comp_specs['proposed generation'])},
+            '{:,.0f} kWh/year'.\
+                format(float(project.comp_specs['proposed generation']))},
         {'words':'Phase', 
          'value': project.comp_specs['phase']},
         {'words':'Total capital cost', 

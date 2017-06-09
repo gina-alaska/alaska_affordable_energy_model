@@ -106,6 +106,8 @@ class CommunityBuildings (AnnualSavings):
                     self.buildings_df.groupby(self.buildings_df.index).sum()
         self.buildings_df = concat([df,self.buildings_df],axis=1)
         
+        
+        
     def save_building_summay(self, file_name):
         """save builing summary for community
         
