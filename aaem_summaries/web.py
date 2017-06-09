@@ -163,6 +163,8 @@ class WebSummary(object):
         template = self.general_summaries_html
         regions = self.get_regions()
         
+        
+        
         for reg in regions:
             charts = []
             name = reg['region']
@@ -177,41 +179,28 @@ class WebSummary(object):
                         'title':'Communities in region',
                         'links_list': True,})
             
-        
-            try:
-                goals = read_csv(os.path.join(self.model_root,'input_files', 
-                                            '__goals_regional.csv'),
-                                comment='#', index_col=0)
             
-                key = name
-                if key == 'Copper River/Chugach':
-                    key = 'Copper River'
-                elif key == 'Kodiak':
-                    key = 'Kodiak Region'
-                goals = goals.ix[key].fillna('')
-            except IOError: 
-                goals = None
-               
-            if goals is None:
-                charts.append({'name':'goals', 
-                        'data':"Regional Goals not avaialble", 
-                        'title':'Regional Goals',
-                        })
-            else:
-                table = [[True,'Priority','Goal']]
-                p = 1
-                for g in goals['Priority 1':]:
-                    if g == '':
-                        break
-                    #~ print type(g)
-                    table.append([False, p, g.decode('unicode_escape').\
-                                              encode('ascii','ignore')])
-                    p += 1
+            for c in self.results:
+                cr = self.results[c]['community data'].data['community']['region']
+                if name == cr:
+                    goals = \
+                        self.results[c]['community data'].\
+                        data['community']['regional goals']
+                    break
+            table = [[True,'Priority','Goal']]
+            p = 1
+            for g in goals:
+                if g == '':
+                    break
+                #~ print type(g)
+                table.append([False, p, g.decode('unicode_escape').\
+                                          encode('ascii','ignore')])
+                p += 1
                 
                 
-                charts.append({'name':'goals', 'data':table, 
-                        'title':'Regional Goals',
-                        'table': True,})
+            charts.append({'name':'goals', 'data':table, 
+                    'title':'Regional Goals',
+                    'table': True,})
     
             pth = os.path.join(self.directory,
                 name.replace(' ','_').replace('(','').replace(')','').\
