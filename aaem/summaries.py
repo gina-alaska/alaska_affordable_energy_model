@@ -293,13 +293,10 @@ def fuel_oil_log (coms, res_dir):
                 eff = np.nan
             
             year = res.start_year
+
             try:
-                try:
-                    elec = float(coms[c]['forecast'].generation_by_type[\
+                elec = float(coms[c]['forecast'].generation[\
                                 "generation diesel"][year]) / eff
-                except KeyError:
-                    elec = float(coms[c]['forecast'].generation_by_type[\
-                                "generation_diesel [kWh/year]"][year]) / eff
             except KeyError:
                 elec = 0
             if it == 'child' or np.isnan(elec):
@@ -371,7 +368,7 @@ def forecast_comparison_log (coms, res_dir):
             first_year = max([res.start_year,
                               com.start_year,
                               wat.start_year,
-                              fc.start_year])
+                              fc.consumption.index[0]])
                               
             res_kwh = 0
             com_kwh = 0
@@ -398,15 +395,15 @@ def forecast_comparison_log (coms, res_dir):
             
             #~ print fc.consumption_to_save.ix[first_year]
             #~ print ""
-            fc_res = float(fc.consumption_to_save.ix[first_year]\
-                                ['residential kWh'])
-            fc_non_res = float(fc.consumption_to_save.ix[first_year]\
-                            ['non-residential kWh'])
+            fc_res = float(fc.consumption.ix[first_year]\
+                                ['consumption residential'])
+            fc_non_res = float(fc.consumption.ix[first_year]\
+                            ['consumption non-residential'])
             if np.isnan(fc_non_res):
                 fc_non_res = 0
             
-            fc_total = float(fc.consumption_to_save.ix[first_year]\
-                                    ['consumption kWh'])
+            fc_total = float(fc.consumption.ix[first_year]\
+                                    ['consumption'])
             
             if np.isnan(fc_total):
                 fc_total = 0
@@ -464,22 +461,22 @@ def electric_price_summary (coms, res_dir):
         #~ print c
         #~ print dir(coms[c]['community data'])
         try:
+            if c.find('+') != -1:
+                continue
             it = coms[c]['community data'].intertie
             if it is None:
                 it = 'parent'
             if it == 'child':
                 continue
             base_cost = float(coms[c]['community data'].get_item("community",
-                                            "elec non-fuel cost"))
+                                            "electric non-fuel price"))
             prices = deepcopy(coms[c]['community data'].get_item("community",
                                             "electric non-fuel prices"))
-            #~ print prices
-            
             name = c
             if name == 'Barrow':
                 name = 'Utqiagvik (Barrow)'
-            prices[name] = prices['price']
-            del prices['price']
+            prices[name] = prices[prices.columns[0]]#'price']
+            #~ del prices[prices.columns[0]]
             prices = prices.T
             prices["base cost"] = base_cost
             if out is None:
@@ -499,6 +496,9 @@ def electric_price_summary (coms, res_dir):
     #~ fd = open(f_name,'w')
     #~ fd.write(("# list of the electricty prices forecasted\n"))
     #~ fd.close()
+    out.index = [i.replace('_',' ') for i in out.index]
+    out = out.drop_duplicates()
+    
     out[[out.columns[-1]] + out.columns[:-1].tolist()].to_csv(f_name, mode='w')
 
 def genterate_npv_summary (coms, res_dir):
@@ -650,7 +650,7 @@ def call_comp_summaries (coms, res_dir):
                                                         component_summary
             log(coms, res_dir)
         except AttributeError as e:
-            print e
+            #~ print e
             continue
             
 
