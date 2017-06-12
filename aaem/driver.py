@@ -236,38 +236,6 @@ class Driver (object):
             comps_used[comp].save_csv_outputs(directory)
             comps_used[comp].save_additional_output(directory)
     
-    def save_forecast_output (self, fc, community, img_dir, 
-                                                    plot = False, tag = ''):
-        """
-        save the forecast output
-        
-        inputs:
-            fc: excuted forecast object <aaem.Forecast>
-            community: community or 'name' <string>
-            img_dir: directory to save plots <strings>
-            plot: (optional, default False)boolean to plot <bool>
-            tag: (optional) tag for results dir <string>
-            
-        outputs:
-            saves forecast as .csv files, and plots, if plot == True
-            
-        preconditions:
-            see invariants
-            
-        postconditions:
-            None
-        """
-        if tag != '':
-            tag = '_' + tag
-        directory = os.path.join(self.model_root, 'results' + tag,
-                                            community.replace(' ','_'))
-                                            
-        try:
-            os.makedirs(os.path.join(directory))
-        except OSError:
-            pass
-        fc.save_forecast(directory, img_dir, plot)
-    
     def save_input_files (self, cd, community, tag = ''):
         """ 
         save the input files (confing yaml)

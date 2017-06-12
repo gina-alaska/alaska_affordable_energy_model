@@ -549,7 +549,7 @@ def genterate_npv_summary (coms, res_dir):
         npvs.to_csv(f_name)
         
 def community_forcast_summary (coms, res_dir):
-    """
+    """generate community forecast summary
     """
     for community in ['Adak']:
         #~ print community
@@ -587,6 +587,32 @@ def community_forcast_summary (coms, res_dir):
             community.replace(' ','_') + '_electricity_forecast.csv')
         data.to_csv(f_name)
         
+        data = components['forecast'].generation
+        data['community'] = community
+        data['population'] = components['forecast'].population['population']
+        data['population_qualifier'] = 'I'
+        data['generation_qualifier'] = \
+            components['forecast'].\
+            consumption['consumption_qualifier']
+        
+        data = data[list(data.columns[-4:]) + list(data.columns[:-4])]
+        #~ print data
+        data.columns = [
+            'community',
+            'population', 
+            'population_qualifer',
+            'generation_qualifer',
+            'generation total (kWh/year)',
+            'generation diesel (kWh/year)',
+            'generation hydro (kWh/year)',
+            'generation natural gas (kWh/year)',
+            'generation wind (kWh/year)',
+            'generation solar (kWh/year)',
+            'generation biomass (kWh/year)'
+        ]
+        f_name = os.path.join(res_dir,community.replace(' ','_'),
+            community.replace(' ','_') + '_generation_forecast.csv')
+        data.to_csv(f_name)
         #~ data = data[['community',
             #~ 'population', 
             #~ 'population_qualifier',
@@ -644,6 +670,8 @@ def call_comp_summaries (coms, res_dir):
     """
     genterate_npv_summary(coms, res_dir)
     consumption_summary(coms, res_dir)
+    community_forcast_summary(coms, res_dir)
+    
     for comp in comp_lib:
         try:
             log = import_module("aaem.components." +comp_lib[comp]).\
