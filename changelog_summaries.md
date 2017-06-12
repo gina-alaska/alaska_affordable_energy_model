@@ -4,6 +4,10 @@
 ### updated
 - summaries updated to support new CommunityData, and Forecast systems in model 0.27.0
 
+## [0.26.2]
+### fixed
+- url case ro regions on map
+
 ## [0.26.1]
 ### added
 - regions layer to map
