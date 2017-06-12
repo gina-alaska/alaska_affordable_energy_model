@@ -1,5 +1,22 @@
 #Change Log
 
+## [0.27.0]
+-- adds 
+-- Transmissinon & Interties component has a test to see if communitys to intertie are alreay connected
+
+### changes
+-- CommunityData loads all values from single config file
+-- Prprocesor rewritten to create the single config file
+-- generation of electric_non-fuel_prices was moved to preprocessor
+
+### fixes
+-- preprocessing of interties, for electric data and fuel prices, now finds the proper communites, and avoids dupilcation
+-- preprocessing of fuel prices, regional averaging is fixed
+
+### removes 
+-- all code relating to the input_files directory
+-- plotting feature from forecast
+
 ## [0.26.1]
 ### changes
 - in diesel efficiency component. the LCOE numerator is set to the generation for the community 

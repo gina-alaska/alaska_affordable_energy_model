@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.27.0]
+### updated
+- summaries updated to support new CommunityData, and Forecast systems in model 0.27.0
+
 ## [0.26.1]
 ### added
 - regions layer to map
