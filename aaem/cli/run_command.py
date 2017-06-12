@@ -22,8 +22,8 @@ class RunCommand(pycommand.CommandBase):
     optionList = (
             ('dev', ('d', False, "use only development communities")),
             ('log', ('l', "<log_file>", "name/path of file to log outputs to")),
-            ('plot',('p', '<directory>', 
-                        "run the ploting functionality and save in directory")),
+            #~ ('plot',('p', '<directory>', 
+                        #~ "run the ploting functionality and save in directory")),
             ('force',('f', False, "force overwrite of existing directories")),
             ('tag',('t', '<tag>', "tag for results directory")),
             ('scalers', ('s', '<scalers>',

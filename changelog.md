@@ -1,13 +1,14 @@
 #Change Log
 
 ## [0.27.0]
--- adds 
+### adds 
 -- Transmissinon & Interties component has a test to see if communitys to intertie are alreay connected
 
 ### changes
 -- CommunityData loads all values from single config file
 -- Prprocesor rewritten to create the single config file
 -- generation of electric_non-fuel_prices was moved to preprocessor
+-- precents in configuration are now writtens as 40 for 40% (was .4)
 
 ### fixes
 -- preprocessing of interties, for electric data and fuel prices, now finds the proper communites, and avoids dupilcation
@@ -15,7 +16,7 @@
 
 ### removes 
 -- all code relating to the input_files directory
--- plotting feature from forecast
+-- plotting feature from forecast, and cli
 
 ## [0.26.1]
 ### changes
