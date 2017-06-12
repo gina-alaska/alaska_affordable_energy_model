@@ -97,6 +97,25 @@ Example, scalers:
 
 >>> aaem run -s '{diesel price:10}' ./model 
 
+Summaries
+========
+
+Creates the html summaries for model results
+
+>>> aaem summaries <path to model> (tag)
+
+Options:
+ * Alternate output path (--alt_out, -a): Alternate output path
+ * Force (--force, -f): force overwriting of existing directories  
+ 
+Example:
+
+>>> aaem summaries model/m0.27.0_d0.27.0
+
+Example, with tag:
+
+>>> aaem summaries model/m0.27.0_d0.27.0 test_tag
+
 Refresh
 =======
 	
