@@ -757,14 +757,14 @@ class ResidentialBuildings(AnnualSavings):
         "Residential: Heating Fuel All (MMBtu/year) Consumption Baseline": 
                                     self.get_base_HF_use(),
         "Residential: Heating Fuel All (MMBtu/year) Consumption Post Retrofit": 
-                                    self.get_refit_HF_use(),
+                                    self.get_proposed_HF_use(),
         "Residential: Heating Fuel All (MMBtu/year) Consumption Savings": 
                                     self.get_base_HF_use() -\
-                                    self.get_refit_HF_use(), 
+                                    self.get_proposed_HF_use(), 
         "Residential: Heating Fuel All (MMBtu/year) Cost Baseline": 
                                     self.get_base_HF_cost(),
         "Residential: Heating Fuel All (MMBtu/year) Cost Post Retrofit": 
-                                    self.get_refit_HF_cost(),
+                                    self.get_proposed_HF_cost(),
         "Residential: Heating Fuel All (MMBtu/year) Cost Savings": 
                                     self.get_heating_savings_costs(),
 
