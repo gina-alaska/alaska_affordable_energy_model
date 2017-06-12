@@ -94,6 +94,19 @@ def load_other_community(community_data,
         return
     if com == '':
         return
+    intertie = community_data.get_item('community', 'intertie')
+    if type(intertie) is list and com in intertie:
+        community_data.diagnostics.add_warning(
+            'Transmission',
+            'Commuity is already intertied to ' + com +\
+                ' setting nearest community to none'
+        )
+        community_data.set_item(
+            'Transmission and Interties',
+            'nearest community with lower price',
+            ''
+        )
+        return
     com = com.replace(' ','_')
     rt_path = os.path.split(community_config)[0]
     #~ print rt_path, com
@@ -102,6 +115,7 @@ def load_other_community(community_data,
     if os.path.exists(path +'_intertie.yaml'):
         #~ self.connect_to_intertie = True
         path += '_intertie'
+    #~ print path
     path += '.yaml'
     community_data.new_intetie_data = CommunityData(
         path, 

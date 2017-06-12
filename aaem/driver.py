@@ -350,7 +350,6 @@ class Driver (object):
         directory = os.path.join(self.model_root, 'results' + tag)
         
         name = comps_used['community data'].get_item('community', 'file id')
-        
         picklename = os.path.join(directory,'binary_results.pkl')
         if overwrite:
             mode = 'rb'
@@ -834,6 +833,11 @@ class Setup (object):
             os.makedirs(md_dir)
         except OSError:
             pass
+        #~ try:
+            #~ os.makedirs(os.path.join(md_dir,'diagnostic_files'))
+        #~ except OSError:
+            #~ pass    
+        
         m = 'w'
         with open(
             os.path.join(md_dir, 'preprocessor_metadata.yaml'),
@@ -843,29 +847,19 @@ class Setup (object):
                                   'data version': ver},
                                   default_flow_style = False))
                                   
-    #~ def archive_input_files_raw_data (self, input_path):
-        #~ """
-        #~ saves an archive of the raw data in the meta dat folder
-        
-        #~ inputs:
-            #~ input_path: path to inputs directory<string>
+        self.diagnostics.save_messages(os.path.join(md_dir, 'log.csv'))
+                                  
+
+        data_version_file = os.path.join(self.data_dir, 'VERSION')
+        with open(data_version_file, 'r') as fd:
+            ver = fd.read().replace("\n", "")
             
-        #~ outputs:
-            #~ saves in "raw_data.zip" in "__metadata" subdirectory
-        #~ """
-        #~ data_version_file = os.path.join(self.data_repo, 'VERSION')
-        #~ with open(data_version_file, 'r') as fd:
-            #~ ver = fd.read().replace("\n", "")
-    
-        #~ md_dir = os.path.join(input_path, "__metadata")
-        #~ try:
-            #~ os.makedirs(md_dir)
-        #~ except OSError:
-            #~ pass
-        #~ z = zipfile.ZipFile(os.path.join(md_dir, "raw_data.zip"),"w")
-        #~ for raw in [f for f in os.listdir(self.data_repo) if '.csv' in f]:
-            #~ z.write(os.path.join(self.data_repo,raw), raw)
-        #~ z.write(os.path.join(data_version_file), 'VERSION')
+        z = zipfile.ZipFile(os.path.join(md_dir, "raw_data.zip"),"w")
+        for raw in [f for f in os.listdir(self.data_dir) if '.csv' in f]:
+            z.write(os.path.join(self.data_dir,raw), raw)
+        z.write(os.path.join(data_version_file), 'VERSION')
+        
+        
     def load_communities (self):
         """ Function doc """
         data = read_csv(os.path.join(self.model_root, self.tag, 'config', 

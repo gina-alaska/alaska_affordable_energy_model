@@ -137,7 +137,7 @@ class Transmission (AnnualSavings):
         self.calc_average_load()
         try:
             self.get_intertie_values()
-        except IOError:
+        except ValueError:
             self.run = False
             self.reason = ("Could not find data on community to intertie to.")
             return 
@@ -198,7 +198,8 @@ class Transmission (AnnualSavings):
             diesel prices over the project lifetime
         """
         #~ print self.new_intertie_data.get_item('community','model as intertie')
-
+        if self.new_intertie_data is None:
+            raise ValueError, "No community to intertie to"
         self.connect_to_intertie = \
             self.new_intertie_data.get_item('community','model as intertie')
 

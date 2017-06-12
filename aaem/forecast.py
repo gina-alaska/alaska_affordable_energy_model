@@ -8,15 +8,15 @@ created: 2015/09/18
 from community_data import CommunityData
 from diagnostics import Diagnostics
 import constants
-import plot
-import colors
+#~ import plot
+#~ import colors
 
 import numpy as np
 from pandas import DataFrame, read_csv, concat
 import os.path
-import copy
+#~ import copy
 
-from datetime import datetime
+#~ from datetime import datetime
 
 class Forecast (object):
     """ Class doc """
@@ -537,580 +537,578 @@ class Forecast (object):
             households = self.households.ix[start:end]
         return households['households'].values  
         
-    def save_forecast (self, path, png_path = None, do_plots = False):
-        """
-        save the forecast to a csv
-        pre:
-            everything needs to be foretasted
-            path: path to each communities output dir
-            png_path: altenat location for pngs
-        post:
-            saves 3 files
-        """
-        tag = self.cd.get_item("community", "name").replace(" ", "_") + "_"
-        pathrt = os.path.join(path, tag)
-        if png_path is None:
-            if do_plots:
-                os.makedirs(os.path.join(path,"images"))
-            png_path = os.path.join(path, 'images',tag)
-            epng_path = png_path
-            hdpng_path = png_path
-            hfpng_path = png_path;
-            gpng_path = png_path
-        else:
-            epng_path = os.path.join(png_path,'electric_forecast',tag)
-            try:
-                if do_plots:
-                    os.makedirs(os.path.join(png_path,'electric_forecast'))
-            except OSError:
-                pass
-            gpng_path = os.path.join(png_path,'generation_forecast',tag)
-            try:
-                if do_plots:
-                    os.makedirs(os.path.join(png_path,'generation_forecast'))
-            except OSError:
-                pass
-            hdpng_path = os.path.join(png_path,'heat_demand_forecast',tag)
-            try:
-                if do_plots:
-                    os.makedirs(os.path.join(png_path,'heat_demand_forecast'))
-            except OSError:
-                pass
-            hfpng_path = os.path.join(png_path,'heating_fuel_forecast',tag)
-            try:
-                if do_plots:
-                    os.makedirs(os.path.join(png_path,'heating_fuel_forecast'))
-            except OSError:
-                pass
-        if self.cd.intertie != 'child' and \
-            self.cd.get_item("community","model electricity"):
+    #~ def save_forecast (self, path, png_path = None, do_plots = False):
+        #~ """
+        #~ save the forecast to a csv
+        #~ pre:
+            #~ everything needs to be foretasted
+            #~ path: path to each communities output dir
+            #~ png_path: altenat location for pngs
+        #~ post:
+            #~ saves 3 files
+        #~ """
+        #~ tag = self.cd.get_item("community", "name").replace(" ", "_") + "_"
+        #~ pathrt = os.path.join(path, tag)
+        #~ if png_path is None:
+            #~ if do_plots:
+                #~ os.makedirs(os.path.join(path,"images"))
+            #~ png_path = os.path.join(path, 'images',tag)
+            #~ epng_path = png_path
+            #~ hdpng_path = png_path
+            #~ hfpng_path = png_path;
+            #~ gpng_path = png_path
+        #~ else:
+            #~ epng_path = os.path.join(png_path,'electric_forecast',tag)
+            #~ try:
+                #~ if do_plots:
+                    #~ os.makedirs(os.path.join(png_path,'electric_forecast'))
+            #~ except OSError:
+                #~ pass
+            #~ gpng_path = os.path.join(png_path,'generation_forecast',tag)
+            #~ try:
+                #~ if do_plots:
+                    #~ os.makedirs(os.path.join(png_path,'generation_forecast'))
+            #~ except OSError:
+                #~ pass
+            #~ hdpng_path = os.path.join(png_path,'heat_demand_forecast',tag)
+            #~ try:
+                #~ if do_plots:
+                    #~ os.makedirs(os.path.join(png_path,'heat_demand_forecast'))
+            #~ except OSError:
+                #~ pass
+            #~ hfpng_path = os.path.join(png_path,'heating_fuel_forecast',tag)
+            #~ try:
+                #~ if do_plots:
+                    #~ os.makedirs(os.path.join(png_path,'heating_fuel_forecast'))
+            #~ except OSError:
+                #~ pass
+        #~ if self.cd.intertie != 'child' and \
+            #~ self.cd.get_item("community","model electricity"):
 
-            #~ start = datetime.now() 
-            self.save_electric(pathrt, epng_path, do_plots)
-            self.save_generation_forecast(pathrt, gpng_path, do_plots)
-            #~ print "saving electric:" + str(datetime.now() - start)
-        if self.cd.intertie != 'parent' and \
-            self.cd.get_item("community","model heating fuel"):
+            ##start = datetime.now() 
+            #~ self.save_electric(pathrt, epng_path, do_plots)
+            #~ self.save_generation_forecast(pathrt, gpng_path, do_plots)
+            ##print "saving electric:" + str(datetime.now() - start)
+        #~ if self.cd.intertie != 'parent' and \
+            #~ self.cd.get_item("community","model heating fuel"):
      
-            #~ start = datetime.now() 
-            self.save_heat_demand(pathrt, hdpng_path, do_plots)
-            #~ print "saving heat demand:" + str(datetime.now() - start)
+            ##start = datetime.now() 
+            #~ self.save_heat_demand(pathrt, hdpng_path, do_plots)
+            ##print "saving heat demand:" + str(datetime.now() - start)
             
-            #~ start = datetime.now() 
-            self.save_heating_fuel(pathrt, hfpng_path, do_plots)
-            #~ print "saving heating fuel:" + str( datetime.now() - start)
+            ##start = datetime.now() 
+            #~ self.save_heating_fuel(pathrt, hfpng_path, do_plots)
+            ##print "saving heating fuel:" + str( datetime.now() - start)
     
-    def add_heat_demand_column (self, key, year_col, data_col):
-        """ 
-        add a column to be saved with the heat demand forecast 
-        pre:
-            Key is a string. year_col is a numpy array of values, date_col
-        is a corresponding array of years
-        post:
-            a dataframe is added to self.heat_demand_cols
-        """
-        self.heat_demand_cols.append(DataFrame({"year":year_col, 
-                                           key:data_col}).set_index("year"))
+    #~ def add_heat_demand_column (self, key, year_col, data_col):
+        #~ """ 
+        #~ add a column to be saved with the heat demand forecast 
+        #~ pre:
+            #~ Key is a string. year_col is a numpy array of values, date_col
+        #~ is a corresponding array of years
+        #~ post:
+            #~ a dataframe is added to self.heat_demand_cols
+        #~ """
+        #~ self.heat_demand_cols.append(DataFrame({"year":year_col, 
+                                           #~ key:data_col}).set_index("year"))
                                            
-    def add_heating_fuel_column (self, key, year_col, data_col):
-        """
-        add a column to be saved with the heating fuel forecast 
-        pre:
-            Key is a string. year_col is a numpy array of values, date_col
-        is a corresponding array of years
-        post:
-            a dataframe is added to self.heating_fuel_cols
-        """
-        self.heating_fuel_cols.append(DataFrame({"year":year_col, 
-                                           key:data_col}).set_index("year"))
+    #~ def add_heating_fuel_column (self, key, year_col, data_col):
+        #~ """
+        #~ add a column to be saved with the heating fuel forecast 
+        #~ pre:
+            #~ Key is a string. year_col is a numpy array of values, date_col
+        #~ is a corresponding array of years
+        #~ post:
+            #~ a dataframe is added to self.heating_fuel_cols
+        #~ """
+        #~ self.heating_fuel_cols.append(DataFrame({"year":year_col, 
+                                           #~ key:data_col}).set_index("year"))
     
     
-    def generate_electric_output_dataframe (self):
-        """
-        """
-        from copy import deepcopy
-        kWh_con = deepcopy(self.consumption)
-        kWh_con.columns = ["total_electricity_consumed [kWh/year]",
-                           'residential_electricity_consumed [kWh/year]',
-                           'non-residential_electricity_consumed [kWh/year]']
-        c_map = copy.deepcopy(self.c_map)
-        c_map.columns = ["total_electricity_consumed_qualifier"]
+    #~ def generate_electric_output_dataframe (self):
+        #~ """
+        #~ """
+        #~ from copy import deepcopy
+        #~ kWh_con = deepcopy(self.consumption)
+        #~ kWh_con.columns = ["total_electricity_consumed [kWh/year]",
+                           #~ 'residential_electricity_consumed [kWh/year]',
+                           #~ 'non-residential_electricity_consumed [kWh/year]']
+        #~ c_map = copy.deepcopy(self.c_map)
+        #~ c_map.columns = ["total_electricity_consumed_qualifier"]
         
-        kWh_gen = self.generation
-        kWh_gen.columns = ["total_electricity_generation [kWh/year]"]
-        g_map = copy.deepcopy(c_map)
-        g_map.columns = ["total_electricity_generation_qualifier"]
+        #~ kWh_gen = self.generation
+        #~ kWh_gen.columns = ["total_electricity_generation [kWh/year]"]
+        #~ g_map = copy.deepcopy(c_map)
+        #~ g_map.columns = ["total_electricity_generation_qualifier"]
     
         #~ community = copy.deepcopy(self.c_map)
-        community = copy.deepcopy(self.c_map)
-        community.columns = ["community"]
-        community.ix[:] = self.cd.get_item("community","name")
-        try:
-            self.electric_dataframe = \
-                    concat([community,self.population.round().astype(int), 
-                           self.p_map, kWh_con.round().astype(int), c_map, 
-                           kWh_gen.round().astype(int), g_map] ,axis=1)
-        except ValueError:
-            self.electric_dataframe = None
+        #~ community.columns = ["community"]
+        #~ community.ix[:] = self.cd.get_item("community","name")
+        #~ try:
+            #~ self.electric_dataframe = \
+                    #~ concat([community,self.population.round().astype(int), 
+                           #~ self.p_map, kWh_con.round().astype(int), c_map, 
+                           #~ kWh_gen.round().astype(int), g_map] ,axis=1)
+        #~ except ValueError:
+            #~ self.electric_dataframe = None
 
     
     
-    def save_electric (self, csv_path, png_path, do_plots):
-        """ 
-        save the electric forecast
+    #~ def save_electric (self, csv_path, png_path, do_plots):
+        #~ """ 
+        #~ save the electric forecast
         
-        pre:
-            self.population, consumption, and generation. should be dataframes 
-        as calculated in this class. path should be the path to the output 
-        directory.
-        post:
-            a file, electricity_forecast.csv, is save in the output directory.
-        """
-        self.generate_electric_output_dataframe()
-        self.save_electric_csv(csv_path)
-        if do_plots:
-            self.save_electric_png(png_path)
+        #~ pre:
+            #~ self.population, consumption, and generation. should be dataframes 
+        #~ as calculated in this class. path should be the path to the output 
+        #~ directory.
+        #~ post:
+            #~ a file, electricity_forecast.csv, is save in the output directory.
+        #~ """
+        #~ self.generate_electric_output_dataframe()
+        #~ self.save_electric_csv(csv_path)
+        #~ if do_plots:
+            #~ self.save_electric_png(png_path)
         
 
 
-    def save_electric_csv (self, path):
-        """ 
-        save the electric forecast
+    #~ def save_electric_csv (self, path):
+        #~ """ 
+        #~ save the electric forecast
         
-        pre:
-            self.population, consumption, and generation. should be dataframes 
-        as calculated in this class. path should be the path to the output 
-        directory.
-        post:
-            a file, electricity_forecast.csv, is save in the output directory.
-        """
+        #~ pre:
+            #~ self.population, consumption, and generation. should be dataframes 
+        #~ as calculated in this class. path should be the path to the output 
+        #~ directory.
+        #~ post:
+            #~ a file, electricity_forecast.csv, is save in the output directory.
+        #~ """
 
-        if self.electric_dataframe is None:
-            self.diagnostics.add_warning("Forecast", 
-                                ("when saving null values were found in "
-                                 "generation/consumption data. Electricity "
-                                 "forecast is suspect not saving summary(csv)"))
-            return
-        data = self.electric_dataframe
-        #not joining path adding file name
-        f_name = path + "electricity_forecast.csv" 
+        #~ if self.electric_dataframe is None:
+            #~ self.diagnostics.add_warning("Forecast", 
+                                #~ ("when saving null values were found in "
+                                 #~ "generation/consumption data. Electricity "
+                                 #~ "forecast is suspect not saving summary(csv)"))
+            #~ return
+        #~ data = self.electric_dataframe
+        #~ #not joining path adding file name
+        #~ f_name = path + "electricity_forecast.csv" 
         
-        fd = open(f_name ,"w")
-        fd.write("# Electricity Forecast for " + \
-                                    self.cd.get_item("community","name") + "\n")
-        fd.write("# Qualifier info: \n")
-        fd.write("#   M indicates a measured value \n")
-        fd.write("#   P indicates a projected value \n")
-        fd.write("#   I indicates a value carried over from the input data. May be projected or measured see input data metadata.\n")
+        #~ fd = open(f_name ,"w")
+        #~ fd.write("# Electricity Forecast for " + \
+                                    #~ self.cd.get_item("community","name") + "\n")
+        #~ fd.write("# Qualifier info: \n")
+        #~ fd.write("#   M indicates a measured value \n")
+        #~ fd.write("#   P indicates a projected value \n")
+        #~ fd.write("#   I indicates a value carried over from the input data. May be projected or measured see input data metadata.\n")
         
-        fd.close()
+        #~ fd.close()
             
-        data.index = data.index.values.astype(int)
-        data.to_csv(f_name, index_label="year", mode = 'a')
+        #~ data.index = data.index.values.astype(int)
+        #~ data.to_csv(f_name, index_label="year", mode = 'a')
     
-    def save_electric_png (self, path):
-        """ Function doc """
-        if self.electric_dataframe is None:
-            self.diagnostics.add_warning("Forecast", 
-                                ("when saving null values were found in "
-                                 "generation/consumption data. Electricity "
-                                 "forecast is suspect not saving summary(png)"))
-            return
+    #~ def save_electric_png (self, path):
+        #~ """ Function doc """
+        #~ if self.electric_dataframe is None:
+            #~ self.diagnostics.add_warning("Forecast", 
+                                #~ ("when saving null values were found in "
+                                 #~ "generation/consumption data. Electricity "
+                                 #~ "forecast is suspect not saving summary(png)"))
+            #~ return
             
-        path = path+ "electricity_forecast.png"
-        start = self.c_map[self.c_map['consumption_qualifier'] == 'P'].index[0]
-        df2 = self.electric_dataframe[['population',
-                            'total_electricity_consumed [kWh/year]',
-                            'total_electricity_generation [kWh/year]',
-                            'residential_electricity_consumed [kWh/year]',
-                            'non-residential_electricity_consumed [kWh/year]']]
-        name = self.cd.get_item("community","name") + ' Electricity Forecast'
+        #~ path = path+ "electricity_forecast.png"
+        #~ start = self.c_map[self.c_map['consumption_qualifier'] == 'P'].index[0]
+        #~ df2 = self.electric_dataframe[['population',
+                            #~ 'total_electricity_consumed [kWh/year]',
+                            #~ 'total_electricity_generation [kWh/year]',
+                            #~ 'residential_electricity_consumed [kWh/year]',
+                            #~ 'non-residential_electricity_consumed [kWh/year]']]
+        #~ name = self.cd.get_item("community","name") + ' Electricity Forecast'
         
-        fig, ax = plot.setup_fig(name ,'years','population')
-        ax1 = plot.add_yaxis(fig,'kWh')
+        #~ fig, ax = plot.setup_fig(name ,'years','population')
+        #~ ax1 = plot.add_yaxis(fig,'kWh')
         
-        c_dict = {'population': [min(1,r*4) for r in colors.red],
-                   'total_electricity_consumed [kWh/year]':colors.orange,
-                    'total_electricity_generation [kWh/year]':colors.green,
-                     'residential_electricity_consumed [kWh/year]':colors.yellow,
-                    'non-residential_electricity_consumed [kWh/year]':colors.violet
-        }
+        #~ c_dict = {'population': [min(1,r*4) for r in colors.red],
+                   #~ 'total_electricity_consumed [kWh/year]':colors.orange,
+                    #~ 'total_electricity_generation [kWh/year]':colors.green,
+                     #~ 'residential_electricity_consumed [kWh/year]':colors.yellow,
+                    #~ 'non-residential_electricity_consumed [kWh/year]':colors.violet
+        #~ }
         
-        plot.plot_dataframe(ax1,df2,ax,['population'],
-                    {'population':'population',
-                    'total_electricity_consumed [kWh/year]':'consumption',
-                    'total_electricity_generation [kWh/year]':'generation',
-                    'residential_electricity_consumed [kWh/year]':'residential consumption',
-                    'non-residential_electricity_consumed [kWh/year]':'non residential consumption'},
-                    c_dict)
-        fig.subplots_adjust(right=.85)
-        fig.subplots_adjust(left=.12)
-        plot.add_vertical_line(ax,start, 'forecasting starts' )
-        plot.add_horizontal_line(ax1,0)
+        #~ plot.plot_dataframe(ax1,df2,ax,['population'],
+                    #~ {'population':'population',
+                    #~ 'total_electricity_consumed [kWh/year]':'consumption',
+                    #~ 'total_electricity_generation [kWh/year]':'generation',
+                    #~ 'residential_electricity_consumed [kWh/year]':'residential consumption',
+                    #~ 'non-residential_electricity_consumed [kWh/year]':'non residential consumption'},
+                    #~ c_dict)
+        #~ fig.subplots_adjust(right=.85)
+        #~ fig.subplots_adjust(left=.12)
+        #~ plot.add_vertical_line(ax,start, 'forecasting starts' )
+        #~ plot.add_horizontal_line(ax1,0)
     
     
-        plot.create_legend(fig,.20)
-        plot.save(fig,path)
-        plot.clear(fig)
+        #~ plot.create_legend(fig,.20)
+        #~ plot.save(fig,path)
+        #~ plot.clear(fig)
         
-    def generate_generation_forecast_dataframe(self):
-        """
-        """
-        data = copy.deepcopy(self.generation)
-        g_map = copy.deepcopy(self.c_map)
-        g_map.columns = ["generation_qualifier"]
+    #~ def generate_generation_forecast_dataframe(self):
+        #~ """
+        #~ """
+        #~ data = copy.deepcopy(self.generation)
+        #~ g_map = copy.deepcopy(self.c_map)
+        #~ g_map.columns = ["generation_qualifier"]
         
         
-        order = []
-        try:
-            for col in ['generation total', 'generation diesel', 
-                        'generation hydro', 
-                        'generation natural gas', 'generation wind', 
-                        'generation solar', 'generation biomass']:
-                #~ print data[col].ix[self.start_year:]
-                if col == 'generation total' and \
-                    any(np.isnan(data[col].ix[self.start_year:])):
-                    raise ValueError, "nans found"
+        #~ order = []
+        #~ try:
+            #~ for col in ['generation total', 'generation diesel', 
+                        #~ 'generation hydro', 
+                        #~ 'generation natural gas', 'generation wind', 
+                        #~ 'generation solar', 'generation biomass']:
+                #~ if col == 'generation total' and \
+                    #~ any(np.isnan(data[col].ix[self.start_year:])):
+                    #~ raise ValueError, "nans found"
                 
-                kWh = col.replace(" ", "_") + " [kWh/year]"
-                mmbtu = col.replace(" ", "_") + " [mmbtu/year]"
-                data[kWh] = data[col].fillna(0).round().astype(int)
-                data[mmbtu] = (data[col] / constants.mmbtu_to_kWh)\
-                                                .fillna(0).round().astype(int)
-                del data[col]
-                order += [kWh, mmbtu]
-            data = concat([self.population.round().astype(int),
-                           self.p_map,g_map,data],axis=1) 
-            data["community"] = self.cd.get_item("community","name")
+                #~ kWh = col.replace(" ", "_") + " [kWh/year]"
+                #~ mmbtu = col.replace(" ", "_") + " [mmbtu/year]"
+                #~ data[kWh] = data[col].fillna(0).round().astype(int)
+                #~ data[mmbtu] = (data[col] / constants.mmbtu_to_kWh)\
+                                                #~ .fillna(0).round().astype(int)
+                #~ del data[col]
+                #~ order += [kWh, mmbtu]
+            #~ data = concat([self.population.round().astype(int),
+                           #~ self.p_map,g_map,data],axis=1) 
+            #~ data["community"] = self.cd.get_item("community","name")
                     
-            self.generation_forecast_dataframe = \
-                            data[[data.columns[-1]] + data.columns[:-1].tolist()]
-            del data
-        except ValueError:
-            self.generation_forecast_dataframe = None
+            #~ self.generation_forecast_dataframe = \
+                            #~ data[[data.columns[-1]] + data.columns[:-1].tolist()]
+            #~ del data
+        #~ except ValueError:
+            #~ self.generation_forecast_dataframe = None
         
-    def save_generation_forecast (self, csv_path, png_path, do_plots):
+    #~ def save_generation_forecast (self, csv_path, png_path, do_plots):
         
-        self.generate_generation_forecast_dataframe()
+        #~ self.generate_generation_forecast_dataframe()
         
-        if self.generation_forecast_dataframe is None:
-            self.diagnostics.add_warning("Forecast", 
-                        ("when saving null values were found in "
-                         "generation data. generation generation "
-                         "forecast is suspect not saving summary(csv and png)"))
-        else:
-            self.save_generation_forecast_csv(csv_path)
-            if do_plots:
-                self.save_generation_forecast_png(png_path)
+        #~ if self.generation_forecast_dataframe is None:
+            #~ self.diagnostics.add_warning("Forecast", 
+                        #~ ("when saving null values were found in "
+                         #~ "generation data. generation generation "
+                         #~ "forecast is suspect not saving summary(csv and png)"))
+        #~ else:
+            #~ self.save_generation_forecast_csv(csv_path)
+            #~ if do_plots:
+                #~ self.save_generation_forecast_png(png_path)
         
-    def save_generation_forecast_csv (self, path):
-        """
-        """
-        out_file = path + "generation_forecast.csv"
-        fd = open(out_file, 'w')
-        fd.write("# Generation forecast\n")
-        fd.write(("# The column 'generation_qualifier' applies to all "
-                                "of the following generation columns"))
-        fd.write("# Qualifier info: \n")
-        fd.write("#   M indicates a measured value \n")
-        fd.write("#   P indicates a projected value \n")
-        fd.write("#   I indicates a value carried over from the input data. May be projected or measured see input data metadata.\n")
-        fd.close()
-        self.generation_forecast_dataframe.to_csv(out_file, 
-                                        index_label="year", mode = 'a')  
+    #~ def save_generation_forecast_csv (self, path):
+        #~ """
+        #~ """
+        #~ out_file = path + "generation_forecast.csv"
+        #~ fd = open(out_file, 'w')
+        #~ fd.write("# Generation forecast\n")
+        #~ fd.write(("# The column 'generation_qualifier' applies to all "
+                                #~ "of the following generation columns"))
+        #~ fd.write("# Qualifier info: \n")
+        #~ fd.write("#   M indicates a measured value \n")
+        #~ fd.write("#   P indicates a projected value \n")
+        #~ fd.write("#   I indicates a value carried over from the input data. May be projected or measured see input data metadata.\n")
+        #~ fd.close()
+        #~ self.generation_forecast_dataframe.to_csv(out_file, 
+                                        #~ index_label="year", mode = 'a')  
                                         
-    def save_generation_forecast_png (self, path):
-        """ Function doc """
+    #~ def save_generation_forecast_png (self, path):
+        #~ """ Function doc """
             
-        path = path + "generation_forecast.png"
+        #~ path = path + "generation_forecast.png"
         
-        png_list = ['population',
-        'generation_total [kWh/year]',
-        'generation_diesel [kWh/year]',
-        'generation_hydro [kWh/year]',
-        'generation_natural_gas [kWh/year]',
-        'generation_wind [kWh/year]',
-        'generation_solar [kWh/year]',
-        'generation_biomass [kWh/year]']
+        #~ png_list = ['population',
+        #~ 'generation_total [kWh/year]',
+        #~ 'generation_diesel [kWh/year]',
+        #~ 'generation_hydro [kWh/year]',
+        #~ 'generation_natural_gas [kWh/year]',
+        #~ 'generation_wind [kWh/year]',
+        #~ 'generation_solar [kWh/year]',
+        #~ 'generation_biomass [kWh/year]']
         
         
         
-        png_dict = {'population':'population',
-        'generation_total [kWh/year]':'total',
-        'generation_diesel [kWh/year]':'diesel',
-        'generation_hydro [kWh/year]':'hydro',
-        'generation_natural_gas [kWh/year]':'natural gas',
-        'generation_wind [kWh/year]':'wind',
-        'generation_solar [kWh/year]':'solar',
-        'generation_biomass [kWh/year]':'biomass'}
+        #~ png_dict = {'population':'population',
+        #~ 'generation_total [kWh/year]':'total',
+        #~ 'generation_diesel [kWh/year]':'diesel',
+        #~ 'generation_hydro [kWh/year]':'hydro',
+        #~ 'generation_natural_gas [kWh/year]':'natural gas',
+        #~ 'generation_wind [kWh/year]':'wind',
+        #~ 'generation_solar [kWh/year]':'solar',
+        #~ 'generation_biomass [kWh/year]':'biomass'}
         
     
-        c_dict = {'population': [min(1,r*4) for r in colors.red],
-        'generation_total [kWh/year]':colors.jet,
-        'generation_diesel [kWh/year]':colors.red,
-        'generation_hydro [kWh/year]':colors.blue,
-        'generation_natural_gas [kWh/year]':colors.violet,
-        'generation_wind [kWh/year]':[ min(1,r*2) for r in colors.blue],
-        'generation_solar [kWh/year]':colors.orange,
-        'generation_biomass [kWh/year]':colors.avacado}
+        #~ c_dict = {'population': [min(1,r*4) for r in colors.red],
+        #~ 'generation_total [kWh/year]':colors.jet,
+        #~ 'generation_diesel [kWh/year]':colors.red,
+        #~ 'generation_hydro [kWh/year]':colors.blue,
+        #~ 'generation_natural_gas [kWh/year]':colors.violet,
+        #~ 'generation_wind [kWh/year]':[ min(1,r*2) for r in colors.blue],
+        #~ 'generation_solar [kWh/year]':colors.orange,
+        #~ 'generation_biomass [kWh/year]':colors.avacado}
         
-        temp = []
-        for i in png_list:
-            if  all(self.generation_forecast_dataframe[i].fillna(0) == 0):
-                continue
-            temp.append(i)
-        png_list = temp
-        if len(png_list) == 3:
-            png_list = list(set(png_list).\
-                    difference(['generation_total [kWh/year]']))
+        #~ temp = []
+        #~ for i in png_list:
+            #~ if  all(self.generation_forecast_dataframe[i].fillna(0) == 0):
+                #~ continue
+            #~ temp.append(i)
+        #~ png_list = temp
+        #~ if len(png_list) == 3:
+            #~ png_list = list(set(png_list).\
+                    #~ difference(['generation_total [kWh/year]']))
         
-        df2 = self.generation_forecast_dataframe[png_list]
-        plot_name = self.cd.get_item("community","name") +' Generation Forecast'
+        #~ df2 = self.generation_forecast_dataframe[png_list]
+        #~ plot_name = self.cd.get_item("community","name") +' Generation Forecast'
         
-        fig, ax = plot.setup_fig(plot_name ,'years','population')
-        ax1 = plot.add_yaxis(fig,'Generation kWh')
+        #~ fig, ax = plot.setup_fig(plot_name ,'years','population')
+        #~ ax1 = plot.add_yaxis(fig,'Generation kWh')
         
-        plot.plot_dataframe(ax1,df2,ax,['population'],png_dict,c_dict)
-        fig.subplots_adjust(right=.85)
-        fig.subplots_adjust(left=.12)
-        start = self.c_map[self.c_map['consumption_qualifier'] == 'P'].index[0]
-        plot.add_vertical_line(ax,start, 'forecasting starts' )
-        plot.add_horizontal_line(ax1,0)
-        plot.create_legend(fig,.20)
+        #~ plot.plot_dataframe(ax1,df2,ax,['population'],png_dict,c_dict)
+        #~ fig.subplots_adjust(right=.85)
+        #~ fig.subplots_adjust(left=.12)
+        #~ start = self.c_map[self.c_map['consumption_qualifier'] == 'P'].index[0]
+        #~ plot.add_vertical_line(ax,start, 'forecasting starts' )
+        #~ plot.add_horizontal_line(ax1,0)
+        #~ plot.create_legend(fig,.20)
 
-        plot.save(fig,path)
-        plot.clear(fig)
+        #~ plot.save(fig,path)
+        #~ plot.clear(fig)
         
     
-    def generate_heat_demand_dataframe (self):
-        """
-        """
-        data = concat([self.population.round().astype(int), self.p_map] + \
-                                                self.heat_demand_cols,axis=1) 
+    #~ def generate_heat_demand_dataframe (self):
+        #~ """
+        #~ """
+        #~ data = concat([self.population.round().astype(int), self.p_map] + \
+                                                #~ self.heat_demand_cols,axis=1) 
     
-        for key in data.keys():
-            try:
-                col = data[key]
-                idx = np.logical_not(col.apply(np.isnan))
-                lv = col[idx].tail(1).values[0]
-                yr = col[idx].tail(1).index[0]
-                col[col.index > yr] = lv
-                data[key] = col.round()
-            except (TypeError, IndexError, AttributeError):
-                pass
+        #~ for key in data.keys():
+            #~ try:
+                #~ col = data[key]
+                #~ idx = np.logical_not(col.apply(np.isnan))
+                #~ lv = col[idx].tail(1).values[0]
+                #~ yr = col[idx].tail(1).index[0]
+                #~ col[col.index > yr] = lv
+                #~ data[key] = col.round()
+            #~ except (TypeError, IndexError, AttributeError):
+                #~ pass
             
-        idx = data.keys()[['mmbtu' in s for s in data.keys()]]
+        #~ idx = data.keys()[['mmbtu' in s for s in data.keys()]]
     
-        data["heat_energy_demand_total [mmbtu/year]"] = data[idx].sum(1).round()
-        data["community"] = self.cd.get_item("community","name")
+        #~ data["heat_energy_demand_total [mmbtu/year]"] = data[idx].sum(1).round()
+        #~ data["community"] = self.cd.get_item("community","name")
                 
-        self.heat_demand_dataframe = data[[data.columns[-1]] + data.columns[:-1].tolist()]
-        del data
+        #~ self.heat_demand_dataframe = data[[data.columns[-1]] + data.columns[:-1].tolist()]
+        #~ del data
         
-    def save_heat_demand (self,csv_path, png_path, do_plots):
-        """ Function doc """
-        self.generate_heat_demand_dataframe()
-        self.save_heat_demand_csv(csv_path)
-        if do_plots:
-            self.save_heat_demand_png(png_path)
+    #~ def save_heat_demand (self,csv_path, png_path, do_plots):
+        #~ """ Function doc """
+        #~ self.generate_heat_demand_dataframe()
+        #~ self.save_heat_demand_csv(csv_path)
+        #~ if do_plots:
+            #~ self.save_heat_demand_png(png_path)
     
-    def save_heat_demand_csv (self, path):
-        """
-        save the heat demand forecast
+    #~ def save_heat_demand_csv (self, path):
+        #~ """
+        #~ save the heat demand forecast
         
-        pre:
-            self.population should be a dataframe. self.heat_demad_cols should 
-        be populated using add_heat_demad_column. path should be the path to the
-        output directory.
-        post:
-            a file, heat_demand_forecast.csv, is save in the output directory.
-        """
-        f_name = path + "heat_demand_forecast.csv"
-        data =  self.heat_demand_dataframe      
-        fd = open(f_name ,"w")
-        fd.write("# Heat Demand Forecast for " + \
-                                    self.cd.get_item("community","name") + "\n")
-        fd.write("# Qualifier info: \n")
-        fd.write("#   M indicates a measured value \n")
-        fd.write("#   P indicates a projected value \n")
-        fd.write("#   I indicates a value carried over from the input data. May be projected or measured see input data metadata.\n")
-        fd.close()
+        #~ pre:
+            #~ self.population should be a dataframe. self.heat_demad_cols should 
+        #~ be populated using add_heat_demad_column. path should be the path to the
+        #~ output directory.
+        #~ post:
+            #~ a file, heat_demand_forecast.csv, is save in the output directory.
+        #~ """
+        #~ f_name = path + "heat_demand_forecast.csv"
+        #~ data =  self.heat_demand_dataframe      
+        #~ fd = open(f_name ,"w")
+        #~ fd.write("# Heat Demand Forecast for " + \
+                                    #~ self.cd.get_item("community","name") + "\n")
+        #~ fd.write("# Qualifier info: \n")
+        #~ fd.write("#   M indicates a measured value \n")
+        #~ fd.write("#   P indicates a projected value \n")
+        #~ fd.write("#   I indicates a value carried over from the input data. May be projected or measured see input data metadata.\n")
+        #~ fd.close()
         
-        data.index = data.index.values.astype(int)
-        data.to_csv(f_name, index_label="year", mode = 'a')
+        #~ data.index = data.index.values.astype(int)
+        #~ data.to_csv(f_name, index_label="year", mode = 'a')
         
-    def save_heat_demand_png(self,path):
-        """
-        """
-        path = path+ "heat_demand_forecast.png"
-        #~ start = self.c_map[self.c_map['consumption_qualifier'] == 'P'].index[0]
+    #~ def save_heat_demand_png(self,path):
+        #~ """
+        #~ """
+        #~ path = path+ "heat_demand_forecast.png"
+        ##start = self.c_map[self.c_map['consumption_qualifier'] == 'P'].index[0]
         
-        cols = ['population']
-        for col in self.heat_demand_dataframe.columns:
-            if "[mmbtu/year]" in col:
-                cols += [col]
+        #~ cols = ['population']
+        #~ for col in self.heat_demand_dataframe.columns:
+            #~ if "[mmbtu/year]" in col:
+                #~ cols += [col]
                 
-        df2 = self.heat_demand_dataframe[cols]
-        name = self.cd.get_item("community","name") + ' Heat Demand Forecast'
+        #~ df2 = self.heat_demand_dataframe[cols]
+        #~ name = self.cd.get_item("community","name") + ' Heat Demand Forecast'
         
-        fig, ax = plot.setup_fig(name ,'years','population')
-        ax1 = plot.add_yaxis(fig,'Heat Demand MMBtu')
+        #~ fig, ax = plot.setup_fig(name ,'years','population')
+        #~ ax1 = plot.add_yaxis(fig,'Heat Demand MMBtu')
         
-        c_dict = {'population': [min(1,r*4) for r in colors.red],
-        'heat_energy_demand_residential [mmbtu/year]':colors.yellow,
-        'heat_energy_demand_water-wastewater [mmbtu/year]':colors.cobalt,
-        'heat_energy_demand_non-residential [mmbtu/year]':colors.green,
-                        'heat_energy_demand_total [mmbtu/year]':colors.jet}
+        #~ c_dict = {'population': [min(1,r*4) for r in colors.red],
+        #~ 'heat_energy_demand_residential [mmbtu/year]':colors.yellow,
+        #~ 'heat_energy_demand_water-wastewater [mmbtu/year]':colors.cobalt,
+        #~ 'heat_energy_demand_non-residential [mmbtu/year]':colors.green,
+                        #~ 'heat_energy_demand_total [mmbtu/year]':colors.jet}
         
-        plot.plot_dataframe(ax1,df2,ax,['population'],
-            {'population':'population',
-        'heat_energy_demand_residential [mmbtu/year]':'residential',
-        'heat_energy_demand_water-wastewater [mmbtu/year]':'water & wastewater',
-        'heat_energy_demand_non-residential [mmbtu/year]':'non-residential',
-                        'heat_energy_demand_total [mmbtu/year]':'total'},
-                        c_dict)
-        fig.subplots_adjust(right=.85)
-        fig.subplots_adjust(left=.12)
-        #~ plot.add_vertical_line(ax,start, 'forecasting starts' )
-        plot.add_horizontal_line(ax1,0)
+        #~ plot.plot_dataframe(ax1,df2,ax,['population'],
+            #~ {'population':'population',
+        #~ 'heat_energy_demand_residential [mmbtu/year]':'residential',
+        #~ 'heat_energy_demand_water-wastewater [mmbtu/year]':'water & wastewater',
+        #~ 'heat_energy_demand_non-residential [mmbtu/year]':'non-residential',
+                        #~ 'heat_energy_demand_total [mmbtu/year]':'total'},
+                        #~ c_dict)
+        #~ fig.subplots_adjust(right=.85)
+        #~ fig.subplots_adjust(left=.12)
+        ##plot.add_vertical_line(ax,start, 'forecasting starts' )
+        #~ plot.add_horizontal_line(ax1,0)
     
-        plot.create_legend(fig,.2)
-        plot.save(fig,path)
-        plot.clear(fig)
+        #~ plot.create_legend(fig,.2)
+        #~ plot.save(fig,path)
+        #~ plot.clear(fig)
     
-    def generate_heating_fuel_dataframe(self):
-        """ """
-        data = concat([self.population.round().astype(int), self.p_map] + \
-                                                self.heating_fuel_cols, axis=1)
+    #~ def generate_heating_fuel_dataframe(self):
+        #~ """ """
+        #~ data = concat([self.population.round().astype(int), self.p_map] + \
+                                                #~ self.heating_fuel_cols, axis=1)
 
-        for key in data.keys():
-            try:
-                col = data[key]
-                idx = np.logical_not(col.apply(np.isnan))
-                lv = col[idx].tail(1).values[0]
-                yr = col[idx].tail(1).index[0]
-                col[col.index > yr] = lv
-                data[key] = col.round()
-            except (TypeError,IndexError, AttributeError):
-                pass
+        #~ for key in data.keys():
+            #~ try:
+                #~ col = data[key]
+                #~ idx = np.logical_not(col.apply(np.isnan))
+                #~ lv = col[idx].tail(1).values[0]
+                #~ yr = col[idx].tail(1).index[0]
+                #~ col[col.index > yr] = lv
+                #~ data[key] = col.round()
+            #~ except (TypeError,IndexError, AttributeError):
+                #~ pass
 
-        hf_gal_idx = data.keys()[['gallons' in s for s in data.keys()]]
-        hf_gal_idx =  hf_gal_idx[['heating_fuel' in s for s in hf_gal_idx]]
+        #~ hf_gal_idx = data.keys()[['gallons' in s for s in data.keys()]]
+        #~ hf_gal_idx =  hf_gal_idx[['heating_fuel' in s for s in hf_gal_idx]]
         
-        hf_btu_idx = data.keys()[['mmbtu' in s for s in data.keys()]]
-        hf_btu_idx =  hf_btu_idx[['heating_fuel' in s for s in hf_btu_idx]]
+        #~ hf_btu_idx = data.keys()[['mmbtu' in s for s in data.keys()]]
+        #~ hf_btu_idx =  hf_btu_idx[['heating_fuel' in s for s in hf_btu_idx]]
         
         
-        data["heating_fuel_total_consumed [gallons/year]"] = \
-                                        data[hf_gal_idx].sum(1).round()
-        data["heating_fuel_total_consumed [mmbtu/year]"]= \
-                                        data[hf_btu_idx].sum(1).round()
-        data["community"] = self.cd.get_item("community","name")
+        #~ data["heating_fuel_total_consumed [gallons/year]"] = \
+                                        #~ data[hf_gal_idx].sum(1).round()
+        #~ data["heating_fuel_total_consumed [mmbtu/year]"]= \
+                                        #~ data[hf_btu_idx].sum(1).round()
+        #~ data["community"] = self.cd.get_item("community","name")
 
 
-        self.heating_fuel_dataframe = \
-                        data[[data.columns[-1]] + data.columns[:-1].tolist()]
-        del data
+        #~ self.heating_fuel_dataframe = \
+                        #~ data[[data.columns[-1]] + data.columns[:-1].tolist()]
+        #~ del data
     
-    def save_heating_fuel(self, csv_path, png_path, do_plots):
-        """ """
-        #~ start = datetime.now() 
-        self.generate_heating_fuel_dataframe()
-        #~ print "saving heating fuel *1:" + str( datetime.now() - start)
-        #~ start = datetime.now() 
-        self.save_heating_fuel_csv(csv_path)
-        #~ print "saving heating fuel *2:" + str( datetime.now() - start)
-        #~ start = datetime.now() 
-        if do_plots:
-            self.save_heating_fuel_png(png_path)
-        #~ print "saving heating fuel *3:" + str( datetime.now() - start)
+    #~ def save_heating_fuel(self, csv_path, png_path, do_plots):
+        #~ """ """
+        ##start = datetime.now() 
+        #~ self.generate_heating_fuel_dataframe()
+        ##print "saving heating fuel *1:" + str( datetime.now() - start)
+        ##start = datetime.now() 
+        #~ self.save_heating_fuel_csv(csv_path)
+        ##print "saving heating fuel *2:" + str( datetime.now() - start)
+        ##start = datetime.now() 
+        #~ if do_plots:
+            #~ self.save_heating_fuel_png(png_path)
+        ##print "saving heating fuel *3:" + str( datetime.now() - start)
     
-    def save_heating_fuel_csv (self, path):
-        """
-        save the heating fuel 
+    #~ def save_heating_fuel_csv (self, path):
+        #~ """
+        #~ save the heating fuel 
         
-        pre:
-            self.population should be a dataframe. self.heat_demad_cols should 
-        be populated using add_heating_fuel_column. path should be the path to 
-        the output directory. 
-        post:
-            a file, heating_fuel_forecast.csv, is save in the output directory.
-        """
-        f_name = path + "heating_fuel_forecast.csv"
-        data = self.heating_fuel_dataframe
+        #~ pre:
+            #~ self.population should be a dataframe. self.heat_demad_cols should 
+        #~ be populated using add_heating_fuel_column. path should be the path to 
+        #~ the output directory. 
+        #~ post:
+            #~ a file, heating_fuel_forecast.csv, is save in the output directory.
+        #~ """
+        #~ f_name = path + "heating_fuel_forecast.csv"
+        #~ data = self.heating_fuel_dataframe
         
-        fd = open(f_name ,"w")
-        fd.write("# Heating Fuel Forecast for " + \
-                                    self.cd.get_item("community","name") + "\n")
-        fd.write("# Qualifier info: \n")
-        fd.write("#   M indicates a measured value \n")
-        fd.write("#   P indicates a projected value \n")
-        fd.write("#   I indicates a value carried over from the input data. May be projected or measured see input data metadata.\n")
-        fd.close()
+        #~ fd = open(f_name ,"w")
+        #~ fd.write("# Heating Fuel Forecast for " + \
+                                    #~ self.cd.get_item("community","name") + "\n")
+        #~ fd.write("# Qualifier info: \n")
+        #~ fd.write("#   M indicates a measured value \n")
+        #~ fd.write("#   P indicates a projected value \n")
+        #~ fd.write("#   I indicates a value carried over from the input data. May be projected or measured see input data metadata.\n")
+        #~ fd.close()
 
-        data.index = data.index.values.astype(int)
-        data.to_csv(f_name, index_label="year", mode = 'a')
+        #~ data.index = data.index.values.astype(int)
+        #~ data.to_csv(f_name, index_label="year", mode = 'a')
         
-    def save_heating_fuel_png (self, path):
-        """"""
-        path = path+ "heating_fuel_forecast.png"
-        #~ start = self.c_map[self.c_map['consumption_qualifier'] == 'P'].index[0]
+    #~ def save_heating_fuel_png (self, path):
+        #~ """"""
+        #~ path = path+ "heating_fuel_forecast.png"
+        ##start = self.c_map[self.c_map['consumption_qualifier'] == 'P'].index[0]
         
-        cols = ['population']
-        for col in self.heating_fuel_dataframe.columns:
-            if "[mmbtu/year]" in col:
-                cols += [col]
+        #~ cols = ['population']
+        #~ for col in self.heating_fuel_dataframe.columns:
+            #~ if "[mmbtu/year]" in col:
+                #~ cols += [col]
         
-        df2 = self.heating_fuel_dataframe[cols]
+        #~ df2 = self.heating_fuel_dataframe[cols]
 
-        name = self.cd.get_item("community","name") + ' Heating fuel Forecast'
+        #~ name = self.cd.get_item("community","name") + ' Heating fuel Forecast'
         
-        fig, ax = plot.setup_fig(name ,'years','population')
-        ax1 = plot.add_yaxis(fig,'Heating fuel MMBtu')
+        #~ fig, ax = plot.setup_fig(name ,'years','population')
+        #~ ax1 = plot.add_yaxis(fig,'Heating fuel MMBtu')
         
-        c_dict = {'population': [min(1,r*4) for r in colors.red],
-            "heating_fuel_residential_consumed [mmbtu/year]":
-                    colors.red,
-            "cords_wood_residential_consumed [mmbtu/year]":
-                    colors.avacado,
-            "gas_residential_consumed [mmbtu/year]":
-                    colors.violet,
-            "electric_residential_consumed [mmbtu/year]":
-                    colors.goldenrod,
-            "propane_residential_consumed [mmbtu/year]":
-                    colors.orange,
-            "heating_fuel_water-wastewater_consumed [mmbtu/year]":
-                    colors.cobalt,
-            "heating_fuel_non-residential_consumed [mmbtu/year]":
-                    colors.green,
-            "heating_fuel_total_consumed [mmbtu/year]":colors.jet,}
+        #~ c_dict = {'population': [min(1,r*4) for r in colors.red],
+            #~ "heating_fuel_residential_consumed [mmbtu/year]":
+                    #~ colors.red,
+            #~ "cords_wood_residential_consumed [mmbtu/year]":
+                    #~ colors.avacado,
+            #~ "gas_residential_consumed [mmbtu/year]":
+                    #~ colors.violet,
+            #~ "electric_residential_consumed [mmbtu/year]":
+                    #~ colors.goldenrod,
+            #~ "propane_residential_consumed [mmbtu/year]":
+                    #~ colors.orange,
+            #~ "heating_fuel_water-wastewater_consumed [mmbtu/year]":
+                    #~ colors.cobalt,
+            #~ "heating_fuel_non-residential_consumed [mmbtu/year]":
+                    #~ colors.green,
+            #~ "heating_fuel_total_consumed [mmbtu/year]":colors.jet,}
         
-        plot.plot_dataframe(ax1,df2,ax,['population'],
-            {"population":'population',
-            "heating_fuel_residential_consumed [mmbtu/year]":
-                    'heating oil - residential',
-            "cords_wood_residential_consumed [mmbtu/year]":
-                    'wood - residential',
-            "gas_residential_consumed [mmbtu/year]":
-                    'natural gas - residential',
-            "electric_residential_consumed [mmbtu/year]":
-                    'electric - residential',
-            "propane_residential_consumed [mmbtu/year]":
-                    'propane - residential',
-            "heating_fuel_water-wastewater_consumed [mmbtu/year]":
-                    'heating oil - water wastewater',
-            "heating_fuel_non-residential_consumed [mmbtu/year]":
-                    'heating fuel(all) - non - residential',
-            "heating_fuel_total_consumed [mmbtu/year]":'total'},
-            c_dict)
-        fig.subplots_adjust(right=.85)
-        fig.subplots_adjust(left=.12)
-        #~ plot.add_vertical_line(ax,start, 'forecasting starts' )
-        plot.add_horizontal_line(ax1,0)
+        #~ plot.plot_dataframe(ax1,df2,ax,['population'],
+            #~ {"population":'population',
+            #~ "heating_fuel_residential_consumed [mmbtu/year]":
+                    #~ 'heating oil - residential',
+            #~ "cords_wood_residential_consumed [mmbtu/year]":
+                    #~ 'wood - residential',
+            #~ "gas_residential_consumed [mmbtu/year]":
+                    #~ 'natural gas - residential',
+            #~ "electric_residential_consumed [mmbtu/year]":
+                    #~ 'electric - residential',
+            #~ "propane_residential_consumed [mmbtu/year]":
+                    #~ 'propane - residential',
+            #~ "heating_fuel_water-wastewater_consumed [mmbtu/year]":
+                    #~ 'heating oil - water wastewater',
+            #~ "heating_fuel_non-residential_consumed [mmbtu/year]":
+                    #~ 'heating fuel(all) - non - residential',
+            #~ "heating_fuel_total_consumed [mmbtu/year]":'total'},
+            #~ c_dict)
+        #~ fig.subplots_adjust(right=.85)
+        #~ fig.subplots_adjust(left=.12)
+        ##plot.add_vertical_line(ax,start, 'forecasting starts' )
+        #~ plot.add_horizontal_line(ax1,0)
     
-        plot.create_legend(fig,.30)
-        plot.save(fig,path)
-        plot.clear(fig)
+        #~ plot.create_legend(fig,.30)
+        #~ plot.save(fig,path)
+        #~ plot.clear(fig)
         
     def calc_average_diesel_load (self):
         """
@@ -1127,14 +1125,14 @@ class Forecast (object):
         self.yearly_average_diesel_load = generation / constants.hours_per_year
         
 
-def test ():
-    """ 
-    test the forecast
-    """
-    manley_data = CommunityData("../test_case/input_data/", 
-                            "../test_case/baseline_results/config_used.yaml")
+#~ def test ():
+    #~ """ 
+    #~ test the forecast
+    #~ """
+    #~ manley_data = CommunityData("../test_case/input_data/", 
+                            #~ "../test_case/baseline_results/config_used.yaml")
     
                             
-    fc = Forecast(manley_data)
+    #~ fc = Forecast(manley_data)
 
-    return fc
+    #~ return fc
