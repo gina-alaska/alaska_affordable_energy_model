@@ -55,9 +55,6 @@ Options:
  * Log (--log, -l): name/ path of a file to log the output from command to 
   * Use --log <log_file>
   * Example: --log OUTPUT.txt
- * Plot (--plot, -p): run the plotting functions and save results to the provided directory
-  * Use: --plot <directory>
-  * Ex: -p ./model/PLOTS
  * Tag (--tag, -t): tag for results directory 
   * use : -t <tag>
   * Ex: -t cool_example_results
@@ -69,6 +66,11 @@ Options:
    * kWh consumption
   * Use: -s <scalar string>
  * Ex: -s '{capital costs:1.1, diesel price:10}'
+
+Options (Removed in 0.27.0, should work in verions prior to that):
+ * Plot (--plot, -p): run the plotting functions and save results to the provided directory
+  * Use: --plot <directory>
+  * Ex: -p ./model/PLOTS
 
 Example, with timing:
 
@@ -100,7 +102,7 @@ Refresh
 	
 regenerate(or generate) the model directory structure needed for running the model using the data in the data repo. Use a tag to name the output directory 
 	
->>> aaem setup <path to (create) model directory> <path to AAEM data repo> (tag) 
+>>> aaem refresh <path to (create) model directory> <path to AAEM data repo> (tag) 
 
 Options:
  * Dev (--dev, -d): use only the development communities
