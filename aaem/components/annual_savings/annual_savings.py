@@ -45,14 +45,11 @@ class AnnualSavings (object):
             self.annual_costs will be a numpy array of dollar values 
         indicating the cost of the project per year.
         """
-        #~ print self.component_name, cost_scaler
         self.capital_costs *= cost_scaler
-        #~ print self.actual_project_life
-        #~ print self.capital_costs
         cost_per_year = -np.pmt(rate, self.actual_project_life, 
                                     self.capital_costs) 
-        cpi= self.forecast.cpi.ix[self.start_year:self.end_year].T.values[0]
-        self.annual_costs = cost_per_year * cpi
+        #~ cpi= self.forecast.cpi.ix[self.start_year:self.end_year].T.values[0]
+        self.annual_costs = cost_per_year * np.ones(self.actual_project_life)
         
     
     def calc_annual_net_benefit (self):
