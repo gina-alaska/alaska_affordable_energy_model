@@ -221,11 +221,11 @@ class WaterWastewaterSystems (AnnualSavings):
         """
         tag = self.cd['file id'].split('+')
         
-        self.run = True
+        self.was_run = True
         self.reason = "OK"
         
         if len(tag) > 1 and tag[1] != 'water-wastewater':
-            self.run = False
+            self.was_run = False
             self.reason = "Not a water/wastewater project."
             return 
             

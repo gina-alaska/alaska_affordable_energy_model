@@ -131,13 +131,13 @@ class ComponentName (AnnualSavings):
         -----
             Accepted scalers: capital costs.
         """
-        self.run = True
+        self.was_run = True
         self.reason = "OK"
         tag = self.cd['file id'].split('+')
         
         ### UPDATE PROJECT TYPE to a string represeting the project tag
         if len(tag) > 1 and tag[1] != PROJECT_TYPE:
-            self.run = False
+            self.was_run = False
             self.reason = "Not a PROJECT_TYPE project"
             return 
         

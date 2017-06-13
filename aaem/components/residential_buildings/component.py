@@ -138,12 +138,12 @@ class ResidentialBuildings(AnnualSavings):
         -----
             Accepted scalers: capital costs.
         """
-        self.run = True
+        self.was_run = True
         self.reason = "OK"
         
         tag = self.cd['file id'].split('+')
         if len(tag) > 1 and tag[1] != 'residential':
-            self.run = False
+            self.was_run = False
             self.reason = "Not a residential project."
             return 
             
@@ -698,7 +698,7 @@ class ResidentialBuildings(AnnualSavings):
             output directory
 
         """
-        if not self.run:
+        if not self.was_run:
             return
             
         if self.cd["model financial"]:
