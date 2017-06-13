@@ -238,7 +238,7 @@ class Preprocessor (object):
                  N_slope_price
         
         self.data = merge_configs(self.data,
-            {'community': {'percent diesel generation': percent_diesel}})
+            {'community': {'percent diesel generation': percent_diesel * 100}})
             
             
         for comp in comp_lib:

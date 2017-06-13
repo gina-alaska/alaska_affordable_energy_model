@@ -1,39 +1,63 @@
 """
-community_data.py
-ross spicer
-created: 2015/09/16
-
-     community data module
+Community Data
+--------------
+    Module for managing Input data for AAEM
 """
 from pandas import read_csv, DataFrame
 import yaml
 import os.path
 import numpy as np
-## w&ww - water and wastewater
-## it - intertie
-## fc - forecast
-## com - non-residential buildings 
+from importlib import import_module
+
+
 from defaults import base_structure, base_comments
 from diagnostics import Diagnostics
-#~ from preprocessor import MODEL_FILES
 from aaem.components import comp_lib, comp_order
-
-from importlib import import_module
 ## read in config IO stuff, it's two lines because it was too long for one
 from aaem.config_IO import read_config, merge_configs, save_config
 from aaem.config_IO import validate_dict
 
-from importlib import import_module
-#~ import aaem.config as config
 
-PATH = os.path.join
 class CommunityData (object):
-    """ Class doc """
+    """This class manages the input data for the an AAEM model instance
+    """
     
     def __init__ (self, community_config, global_config = None, diag = None, 
         scalers = {'diesel price':1.0, 'diesel price adder':0},
         intertie_config = None):
-        """
+        """This class manages the input data for the an AAEM model instance
+        
+        Parameters
+        ----------
+        community_config: path to yaml file or dict
+            the dictionary or dictionary that would be loaded from the yaml file 
+        should match the format to be validated for the model to run, unless
+        global_config is also provided, in which case all config values not 
+        provided here have values in global_config
+        global_config: path to yaml file or dict, optional
+            Optional second config file of values that can be applied to many
+        model instances
+        diag: Diagnostics, optional
+            AAEM Diagnostics object for tracking messages from model
+        scalers: Dict, optional
+            Scalers to change model behaviour. The keys 'diesel price' and
+        'diesel price adder' are used in CommunityData, and will be multiplied 
+        or added to the diesel prices respectively. This will carry over into
+        the electirc non-fuel prices.
+        
+        Attributes
+        ----------
+        data: Dict
+            Configuration data for model instance
+        diagnostics:Diagnostics
+            AAEM Diagnostics object for tracking messages from model
+        intertie: str, or None
+            status to track intertie placment, 'parent', 'child', or None
+        intertie_data: CommunityData
+            config data for the entire intertie if community is a 
+        child community 
+        
+        
         """
         self.diagnostics = diag
         if diag == None:
@@ -130,13 +154,47 @@ class CommunityData (object):
         convert.index = [int(y) for y in convert.index]
         convert.index.name = 'year'
         # modify diesel prices and electric non-fuel prices
-        
+        self.apply_scalers(scalers)
 
     
         self.check_auto_disable_conditions ()
         
         #~ self.load_construction_multipliers(construction_multipliers)
+    def apply_scalers(self, scalers):
+        """apply scalers to inupt variables
         
+        Parameters
+        ----------
+        scalers: Dict
+            Scalers to change model behaviour. The keys 'diesel price' and
+        'diesel price adder' are used in CommunityData, and will be multiplied 
+        or added to the diesel prices respectively. This will carry over into
+        the electirc non-fuel prices. 
+        """
+        ## diesel 
+        if scalers['diesel price'] != 1 or scalers['diesel price adder'] != 1:
+            self.diagnostics.add_note(
+                'Community Data', 
+                'Adjusting disel and electric non-fuel prices'
+            )
+        else:
+            return
+        
+        self.data['community']['diesel prices'] = \
+            self.data['community']['diesel prices'] * scalers['diesel price'] +\
+            scalers['diesel price adder']
+            
+        
+        ## electric
+        percent_diesel = \
+            float(self.data['community']['percent diesel generation']) / 100.0
+        efficiency = \
+            float(self.data['community']['diesel generation efficiency'])
+        adder = percent_diesel * \
+            self.data['community']['diesel prices'] / efficiency
+            
+        self.data['community']['electric non-fuel prices'] = \
+            self.data['community']['electric non-fuel price'] + adder
     
     def check_auto_disable_conditions  (self):
         """
