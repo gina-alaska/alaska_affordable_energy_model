@@ -102,7 +102,11 @@ def dict_to_yaml_snippet (dictionary, indent = '  ', level = 2, newline = '\n'):
     text += indent * level + 'ORDER' +': ' + str(order) + newline
     # add data
     for row in [index] + order:
-        as_str = str(temp[row])
+        r = temp[row]
+        for idx in range(len(r)):
+            if type(r[idx]) is long:
+                r[idx] = int(r[idx])
+        as_str = str(r)
         text += indent * level + row +': ' + as_str + newline
 
     return text

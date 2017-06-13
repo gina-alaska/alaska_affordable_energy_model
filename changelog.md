@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.27.2]
+### fixes
+--- fix type conversion of longs in dataframes yaml files
+
 ## [0.27.1]
 ### fixes
 -- add explict conversion of long ints to ints in save_config file
