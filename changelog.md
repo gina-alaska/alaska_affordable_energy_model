@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.27.1]
+### fixes
+-- add explict conversion of long ints to ints in save_config file
+
 ## [0.27.0]
 ### adds 
 -- Transmissinon & Interties component has a test to see if communitys to intertie are alreay connected

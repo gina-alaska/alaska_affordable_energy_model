@@ -102,17 +102,26 @@ def save_config (filename, config, comments, s_order = None, i_orders = None,
                     except TypeError:
                         print config[section][item]
                         raise TypeError, "Bad DataFrame"
-                #### section is a value
                 elif type(None) is type(config[section][item]):
                     text += indent + str(item) + ': '
                     try:
                         text +=  ' # ' +  str(comments[section][item]) + nl
                     except KeyError:
                         text += nl
+                #### section is a value or list
                 else:
+                    val_to_write = config[section][item]
+                    ## convert longs to ints
+                    if type(val_to_write) is list:
+                        #~ print 'list'
+                        for idx in range(len(val_to_write)):
+                            if type(val_to_write[idx]) is long:
+                                #~ print 'fixing long'
+                                val_to_write[idx] = int(val_to_write[idx])
+                    if type(val_to_write) is long:
+                        val_to_write = int(val_to_write)
                     #~ print config[section][item]
-                    text += indent + str(item) + ': ' + \
-                        str(config[section][item]) 
+                    text += indent + str(item) + ': ' + str(val_to_write)
                     try:
                         text +=  ' # ' +  str(comments[section][item]) + nl
                     except KeyError:
