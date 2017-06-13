@@ -260,6 +260,10 @@ class Preprocessor (object):
                 self.projects.update( data )
             #~ del data
             
+        if 'ng_com' in kwargs and kwargs['ng_com']:
+            self.data['community']['natural gas price'] = 3.0
+            self.data['community']['natural gas used'] = True
+            
     def save_config (self, out_dir):
         """Save the configuration yaml file
         
