@@ -45,6 +45,7 @@ class AnnualSavings (object):
             self.annual_costs will be a numpy array of dollar values 
         indicating the cost of the project per year.
         """
+        rate = rate / 100.0
         #~ print self.component_name, cost_scaler
         self.capital_costs *= cost_scaler
         #~ print self.actual_project_life
@@ -78,6 +79,7 @@ class AnnualSavings (object):
             self.net_npv, self.benefit_npv, slef.cost_npv is a dollar value
             self.benefit_cost_ratio is a ratio 
         """
+        rate = rate / 100.0
         # These need to be calculated for the actual project life
         end = self.actual_project_life
         
