@@ -2,7 +2,7 @@
 
 ## [0.27.2]
 ### fixes
---- fix type conversion of longs in dataframes yaml files
+--- fix type conversion of longs in dataframes and dicts in yaml files.
 
 ## [0.27.1]
 ### fixes

@@ -76,8 +76,17 @@ def save_config (filename, config, comments, s_order = None, i_orders = None,
                     text += nl
                     for sub_item in config[section][item]:
                         text += indent + indent
-                        text += str(sub_item) + ': '  +\
-                                str(config[section][item][sub_item])
+                        val_to_write = config[section][item][sub_item]
+                        if type(val_to_write) is list:
+                            #~ print 'list'
+                            for idx in range(len(val_to_write)):
+                                if type(val_to_write[idx]) is long:
+                                    #~ print 'fixing long'
+                                    val_to_write[idx] = int(val_to_write[idx])
+                        if type(val_to_write) is long:
+                            val_to_write = int(val_to_write)
+                        
+                        text += str(sub_item) + ': ' + str(val_to_write)
                        
                         text += nl
                     continue
