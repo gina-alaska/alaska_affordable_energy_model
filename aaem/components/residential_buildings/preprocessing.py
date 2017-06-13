@@ -35,6 +35,7 @@ def preprocess(preprocessor, **kwargs):
     
     fuel = fuel.ix[["Total", "Utility Gas", "LP", "Electricity", "Fuel Oil",
                     "Coal", "Wood", "Solar", "Other", "No fuel used"]]
+    fuel = fuel * 100
     #~ print fuel
     #~ print preprocessor.community
     data = read_csv(

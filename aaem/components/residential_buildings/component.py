@@ -285,26 +285,26 @@ class ResidentialBuildings(AnnualSavings):
         
         percent_acconuted = 0
         
-        amnt = np.float64(rd["Fuel Oil"])
+        amnt = np.float64(rd["Fuel Oil"]) / 100.0
         percent_acconuted += amnt
         self.init_HF = self.calc_consumption_by_fuel(amnt, total, HH, 
                                                      constants.mmbtu_to_gal_HF)
-        amnt = np.float64(rd["Wood"])
+        amnt = np.float64(rd["Wood"]) / 100.0
         percent_acconuted += amnt
         self.init_wood = self.calc_consumption_by_fuel(amnt, total, HH, 
                                                     constants.mmbtu_to_cords)
         
-        amnt = np.float64(rd["Utility Gas"])
+        amnt = np.float64(rd["Utility Gas"]) / 100.0
         percent_acconuted += amnt
         self.init_gas = self.calc_consumption_by_fuel(amnt, total, HH, 
                                                     constants.mmbtu_to_Mcf)
         
-        amnt = np.float64(rd["LP"])
+        amnt = np.float64(rd["LP"]) / 100.0
         percent_acconuted += amnt
         self.init_LP = self.calc_consumption_by_fuel(amnt, total, HH, 
                                                     constants.mmbtu_to_gal_LP)
         
-        amnt = np.float64(rd["Electricity"])
+        amnt = np.float64(rd["Electricity"]) / 100.0
         percent_acconuted += amnt
         self.init_kWh = self.calc_consumption_by_fuel(amnt, total, HH,
                                                       constants.mmbtu_to_kWh)
@@ -312,7 +312,7 @@ class ResidentialBuildings(AnnualSavings):
         #~ self.init_solar
         #~ self.init_other
         
-        msg = str(round(percent_acconuted * 100)) + \
+        msg = str(round(percent_acconuted)) + \
               " of residential fuel sources accounted for"
         self.diagnostics.add_note(self.component_name, msg)
         
@@ -361,27 +361,27 @@ class ResidentialBuildings(AnnualSavings):
         
         
         # the one in each of these function calls is an identity 
-        amnt = np.float64(rd["Fuel Oil"])
+        amnt = np.float64(rd["Fuel Oil"]) / 100.0
         self.savings_HF = avg_EUI_reduction * self.opportunity_HH * \
                           self.calc_consumption_by_fuel(amnt, total, 1,
                           constants.mmbtu_to_gal_HF)
         
-        amnt = np.float64(rd["Wood"])
+        amnt = np.float64(rd["Wood"]) / 100.0
         self.savings_wood = avg_EUI_reduction * self.opportunity_HH * \
                             self.calc_consumption_by_fuel(amnt, total, 1, 
                             constants.mmbtu_to_cords)
         
-        amnt = np.float64(rd["Utility Gas"])
+        amnt = np.float64(rd["Utility Gas"]) / 100.0
         self.savings_gas = avg_EUI_reduction * self.opportunity_HH * \
                            self.calc_consumption_by_fuel(amnt, total, 1, 
                            constants.mmbtu_to_Mcf)
         
-        amnt = np.float64(rd["LP"])
+        amnt = np.float64(rd["LP"]) / 100.0
         self.savings_LP = avg_EUI_reduction * self.opportunity_HH * \
                           self.calc_consumption_by_fuel(amnt, total, 1,
                           constants.mmbtu_to_gal_LP)
         
-        amnt = np.float64(rd["Electricity"])
+        amnt = np.float64(rd["Electricity"]) / 100.0
         self.savings_kWh = avg_EUI_reduction * self.opportunity_HH * \
                            self.calc_consumption_by_fuel(amnt, total, 1, 
                            constants.mmbtu_to_kWh)
@@ -438,7 +438,7 @@ class ResidentialBuildings(AnnualSavings):
             baseline total heating fuel consumption
         """
         rd = self.comp_specs['data']
-        self.fuel_oil_percent = rd["Fuel Oil"]
+        self.fuel_oil_percent = rd["Fuel Oil"] / 100.0
         HH = self.households
         #~ print HH
         area = np.float64(rd["Pre-Retrofit Avg Area (SF)"])
@@ -447,19 +447,20 @@ class ResidentialBuildings(AnnualSavings):
         scaler = (HH - self.init_HH) * area * EUI
         
         self.baseline_fuel_Hoil_consumption = \
-                                    self.init_HF+np.float64(rd["Fuel Oil"])*\
-                                    scaler * constants.mmbtu_to_gal_HF
+            self.init_HF+np.float64(rd["Fuel Oil"]/100.0)*\
+            scaler * constants.mmbtu_to_gal_HF
         self.baseline_fuel_wood_consumption = \
-                                       self.init_wood+np.float64(rd["Wood"])*\
-                                       scaler * constants.mmbtu_to_cords
+            self.init_wood+np.float64(rd["Wood"]/100.0)*\
+            scaler * constants.mmbtu_to_cords
         self.baseline_fuel_gas_consumption = self.init_gas + \
-                                        np.float64(rd["Utility Gas"]) * \
-                                        scaler * constants.mmbtu_to_Mcf
-        self.baseline_fuel_LP_consumption = self.init_LP+np.float64(rd["LP"])*\
-                                       scaler * constants.mmbtu_to_gal_LP
+            np.float64(rd["Utility Gas"]/100.0) * \
+            scaler * constants.mmbtu_to_Mcf
+        self.baseline_fuel_LP_consumption = \
+            self.init_LP+np.float64(rd["LP"]/100.0)*\
+            scaler * constants.mmbtu_to_gal_LP
         self.baseline_fuel_kWh_consumption = self.init_kWh+\
-                                        np.float64(rd["Electricity"])*\
-                                        scaler * constants.mmbtu_to_kWh
+            np.float64(rd["Electricity"]/100.0)*\
+            scaler * constants.mmbtu_to_kWh
         #~ self.baseline_fuel_coal_consumption
         #~ self.baseline_fuel_solar_consumption
         #~ self.baseline_fuel_other_consumption
