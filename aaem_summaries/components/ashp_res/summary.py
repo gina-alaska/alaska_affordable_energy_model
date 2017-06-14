@@ -54,6 +54,8 @@ def generate_web_summary (web_object, community):
         index = range(r_comp.start_year, r_comp.end_year+1)
     )['fuel consumed'].ix[start_year:end_year]
     
+    fuel_consumed = fuel_consumed * constants.mmbtu_to_gal_HF
+
     ## get the diesel prices
     diesel_price = \
         modeled.cd['diesel prices'] + modeled.cd['heating fuel premium']
