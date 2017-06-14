@@ -200,10 +200,9 @@ class Driver (object):
             
             comps_used[comp] = component
         return comps_used
-    
-        
-    def save_components_output (self, comps_used, community, tag = '', 
-        alt_name = None):
+
+    def save_components_output (self, comps_used, community,
+        forecast, tag = '', alt_name = None):
         """
         save the output from each component
         
@@ -223,56 +222,41 @@ class Driver (object):
         """
         if tag != '':
             tag = '_' + tag
+
         if alt_name is None:
             save_name = community.replace(' ','_')
         else:
             save_name = alt_name.replace(' ','_')
             
-        directory = os.path.join(self.model_root, 'results' + tag,
-                                            save_name,
-                                            "component_outputs/")
+        directory = os.path.join(
+            self.model_root, 'results' + tag, save_name)
+        #~ print directory
+        
+        
+    
+        try:
+            os.makedirs(os.path.join(directory))
+        except OSError:
+            pass
+            
+        summaries.community_forcast_summaries(
+            community, comps_used, forecast, directory)
+            
+        directory = os.path.join(directory, "component_outputs/")
         #~ print directory
         try:
             os.makedirs(os.path.join(directory))
         except OSError:
             pass
+        
             
         for comp in comps_used:
             #~ continue
-            comps_used[comp].save_csv_outputs(directory)
-            comps_used[comp].save_additional_output(directory)
-    
-    def save_forecast_output (self, fc, community, img_dir, 
-                                                    plot = False, tag = ''):
-        """
-        save the forecast output
-        
-        inputs:
-            fc: excuted forecast object <aaem.Forecast>
-            community: community or 'name' <string>
-            img_dir: directory to save plots <strings>
-            plot: (optional, default False)boolean to plot <bool>
-            tag: (optional) tag for results dir <string>
-            
-        outputs:
-            saves forecast as .csv files, and plots, if plot == True
-            
-        preconditions:
-            see invariants
-            
-        postconditions:
-            None
-        """
-        if tag != '':
-            tag = '_' + tag
-        directory = os.path.join(self.model_root, 'results' + tag,
-                                            community.replace(' ','_'))
-                                            
-        try:
-            os.makedirs(os.path.join(directory))
-        except OSError:
-            pass
-        fc.save_forecast(directory, img_dir, plot)
+            try:
+                comps_used[comp].save_csv_outputs(directory)
+                comps_used[comp].save_additional_output(directory)
+            except:
+                pass
     
     def save_input_files (self, cd, community, tag = '', alt_name = None):
         """ 
@@ -476,15 +460,20 @@ class Driver (object):
             diagnostics,
             scalers
         )
+        
+        
+        
         #~ name = community_data.get_item('community', 'file id')
-        self.save_components_output(comps_used, name, tag, 
+        self.save_components_output(comps_used, name, forecast, tag, 
             alt_name=alt_save_name)
         #~ self.save_forecast_output(forecast, name, img_dir, plot, tag)
         self.save_input_files(community_data, name, tag, alt_name=alt_save_name)
         self.save_diagnostics(diagnostics, name, tag, alt_name=alt_save_name) 
+
         
         comps_used['community data'] = community_data
         comps_used['forecast'] = forecast
+        
     
         #~ print name 
         #~ print 'rb', alt_save_name

@@ -60,7 +60,7 @@ def preprocess(preprocessor, **kwargs):
     if 'res_start_year' in kwargs:
         start_year = int(kwargs['res_start_year'])   
     
-    lifetime = 15
+    lifetime = 20
     if 'res_project_lifetime' in kwargs:
         lifetime = int(kwargs['res_project_lifetime']) 
     
