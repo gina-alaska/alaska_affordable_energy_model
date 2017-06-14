@@ -348,10 +348,10 @@ class AnnualSavings (object):
         except:
             return self.get_nan_range()
         
-    def get_refit_HF_use (self): # ex: eff(res) G81-V81
-        """ returns HF use array (refit) """
+    def get_proposed_HF_use (self): # ex: eff(res) G81-V81
+        """ returns HF use array (proposed) """
         try:
-            return self.refit_HF_consumption
+            return self.proposed_HF_consumption
         except:
             return self.get_nan_range()
         
@@ -362,10 +362,10 @@ class AnnualSavings (object):
         except:
             return self.get_nan_range()
         
-    def get_refit_HF_cost (self): # ex: eff(res) G86-V86
-        """ returns HF cost array (refit) """
+    def get_proposed_HF_cost (self): # ex: eff(res) G86-V86
+        """ returns HF cost array (proposed) """
         try:
-            return self.refit_HF_cost
+            return self.proposed_HF_cost
         except:
             return self.get_nan_range()
 
@@ -386,10 +386,10 @@ class AnnualSavings (object):
         except:
             return self.get_nan_range()
         
-    def get_refit_kWh_use (self): # ex: eff(res) G73-V73
-        """ returns kWh use array (refit) """
+    def get_proposed_kWh_use (self): # ex: eff(res) G73-V73
+        """ returns kWh use array (proposed) """
         try:
-            return self.refit_kWh_consumption
+            return self.proposed_kWh_consumption
         except:
             return self.get_nan_range()
     
@@ -400,23 +400,23 @@ class AnnualSavings (object):
         except:
             return self.get_nan_range()
         
-    def get_refit_kWh_cost (self): # ex: eff(res) G70-V70
-        """ returns kWh cost array (refit) """
+    def get_proposed_kWh_cost (self): # ex: eff(res) G70-V70
+        """ returns kWh cost array (proposed) """
         try:
-            return self.refit_kWh_cost
+            return self.proposed_kWh_cost
         except:
             return self.get_nan_range()
         
     ## annual savings
     def get_electric_savings_costs (self): # ex: eff(res) G57-V57 or G75-V75
-        """ returns kWh savings array (base - refit) """
+        """ returns kWh savings array (base - proposed) """
         try:
             return self.annual_electric_savings
         except:
             return self.get_nan_range()
         
     def get_heating_savings_costs (self): # ex: eff(res) G58-V58 or G94-V94
-        """ returns HF savings array (base - refit) """ 
+        """ returns HF savings array (base - proposed) """ 
         try:
             return self.annual_heating_savings
         except:
@@ -499,18 +499,18 @@ class AnnualSavings (object):
                     ": Heating Fuel Consumption Baseline (gallons/year)": 
                                             self.get_base_HF_use(),
                 self.component_name + \
-                    ": Heating Fuel Consumption Retrofit (gallons/year)": 
-                                            self.get_refit_HF_use(),
+                    ": Heating Fuel Consumption Proposed (gallons/year)": 
+                                            self.get_proposed_HF_use(),
                 self.component_name + \
                     ": Heating Fuel Consumption Savings (gallons/year)": 
                                             self.get_base_HF_use() -\
-                                            self.get_refit_HF_use(), 
+                                            self.get_proposed_HF_use(), 
                 self.component_name + \
                     ": Heating Fuel Cost Baseline ($/year)": 
                                             self.get_base_HF_cost(),
                 self.component_name + \
-                    ": Heating Fuel Cost Retrofit ($/year)": 
-                                            self.get_refit_HF_cost(),
+                    ": Heating Fuel Cost Proposed ($/year)": 
+                                            self.get_proposed_HF_cost(),
                 self.component_name + \
                     ": Heating Fuel Cost Savings ($/year)": 
                                             self.get_heating_savings_costs(),
@@ -518,18 +518,18 @@ class AnnualSavings (object):
                     ": Electricity Consumption Baseline (kWh/year)": 
                                             self.get_base_kWh_use(),
                 self.component_name + \
-                    ": Electricity Consumption Retrofit (kWh/year)": 
-                                            self.get_refit_kWh_use(),
+                    ": Electricity Consumption Proposed (kWh/year)": 
+                                            self.get_proposed_kWh_use(),
                 self.component_name + \
                     ": Electricity Consumption Savings (kWh/year)": 
                                             self.get_base_kWh_use() -\
-                                            self.get_refit_kWh_use(), 
+                                            self.get_proposed_kWh_use(), 
                 self.component_name + \
                     ": Electricity Cost Basline ($/year)": 
                                             self.get_base_kWh_cost(),
                 self.component_name + \
-                    ": Electricity Cost Retrofit ($/year)": 
-                                            self.get_refit_kWh_cost(),
+                    ": Electricity Cost Proposed ($/year)": 
+                                            self.get_proposed_kWh_cost(),
                 self.component_name + \
                     ": Electricity Cost Savings ($/year)": 
                                             self.get_electric_savings_costs(),
@@ -550,20 +550,20 @@ class AnnualSavings (object):
               self.component_name + \
                         ": Heating Fuel Consumption Baseline (gallons/year)", 
               self.component_name + \
-                        ": Heating Fuel Consumption Retrofit (gallons/year)", 
+                        ": Heating Fuel Consumption Proposed (gallons/year)", 
               self.component_name + \
                         ": Heating Fuel Consumption Savings (gallons/year)", 
               self.component_name + ": Heating Fuel Cost Baseline ($/year)",
-              self.component_name + ": Heating Fuel Cost Retrofit ($/year)", 
+              self.component_name + ": Heating Fuel Cost Proposed ($/year)", 
               self.component_name + ": Heating Fuel Cost Savings ($/year)",
               self.component_name + \
                         ": Electricity Consumption Baseline (kWh/year)",
               self.component_name + \
-                        ": Electricity Consumption Retrofit (kWh/year)", 
+                        ": Electricity Consumption Proposed (kWh/year)", 
               self.component_name + \
                         ": Electricity Consumption Savings (kWh/year)", 
               self.component_name + ": Electricity Cost Basline ($/year)",
-              self.component_name + ": Electricity Cost Retrofit ($/year)", 
+              self.component_name + ": Electricity Cost Proposed ($/year)", 
               self.component_name + ": Electricity Cost Savings ($/year)",
               self.component_name + ": Project Capital Cost ($/year)", 
               self.component_name + ": Total Cost Savings ($/year)", 
