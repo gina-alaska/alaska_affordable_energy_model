@@ -46,8 +46,7 @@ def generate_web_summary (web_object, community):
     projects = {'Modeled ' + COMPONENT_NAME:  modeled}
     
     ## get forecast stuff (consumption, generation, etc)
-    fuel_consumed = nr_comp.baseline_HF_consumption 
-
+    fuel_consumed = nr_comp.baseline_HF_consumption * constants.mmbtu_to_gal_HF
     ## get the diesel prices
     diesel_price = \
         modeled.cd['diesel prices'] + modeled.cd['heating fuel premium']
