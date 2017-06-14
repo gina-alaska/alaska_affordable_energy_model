@@ -38,14 +38,14 @@ order = [
     'percent solar degradation',
     
     'output per 10kW solar PV',
-    'road needed',
-    'road needed for transmission line',
-    'transmission line distance',
+    #~ 'road needed',
+    #~ 'road needed for transmission line',
+    #~ 'transmission line distance',
     
     'cost',
     'switch gear needed for solar',
     'cost per kW',
-    'o&m cost per kWh',
+    #~ 'o&m cost per kWh',
     'percent o&m',
 ]
 
@@ -60,14 +60,14 @@ structure = {
         'percent solar degradation': float,
         
         'output per 10kW solar PV': float,
-        'road needed': bool,
-        'road needed for transmission line': bool,
-        'transmission line distance': float,
+        #~ 'road needed': bool,
+        #~ 'road needed for transmission line': bool,
+        #~ 'transmission line distance': float,
         
         'cost': [float, str],
         'switch gear needed for solar': bool,
         'cost per kW': float,
-        'o&m cost per kWh': float,
+        #~ 'o&m cost per kWh': float,
         'percent o&m': float,
     
     }
@@ -86,14 +86,14 @@ comments = {
         '[float] annual decline in solar effectiveness',
     
     'output per 10kW solar PV': '[float] output from solar pannel',
-    'road needed': '[bool]',
-    'road needed for transmission line': '[bool]',
-    'transmission line distance': '[float] distance of road needed  in miles',
+    #~ 'road needed': '[bool]',
+    #~ 'road needed for transmission line': '[bool]',
+    #~ 'transmission line distance': '[float] distance of road needed  in miles',
     
     'cost': '[float] cost or [str] UNKNOWN',
     'switch gear needed for solar': '[bool]',
     'cost per kW': '[float] cost per kW if cost of the project is UNKNOWN',
-    'o&m cost per kWh': '[float] cost of repairs for diesel generator per kWh',
+    #~ 'o&m cost per kWh': '[float] cost of repairs for diesel generator per kWh',
     'percent o&m': 
         '[float] yearly maintenance cost as percent as decimal of total cost',
 }

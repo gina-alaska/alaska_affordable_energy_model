@@ -289,11 +289,10 @@ class SolarPower (AnnualSavings):
         """
         self.proposed_generation_cost = self.maintenance_cost
         
-        
         price = self.diesel_prices
         # fuel cost + maintance cost
-        self.baseline_generation_cost = (self.generation_fuel_used * price) +\
-                (self.generation_proposed * self.comp_specs['o&m cost per kWh'])
+        self.baseline_generation_cost = (self.generation_fuel_used * price)# +\
+                #~ (self.generation_proposed * self.comp_specs['o&m cost per kWh'])
         
         self.annual_electric_savings = self.baseline_generation_cost - \
                                        self.proposed_generation_cost
