@@ -510,8 +510,8 @@ class Preprocessor (object):
                 
                 'population':population,
                 
-                'interest rate': .05,
-                'discount rate': .03,
+                'interest rate': .05 * 100,
+                'discount rate': .03 * 100,
                 
                 'heating degree days': self.load_heating_degree_days(),
                 'heating fuel premium': self.load_heating_fuel_premium(),
