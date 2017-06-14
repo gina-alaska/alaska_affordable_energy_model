@@ -27,8 +27,11 @@ def preprocess (preprocessor, **kwargs):
     
     """
     
-    data = read_csv(os.path.join(preprocessor.data_dir,"solar_resource_data.csv"),
-                        comment = '#',index_col = 0)
+    data = read_csv(
+        os.path.join(preprocessor.data_dir,"solar_resource_data.csv"),
+        comment = '#',
+        index_col = 0
+    )
         
     ids = [preprocessor.communities[0], preprocessor.aliases[0]]
     #~ if preprocessor.intertie_status == 'child':
@@ -49,15 +52,15 @@ def preprocess (preprocessor, **kwargs):
             'percent solar degradation': ((1 - .992) * 100),
             
             'output per 10kW solar PV': solar_pv_output,
-            'road needed': False,
-            'road needed for transmission line' : True,
-            'transmission line distance': 0,
+            #~ 'road needed': False,
+            #~ 'road needed for transmission line' : True,
+            #~ 'transmission line distance': 0,
             
             
             'cost': 'UNKNOWN',
             'switch gear needed for solar': False,
             'cost per kW': 8000,
-            'o&m cost per kWh': .02,
+            #~ 'o&m cost per kWh': .02,
             'percent o&m': 1,
         }
     }
