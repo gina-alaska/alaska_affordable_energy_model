@@ -3,6 +3,7 @@
 ## [0.27.1]
 ### fixes
 - conversion factor for fuel consumed in ASHP summaries
+- intertie list is not generated for not an intertie any more
 
 ## [0.27.0]
 ### updated

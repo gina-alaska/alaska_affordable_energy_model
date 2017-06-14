@@ -649,7 +649,7 @@ class WebSummary(object):
         
         ## Intertie Info
         it = self.results[com]['community data'].intertie
-        if it != 'not in intertie':
+        if type(it) is list:
             intertie = res['community data'].get_item('community','intertie')
             table = [[True, 'Community', 'Primary or Secondary Generator'],
                      [False, intertie[0], 'Primary']]

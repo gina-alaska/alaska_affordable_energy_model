@@ -42,7 +42,6 @@ def generate_web_summary (web_object, community):
     modeled = web_object.results[community][COMPONENT_NAME]
     start_year = modeled.start_year
     end_year = modeled.actual_end_year
-    print start_year, end_year
     ## for make table functions
     projects = {'Modeled ' + COMPONENT_NAME:  modeled}
     
