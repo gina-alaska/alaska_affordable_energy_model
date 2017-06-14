@@ -6,6 +6,7 @@ output functions for Air Source Heat Pump Residential component
 
 """
 import os.path
+from pandas import DataFrame
 import aaem.constants as constants
 from aaem.components import comp_order
 import aaem_summaries.web_lib as wl
@@ -41,12 +42,17 @@ def generate_web_summary (web_object, community):
     modeled = web_object.results[community][COMPONENT_NAME]
     start_year = modeled.start_year
     end_year = modeled.actual_end_year
+    print start_year, end_year
     ## for make table functions
     projects = {'Modeled ' + COMPONENT_NAME:  modeled}
     
     ## get forecast stuff (consumption, generation, etc)
     r_comp = web_object.results[community]["Residential Energy Efficiency"]
-    fuel_consumed = r_comp.baseline_HF_consumption 
+    fuel_consumed = DataFrame(
+        r_comp.baseline_HF_consumption,
+        columns=['fuel consumed'], 
+        index = range(r_comp.start_year, r_comp.end_year+1)
+    )['fuel consumed'].ix[start_year:end_year]
     
     ## get the diesel prices
     diesel_price = \
@@ -56,7 +62,6 @@ def generate_web_summary (web_object, community):
     
     ## get diesel generator efficiency
     eff = modeled.cd['diesel generation efficiency']
-    
     
     
     ## get generation fuel costs per year (modeled)

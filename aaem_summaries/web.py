@@ -1031,17 +1031,26 @@ class WebSummary(object):
         
         if hasattr(res['Non-residential Energy Efficiency'], 
                     'baseline_fuel_Hoil_consumption'):
+            temp_1 = res['Non-residential Energy Efficiency']
+            df = DataFrame(temp_1.baseline_fuel_Hoil_consumption,
+                columns = ['col'], 
+                index = range(temp_1.start_year, temp_1.end_year + 1 )
+            )
             diesel_consumption['Non-residential Heating Oil (gallons)'] = \
-                                    res['Non-residential Energy Efficiency'].\
-                                    baseline_fuel_Hoil_consumption
+                df['col']
         else:
             diesel_consumption['Non-residential Heating Oil (gallons)'] = np.nan
         
         if hasattr(res['Water and Wastewater Efficiency'], 
                     'baseline_fuel_Hoil_consumption'):
+                        
+            temp_1 = res['Water and Wastewater Efficiency']
+            df = DataFrame(temp_1.baseline_fuel_Hoil_consumption,
+                columns = ['col'], 
+                index = range(temp_1.start_year, temp_1.end_year + 1 )
+            )
             diesel_consumption['Water/Wastewater Heating Oil (gallons)'] = \
-                                        res['Water and Wastewater Efficiency'].\
-                                        baseline_fuel_Hoil_consumption
+                df['col']
         else:
             diesel_consumption['Water/Wastewater Heating Oil (gallons)'] =\
                 np.nan
@@ -1110,33 +1119,58 @@ class WebSummary(object):
                               
         if hasattr(res['Non-residential Energy Efficiency'], 
             'baseline_kWh_cost'):
+            temp_1 = res['Non-residential Energy Efficiency']
+            df = DataFrame(temp_1.baseline_kWh_cost,
+                columns = ['col'], 
+                index = range(temp_1.start_year, temp_1.end_year + 1 )
+            )
             costs['Non-residential Electricity'] = \
-                res['Non-residential Energy Efficiency'].baseline_kWh_cost
+                df['col']
         else:
             costs['Non-residential Electricity'] = np.nan
         
         if hasattr(res['Water and Wastewater Efficiency'], 'baseline_kWh_cost'):
+            temp_1 = res['Water and Wastewater Efficiency']
+            df = DataFrame(temp_1.baseline_kWh_cost,
+                columns = ['col'], 
+                index = range(temp_1.start_year, temp_1.end_year + 1 )
+            )
             costs['Water/Wastewater Electricity'] = \
-                res['Water and Wastewater Efficiency'].baseline_kWh_cost
+                df['col']
         else: 
             costs['Water/Wastewater Electricity'] =  np.nan
             
         if hasattr(res['Residential Energy Efficiency'], 'baseline_HF_cost'):
+            temp_1 = res['Residential Energy Efficiency']
+            df = DataFrame(temp_1.baseline_HF_cost,
+                columns = ['col'], 
+                index = range(temp_1.start_year, temp_1.end_year + 1 )
+            )
             costs['Residential Heating Fuel'] = \
-                res['Residential Energy Efficiency'].baseline_HF_cost
+                df['col']
         else:
             costs['Residential Heating Fuel'] = np.nan
             
         if hasattr(res['Non-residential Energy Efficiency'], 
             'baseline_HF_cost'):
+            temp_1 = res['Non-residential Energy Efficiency']
+            df = DataFrame(temp_1.baseline_HF_cost,
+                columns = ['col'], 
+                index = range(temp_1.start_year, temp_1.end_year + 1 )
+            )
             costs['Non-residential Heating Fuel'] = \
-                res['Non-residential Energy Efficiency'].baseline_HF_cost
+                df['col']
         else:
             costs['Non-residential Heating Fuel'] = np.nan
             
         if hasattr(res['Water and Wastewater Efficiency'], 'baseline_HF_cost'):
+            temp_1 = res['Water and Wastewater Efficiency']
+            df = DataFrame(temp_1.baseline_HF_cost,
+                columns = ['col'], 
+                index = range(temp_1.start_year, temp_1.end_year + 1 )
+            )
             costs['Water/Wastewater Heating Fuel'] = \
-                res['Water and Wastewater Efficiency'].baseline_HF_cost
+                df['col']
         else:
             costs['Water/Wastewater Heating Fuel'] = np.nan
             
