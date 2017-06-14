@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.27.1]
+### fixes
+- conversion factor for fuel consumed in ASHP summaries
+
 ## [0.27.0]
 ### updated
 - summaries updated to support new CommunityData, and Forecast systems in model 0.27.0
