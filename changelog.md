@@ -1,6 +1,29 @@
 #Change Log
 
 ## [0.27.2]
+### adds
+-- running of AAEM from a script file has been re-implemented and updated
+-- individual community forecast csv files have been re-implemented and updated
+-- Scalers for diesel prices have been implemented in the CommunityData class
+-- Preprocessor option for indicating that a community should use natural gas.
+-- Barrow and Nuiqsut have been set to used natural gas Preprocessor option in setup
+
+### changes
+-- added Non-residential energy efficiency as prerequisite for Hydropower and uses Non-residential heating oil consumed as max limit for Hydro energy capturable by secondary load
+-- get_refit... functions in annual_savings renamed to get_baseline...
+
+### fixes
+-- Residential Energy Efficiency: lifetime is corrected to 20 years
+-- several configuration were still being represented as decimals. This has been fixed.
+-- missing columns in community Non-residential and Water-wastewater component csv files
+
+### removes
+-- Solar Power: road related values removed from configuration
+-- Solar Power: extra diesel O&M costs values removed from configuration and component
+-- CPI has been removed from annual costs calculations
+
+
+## [0.27.2]
 ### fixes
 --- fix type conversion of longs in dataframes and dicts in yaml files.
 
