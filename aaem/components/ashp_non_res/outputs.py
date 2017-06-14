@@ -69,11 +69,11 @@ def communities_summary (coms, res_dir):
             except AttributeError:  
                 price = 0
                 
-
-            try:
-                intertie = coms[c]['community data'].parent
-            except AttributeError:
-                intertie = c
+            intertie = ashp.cd['intertie']
+            if type(intertie) is list:
+                intertie  = intertie[0]
+            else:
+                intertie = ashp.cd['name']
                
             try:
                 break_even = ashp.break_even_cost

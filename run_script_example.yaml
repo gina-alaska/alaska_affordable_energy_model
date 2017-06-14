@@ -1,31 +1,21 @@
 global:
-  root: '<path>'
-  config: <path>/__global_config.yaml
-  construction multipliers: <path>/__construction_multipliers.yaml
-  image diretory: None
-  plot: False
+  root: ./model/m0.27.2_d0.27.0/
+  #~ global config: ./model/m0.27.2_d0.27.0/__global_config.yaml
   results tag: 'scripts_test'
   
 communities:
   - community: Adak
-    name: Adak 1
-    input files: <path>
-    config: <config>.yaml
+    ID: Adak 1
+    config: ./model/m0.27.2_d0.27.0/config/Adak.yaml
     scalers: 
-      diesel price: 1.0
+      diesel price: 2.0
       captial costs: 1.0
       kWh consumption: 1.0
 
   - community: Adak
-    name: Adak 2
-    input files: <path>
-    config: <config>.yaml
+    ID: Adak 2
     
   - community: Bethel
-    input files: <path>
-    config: <config>.yaml
     
   - community: Manley Hot Springs
-    name: MHS
-    input files: <path>
-    config: <config>.yaml
+    ID: MHS

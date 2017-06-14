@@ -192,9 +192,8 @@ class CommunityData (object):
             float(self.data['community']['diesel generation efficiency'])
         adder = percent_diesel * \
             self.data['community']['diesel prices'] / efficiency
-            
         self.data['community']['electric non-fuel prices'] = \
-            self.data['community']['electric non-fuel price'] + adder
+            float(self.data['community']['electric non-fuel price']) + adder
     
     def check_auto_disable_conditions  (self):
         """
