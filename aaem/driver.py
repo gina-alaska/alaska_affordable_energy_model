@@ -202,7 +202,8 @@ class Driver (object):
         return comps_used
     
         
-    def save_components_output (self, comps_used, community, tag = ''):
+    def save_components_output (self, comps_used, community, tag = '', 
+        alt_name = None):
         """
         save the output from each component
         
@@ -222,8 +223,13 @@ class Driver (object):
         """
         if tag != '':
             tag = '_' + tag
+        if alt_name is None:
+            save_name = community.replace(' ','_')
+        else:
+            save_name = alt_name.replace(' ','_')
+            
         directory = os.path.join(self.model_root, 'results' + tag,
-                                            community.replace(' ','_'),
+                                            save_name,
                                             "component_outputs/")
         #~ print directory
         try:
@@ -268,7 +274,7 @@ class Driver (object):
             pass
         fc.save_forecast(directory, img_dir, plot)
     
-    def save_input_files (self, cd, community, tag = ''):
+    def save_input_files (self, cd, community, tag = '', alt_name = None):
         """ 
         save the input files (confing yaml)
         
@@ -288,15 +294,20 @@ class Driver (object):
         """
         if tag != '':
             tag = '_' + tag
-        directory = os.path.join(self.model_root, 'results' + tag,
-                                            community.replace(' ','_'))
+        
+        if alt_name is None:
+            save_name = community.replace(' ','_')
+        else:
+            save_name = alt_name.replace(' ','_')
+            
+        directory = os.path.join(self.model_root, 'results' + tag, save_name)
         try:
             os.makedirs(os.path.join(directory))
         except OSError:
             pass
         cd.save(os.path.join(directory,"config_used.yaml"))
     
-    def save_diagnostics (self, diag, community, tag = ''):
+    def save_diagnostics (self, diag, community, tag = '', alt_name = None):
         """ 
         save the diagnostic
         
@@ -316,8 +327,13 @@ class Driver (object):
         """
         if tag != '':
             tag = '_' + tag
-        directory = os.path.join(self.model_root, 'results' + tag,
-                                            community.replace(' ','_'))
+        
+        if alt_name is None:
+            save_name = community.replace(' ','_')
+        else:
+            save_name = alt_name.replace(' ','_')
+            
+        directory = os.path.join(self.model_root, 'results' + tag, save_name)
         try:
             os.makedirs(os.path.join(directory))
         except OSError:
@@ -326,7 +342,8 @@ class Driver (object):
         diag.save_messages(os.path.join(directory, 
                     community.replace(" ","_") + "_runtime_diagnostics.csv"))
                     
-    def store_results (self, comps_used, tag = '', overwrite = False):
+    def store_results (self, comps_used, tag = '',
+        overwrite = False, name = None):
         """
         store results in binary pickle file
         
@@ -349,15 +366,16 @@ class Driver (object):
             tag = '_' + tag
         directory = os.path.join(self.model_root, 'results' + tag)
         
-        name = comps_used['community data'].get_item('community', 'file id')
+        if name == None:
+            name = comps_used['community data'].get_item('community', 'file id')
+
         picklename = os.path.join(directory,'binary_results.pkl')
         if overwrite:
             mode = 'rb'
         else:
             mode = 'ab'
-            
+        #~ print picklename
         with open(picklename, mode) as pkl:
-            #~ print comps_used
             pickle.dump([name, comps_used], pkl, pickle.HIGHEST_PROTOCOL)
              
     def load_results (self, tag = ''):
@@ -401,7 +419,8 @@ class Driver (object):
                     break
         return results
         
-    def run (self, community_config, global_config = None, tag = '', scalers = None):
+    def run (self, community_config, global_config = None, 
+        tag = '', scalers = None, alt_save_name = None):
         """
         run the model for a community
         
@@ -412,9 +431,6 @@ class Driver (object):
             g_config: (optional, default: none) alternat global confing 
                 file <string>
             tag: (optional) tag for results dir <string>
-           
-            img_dir: directory to save plots <strings>
-            plot: (optional, default False)boolean to plot <bool>
             
         outputs:
             the model is run for a community/project/assigned 'name'
@@ -461,16 +477,18 @@ class Driver (object):
             scalers
         )
         #~ name = community_data.get_item('community', 'file id')
-        self.save_components_output(comps_used, name, tag)
+        self.save_components_output(comps_used, name, tag, 
+            alt_name=alt_save_name)
         #~ self.save_forecast_output(forecast, name, img_dir, plot, tag)
-        self.save_input_files(community_data, name, tag )
-        self.save_diagnostics(diagnostics, name, tag) 
+        self.save_input_files(community_data, name, tag, alt_name=alt_save_name)
+        self.save_diagnostics(diagnostics, name, tag, alt_name=alt_save_name) 
         
         comps_used['community data'] = community_data
         comps_used['forecast'] = forecast
     
-        
-        self.store_results(comps_used, tag)
+        #~ print name 
+        #~ print 'rb', alt_save_name
+        self.store_results(comps_used, tag, name=alt_save_name)
         
     def run_many (self, directory):
         """
@@ -940,50 +958,53 @@ def script_validator (script_file):
     extns = ['yaml','yml']
     with open(script_file, 'r') as sf:
         script = yaml.load(sf)
-    
-    gcfg = script['global']['config']
-    if not os.path.isfile(gcfg) and \
-           not os.path.split(gcfg)[1].split('.')[1] in extns:
-        raise StandardError, "golbal config not a yaml file"
-    
+        
     try:
-        img_dir = script['global']['image directory']
+        root = script['global']['root']
     except KeyError:
-        script['global']['image directory'] = None
-        img_dir = None
+        raise StandardError, "No root provided for model structure"
     
-    try:
-        plot = script['global']['plot']
-    except KeyError:
-        script['global']['plot'] = False
-        plot = False 
+    #~ gcfg = script['global']['global config']
+    #~ if not os.path.isfile(gcfg) and \
+           #~ not os.path.split(gcfg)[1].split('.')[1] in extns:
+        #~ raise StandardError, "golbal config not a yaml file"
         
     try:
         res_tag = script['global']['results tag']
     except KeyError:
         script['global']['results tag'] = ''
         res_tag = '' 
-        
-    try:
-        script['global']['construction multipliers']
-    except KeyError:
-        script['global']['construction multipliers'] = None
     
     errors = []
+    all_coms = set()
     for com in script['communities']:
-        if not os.path.exists(com['input files']):
-            errors.append(com['community'] + ': input files is not a directory')
-        if not os.path.isfile(gcfg) and \
-                not os.path.split(gcfg)[1].split('.')[1] in extns:
-            errors.append(com['community'] + ': config not a yaml file')
+        community = com['community'].replace(' ','_')
         try:    
-            com['name']
+            com['ID']
         except KeyError:
-            com['name'] = None
+            com['ID'] = None
             
-        if com['name'] is None:
-            com['name'] = com['community']
-            
+        if com['ID'] is None:
+            com['ID'] = com['community']
+        
+        if com['ID'] in all_coms:
+            raise StandardError, "Community: " + com + ' appears more than' + \
+                ' once in the script. Ensure that each time the community' + \
+                ' appears in the script it has a unique ID feild' 
+        
+        all_coms.add(com['ID'])
+        
+        try:
+            com['config']
+        except KeyError:
+            com['config'] = os.path.join(root, 'config', community + '.yaml')
+        
+        if not os.path.isfile(com['config']):  
+            if os.path.isfile(os.path.join(root, 'config', community + '.yml')):
+                com['config'] = os.path.join(root, 'config', community + '.yml')
+            else:
+                raise StandardError, com['config'] + ' is not a file'
+                
         try:
             com['scalers']
         except KeyError:
