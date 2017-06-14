@@ -867,7 +867,7 @@ class Setup (object):
         
         self.communities = [c for c in data['Community'].values]
         
-    def setup (self, force = False):
+    def setup (self, force = False, ng_coms = []):
         """
         run the setup functionality
         
@@ -897,7 +897,10 @@ class Setup (object):
                 diag = self.diagnostics, 
                 process_intertie = False)
             self.diagnostics.add_note('Preprocessing ' + community, '---------')
-            preprocessor.run(show=True)
+            if community in ng_coms:
+                preprocessor.run(show=True, ng_com=True)
+            else:
+                preprocessor.run(show=True)
             
             preprocessor.save_config(f_path)
             

@@ -72,7 +72,7 @@ class SetupCommand(pycommand.CommandBase):
             print "Setting up ..."
 
             my_setup = driver.Setup(model_root, repo, sorted(coms), tag)
-            if not my_setup.setup(force):
+            if not my_setup.setup(force = force, ng_coms=['Barrow','Nuiqsut']):
                 pth = os.path.join(model_root, my_setup.tag)
                 msg = "SETUP ERROR: " + pth + \
                         " exists. Use force flag (-f) to overwrite"
