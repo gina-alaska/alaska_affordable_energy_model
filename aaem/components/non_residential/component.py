@@ -116,7 +116,7 @@ class CommunityBuildings (AnnualSavings):
         file_name: path
             name of file to save (.csv)
         """
-        if not self.run:
+        if not self.was_run:
             return
             
         with_estimates = deepcopy(self.comp_specs["building inventory"])
@@ -170,7 +170,7 @@ class CommunityBuildings (AnnualSavings):
         path : path 
             location to save files at
         """
-        if not self.run:
+        if not self.was_run:
             return
         self.save_building_summay(os.path.join(path, self.cd['name'] + '_' +\
                                 self.component_name.lower().replace(' ','_') + \
@@ -178,7 +178,7 @@ class CommunityBuildings (AnnualSavings):
         
     
     def run (self, scalers = {'capital costs':1.0, 'kWh consumption':1.0},
-        calc_sqft_only = False):
+        calc_sqft_only = False, for_prereq = False):
         """runs the component. The Annual Total Savings,Annual Costs, 
         Annual Net Benefit, NPV Benefits, NPV Costs, NPV Net Benefits, 
         Benefit Cost Ratio, Levelized Cost of Energy, 
@@ -202,15 +202,14 @@ class CommunityBuildings (AnnualSavings):
         -----
             Accepted scalers: capital costs.
         """
-        self.run = True
+        self.was_run = True
         self.reason = "OK"
         
         tag = self.cd['file id'].split('+')
-        if len(tag) > 1 and tag[1] != 'non-residential':
-            self.run = False
+        if len(tag) > 1 and tag[1] != 'non-residential' and not for_prereq:
+            self.was_run = False
             self.reason = "Not a non-residential project."
             return 
-        
         self.update_num_buildings()
         self.comp_specs['building inventory'] = \
             self.comp_specs['building inventory'].set_index('Building Type')
@@ -223,7 +222,7 @@ class CommunityBuildings (AnnualSavings):
         #~ self.calc_refit_values()
         
         if len(self.comp_specs['building inventory']) == 0:
-            self.run = False
+            self.was_run = False
             self.reason = "No buildings in community."
             return 
         

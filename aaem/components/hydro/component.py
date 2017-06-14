@@ -95,6 +95,32 @@ class Hydropower (AnnualSavings):
             self.comp_specs["start year"],
             self.comp_specs["lifetime"]
         )
+        self.prerequisites = prerequisites
+    
+    def load_prerequisite_variables (self, comps):
+        """Loads Non-residential buildings values
+        
+        Parameters
+        ----------
+        comps: Dictionary of components
+            Dictionary of components, needs 'Non-residential Energy Efficiency'
+            key
+        
+        Attributes
+        ----------
+        non_res_heating_consumption_proposed : float
+            the Non-residential Heating oil equiv. Consumed(gal)
+        """
+        #~ return
+        non_res = comps['Non-residential Energy Efficiency']
+        self.non_res_heating_consumption_proposed = np.isnan
+        try:
+            self.non_res_heating_consumption_proposed = \
+                non_res.baseline_HF_consumption * constants.mmbtu_to_gal_HF
+        except AttributeError:
+            non_res.run(for_prereq=True)
+            self.non_res_heating_consumption_proposed = \
+                non_res.baseline_HF_consumption * constants.mmbtu_to_gal_HF
         
     def run (self, scalers = {'capital costs':1.0}):
         """Runs the component. The Annual Total Savings,Annual Costs, 
@@ -120,25 +146,29 @@ class Hydropower (AnnualSavings):
         -----
             Accepted scalers: capital costs.
         """
-        self.run = True
+        self.was_run = True
         self.reason = "OK"
+        
+        
         
         tag = self.cd['file id'].split('+')
         if len(tag) > 1 and tag[1] != 'hydro':
-            self.run = False
+            self.was_run = False
             self.reason = "Not a hydropower project."
             return 
         
         if self.comp_specs["name"] == 'none':
-            self.run = False
+            self.was_run = False
             self.reason = "No project data."
             return 
         
         if not self.cd["model electricity"]:
-            self.run = False
+            self.was_run = False
             self.reason = "Electricity must be modeled to analyze hydropower."+\
                                 " It was not for this community."
             return 
+        
+        self.load_prerequisite_variables(self.prerequisites)
             
         try:
             self.calc_average_load()
@@ -146,13 +176,13 @@ class Hydropower (AnnualSavings):
         except AttributeError as e:
             self.diagnostics.add_warning(self.component_name, 
                             "could not be run")
-            self.run = False
+            self.was_run = False
             self.reason = "Could not calculate average load, or " + \
                             "proposed generation."
             return
             
         if self.load_offset_proposed is None:
-            self.run = False
+            self.was_run = False
             self.reason = "Hydropower" + \
                 " requires that at least a reconnaissance-level heat recovery"+\
                 " study has been completed for the community."
@@ -269,6 +299,14 @@ class Hydropower (AnnualSavings):
                      self.cd['efficiency heating oil boiler']/\
                      (constants.mmbtu_to_kWh)
         self.captured_energy = captured_energy * conversion # gallons/year
+        if self.captured_energy > self.non_res_heating_consumption_proposed:
+            self.diagnostics.add_note('Hydropower',
+                ('Heating Oil Equivalent Captured by Secondary Load [gal]'
+                ' was over the Non-residential Heating oil equiv.'
+                ' Consumed [gal] limit. settign value to limit.')
+            )
+            self.captured_energy = self.non_res_heating_consumption_proposed
+        
         
         # gal/year <- kWh*year/ (kWh/gal) 
         gen_eff = self.cd["diesel generation efficiency"]
@@ -386,7 +424,7 @@ class Hydropower (AnnualSavings):
 
         """
         #~ return
-        if not self.run:
+        if not self.was_run:
             return
         
         

@@ -134,10 +134,10 @@ class HeatRecovery (AnnualSavings):
         -----
             Accepted scalers: capital costs.
         """
-        self.run = True
+        self.was_run = True
         self.reason = "OK"
         if self.cd['file id'].find('+') == -1:
-            self.run = False
+            self.was_run = False
             self.reason = "Heat recovery" + \
                 " requires that at least a reconnaissance-level heat recovery"+\
                 " study has been completed for the community."
@@ -146,7 +146,7 @@ class HeatRecovery (AnnualSavings):
         
         tag = self.cd['file id'].split('+')
         if len(tag) > 1 and tag[1] != PROJECT_TYPE:
-            self.run = False
+            self.was_run = False
             self.reason = "Not a " + "Heat recovery" + " project."
             self.diagnostics.add_note(self.component_name, self.reason)
             return 
@@ -155,14 +155,14 @@ class HeatRecovery (AnnualSavings):
             try:
                 self.calc_proposed_heat_recovery()
             except AttributeError:
-                self.run = False
+                self.was_run = False
                 self.reason = "Could not caclulate proposed heat recovery."
                 self.diagnostics.add_note(self.component_name, self.reason)
                 return 
                 
         if np.isnan(self.proposed_heat_recovery) or \
                 self.proposed_heat_recovery == 0:
-            self.run = False
+            self.was_run = False
             self.reason = "No proposed heat recovery."
             self.diagnostics.add_note(self.component_name, self.reason)
             return 

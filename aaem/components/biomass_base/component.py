@@ -316,7 +316,7 @@ class BiomassBase (AnnualSavings):
             output directory
 
         """
-        if not self.run:
+        if not self.was_run:
             return
         
         fuel_consumed_key = self.component_name + \

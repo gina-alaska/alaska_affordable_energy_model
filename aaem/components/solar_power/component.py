@@ -111,13 +111,13 @@ class SolarPower (AnnualSavings):
         -----
             Accepted scalers: capital costs.
         """
-        self.run = True
+        self.was_run = True
         self.reason = "OK"
         
         
         tag = self.cd['file id'].split('+')
         if len(tag) > 1 and tag[1] != 'solar':
-            self.run = False
+            self.was_run = False
             self.reason = "Not a solar project."
             return 
         
@@ -127,7 +127,7 @@ class SolarPower (AnnualSavings):
         except:
             self.diagnostics.add_warning(self.component_name, 
             "could not be run")
-            self.run = False
+            self.was_run = False
             self.reason = "Could not calculate average load," + \
                             " or proposed generation."
 
@@ -138,7 +138,7 @@ class SolarPower (AnnualSavings):
            not self.proposed_load > 0:
             self.diagnostics.add_note(self.component_name, 
             "model did not meet minimum generation requirments")
-            self.run = False
+            self.was_run = False
             #~ print self.proposed_load, self.average_load, self.comp_specs['average load limit']
             if self.average_load < self.comp_specs['average load limit']:
                 self.reason = "Average load too small for viable solar power."
@@ -351,7 +351,7 @@ class SolarPower (AnnualSavings):
             output directory
 
         """
-        if not self.run:
+        if not self.was_run:
             #~ fname = os.path.join(directory,
                                    #~ self.component_name + "_output.csv")
             #~ fname = fname.replace(" ","_")
