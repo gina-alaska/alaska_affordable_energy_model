@@ -202,7 +202,7 @@ class Driver (object):
         return comps_used
     
         
-    def save_components_output (self, comps_used, community, tag = ''):
+    def save_components_output (self, comps_used, community, forecast, tag = ''):
         """
         save the output from each component
         
@@ -222,19 +222,34 @@ class Driver (object):
         """
         if tag != '':
             tag = '_' + tag
+        
+        
+        
         directory = os.path.join(self.model_root, 'results' + tag,
-                                            community.replace(' ','_'),
-                                            "component_outputs/")
-        #~ print directory
+                                            community.replace(' ','_'))
         try:
             os.makedirs(os.path.join(directory))
         except OSError:
             pass
             
+        summaries.community_forcast_summaries(
+            community, comps_used, forecast, directory)
+            
+        directory = os.path.join(directory, "component_outputs/")
+        #~ print directory
+        try:
+            os.makedirs(os.path.join(directory))
+        except OSError:
+            pass
+        
+            
         for comp in comps_used:
             #~ continue
-            comps_used[comp].save_csv_outputs(directory)
-            comps_used[comp].save_additional_output(directory)
+            try:
+                comps_used[comp].save_csv_outputs(directory)
+                comps_used[comp].save_additional_output(directory)
+            except:
+                pass
     
     def save_input_files (self, cd, community, tag = ''):
         """ 
@@ -428,14 +443,19 @@ class Driver (object):
             diagnostics,
             scalers
         )
+        
+        
+        
         #~ name = community_data.get_item('community', 'file id')
-        self.save_components_output(comps_used, name, tag)
-        #~ self.save_forecast_output(forecast, name, img_dir, plot, tag)
+        self.save_components_output(comps_used, name, forecast, tag)
+        #~ self.save_forecast_output(comps_used, name, tag)
         self.save_input_files(community_data, name, tag )
         self.save_diagnostics(diagnostics, name, tag) 
         
+        
         comps_used['community data'] = community_data
         comps_used['forecast'] = forecast
+        
     
         
         self.store_results(comps_used, tag)
