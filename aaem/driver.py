@@ -933,6 +933,11 @@ def script_validator (script_file):
     except KeyError:
         script['global']['global config'] = None
         
+    if script['global']['global config'] is None:
+        gc = os.path.join(root, 'config', '__global_config.yaml')
+        if os.path.isfile(gc):
+            script['global']['global config'] = gc 
+        
     try:
         res_tag = script['global']['results tag']
     except KeyError:
