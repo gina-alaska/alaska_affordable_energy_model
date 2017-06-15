@@ -329,7 +329,7 @@ var RegionsLayer = new L.GeoJSON.AJAX( url , {
                 if (name == "Lower Yukon Kuskokwim") { // other alt regions names work
                     name = alt_region_names[name];
                 }
-                RegionsLayer.bindPopup("<div class=''>" + feature.properties.NAME + "</div><div><a href='"+ name.replace(/ /g, "_").replace('\'',"") +".html' target='_blank'>View Region Info</a></div>");
+                RegionsLayer.bindPopup("<div class=''>" + feature.properties.NAME + "</div><div><a href='"+ name.replace(/ /g, "_").replace('\'',"").toLowerCase() +".html' target='_blank'>View Region Info</a></div>");
             }
     }
   }

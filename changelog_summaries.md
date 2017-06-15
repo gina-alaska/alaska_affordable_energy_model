@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.26.2]
+### fixed
+- url case ro regions on map
+
 ## [0.26.1]
 ### added
 - regions layer to map
