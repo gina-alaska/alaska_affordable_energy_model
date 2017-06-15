@@ -909,7 +909,130 @@ class Setup (object):
             else:
                 preprocessor.run(show=True)
             
-            preprocessor.save_config(f_path)
+            keys_to_split = { 
+                'community': [
+                    'model electricity',
+                    'model heating fuel',
+                    'model financial',
+                    'interest rate',
+                    'discount rate',
+                    'current year',
+                ],
+                'Residential Energy Efficiency': [
+                    'enabled',
+                    'lifetime',
+                    'min kWh per household',
+                    'average refit cost',
+                ],
+                'Non-residential Energy Efficiency': [
+                    'enabled',
+                    'lifetime',
+                    'average refit cost', 
+                    'cohort savings percent',
+                    'heating percent',
+                    'waste oil cost percent'
+                ],
+                'Water and Wastewater Efficiency':[
+                    'enabled',
+                    'lifetime',
+                    'audit cost',
+                    'average refit cost',
+                    'electricity refit reduction',
+                    'heating fuel refit reduction',
+                    'heat recovery multiplier',
+                    'heating cost percent',
+                ],
+                'Wind Power':[
+                    'enabled',
+                    'lifetime',
+                    'average load limit',
+                    'percent generation to offset',
+                ],
+                'Solar Power':[
+                    'enabled',
+                    'lifetime',
+                    'average load limit',
+                    'percent generation to offset',
+                    'percent solar degradation',
+                    'cost per kW',
+                    'percent o&m',
+                ],
+                'Biomass for Heat (Cordwood)':[
+                    'enabled',
+                    'lifetime',
+                    'cost per btu/hrs',
+                    'o&m per year',
+                    'energy density',
+                    'hours of storage for peak',
+                    'percent at max output',
+                    'cordwood system efficiency',
+                    'hours operation per cord',
+                    'operation cost per hour',
+                    'boiler assumed output',
+                ],
+                'Biomass for Heat (Pellet)':[
+                    'enabled',
+                    'lifetime',
+                    'cost per btu/hrs',
+                    'o&m per year',
+                    'energy density',
+                    'pellet efficiency',
+                    'default pellet price',
+                ],
+                'Residential ASHP':[
+                    'enabled',
+                    'lifetime',
+                    'btu/hrs',
+                    'cost per btu/hrs',
+                    'o&m per year'
+                ],
+                'Non-Residential ASHP':[
+                    'enabled',
+                    'lifetime',
+                    'btu/hrs',
+                    'cost per btu/hrs',
+                    'o&m per year',
+                ],
+                'Hydropower':[
+                    'enabled',
+                    'lifetime',
+                    'percent o&m',
+                    'percent heat recovered',
+                ],
+                'Transmission and Interties':[
+                    'enabled',
+                    'lifetime',
+                    'transmission loss per mile',
+                    'percent o&m',
+                    'heat recovery o&m',
+                    'est. intertie cost per mile',
+                    'diesel generator o&m',
+                ],
+                'Heat Recovery':[
+                    'enabled',
+                    'lifetime',
+                    'estimate pipe distance',
+                    'estimate pipe cost/ft',
+                    'estimate buildings to heat',
+                    'heating conversion efficiency',
+                    'percent heat recovered',
+                    'estimate cost/building',
+                    'o&m per year',
+                ],
+                'Diesel Efficiency':[
+                    'enabled',
+                    'lifetime',
+                    'efficiency improvment',
+                    'o&m costs'
+                ],
+            }
+            
+            preprocessor.save_config(f_path, keys_to_split)
+            
+            
+            f_name = os.path.join(f_path, '__global_config.yaml')
+            if not os.path.exists(f_name):
+                preprocessor.save_global_congfig(f_name, keys_to_split)
             
             ## the intertie, if it exists
             try:
