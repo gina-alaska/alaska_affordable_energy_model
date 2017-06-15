@@ -10,7 +10,7 @@ import os
 from aaem.components.annual_savings import AnnualSavings
 from aaem.community_data import CommunityData
 from aaem.forecast import Forecast
-from aaem.diagnostics import diagnostics
+from aaem.diagnostics import Diagnostics
 import aaem.constants as constants
 from config import COMPONENT_NAME, UNKNOWN
 from aaem.diesel_prices import DieselProjections
@@ -71,23 +71,25 @@ class Transmission (AnnualSavings):
             prerequisite component data
 
         """
+        #~ print 'NEW INTERTIE', community_data.new_intetie_data 
         self.diagnostics = diag
         if self.diagnostics == None:
             self.diagnostics = diagnostics()
         self.forecast = forecast
         self.cd = community_data.get_section('community')
-        self.data_dir = community_data.data_dir
-        
+        #~ self.intertie_data = community_data.intertie_data
+        self.new_intertie_data = community_data.new_intetie_data 
        
         self.comp_specs = community_data.get_section(COMPONENT_NAME)
         self.component_name = COMPONENT_NAME
-        
-        self.comp_specs["start year"] = self.cd['current year'] + \
-            self.comp_specs["project details"]['expected years to operation']
+    
 
-        self.set_project_life_details(self.comp_specs["start year"],
-                                      self.comp_specs["lifetime"],
-                        self.forecast.end_year - self.comp_specs["start year"])
+        self.set_project_life_details(
+            self.comp_specs["start year"],
+            self.comp_specs["lifetime"]
+        )
+        
+        
         
     def run (self, scalers = {'capital costs':1.0}):
         """Runs the component. The Annual Total Savings,Annual Costs, 
@@ -113,22 +115,21 @@ class Transmission (AnnualSavings):
         -----
             Accepted scalers: capital costs.
         """
-        self.run = True
+        self.was_run = True
         self.reason = "OK"
-        tag = self.cd['name'].split('+')
+        tag = self.cd['file id'].split('+')
         if len(tag) > 1 and tag[1] != 'transmission':
-            self.run = False
+            self.was_run = False
             self.reason = "Not a transmission project."
             return 
             
         if not self.cd["model electricity"]:
-            self.run = False
+            self.was_run = False
             self.reason = "Electricity must be modeled to analyze "+\
                                 "transmission. It was not for this community."
             return 
-        if np.isnan(self.comp_specs['nearest community']\
-                                    ['Distance to Community']):
-            self.run = False
+        if np.isnan(float(self.comp_specs['distance to community'])):
+            self.was_run = False
             self.reason = ("There are no communities within 30 miles with"
                             " lower cost of electricity.")
             return 
@@ -136,8 +137,8 @@ class Transmission (AnnualSavings):
         self.calc_average_load()
         try:
             self.get_intertie_values()
-        except IOError:
-            self.run = False
+        except ValueError:
+            self.was_run = False
             self.reason = ("Could not find data on community to intertie to.")
             return 
         self.calc_pre_intertie_generation()
@@ -196,24 +197,27 @@ class Transmission (AnnualSavings):
         intertie_diesel_prices : np.array
             diesel prices over the project lifetime
         """
-        com = self.comp_specs['nearest community']\
-                ['Nearest Community with Lower Price Power'].replace(' ','_')
-        path = os.path.join(os.path.split(self.data_dir)[0],com)
-        self.connect_to_intertie = False
-        if os.path.exists(path+'_intertie'):
-            self.connect_to_intertie = True
-            path += '_intertie'
-            
-        #~ print read_csv(os.path.join(path,'interties.csv'),comment='#')
+        #~ print self.new_intertie_data.get_item('community','model as intertie')
+        if self.new_intertie_data is None:
+            raise ValueError, "No community to intertie to"
+        self.connect_to_intertie = \
+            self.new_intertie_data.get_item('community','model as intertie')
+
         
         self.intertie_generation_efficiency = \
-                read_csv(os.path.join(path,'yearly_electricity_summary.csv'),
-                         comment='#',index_col=0)['efficiency'][-3:].mean()
+            self.new_intertie_data.get_item(
+                'community',
+                'diesel generation efficiency'
+            )
                          
-        it_diesel_prices = DieselProjections(path)
+        it_diesel_prices = self.new_intertie_data.get_item(
+                'community',
+                'diesel prices'
+            )
+        it_diesel_prices.index = it_diesel_prices.index.astype(int)
+        #~ print it_diesel_prices.ix[self.start_year:self.end_year]
         self.intertie_diesel_prices = \
-                it_diesel_prices.get_projected_prices (self.start_year,
-                                                        self.end_year)
+                it_diesel_prices.ix[self.start_year:self.end_year].values.T[0]
 
     def calc_intertie_offset_generation (self):
         """Calculate the generation offset by connecting a transmission line 
@@ -230,9 +234,11 @@ class Transmission (AnnualSavings):
         """
         self.generation = \
                 self.forecast.get_generation(self.start_year,self.end_year)
-        dist = self.comp_specs['nearest community']['Distance to Community']
+        dist = self.comp_specs['distance to community']
         self.annual_tranmission_loss = \
-            1 - ((1-self.comp_specs['transmission loss per mile']) ** dist)
+            1 - (
+                (1- (self.comp_specs['transmission loss per mile']/ 100.0)) 
+            ** dist)
         self.intertie_offset_generation = \
                         self.generation * (1 + self.annual_tranmission_loss)
         
@@ -290,7 +296,7 @@ class Transmission (AnnualSavings):
         if self.cd['on road system']:
             road_needed = 'road not needed'
         
-        dist = self.comp_specs['nearest community']['Distance to Community']
+        dist = self.comp_specs['distance to community']
         self.capital_costs = self.comp_specs['est. intertie cost per mile']\
                                              [road_needed] * dist
         #~ print self.capital_costs
@@ -323,12 +329,14 @@ class Transmission (AnnualSavings):
         self.baseline_generation_cost = maintenance + \
             (self.pre_intertie_generation_fuel_used * self.diesel_prices)
         
-        maintenance = self.capital_costs * self.comp_specs['percent o&m']
+        maintenance = self.capital_costs * \
+            (self.comp_specs['percent o&m'] / 100.0)
         self.proposed_generation_cost = maintenance + \
                 self.intertie_offset_generation_fuel_used * \
                 self.intertie_diesel_prices
         self.annual_electric_savings = self.baseline_generation_cost -\
                                         self.proposed_generation_cost
+        #~ print len(self.annual_electric_savings)
         #~ print 'self.annual_electric_savings',self.annual_electric_savings
         
         

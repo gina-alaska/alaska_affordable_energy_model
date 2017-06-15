@@ -10,7 +10,7 @@ import os
 from aaem.components.annual_savings import AnnualSavings
 from aaem.community_data import CommunityData
 from aaem.forecast import Forecast
-from aaem.diagnostics import diagnostics
+from aaem.diagnostics import Diagnostics
 import aaem.constants as constants
 from config import COMPONENT_NAME, UNKNOWN
 
@@ -80,16 +80,47 @@ class Hydropower (AnnualSavings):
             self.diagnostics = diagnostics()
         self.forecast = forecast
         self.cd = community_data.get_section('community')
+        #~ print self.cd
         self.comp_specs = community_data.get_section(COMPONENT_NAME)
+        #~ print self.comp_specs
         self.component_name = COMPONENT_NAME
+        
+        ## moved to preprocessor
+        #~ try:
+            #~ self.comp_specs["start year"] = self.cd['current year'] + \
+            #~ self.comp_specs['expected years to operation']
+        #~ except TypeError:
+            #~ self.comp_specs["start year"] = self.cd['current year']
+        self.set_project_life_details(
+            self.comp_specs["start year"],
+            self.comp_specs["lifetime"]
+        )
+        self.prerequisites = prerequisites
+    
+    def load_prerequisite_variables (self, comps):
+        """Loads Non-residential buildings values
+        
+        Parameters
+        ----------
+        comps: Dictionary of components
+            Dictionary of components, needs 'Non-residential Energy Efficiency'
+            key
+        
+        Attributes
+        ----------
+        non_res_heating_consumption_proposed : float
+            the Non-residential Heating oil equiv. Consumed(gal)
+        """
+        #~ return
+        non_res = comps['Non-residential Energy Efficiency']
+        self.non_res_heating_consumption_proposed = np.isnan
         try:
-            self.comp_specs["start year"] = self.cd['current year'] + \
-            self.comp_specs["project details"]['expected years to operation']
-        except TypeError:
-            self.comp_specs["start year"] = self.cd['current year']
-        self.set_project_life_details(self.comp_specs["start year"],
-                                      self.comp_specs["lifetime"],
-                        self.forecast.end_year - self.comp_specs["start year"])
+            self.non_res_heating_consumption_proposed = \
+                non_res.baseline_HF_consumption * constants.mmbtu_to_gal_HF
+        except AttributeError:
+            non_res.run(for_prereq=True)
+            self.non_res_heating_consumption_proposed = \
+                non_res.baseline_HF_consumption * constants.mmbtu_to_gal_HF
         
     def run (self, scalers = {'capital costs':1.0}):
         """Runs the component. The Annual Total Savings,Annual Costs, 
@@ -115,39 +146,43 @@ class Hydropower (AnnualSavings):
         -----
             Accepted scalers: capital costs.
         """
-        self.run = True
+        self.was_run = True
         self.reason = "OK"
         
-        tag = self.cd['name'].split('+')
+        
+        
+        tag = self.cd['file id'].split('+')
         if len(tag) > 1 and tag[1] != 'hydro':
-            self.run = False
+            self.was_run = False
             self.reason = "Not a hydropower project."
             return 
         
-        if self.comp_specs["project details"] is None:
-            self.run = False
+        if self.comp_specs["name"] == 'none':
+            self.was_run = False
             self.reason = "No project data."
             return 
         
         if not self.cd["model electricity"]:
-            self.run = False
+            self.was_run = False
             self.reason = "Electricity must be modeled to analyze hydropower."+\
                                 " It was not for this community."
             return 
+        
+        self.load_prerequisite_variables(self.prerequisites)
             
         try:
             self.calc_average_load()
             self.calc_generation_proposed()
-        except AttributeError:
+        except AttributeError as e:
             self.diagnostics.add_warning(self.component_name, 
                             "could not be run")
-            self.run = False
+            self.was_run = False
             self.reason = "Could not calculate average load, or " + \
                             "proposed generation."
             return
             
         if self.load_offset_proposed is None:
-            self.run = False
+            self.was_run = False
             self.reason = "Hydropower" + \
                 " requires that at least a reconnaissance-level heat recovery"+\
                 " study has been completed for the community."
@@ -174,7 +209,7 @@ class Hydropower (AnnualSavings):
             
             
             o_m = self.net_generation_proposed * \
-                    self.cd['diesel generator o&m cost']
+                    (self.cd['diesel generator o&m cost percent'] / 100.0)
         
             self.calc_levelized_costs(o_m)
             
@@ -189,7 +224,7 @@ class Hydropower (AnnualSavings):
             averge diesel generation load in first year of project (kW)
         
         """
-        self.generation = self.forecast.generation_by_type['generation diesel']\
+        self.generation = self.forecast.generation['generation diesel']\
                                                             [self.start_year]
         self.average_load = \
                 self.forecast.yearly_average_diesel_load.ix[self.start_year]
@@ -207,29 +242,29 @@ class Hydropower (AnnualSavings):
         net_generation_proposed : float
             net hydropower generation(kWh/yr)
         """
-        if self.comp_specs["project details"]['proposed capacity'] == UNKNOWN:
+        if self.comp_specs['proposed capacity'] == UNKNOWN:
             self.load_offset_proposed = None
             self.gross_generation_proposed = None
             self.net_generation_proposed = None
             
         else:
             self.load_offset_proposed = \
-                    self.comp_specs["project details"]['proposed capacity']
+                   float( self.comp_specs['proposed capacity'])
             self.gross_generation_proposed = \
-                    self.comp_specs["project details"]['proposed generation']
-            tansmission_losses = self.cd['line losses'] *\
-                                 self.gross_generation_proposed
+                    float(self.comp_specs['proposed generation'])
+                                        
+            tansmission_losses = (self.cd['line losses'] / 100.0) *\
+                self.gross_generation_proposed
             exess_energy = \
                 (self.gross_generation_proposed - tansmission_losses) * \
-                self.cd['percent excess energy']
-            
+                (self.cd['percent excess energy'] / 100.0)
             self.percent_excess_energy = exess_energy / \
-                                         self.gross_generation_proposed   
+                self.gross_generation_proposed   
             
             self.net_generation_proposed = self.gross_generation_proposed -\
                                            tansmission_losses -\
                                            exess_energy
-        
+            #~ print  self.net_generation_proposed
             if self.net_generation_proposed > self.generation:
                 self.net_generation_proposed = self.generation
                                            
@@ -253,7 +288,7 @@ class Hydropower (AnnualSavings):
         # %
        
         captured_percent = self.percent_excess_energy * \
-                    self.cd['percent excess energy capturable']
+            (self.cd['percent excess energy capturable'] / 100.0)
         
         #kWh/year
         captured_energy = captured_percent * self.gross_generation_proposed
@@ -264,6 +299,14 @@ class Hydropower (AnnualSavings):
                      self.cd['efficiency heating oil boiler']/\
                      (constants.mmbtu_to_kWh)
         self.captured_energy = captured_energy * conversion # gallons/year
+        if self.captured_energy > self.non_res_heating_consumption_proposed:
+            self.diagnostics.add_note('Hydropower',
+                ('Heating Oil Equivalent Captured by Secondary Load [gal]'
+                ' was over the Non-residential Heating oil equiv.'
+                ' Consumed [gal] limit. settign value to limit.')
+            )
+            self.captured_energy = self.non_res_heating_consumption_proposed
+        
         
         # gal/year <- kWh*year/ (kWh/gal) 
         gen_eff = self.cd["diesel generation efficiency"]
@@ -280,7 +323,7 @@ class Hydropower (AnnualSavings):
             self.lost_heat_recovery  = 0
         else:
             self.lost_heat_recovery = self.generation_diesel_reduction * \
-                                self.comp_specs['percent heat recovered']
+                (self.comp_specs['percent heat recovered'] / 100.0)
         
         #~ print 'self.captured_energy', self.captured_energy
         #~ print 'self.lost_heat_recovery', self.lost_heat_recovery
@@ -296,9 +339,10 @@ class Hydropower (AnnualSavings):
              generagion costs
         """
         transmission_cost = \
-            self.comp_specs['project details']['transmission capital cost']
+            float(self.comp_specs['transmission capital cost'])
         generator_cost = \
-            self.comp_specs['project details']['generation capital cost']
+            float(self.comp_specs['generation capital cost'])
+        
         self.capital_costs = transmission_cost + generator_cost
         #~ print 'self.capital_costs', self.capital_costs
         
@@ -313,12 +357,13 @@ class Hydropower (AnnualSavings):
             electric savings ($/year) are the difference in the base 
         and proposed fuel costs
         """
+        #~ print self.capital_costs, (self.comp_specs['percent o&m'] / 100.0)
         proposed_generation_cost = self.capital_costs * \
-                                self.comp_specs['percent o&m']
+            (self.comp_specs['percent o&m'] / 100.0)
                         
         
         maintianice_cost = self.net_generation_proposed * \
-                        self.cd['diesel generator o&m cost']  
+            (self.cd['diesel generator o&m cost percent'] /100.0)
         
         price = self.diesel_prices
         
@@ -379,7 +424,7 @@ class Hydropower (AnnualSavings):
 
         """
         #~ return
-        if not self.run:
+        if not self.was_run:
             return
         
         

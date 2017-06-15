@@ -19,23 +19,16 @@ COMPONENT_NAME = "Residential ASHP"
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
 
-## List of yaml key/value pairs
-yaml = deepcopy(ashp_base.yaml)
-yaml[ "btu/hrs"] = 18000
-yaml[ "cost per btu/hrs" ] = 6000 
+order = deepcopy(ashp_base.order) 
 
-## default values for yaml key/Value pairs
-yaml_defaults = deepcopy(ashp_base.yaml_defaults)
-    
-## order to save yaml
-yaml_order = deepcopy(ashp_base.yaml_order) 
+## List of yaml key/value pairs
+structure = deepcopy(ashp_base.structure)
+#~ print structure
+structure[COMPONENT_NAME] = structure.pop(ashp_base.COMPONENT_NAME)
 
 ## comments for the yaml key/value pairs
-yaml_comments = deepcopy(ashp_base.yaml_comments)
+comments = deepcopy(ashp_base.comments)
 
-
-## list of data keys not to save when writing the CommunityData output
-yaml_not_to_save = deepcopy(ashp_base.yaml_not_to_save)
 
 ## list of prerequisites for module
 prereq_comps = ['Residential Energy Efficiency']

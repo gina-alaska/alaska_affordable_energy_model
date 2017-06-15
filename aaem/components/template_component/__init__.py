@@ -14,7 +14,6 @@ __init__.py
 ## add the name or a description of the component
 from preprocessing import *
 from config import *
-from inputs import *
 from component import *
 from outputs import *
 

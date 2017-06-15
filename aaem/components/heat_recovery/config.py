@@ -24,45 +24,108 @@ Heat Recovery Configuration
         'percent heat recovered': percent of heat recoverd
     
 """
+from aaem.components import definitions
+
 COMPONENT_NAME = "Heat Recovery"
 PROJECT_TYPE = 'heat_recovery'
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
 
-## List of yaml key/value pairs
-yaml = {'enabled': False,
-        "project details": IMPORT,
-        'estimate data': IMPORT,
-        'estimate pipe distance': 1500,
-        'estimate pipe cost/ft': 135,
-        'estimate buildings to heat': 2,
-        'estimate cost/building':40000,
-        
-        'lifetime': 'ABSOLUTE DEFAULT',
-        'start year': 'ABSOLUTE DEFAULT',
-        
-        'heating conversion efficiency': .75,
-        
-        'o&m per year': 500,
-        'percent heat recovered': .10,
-        }
-
-## default values for yaml key/Value pairs
-yaml_defaults = {'enabled': True,
-        'lifetime': 20,
-        #~ 'start year': 2017,
-        }
+order = [
+    'enabled',
+    'lifetime', # number years <int>
+    'start year', # start year <int>
     
-## order to save yaml
-yaml_order = ['enabled', 'lifetime', 'start year']
+    'est. current annual heating fuel gallons displaced',
+    
+    'estimate pipe distance',
+    'estimate pipe cost/ft',
+    'estimate buildings to heat',
+    'heating conversion efficiency',
+    'percent heat recovered',
+    'estimate cost/building',
+    'o&m per year',
+    
+    'name',
+    'phase',
+    'project type',
+    'capital costs',
+    'number buildings',
+    'buildings',
+    'total feet piping needed',
+    'proposed maximum btu/hr',
+    'proposed gallons diesel offset',
+    'link',
+    'notes',
+]
 
-## comments for the yaml key/value pairs
-yaml_comments = {'enabled': '',
-        'lifetime': 'number years <int>',
-        'start year': 'start year <int>'}
-       
-## list of data keys not to save when writing the CommunityData output
-yaml_not_to_save = []
+structure = {
+    'Heat Recovery' : {
+        'enabled': bool,
+        'lifetime': int, 
+        'start year': int, 
+        
+        'est. current annual heating fuel gallons displaced': [float, str],
+        
+        'estimate pipe distance': float,
+        'estimate pipe cost/ft': float,
+        'estimate buildings to heat': int,
+        'heating conversion efficiency': float,
+        'percent heat recovered': float,
+        'estimate cost/building': float,
+        'o&m per year': float,
+        
+        'name': str,
+      
+        'phase': str,
+        'project type': str,
+        'capital costs': [float, str],
+        'number buildings': [int, str],
+        'buildings': list,
+        'total feet piping needed': [float, str],
+        'proposed maximum btu/hr':[float, str],
+        'proposed gallons diesel offset': [float, str],
+        'link': str,
+        'notes': str,
+        
+        
+    }
+}
+
+comments = {
+    'enabled': definitions.ENABLED,
+    'lifetime': definitions.LIFETIME,
+    'start year': definitions.START_YEAR_WITH_TYPE,
+    
+    'est. current annual heating fuel gallons displaced': '[float, str]',
+    
+    'estimate pipe distance': 
+        ('[float] esitmated pipe distince in feet if'
+        ' "total feet piping neede" is unknown'),
+    'estimate pipe cost/ft': '[float] estimated cost/foot of piping needed',
+    'estimate buildings to heat': 
+        ('[int] estimated number of '
+        'builings if "number buildings" is unknown'),
+    'heating conversion efficiency': '[float]',
+    'percent heat recovered': '[float]',
+    'estimate cost/building': '[float] $/building',
+    'o&m per year': '[float] $' ,
+    
+    'name': '[str] name of project',
+    'buildings': '[list]',
+    'phase': '[str]',
+    'project type': '[str] New/Repair/Extension',
+    'capital costs': '[float]',
+    'number buildings': '[float]',
+    'total feet piping needed': '[float]',
+    'proposed maximum btu/hr': '[float]',
+    'proposed gallons diesel offset': '[float]',
+    'link': '[str]',
+    'notes': '[str]',
+
+}
+
+
 
 ## list of prerequisites for module
 prereq_comps = []

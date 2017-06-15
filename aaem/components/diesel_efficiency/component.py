@@ -11,7 +11,7 @@ import os
 from aaem.components.annual_savings import AnnualSavings
 from aaem.community_data import CommunityData
 from aaem.forecast import Forecast
-from aaem.diagnostics import diagnostics
+from aaem.diagnostics import Diagnostics
 import aaem.constants as constants
 from config import COMPONENT_NAME, UNKNOWN
 
@@ -80,12 +80,13 @@ class DieselEfficiency(AnnualSavings):
         self.comp_specs = community_data.get_section(COMPONENT_NAME)
         self.component_name = COMPONENT_NAME
         
-        self.comp_specs["start year"] = self.cd['current year'] + \
-            self.comp_specs["project details"]['expected years to operation']
+        #~ self.comp_specs["start year"] = self.cd['current year'] + \
+            #~ self.comp_specs["project details"]['expected years to operation']
 
-        self.set_project_life_details(self.comp_specs["start year"],
-                                      self.comp_specs["lifetime"],
-                        self.forecast.end_year - self.comp_specs["start year"])
+        self.set_project_life_details(
+            self.comp_specs["start year"],
+            self.comp_specs["lifetime"]
+        )
         
         
     def run (self, scalers = {'capital costs':1.0}):
@@ -112,16 +113,16 @@ class DieselEfficiency(AnnualSavings):
         -----
             Accepted scalers: capital costs.
         """
-        self.run = True
+        self.was_run = True
         self.reason = "OK"
-        tag = self.cd['name'].split('+')
+        tag = self.cd['file id'].split('+')
         if len(tag) > 1 and tag[1] != 'diesel_efficiency':
-            self.run = False
+            self.was_run = False
             self.reason = "Not a diesel efficiency project."
             return 
         
         if not self.cd["model electricity"]:
-            self.run = False
+            self.was_run = False
             self.reason = "Electricity must be modeled to analyze diesel" +\
                                 " efficiency. It was not for this community"
 
@@ -129,6 +130,14 @@ class DieselEfficiency(AnnualSavings):
             # change these below
             
         self.calc_average_load()
+        #~ print  self.average_load
+        if np.isnan( self.average_load ):
+            self.was_run = False
+            self.reason = (
+                "The Average diesel load is not available for this community. "
+                "Is diesel generation present?"
+            )
+            return 
         self.calc_max_capacity()
         self.calc_baseline_generation_fuel_use()
         
@@ -164,10 +173,11 @@ class DieselEfficiency(AnnualSavings):
             averge diesel generation load in first year of project (kW)
         
         """
-        self.generation = self.forecast.generation_by_type['generation diesel']\
-                                .ix[self.start_year:self.end_year-1].values
+        self.generation = self.forecast.generation['generation diesel']\
+                                .ix[self.start_year:self.end_year].values
         self.average_load = \
                 self.forecast.yearly_average_diesel_load.ix[self.start_year]
+        
         #~ print 'self.average_load',self.average_load
  
 
@@ -200,7 +210,7 @@ class DieselEfficiency(AnnualSavings):
         """
         self.proposed_diesel_efficiency = \
                         self.cd["diesel generation efficiency"] * \
-                        self.comp_specs['efficiency improvment']
+                        (1 + (self.comp_specs['efficiency improvment']/100.0))
         self.proposed_generation_fuel_use = self.generation / \
                                         self.proposed_diesel_efficiency 
                                         
@@ -236,13 +246,23 @@ class DieselEfficiency(AnnualSavings):
         oppex : float 
             operational costs per year ($) read from o&m costs table 
         """
-        key = 'else'
-        for max_load in sorted(self.comp_specs['o&m costs'].keys())[:-1]:
-            if self.average_load <= max_load:
-                key = max_load
-                break
+        #~ key = 'else'
+        #~ for max_load in sorted(self.comp_specs['o&m costs'].keys())[:-1]:
+            #~ if self.average_load <= max_load:
+                #~ key = max_load
+                #~ break
+                
+        costs = self.comp_specs['o&m costs']
+            
+        for kW in costs.keys():
+            try:
+                if self.average_load < int(kW):
+                    maintenance = self.comp_specs['o&m costs'][kW]
+                    break
+            except ValueError:
+                maintenance = self.comp_specs['o&m costs'][kW]
         
-        self.oppex = self.comp_specs['o&m costs'][key]
+        self.oppex =  maintenance#self.comp_specs['o&m costs'][key]
         
         
     def calc_annual_electric_savings (self):
@@ -257,6 +277,7 @@ class DieselEfficiency(AnnualSavings):
         price = self.diesel_prices
         
         base = self.baseline_generation_fuel_use * price + self.oppex
+        #~ print self.baseline_generation_fuel_use
         proposed = self.proposed_generation_fuel_use * price + self.oppex
         
         self.annual_electric_savings = base - proposed
@@ -301,7 +322,7 @@ class DieselEfficiency(AnnualSavings):
             output directory
 
         """
-        if not self.run:
+        if not self.was_run:
             return
         
         years = np.array(range(self.project_life)) + self.start_year

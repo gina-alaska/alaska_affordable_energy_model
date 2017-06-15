@@ -86,11 +86,11 @@ def generate_web_summary (web_object, community):
     ## get the diesel prices
     diesel_price = web_object.results[community]['community data'].\
                             get_item('community','diesel prices').\
-                            get_projected_prices(start_year, end_year+1) + \
+                            ix[start_year: end_year] + \
                         web_object.results[community]['community data'].\
                             get_item('community','heating fuel premium')
            
-    
+    diesel_price = diesel_price[diesel_price.columns[0]]
     ## get generation fuel costs per year (modeled)
     base_cost = fuel_consumed  * diesel_price
     base_cost.name = 'Base Cost'

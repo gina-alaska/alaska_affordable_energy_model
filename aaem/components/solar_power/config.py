@@ -22,63 +22,82 @@ Solar Power Configuration
         'o&m cost per kWh'
         
 """
+from aaem.components import definitions
+
 COMPONENT_NAME = "Solar Power"
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
 
-## List of yaml key/value pairs
-yaml = {'enabled': False,
-        'lifetime': 'ABSOLUTE DEFAULT',
-        'start year': 'ABSOLUTE DEFAULT',
-        'average load limit': 50.0,
-        'data': 'IMPORT',
-        'cost': 'UNKNOWN',
-        'cost per kW': 8000,
-        'road needed': False,
-        'road needed for transmission line' : True,
-        'transmission line distance': 0,
-        'percent o&m': .01,
-        'percent generation to offset': .15,
-        'switch gear needed for solar': False,
-        'percent solar degradation': .992,
-        'o&m cost per kWh': .02,
-        }
-
-## default values for yaml key/Value pairs
-yaml_defaults = {'enabled': True,
-        'lifetime': 20,
-        'start year': 2020,
-        }
+order = [
+    'enabled',
+    'lifetime',
+    'start year',
     
-## order to save yaml
-yaml_order = ['enabled', 'lifetime', 'start year']
+    'average load limit',
+    'percent generation to offset',
+    'percent solar degradation',
+    
+    'output per 10kW solar PV',
+    #~ 'road needed',
+    #~ 'road needed for transmission line',
+    #~ 'transmission line distance',
+    
+    'cost',
+    'switch gear needed for solar',
+    'cost per kW',
+    #~ 'o&m cost per kWh',
+    'percent o&m',
+]
 
-## comments for the yaml key/value pairs
-yaml_comments = {'enabled': '<boolean>',
-        'lifetime': 'number years <int>',
-        'start year': 'start year <int>',
-        'average load limit': 'lower limit on the average load <float>',
-        'data': 'data for component',
-        'cost': 
-            'cost in $ for project if known otherwise UNKNOWN <float|string>',
-        'cost per kW': 
-            'dollar cost per kW if cost of the project is UNKNOWN <float>',
-        'road needed for transmission line' : '<boolean>',
-        'transmission line distance': 
-            'distance in miles of proposed transmission line <float>',
-        'percent o&m': 
-            ('yearly maintenance cost'
-             ' as percent as decimal of total cost <float>'),
-        'percent generation to offset': 
-            'pecent of the generation in kW to offset with Solar Power <float>',
-        'percent solar degradation': 
-            ('the precent of the of solar panel'
-             ' that carries over from the previous year'),
-        'o&m cost per kWh': 'cost of repairs for generator per kWh <float>',
-         }
+structure = {
+    'Solar Power': {
+        'enabled': bool,
+        'lifetime': int,
+        'start year': int ,
+    
+        'average load limit' : float,
+        'percent generation to offset': float,
+        'percent solar degradation': float,
+        
+        'output per 10kW solar PV': float,
+        #~ 'road needed': bool,
+        #~ 'road needed for transmission line': bool,
+        #~ 'transmission line distance': float,
+        
+        'cost': [float, str],
+        'switch gear needed for solar': bool,
+        'cost per kW': float,
+        #~ 'o&m cost per kWh': float,
+        'percent o&m': float,
+    
+    }
+}
 
-## list of data keys not to save when writing the CommunityData output
-yaml_not_to_save = ["data"]
+comments = {
+    'enabled': definitions.ENABLED,
+    'start year': definitions.START_YEAR_WITH_TYPE,
+    'lifetime': definitions.LIFETIME,
+
+    'average load limit' : 
+        ('[float] minimum aaverage disel load (kW)in community required before'
+         ' solar power is considered'),
+    'percent generation to offset': '[float] precent of diesel load to offset',
+    'percent solar degradation': 
+        '[float] annual decline in solar effectiveness',
+    
+    'output per 10kW solar PV': '[float] output from solar pannel',
+    #~ 'road needed': '[bool]',
+    #~ 'road needed for transmission line': '[bool]',
+    #~ 'transmission line distance': '[float] distance of road needed  in miles',
+    
+    'cost': '[float] cost or [str] UNKNOWN',
+    'switch gear needed for solar': '[bool]',
+    'cost per kW': '[float] cost per kW if cost of the project is UNKNOWN',
+    #~ 'o&m cost per kWh': '[float] cost of repairs for diesel generator per kWh',
+    'percent o&m': 
+        '[float] yearly maintenance cost as percent as decimal of total cost',
+}
+
 
 ## list of prerequisites for module
 prereq_comps = []

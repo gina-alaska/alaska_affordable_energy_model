@@ -20,72 +20,108 @@ Wind Power Configuration
         'percent heat recovered'
     
 """
+from pandas import DataFrame
+from aaem.components import definitions
+
 COMPONENT_NAME = "Wind Power"
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
 
-## List of yaml key/value pairs
-yaml = {'enabled': False,
+order = [
+    'enabled',
+    'lifetime',
+    'start year',
+    'average load limit',
+    'percent generation to offset',
+    
+    
+    'name',
+    'source',
+    'notes',
+    'phase',
+    'proposed capacity',
+    'generation capital cost',
+    'operational costs',
+    'proposed generation',
+    'distance to resource',
+    'transmission capital cost',
+    
+    'wind class',
+    'capacity factor',
+    'percent heat recovered',
+    'secondary load',
+    
+    
+    'secondary load cost',
+    'percent o&m',
+    'estimated costs',
+    'est. transmission line cost'
+]
 
-        "project details": IMPORT,#{
+structure = {
+    'Wind Power': {
+        'enabled': bool,
+        'lifetime': int, 
+        'start year': int,
+        'average load limit': float,
+        'percent generation to offset': float,
         
-            #~ 'phase':IMPORT,
-            #~ 'proposed capacity': IMPORT,
-            #~ 'proposed generation': IMPORT,
-            #~ 'distance to resource': IMPORT,
-            #~ 'generation capital cost':IMPORT,
-            #~ 'transmission capital cost': IMPORT,
-            #~ 'operational costs': IMPORT,
-            #~ 'expected years to operation':IMPORT,
-                #~ },
+        'name': str,
+        'source': str,
+        'notes': str,
+        'phase': str,
+        'proposed capacity': [float, str],
+        'generation capital cost': [float, str],
+        'operational costs': [float, str],
+        'proposed generation': [float, str],
+        'distance to resource': float, 
+        'transmission capital cost': [float, str],
         
-        'default distance to resource': 1,
+        
+        'wind class': float,
+        'capacity factor': float,
+        'percent heat recovered': float,
+        'secondary load': bool,
+        
+        
+        'secondary load cost': float, # 
+        'percent o&m': float,
+        'estimated costs': DataFrame,
+        'est. transmission line cost': float,
+    }
+}
 
-        'lifetime': 'ABSOLUTE DEFAULT',
-        'start year': 'ABSOLUTE DEFAULT',
-        
-        'average load limit': 100.0,
-        'percent generation to offset': 1.50,
-        'resource data':'IMPORT',
-         #'minimum wind class': 3,
-        #~ 'generation capital cost': 'UNKNOWN', #  same as generation captial cost
-        'secondary load': True,
-        'secondary load cost': 200000,
-        'road needed for transmission line' : True,
-        'est. transmission line cost': { True:500000, False:250000},
-        'costs': 'IMPORT',
-        'percent o&m': .01,
-        'percent heat recovered': .20,
-        }
-      
-## default values for yaml key/Value pairs
-yaml_defaults = {'enabled': True,
-        'lifetime': 20,
-        'start year': 2020,
-        }
-
-## order to save yaml
-yaml_order = ['enabled', 'lifetime', 'start year']
-
-## comments for the yaml key/value pairs
-yaml_comments = {'enabled': '',
-        'lifetime': 'number years <int>',
-        'start year': 'start year <int>',
-        'average load limit': 
-                'lower limit in kW on average load required to do project',
-        'percent generation to offset': '',
-        'minimum wind class': 'minimum wind class for feasibility',
-        'secondary load': '',
-        'secondary load cost': '',
-        'road needed for transmission line':'',
-        'distance to resource': 'miles defaults to 1 mile',
-        'est. transmission line cost': 'cost/mile',
-        'assumed capacity factor': "TODO read in preprocessor",
-        'percent heat recovered': '% as decimal <float>',
-        }
-        
-## list of data keys not to save when writing the CommunityData output
-yaml_not_to_save = ['costs']
+comments = {
+    'enabled': 'bool',
+    'lifetime': 'int', 
+    'start year': 'int',
+    'average load limit': 'float',
+    'percent generation to offset': 'float',
+    
+    
+    'name': 'str',
+    'source': 'str',
+    'notes': 'str',
+    'phase': 'str',
+    'proposed capacity': 'f[float, str]',
+    'generation capital cost': 'f[float, str]',
+    'operational costs': 'f[float, str]',
+    'proposed generation': 'f[float, str]',
+    'distance to resource': 'float', 
+    'transmission capital cost': 'f[float, str]',
+    
+    
+    'wind class': 'float',
+    'capacity factor': 'float',
+    'percent heat recovered': 'float',
+    'secondary load': 'bool',
+    
+    
+    'secondary load cost': 'float', # 
+    'percent o&m': 'float',
+    'estimated costs': 'DataFrame',
+    'est. transmission line cost': 'float',
+}
 
 ## list of prerequisites for module
 prereq_comps = []

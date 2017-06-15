@@ -22,8 +22,8 @@ class RunCommand(pycommand.CommandBase):
     optionList = (
             ('dev', ('d', False, "use only development communities")),
             ('log', ('l', "<log_file>", "name/path of file to log outputs to")),
-            ('plot',('p', '<directory>', 
-                        "run the ploting functionality and save in directory")),
+            #~ ('plot',('p', '<directory>', 
+                        #~ "run the ploting functionality and save in directory")),
             ('force',('f', False, "force overwrite of existing directories")),
             ('tag',('t', '<tag>', "tag for results directory")),
             ('scalers', ('s', '<scalers>',
@@ -61,10 +61,10 @@ class RunCommand(pycommand.CommandBase):
         
         if os.path.isfile(base):
         #run script
-            print 'Runnint script ...'
+            #~ print 'Runnint script ... need to reimplement'
             
             try:
-                script  = driver.script_validator(base)
+                script = driver.script_validator(base)
             except StandardError as e:
                 cli_lib.print_error_message('SCRIPT ERROR:\n' + str(e))
                 return 0
@@ -75,7 +75,7 @@ class RunCommand(pycommand.CommandBase):
                 res_dir += '_' + script['global']['results tag']
             base = script['global']['root']
             
-            #~ print os.path.join(base, res_dir)
+            #~ ## print os.path.join(base, res_dir)
             if os.path.exists(os.path.join(base, res_dir)) and force:
                 shutil.rmtree(os.path.join(base, res_dir))
             elif os.path.exists(os.path.join(base, res_dir)):
@@ -88,18 +88,15 @@ class RunCommand(pycommand.CommandBase):
             run_driver = driver.Driver(base)
             
             for com in script['communities']:
-                print 'community:', com['community'], 'name:', com['name']
+                print 'community:', com['community'], 'name:', com['ID']
                 try:
-                    mult = script['global']['construction multipliers']
-                    run_driver.run(com['community'], com['name'],
-                                   i_dir = com['input files'],
-                                   c_config = com['config'],
-                                   g_config = script['global']['config'],
-                                   img_dir = script['global']['image diretory'],
-                                   plot = script['global']['plot'],
-                                   tag = script['global']['results tag'],
-                                   c_mult = mult,
-                                   scalers = com['scalers'])
+                    #~ print com['config']
+                    run_driver.run(
+                        com['config'],
+                        #~ global_config = script['global']['global config'],
+                        tag = script['global']['results tag'],
+                        scalers = com['scalers'],
+                        alt_save_name = com['ID'])
                 except (RuntimeError, IOError) as e:
                     print e
                     msg = "RUN ERROR: "+ com['community'] + \
@@ -127,7 +124,8 @@ class RunCommand(pycommand.CommandBase):
                 coms = self.args[1:]
                 if len(coms) == 1:
                     if coms[0][-1] == '*':
-                        coms = [c for c in cli_lib.get_config_coms(base) if c.find(coms[0][:-1]) != -1]
+                        coms = [c for c in cli_lib.get_config_coms(base) \
+                            if c.find(coms[0][:-1]) != -1]
                         #~ print coms
                     else:
                         # Regional coms
@@ -146,11 +144,11 @@ class RunCommand(pycommand.CommandBase):
                     cli_lib.print_error_message(msg)
                     return 0
             # other options
-            plot = False
-            img_dir = None
-            if not self.flags.plot is None:
-                plot = True    
-                img_dir = self.flags.plot
+            #~ plot = False
+            #~ img_dir = None
+            #~ if not self.flags.plot is None:
+                #~ plot = True    
+                #~ img_dir = self.flags.plot
             
             tag = ''
             if not self.flags.tag is None:
@@ -187,6 +185,7 @@ class RunCommand(pycommand.CommandBase):
                 return 0
             
             ## Run 
+            #~ print sorted(coms)
             run_driver = driver.Driver(base)
             for com in sorted(coms):
                 if com == 'Barrow':
@@ -194,8 +193,8 @@ class RunCommand(pycommand.CommandBase):
                 else:
                     print com
                 try:
-                    run_driver.run(com, img_dir = img_dir,
-                                    plot = plot, tag = tag, scalers = scalers)
+                    pth = os.path.join(base,'config',com + '.yaml')
+                    run_driver.run(pth, tag = tag, scalers = scalers)
                                     
                 except (RuntimeError, IOError) as e:
                     print e
@@ -206,7 +205,8 @@ class RunCommand(pycommand.CommandBase):
             # save summaries
             try:
                 run_driver.save_summaries(tag)
-            except IOError:
+            except IOError as e:
+                print e
                 msg = "RUN ERROR: No valid communities/projects provided"
                 cli_lib.print_error_message(msg)
                 return 0

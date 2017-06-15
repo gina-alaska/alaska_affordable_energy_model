@@ -9,56 +9,59 @@ import os.path
 from pandas import read_csv
 import shutil
 
-## List of raw data files required for wind power preproecssing 
-raw_data_files = ['ashp_climate_data.csv',"ashp_perfromance_data.csv"]
-
-## preprocessing functons 
-def preprocess_header (ppo):
-    """generate the header for the preprocessed file
+            
+## preprocess the existing projects
+def preprocess (preprocessor, **kwargs):
+    """preprocess data related to existing projects
     
     Parameters
     ----------
-    ppo: preprocessor.Proprocessor
+    preprocessor: preprocessor.Proprocessor
         a preprocessor object
         
     Returns
     -------
-    retruns a comment for the start of the file
+    list
+        project names
     
     """
-    return  "# " + ppo.com_id + "ashp data\n"+ \
-            ppo.comments_dataframe_divide
+    comp_name = kwargs['ashp_type']
+    cost_per_btu_hrs = kwargs['ashp_cost_per_btu_hrs']
+    btu_hrs = kwargs['ashp_btu_hrs']
+    
+    start_year = preprocessor.data['community']['current year'] + 1
+    
+    data = read_csv(
+        os.path.join(preprocessor.data_dir, "ashp_climate_data.csv"),
+        comment = '#',
+        index_col = 0
+    )
+    ids = [preprocessor.communities[0],preprocessor.aliases[0]]
+    if preprocessor.intertie_status == 'child':
+        ids = [preprocessor.communities[1],preprocessor.aliases[1]]
+    climate_data = data.ix[ids][data.ix[ids].isnull().all(1) == False]
+    climate_data =  climate_data.T
+    climate_data.columns = ['value']
+    climate_data.index.name = 'key'
+    performance_data = read_csv(
+        os.path.join(preprocessor.data_dir,'ashp_perfromance_data.csv')
+    )
+    return {
+        comp_name: {
+            'enabled': True, # 
+            'lifetime': 15, # number years <int>
+            'start year': start_year, # start year <int>
+            'btu/hrs': btu_hrs,
+            'cost per btu/hrs': cost_per_btu_hrs,
+            'o&m per year': 320,
             
-def preprocess (ppo):
-    """Preprocess air source heat pump data into csv files used by model 
-    component.
-    
-    Parameters
-    ----------
-    ppo: preprocessor.Proprocessor
-        a preprocessor object
-    """
-    data = read_csv(os.path.join(ppo.data_dir,"ashp_climate_data.csv"),
-                        comment = '#',index_col = 0)#.ix[ppo.com_id]
-
-    data = ppo.get_communities_data(data).T
-    out_file = os.path.join(ppo.out_dir,"ashp_climate_data.csv")
-
-    fd = open(out_file,'w')
-    fd.write(preprocess_header(ppo))
-    fd.write('key,value\n')
-    fd.close()
-
-    # create data and uncomment this
-    data.to_csv(out_file, mode = 'a',header=False)
-    
-    ppo.MODEL_FILES['ASHP_DATA'] = "ashp_climate_data.csv" # change this
-    
-    
-    shutil.copy(os.path.join(ppo.data_dir,"ashp_perfromance_data.csv"),
-                        ppo.out_dir)
-    
-    ppo.MODEL_FILES['ASHP_PERFROMANCE_DATA'] = "ashp_perfromance_data.csv" 
-
-## list of wind preprocessing functions
-preprocess_funcs = [preprocess]
+            'data': climate_data,
+            'perfromance data': {
+                'COP': performance_data['COP'].tolist(),
+                'Temperature': performance_data['Temperature'].tolist(),
+                'Percent of Total Capacity': 
+                    performance_data['Percent of Total Capacity'].tolist()
+            }
+            
+        }
+    }

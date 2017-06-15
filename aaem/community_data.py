@@ -1,130 +1,199 @@
 """
-community_data.py
-ross spicer
-created: 2015/09/16
-
-     community data module
+Community Data
+--------------
+    Module for managing Input data for AAEM
 """
 from pandas import read_csv, DataFrame
 import yaml
 import os.path
 import numpy as np
-## w&ww - water and wastewater
-## it - intertie
-## fc - forecast
-## com - non-residential buildings 
-from diesel_prices import DieselProjections
-from defaults import build_defaults, save_config
-from diagnostics import diagnostics
-#~ from preprocessor import MODEL_FILES
-from aaem.components import comp_lib, comp_order
-
 from importlib import import_module
 
-import aaem.config as config
 
-PATH = os.path.join
+from defaults import base_structure, base_comments
+from diagnostics import Diagnostics
+from aaem.components import comp_lib, comp_order
+## read in config IO stuff, it's two lines because it was too long for one
+from aaem.config_IO import read_config, merge_configs, save_config
+from aaem.config_IO import validate_dict
+
+
 class CommunityData (object):
-    """ Class doc """
+    """This class manages the input data for the an AAEM model instance
+    """
     
-    def __init__ (self, community = None, model_root = None, 
-                        alt_data_dir = None,
-                        alt_community_conf = None, 
-                        alt_global_conf = None,
-                        alt_construction_multipliers = None,
-                        diag = None, tag = None, 
-                        scalers = {'diesel price':1.0, 'diesel price adder':0}):
-        """
-            set up the object
+    def __init__ (self, community_config, global_config = None, diag = None, 
+        scalers = {'diesel price':1.0, 'diesel price adder':0},
+        intertie_config = None):
+        """This class manages the input data for the an AAEM model instance
         
-        pre-conditions:
-            data_dir: should be a directory 
-                it should contain:
-                    com_building_estimates.csv,
-                    community_buildings.csv,
-                    com_num_buildings.csv,
-                    cpi.csv,
-                    diesel_fuel_prices.csv,
-                    heating_degree_days.csv,
-                    current_interties.csv,
-                    population_projections.csv,
-                    prices.csv,
-                    region.csv,
-                    residential.csv,
-                    wastewater_data.csv,
-                    yearly_electricity_summary.csv,
-            community_conf: a community_data.yaml file
-            global_conf: optionally a community_data.yaml file
-        post-conditions:
-            the community data object is initialized
-        """
-        if not community is None and not model_root is None:
-            if not alt_data_dir is None or \
-               not alt_community_conf is None or \
-               not alt_global_conf is None or \
-               not alt_construction_multipliers is None:
-                raise RuntimeError, ('Too may arguments, please provide only '
-                                     '"community" and "model_root"  or '
-                                     '"alt_data_dir" and "alt_community_conf"'
-                                     ' and  "alt_global_conf" and '
-                                     '"alt_construction_multipliers"')
-            community_conf = os.path.join(model_root, 'config',
-                                            community + '_config.yaml')
-            global_conf = os.path.join(model_root, 'config',
-                                            '__global_config.yaml')
-            data_dir = os.path.join(model_root, 'input_files', 
-                                            community.replace(' ','_'))
-            construction_multipliers = os.path.join(model_root, 'config',
-                                            '__regional_multipliers.yaml') 
-        elif not alt_data_dir is None and not alt_community_conf is None and\
-             not alt_global_conf is None and \
-             not alt_construction_multipliers is None:
-            data_dir = alt_data_dir
-            community_conf = alt_community_conf
-            global_conf = alt_global_conf
-            construction_multipliers = alt_construction_multipliers
-        else:
-            raise RuntimeError, ('Not enough arguments, please provide only '
-                                     '"community" and "model_root"  or '
-                                     '"alt_data_dir" and "alt_community_conf"'
-                                     ' and  "alt_global_conf" '
-                                     '"alt_construction_multipliers"')
+        Parameters
+        ----------
+        community_config: path to yaml file or dict
+            the dictionary or dictionary that would be loaded from the yaml file 
+        should match the format to be validated for the model to run, unless
+        global_config is also provided, in which case all config values not 
+        provided here have values in global_config
+        global_config: path to yaml file or dict, optional
+            Optional second config file of values that can be applied to many
+        model instances
+        diag: Diagnostics, optional
+            AAEM Diagnostics object for tracking messages from model
+        scalers: Dict, optional
+            Scalers to change model behaviour. The keys 'diesel price' and
+        'diesel price adder' are used in CommunityData, and will be multiplied 
+        or added to the diesel prices respectively. This will carry over into
+        the electirc non-fuel prices.
         
-        self.tag = tag
-        self.percent_diesel = 0
+        Attributes
+        ----------
+        data: Dict
+            Configuration data for model instance
+        diagnostics:Diagnostics
+            AAEM Diagnostics object for tracking messages from model
+        intertie: str, or None
+            status to track intertie placment, 'parent', 'child', or None
+        intertie_data: CommunityData
+            config data for the entire intertie if community is a 
+        child community 
+        
+        
+        """
         self.diagnostics = diag
         if diag == None:
-            self.diagnostics = diagnostics()
+            self.diagnostics = Diagnostics()
             
-        self.load_input(community_conf, global_conf)
-        self.data_dir = data_dir
-        self.get_csv_data()
-        
-        self.set_item("community","diesel prices",
-                        DieselProjections(data_dir, scalers['diesel price'],
-                                                    scalers['diesel price adder']))
+        if type(community_config) is dict and type(global_config) is dict:
+            self.data = merge_configs(self.load_structure(), global_config)
+            self.data = merge_configs(self.data, community_config)
+        else: 
+            self.data = self.load_config(community_config, global_config)
+            
+            
+        valid, reason = self.validate_config()
+        if not valid:
+            raise StandardError, 'INVALID CONFIG FILE: ' + reason
 
-        if self.get_item("community", "model electricity"):
-            self.calc_non_fuel_electricty_price ()
+        self.intertie = None
+        
+        intertie = self.get_item('community', 'intertie')
+        if type (intertie) is list:
+            if self.get_item('community', 'model as intertie') :
+                self.intertie = 'parent'
+            else:
+                self.intertie = 'child'
+         
+        self.intertie_data = None
+        
+        ## load if community is part of an intertie but not the intertie 
+        ## it's self. I.E. load info for Bethel or Oscarville,
+        ## but not Bethel_intertie
+        if not self.intertie is None and \
+                not self.get_item('community', 'model as intertie'):
+            self.diagnostics.add_note(
+                'Community Data',
+                'Attempting to find intertie data'
+            )
+            ## is the intertie_config a dict of file, also use same globals
+            if type(intertie_config) is dict \
+                    or (type(intertie_config) is str \
+                    and os.path.isfile(intertie_config)):
+                self.diagnostics.add_note(
+                    'Community Data',
+                    'using provided intertie_config argument'
+                )
+                self.intertie_data = CommunityData(
+                    intertie_config, 
+                    global_config,
+                    self.diagnostics,
+                    scalers
+                )
+            ## try to find the file
+            elif os.path.isfile(community_config):
+                rt_path = os.path.split(community_config)
+                it_file = \
+                    self.get_item('community','intertie')[0].\
+                        replace(' ','_').replace("'",'')\
+                     + '_intertie.yaml'
+                it_file = os.path.join(rt_path[0], it_file)
+                if os.path.isfile(it_file):
+                    self.diagnostics.add_note(
+                        'Community Data',
+                        'Found interte data at ' + it_file
+                    )
+                    
+                    self.intertie_data = CommunityData(
+                        it_file,
+                        global_config,
+                        self.diagnostics,
+                        scalers
+                    )
+            else:
+                self.diagnostics.add_note(
+                    'Community Data',
+                    'Could not find intertie_data Leaving it as None'
+                )
+                ## self.intertie_data = None is initlized 
+                
+                        
+        ## component spesifc plugins
+        for comp in comp_order:
+            config = import_module("aaem.components." + comp_lib[comp]).config
+            try:
+                plugins = config.plugins
+            except AttributeError:
+                continue
+                
+            for plugin in plugins:
+                plugin(self, community_config, global_config, scalers)
+         
+        convert = self.data['community']['diesel prices']
+        convert.index = [int(y) for y in convert.index]
+        convert.index.name = 'year'
+        convert = self.data['community']['electric non-fuel prices']
+        convert.index = [int(y) for y in convert.index]
+        convert.index.name = 'year'
+        # modify diesel prices and electric non-fuel prices
+        self.apply_scalers(scalers)
+
+    
         self.check_auto_disable_conditions ()
         
-        self.load_construction_multipliers(construction_multipliers)
+        #~ self.load_construction_multipliers(construction_multipliers)
+    def apply_scalers(self, scalers):
+        """apply scalers to inupt variables
         
-    def load_construction_multipliers (self, cm_file):
+        Parameters
+        ----------
+        scalers: Dict
+            Scalers to change model behaviour. The keys 'diesel price' and
+        'diesel price adder' are used in CommunityData, and will be multiplied 
+        or added to the diesel prices respectively. This will carry over into
+        the electirc non-fuel prices. 
         """
-        input:
-            cm_file: path to construction mulitplier yaml file <string>
+        ## diesel 
+        if scalers['diesel price'] != 1 or scalers['diesel price adder'] != 1:
+            self.diagnostics.add_note(
+                'Community Data', 
+                'Adjusting disel and electric non-fuel prices'
+            )
+        else:
+            return
+        
+        self.data['community']['diesel prices'] = \
+            self.data['community']['diesel prices'] * scalers['diesel price'] +\
+            scalers['diesel price adder']
             
-        postconditions:
-            item 'community','construction multiplier' is set
-        """
-        if self.get_item('community','construction multiplier') == 'IMPORT':
-            if cm_file is None:
-                raise ValueError, "NO Construction multipliers"
-            
-            with open(cm_file) as f:
-                cm = yaml.load(f)[self.get_item('community', 'region')]
-            self.set_item('community','construction multiplier',cm)
+        
+        ## electric
+        percent_diesel = \
+            float(self.data['community']['percent diesel generation']) / 100.0
+        efficiency = \
+            float(self.data['community']['diesel generation efficiency'])
+        adder = percent_diesel * \
+            self.data['community']['diesel prices'] / efficiency
+        self.data['community']['electric non-fuel prices'] = \
+            float(self.data['community']['electric non-fuel price']) + adder
     
     def check_auto_disable_conditions  (self):
         """
@@ -140,8 +209,13 @@ class CommunityData (object):
                     #~ ("(Checking Inputs) Water Wastewater system type unknown."
                      #~ " Fixing by disabling Wastewater component at runtime"))
         
+    def modify_diesel_prices(self,
+        scalers = {'diesel price':1.0, 'diesel price adder':0}):
+            
+        pass
     
-    def calc_non_fuel_electricty_price (self, N_slope_price = .15):
+    
+    def modify_non_fuel_electricty_prices (self, N_slope_price = .15):
         """
         calculate the electricity price
         
@@ -155,104 +229,10 @@ class CommunityData (object):
                        values indexed by year
         """
         # TODO: 1 is 100% need to change to a calculation
-        
-        generation_eff = self.get_item("community",
-                                            "diesel generation efficiency")
-        percent_diesel = self.get_item('community','generation numbers')\
-                         ['generation diesel'].fillna(0)/\
-                         self.get_item('community',"generation")
-        percent_diesel = float(percent_diesel.values[-1])
-        start = self.get_item('community','current year')
-        end = self.get_item('forecast','end year')
+        pass
     
-        
-        name = self.get_item("community","name")
-        name = name.split('+')[0]
-        #~ try:
-           #~ parent = self.parent
-        #~ except AttributeError:
-           #~ parent = None
-        #~ print  
-        #~ print self.intertie
-        if not self.intertie is None:
-            #~ print "INTERTIED"
-            name = self.parent
-            name = name.replace(" ","_")
-            self.diagnostics.add_note('Community Data', 
-                ("using intertie parent diesel prices, % diesel generation, "
-                 "genneration efficiency and electric price adders for"
-                 " calculating the electric price"))
-            parent_data_dir = os.path.join(os.path.split(self.data_dir)[0],name)
-            parent_data_dir += '_intertie'
-            parent_prices = DieselProjections(parent_data_dir)
-            
-            
-            ### GET THE PARENTS GENERATION INFO
-            elec_summary = os.path.join(parent_data_dir,
-                                            "yearly_electricity_summary.csv")
-            elec_summary = read_csv(elec_summary, comment = '#', index_col=0, 
-                                    header=0)
-                  
-            generation_eff = \
-                np.float(elec_summary['efficiency'].values[-3:].mean())
-            gen_diesel = elec_summary['generation diesel']
-            net_gen = elec_summary["net generation"]
     
-                    
-            percent_diesel = gen_diesel.fillna(0)/net_gen
-        
-            percent_diesel = float(percent_diesel.values[-1])
-            
-            prices = os.path.join(parent_data_dir,"prices.csv")
-            
-            prices = read_csv(prices, comment = '#', index_col=0, header=0)
-            #~ print prices
-            enf_cost = np.float(prices.ix["elec non-fuel cost"])
-            self.set_item("community","elec non-fuel cost", enf_cost)
-            
-            diesel_prices_for_generation = \
-                        parent_prices.get_projected_prices(start,end)
-        else:
-            enf_cost = self.get_item("community","elec non-fuel cost")
-            diesel_prices_for_generation = \
-                    self.get_item("community","diesel prices").\
-                        get_projected_prices(start,end)
-    
-        
-        adder = percent_diesel * diesel_prices_for_generation / generation_eff
-        
-        adder[np.isnan(adder)] = 0 
-        self.percent_diesel =  percent_diesel
-        #~ print self.get_item("community","elec non-fuel cost")
-        #~ print adder
-        price = enf_cost + adder
-        #~ print self.get_item("community","elec non-fuel cost")
-        
-        start_year = self.get_item("community","diesel prices").start_year
-        years = range(start_year,start_year+len(price))
-        self.electricity_price = price
-        if self.get_item('community',"region") == "North Slope":
-            self.electricity_price = [N_slope_price for y in  years]
-        df = DataFrame({"year":years,
-                        "price":self.electricity_price}).set_index("year")
-        #~ print df
-        self.set_item("community","electric non-fuel prices",df)
-    
-    def read_config (self, config_file):
-        """
-        read a .yaml config file
-        
-        pre: 
-            config_file is in the .yaml format
-        post:
-            returns a library generated from .yaml file
-        """
-        fd = open(config_file, 'r')
-        lib = yaml.load(fd)
-        fd.close()
-        return lib
-    
-    def validate_config(self, lib):
+    def validate_config(self):
         """
         validate a config library
         
@@ -261,107 +241,52 @@ class CommunityData (object):
         post:
             returns true if lib is a valid config object; otherwise false
         """
-        self.load_valid_keys()
-        if not set(lib.keys()).issubset(set(self.valid_keys.keys())):
-            return False
-        for section in lib:
-            if not set(lib[section].keys())\
-                            .issubset(set(self.valid_keys[section])):
-                return False
-        return True
+        return validate_dict(self.data, self.load_structure())
         
-    def load_valid_keys (self):
+        
+        
+    def load_structure (self):
         """ 
-        load valid library structure
-        
-        pre:
-            absolout_defaults.yaml shoud have all of the keys nessaey for 
-        config files
-        post:
-            self.valid keys is a dict of sections with lists of keys as values
-        ex. {section1:{key1,key2,key3}, section2:{keyA,keyB,keyC}}
+
         """
-        #~ absolutes = os.path.join("absolute_defaults.yaml")
-        #~ lib = self.read_config(absolutes)
-        
         try:
-            if self.valid_keys:
-                pass
+            return self.structure
         except AttributeError:
+            pass
         
-            lib = build_defaults(comp_lib)
-            #~ lib = yaml.load(absolute)
-            #~ print lib
-            keys = {}
-            for section in lib:
-                temp = []
-                for key in lib[section]:
-                    temp.append(key)
-                keys[section]=temp
-            self.valid_keys = keys
+        structure = base_structure
         
-    def load_input(self, community_file, defaults_file = "defaults"):
+        for comp in comp_lib:
+            module = \
+                import_module('aaem.components.' + comp_lib[comp] + '.config')
+            structure = merge_configs(structure, module.structure)
+            
+        self.structure = structure
+        return structure
+        
+    def load_config (self, community_file, global_file = None):
         """ 
         loads the input files and creates the model input object
         
         pre: 
             community_file, and defaults should be .yaml files
         post:
-            self.model_inputs is is usable
+            self.data is is usable
         """
-        cwd = os.path.dirname(os.getcwd())
+        community = read_config(community_file)
         
-        #~ absolutes = os.path.join("absolute_defaults.yaml")
-        defaults = defaults_file
-        overrides = community_file
+        global_ = {}
+        if not global_file is None:
+            global_ = read_config(global_file)
         
+        return merge_configs(
+            merge_configs(
+                self.load_structure(),
+                global_
+            ),
+            community
+        )
         
-        #~ absolute_defaults = self.read_config(absolutes)
-        #~ absolute_defaults = yaml.load(absolute)
-        absolute_defaults = build_defaults(comp_lib)
-        if defaults_file == "defaults":
-            client_defaults = absolute_defaults
-        else:
-            client_defaults = self.read_config(defaults) 
-        client_inputs = self.read_config(overrides) 
-        
-        if not self.validate_config(absolute_defaults):
-            raise RuntimeError, \
-                    "absolute defaults do not meet the config standards"
-        if not self.validate_config(client_defaults):
-            raise RuntimeError, \
-                    "client defaults do not meet the config standards"
-        if not self.validate_config(client_inputs):
-            raise RuntimeError, \
-                    "client inputs do not meet the config standards"
-        
-        self.glom_config_files(client_inputs, 
-                                client_defaults, absolute_defaults)
-    
-        
-    def glom_config_files (self, client_inputs, 
-                            client_defaults, absolute_defaults):
-        """ 
-        take the defaults and overrides and combine in right order 
-        
-        pre:
-            client_inputs, client_defaults, absolute_defaults are valid config
-        libraries
-        post:
-            self.model_inputs is a valid library 
-        """
-        self.model_inputs = {}
-        for section in absolute_defaults:
-            temp = {}
-            for key in absolute_defaults[section]:
-                try:
-                    temp[key] = client_inputs[section][key]
-                except KeyError as e:
-                    try:
-                        temp[key] = client_defaults[section][key]
-                    except KeyError as e:
-                            temp[key] = absolute_defaults[section][key]
-            self.model_inputs[section] = temp
 
 
     def get_item (self, section, key):
@@ -369,401 +294,42 @@ class CommunityData (object):
         get an item 
         
         pre:
-            self.model_inputs exists
+            self.data exists
             section is a config section, and key is a key in said section
         post:
             returns an item 
         """
-        return self.model_inputs[section][key]
+        return self.data[section][key]
         
     def get_section (self, section):
         """
         gets a sction
         pre:
-            self.model_inputs exists
+            self.data exists
             section is a config section
         post:
             returns a section library 
         """
-        return self.model_inputs[section]
+        return self.data[section]
         
     def set_item (self, section, key, data):
         """
         set an item 
         
         pre:
-            self.model_inputs exists
+            self.data exists
             section is a config section, and key is a key in said section, and 
         data is the type that make sense there.
         post:
-            self.model_inputs[section][key] is data 
+            self.data[section][key] is data 
         """
-        self.model_inputs[section][key] = data
+        self.data[section][key] = data
         
-    def get_csv_data (self):
-        """ 
-        get the data that comes from the csv files
-        
-        pre: 
-            self.model_inputs exits
-            files listed in __init__ shild be in the data_dir
-        post:
-            csvitems are in self.model_inputs 
-        """
-        IMPORT_FLAGS = ("IMPORT", "--see input_data")
-        
-        self.community = self.get_item('community','name')
-        ## load preprocessed files
-        if self.get_item('forecast', "population") in IMPORT_FLAGS:
-            self.set_item('forecast', "population", 
-                          self.load_pp_csv("population_projections.csv"))
     
-        if self.get_item('community',"HDD") in IMPORT_FLAGS:
-            try:
-                self.set_item('community',"HDD", 
-                          int(self.load_pp_csv("heating_degree_days.csv").values[0][0]))
-            except IOError:
-                raise IOError, "Heating Degree Days summary not found"
         
-        
-        for comp in comp_lib:
-            c = comp_lib[comp]
-            #~ print c,',' ,comp
-            lib = import_module("aaem.components." + c).yaml_import_lib
-            keys = lib.keys()
-            for k in keys:
-                if self.get_item(comp, k) in IMPORT_FLAGS:
-                    
-                    # if is this a project fake a 'projcet dir' 
-                    data_dir = self.data_dir
-                    if k == 'project details' and not self.tag is None:
-                        data_dir = os.path.join(os.path.split(data_dir)[0], 
-                                    os.path.split(data_dir)[1]+'+'+self.tag)
-                    self.set_item(comp,k, lib[k](data_dir))
-                    
-             
-        if self.get_item('community','on road system') in IMPORT_FLAGS:
-            self.set_item('community','on road system', road_import(data_dir))
-        
-        
-        
-            
-        
-        
-        
-        #~ if  self.get_item('residential buildings','data') in IMPORT_FLAGS:
-            #~ self.set_item('residential buildings','data',
-                          #~ self.load_pp_csv("residential_data.csv"))
-            
-            #~ self.get_item('residential buildings','data').\
-                        #~ ix["Notes"]['value'] = np.nan
-            
-            #~ if self.get_item('residential buildings','data').\
-                    #~ ix["average kWh per house"]['value'] == "CALC_FOR_INTERTIE":
-                #~ self.get_item('residential buildings','data').\
-                        #~ ix["average kWh per house"]['value'] = np.nan
-                        
-            #~ self.get_item('residential buildings','data')['value'] =\
-                        #~ self.get_item('residential buildings',
-                                #~ 'data')['value'].astype(float)
-
-        #~ if self.get_item('Water & Wastewater Efficiency', "data") in IMPORT_FLAGS:
-            #~ self.set_item('Water & Wastewater Efficiency', "data", 
-                          #~ self.load_pp_csv("wastewater_data.csv"))
-
-        region = self.load_pp_csv("region.csv")
-        if self.get_item('community',"region") in IMPORT_FLAGS:
-            self.set_item('community',"region", region.ix["region"][0])
-        if self.get_item('community',"senate district") in IMPORT_FLAGS:
-            self.set_item('community',"senate district", 
-                region.ix["senate district"][0])
-        if self.get_item('community',"house district") in IMPORT_FLAGS:
-            self.set_item('community',"house district", 
-            region.ix["house district"][0])
-        if self.get_item('community',"heating fuel premium") in IMPORT_FLAGS:  
-            
-            premium = float(region.ix["premium"][0]) 
-            if premium < 0:
-                premium = 0.0
-                self.diagnostics.add_note("heating fuel premium", 
-                    "premium was less than 0, using 0")
-            self.set_item('community',"heating fuel premium", premium)
-                         
-        try:
-            prices = self.load_pp_csv("prices.csv")
-        except IOError:
-            if self.get_item('community',
-                                    "res non-PCE elec cost") in IMPORT_FLAGS \
-              and self.get_item('community',
-                                        "elec non-fuel cost") in IMPORT_FLAGS:
-                #~ raise IOError, "Prices not found"
-                self.diagnostics.add_error("Community Data", 
-                        ("(reading csv) electricity prices not found."
-                         " Fixing by disabling financial modeling at runtime"))
-                self.set_item("community", "res non-PCE elec cost", False)
-                self.set_item("community", "elec non-fuel cost", False)
-                self.set_item("community", "model financial", False)
-                
-        if self.get_item('community',"res non-PCE elec cost") in IMPORT_FLAGS:
-            self.set_item("community", "res non-PCE elec cost",
-                            np.float(prices.ix["res non-PCE elec cost"]))
-        if self.get_item('community',"elec non-fuel cost") in IMPORT_FLAGS:
-            self.set_item("community", "elec non-fuel cost",
-                            np.float(prices.ix["elec non-fuel cost"]))
-
-        #~ if self.get_item('non-residential buildings',
-                                      #~ "com building estimates") in IMPORT_FLAGS:
-            #~ self.set_item('non-residential buildings',"com building estimates",
-                           #~ self.load_pp_csv("com_building_estimates.csv"))
-                           
-        #~ if self.get_item('non-residential buildings',
-                                        #~ 'com building data') in IMPORT_FLAGS:
-            #~ self.set_item('non-residential buildings','com building data',
-                                    #~ self.load_pp_csv("community_buildings.csv"))
-                                    
-        #~ if self.get_item('non-residential buildings',
-                                        #~ 'number buildings') in IMPORT_FLAGS:
-            #~ self.set_item('non-residential buildings','number buildings',
-                #~ int(self.load_pp_csv("com_num_buildings.csv").ix["Buildings"]))
-                
-        
-        try:
-            # special loading case
-            try:
-                intertie = read_csv(os.path.join(self.data_dir,
-                                                 "current_interties.csv"),
-                                    comment = '#', 
-                                    index_col=0,
-                                    names =['key','value'])
-                self.parent = intertie.ix['parent'].values[0]
-                #~ print self.parent
-                intertie = intertie.T
-                del intertie['parent']
-                intertie = intertie.T
-                com_list = intertie.T.values[0].tolist()[1:]
-                tied = intertie.ix['Plant Intertied'].values[0]
-            except IndexError:
-                intertie = read_csv(os.path.join(self.data_dir,
-                                                 "current_interties.csv"),
-                                    comment = '#', index_col=0).ix[0]
-                self.parent = self.get_item('community','name')
-                #~ print intertie.index
-                tied = intertie.ix['Plant Intertied']
-                com_list = intertie.T.values.tolist()[1:]
-            #~ print intertie.ix['Plant Intertied'].values[0]
-            self.intertie_list = com_list
-            if tied == 'No':
-                intertie = None
-            elif ''.join(com_list).replace("''","") == '':
-                # the list of subcommunites is empty, so for modeling purposes 
-                #no intertie
-                intertie = None
-            else:
-                if self.get_item('community','name') in com_list:
-                    intertie = "child"
-                elif self.get_item('community','name').find('_intertie') != -1:
-                    intertie = 'parent'
-                else:
-                    intertie = "child"
-        except IOError:
-            intertie = None
-        self.intertie = intertie
-        #~ print 'self.intertie ', self.intertie 
-        
-        self.copies = self.load_pp_csv("copies.csv")
-        
-        
-        prices = self.load_pp_csv("prices_non-electric_fixed.csv")
-                
-        if self.get_item('community',"propane price") in IMPORT_FLAGS:
-            self.set_item("community", "propane price",
-                            np.float(prices.ix["Propane"]))
-        if self.get_item('community',"cordwood price") in IMPORT_FLAGS:
-            self.set_item("community", "cordwood price",
-                            np.float(prices.ix["Cordwood"]))
-        if self.get_item('community',"pellet price") in IMPORT_FLAGS:
-            self.set_item("community", "pellet price",
-                            np.float(prices.ix["Pellet"]))
-        
-        limits = self.load_pp_csv("renewable_generation_capacities.csv")
-        if self.get_item('community', 'hydro generation limit') in IMPORT_FLAGS:
-            try:
-                self.set_item('community','hydro generation limit',
-                                float(limits.ix["hydro"]))
-            except ValueError:
-                self.set_item('community','hydro generation limit',
-                                float(0))
-                                
-        if self.get_item('community',
-                        'hydro generation capacity') in IMPORT_FLAGS:
-            try:
-                self.set_item('community','hydro generation capacity',
-                                float(limits.ix["hydro capacity"]))
-            except ValueError:
-                self.set_item('community','hydro generation capacity',
-                                float(0))
-        
-                                
-        if self.get_item('community', 'wind generation limit') in IMPORT_FLAGS:
-            try:
-                self.set_item('community','wind generation limit',
-                                float(limits.ix["wind"]))
-            except ValueError:
-                self.set_item('community','wind generation limit',
-                                float(0))
-                                
-        diesel_data = self.load_pp_csv("diesel_powerhouse_data.csv")
-        
-        if self.get_item('community', 
-                            'switchgear suatable for RE') in IMPORT_FLAGS:
-            sgs = diesel_data.ix['Switchgear Suitable']['value'] == 'Yes'
-            self.set_item('community','switchgear suatable for RE',sgs)
-        
-        if self.get_item('community', 
-                            'heat recovery operational') in IMPORT_FLAGS:
-            hro = diesel_data.ix['Waste Heat Recovery Opperational']\
-                                                            ['value'] == 'Yes'
-            self.set_item('community','heat recovery operational',hro)
-            
-        
-        
-        
-        try:
-            
-            if intertie is None:
-                data_dir = self.data_dir
-            else:
-                data_dir = os.path.split(self.data_dir)[0]
-                parent = self.parent.replace(' ','_')
-                data_dir = os.path.join(data_dir, parent + '_intertie')
-            
-            fpath = os.path.join(data_dir,"yearly_electricity_summary.csv")
-            elec_summary = read_csv(fpath, comment = '#', index_col=0, header=0)
-        except IOError:
-            if self.get_item('community',"line losses") in IMPORT_FLAGS \
-              and self.get_item('community',"diesel generation efficiency") \
-                                        in IMPORT_FLAGS:
-                self.set_item('community','model electricity', False)
-            elec_summary = None
-                #~ raise IOError, "yearly electricity summary not found"
-        
-        if elec_summary is None:
-            consumption = None
-            line_losses = None
-            diesel_gen_eff = None
-            net_gen = None
-            gen_by_type = None
-        else:
-            consumption = elec_summary[["consumption","consumption residential",
-                                "consumption non-residential"]]
-            line_losses = np.float(elec_summary["line loss"].values[-3:].mean())
-            diesel_gen_eff = \
-                np.float(elec_summary['efficiency'].values[-3:].mean())
-            net_gen = elec_summary["net generation"]
-            gen_by_type = elec_summary[['generation diesel', 'generation hydro',
-                                       'generation natural gas',
-                                       'generation wind', 'generation solar',
-                                       'generation biomass']]
-                                
-        if self.get_item('forecast', "electricity") in IMPORT_FLAGS:
-            self.set_item('forecast', "electricity",consumption)
-        
-        
-        if self.get_item('community',"line losses") in IMPORT_FLAGS:
-            if line_losses is None:
-                self.set_item('community',"line losses",line_losses)
-            else:
-                #~ ll = np.float(elec_summary["line loss"][-3:].mean())
-                ll = line_losses
-                if ll < 0.0 or np.isnan(ll):
-                    try:
-                        def_ll = self.get_item('community',
-                            "default line losses")
-                    except KeyError:
-                        def_ll = .1
-                    self.diagnostics.add_note("Line Losses",
-                        ("The lineloss was negative " + str(ll) + " "
-                         "correcting to default "+ str(def_ll) + "."))
-                    ll = def_ll
-                 
-                    
-                try:
-                    max_ll = self.get_item('community',"max line losses")
-                except KeyError:
-                    max_ll = self.get_item('community',"default line losses")
-                if ll > max_ll:
-                    self.diagnostics.add_note("Line Losses",
-                        ("The lineloss " + str(ll) + " was greater than"
-                         " max of "+ str(max_ll) + ". setting to max."))
-                    ll = max_ll
-                
-                self.set_item('community',"line losses",ll)
-    
-        if self.get_item('community',
-                                'diesel generation efficiency')in IMPORT_FLAGS:
-            if diesel_gen_eff is None\
-               or diesel_gen_eff == 0 \
-               or np.isnan(diesel_gen_eff):
-                self.set_item('community','diesel generation efficiency', 
-                                self.get_item('community',
-                                    "default diesel generator efficiency"))
-            else:
-                self.set_item('community','diesel generation efficiency', 
-                                                            diesel_gen_eff)
-        try:
-            if self.get_item('community',"generation") in IMPORT_FLAGS:
-                self.set_item('community',"generation", net_gen)
-            if self.get_item('community','generation numbers') in IMPORT_FLAGS:
-                self.set_item('community','generation numbers', gen_by_type)
-        except:
-            #~ self.diagnostics.add_warning("Community Data", 
-                            #~ "Generation data not available by energy type")
-                        #~ temp = elec_summary[['generation']]
-            #~ temp['generation diesel'] = temp['generation']
-            #~ temp['generation hydro'] = temp['generation'] - \
-                                                #~ temp['generation']
-            #~ temp['generation natural gas'] = temp['generation'] - \
-                                                        #~ temp['generation']
-            #~ temp['generation wind'] = temp['generation'] - \
-                                                    #~ temp['generation']
-            #~ temp['generation solar'] = temp['generation'] - \
-                                                    #~ temp['generation']
-            #~ temp['generation biomass'] = temp['generation'] - \
-                                                    #~ temp['generation']
-    
-            
-            #~ self.set_item('community','generation numbers', temp )
-            
-            self.diagnostics.add_note("Generation Data",
-                        "Generation data not available by energy type")
-        
-        
-    def load_pp_csv(self, f_name):
-        """
-        load a preprocessed csv file
-        
-        pre:
-            f_name must exist in self.data_dir
-        post:
-            returns a data frame from the file
-        """
-        return read_csv(os.path.join(self.data_dir, f_name),
-                        comment = '#', index_col=0, header=0)
 
         
-    
-    def make_csv_name (self, file_key):
-        """
-        create the csv file name
-        
-        pre:
-            file_key is matchs <text1> <text2> ... <text N>
-        post:
-            returns <text1>_<text2>_..._<text N>.csv
-        """
-        return file_key.replace(" ","_")+".csv"
-    
-    def save_model_inputs(self, fname):
+    def save (self, fname):
         """ 
         save the inputs used
         
@@ -774,80 +340,29 @@ class CommunityData (object):
         """
         ## save work around 
         import copy
-
-        copy = copy.deepcopy(self.model_inputs)
-        #~ rel = os.path.relpath(os.path.dirname(fname),os.path.join("model",".."))
-        #~ rt = os.path.join(rel,"input_data")
+        copy = copy.deepcopy(self.data)
         
-        copy['Residential Energy Efficiency']['data'] = "--see input_data"
-        copy['Non-residential Energy Efficiency']['com building data'] =\
-                                                                        "--see input_data"
-        copy['Non-residential Energy Efficiency']["com building estimates"] = \
-                                                                        "--see input_data"
-
-        copy['community']["diesel prices"]="--see input_data"
-        copy['forecast']["electricity"] = "--see input_data"
-        copy['forecast']["population"] = "--see input_data"
-        copy['Water and Wastewater Efficiency']["data"] = "--see input_data"
-        copy["community"]["electric non-fuel prices"] = "--see input_data"
-        copy["community"]["generation numbers"] =  "--see input_data"
-        copy["community"]["generation"] = "--see input_data"
+        
         comment = "config used"
 
-        conf, orders, comments, defaults = \
-            config.get_config(config.non_component_config_sections)
+        #~ conf, orders, comments, defaults = \
+            #~ config.get_config(config.non_component_config_sections)
         
-        for comp in comp_lib:
-            #~ c = comp_lib[comp]
-            #~ print c,',' ,comp
-            cfg = import_module("aaem.components." + comp_lib[comp]+ '.config')
-            order = list(cfg.yaml_order) + \
-                    list(set(cfg.yaml_order) ^ set(cfg.yaml.keys()))
-            orders[comp] = order
-            comments[comp] = cfg.yaml_comments
-            try:
-                #~ if type(cfg.yaml_not_to_save) is dict:
-                for item in cfg.yaml_not_to_save:
-                    copy[comp][item] = "--see input_data"
-            except AttributeError:
-                pass
+        #~ for comp in comp_lib:
+
+            #~ cfg = import_module("aaem.components." + comp_lib[comp]+ '.config')
+            #~ order = list(cfg.yaml_order) + \
+                    #~ list(set(cfg.yaml_order) ^ set(cfg.yaml.keys()))
+            #~ orders[comp] = order
+            #~ comments[comp] = cfg.yaml_comments
             
-        section_order = config.non_component_config_sections + comp_order
-        save_config(fname,copy, comments, section_order, orders, header=comment)
+        #~ section_order = config.non_component_config_sections + comp_order
+        save_config(fname,copy,  {})
         del copy
-        #~ self.model_inputs = copy
+        #~ self.data = copy
         #~ return comment + text
         
 
-## import for road system data #moved from biomass pellet
-def road_import (data_dir):
-    """
-    import the road system boolean
-    """
-    data_file = os.path.join(data_dir, "road_system.csv")
-    data = read_csv(data_file, comment = '#', index_col=0, header=0)
-    data = data['value'].to_dict()
-    on_road = data["On Road/SE"].lower() == "yes"
-    return on_road
-        
-def test(data, overrides, defaults):
-    """ 
-    test the object
-    """
-    cd = CommunityData(data, overrides, defaults)
-    cd.save_model_inputs("cd_test.yaml")
-    cd2 = CommunityData(data, "cd_test.yaml")
-    cd2.save_model_inputs("cd_test2.yaml")
-    fd = open("cd_test.yaml",'r')
-    t1 = fd.read()
-    fd.close()
-    fd = open("cd_test2.yaml",'r')
-    t2 = fd.read()
-    fd.close()
-    os.remove("cd_test.yaml")
-    os.remove("cd_test2.yaml")
-    return {"result":t1 == t2, "text":{1:t1, 2:t2}}
-    
     
     
     

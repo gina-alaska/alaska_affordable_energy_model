@@ -16,33 +16,54 @@ COMPONENT_NAME = "biomass base"
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
 
-## List of yaml key/value pairs
-yaml = {'enabled': False,
-        'lifetime': 'ABSOLUTE DEFAULT',
-        'start year': 'ABSOLUTE DEFAULT',
-        'energy density': 'ABSOLUTE DEFAULT',
-        'data': 'IMPORT',
-        }
-
-## default values for yaml key/Value pairs
-yaml_defaults = {'enabled': True,
-        'lifetime': 20,
-        'start year': 2017,
-        }
+order = [
+    'enabled',
+    'lifetime',
+    'start year',
     
-## order to save yaml
-yaml_order = ['enabled', 'lifetime', 'start year',
-               'energy density', 'data']
+    'cost per btu/hrs',
+    'o&m per year',
+    
+    'sufficient biomass',
+    'peak month % of total',
+    'capacity factor',
+    'energy density',
+]
 
-## comments for the yaml key/value pairs
-yaml_comments = {'enabled': '',
-        'lifetime': 'number years <int>',
-        'start year': 'start year <int>',
-        'energy density': 'BTU/fuel unit (specified in child) <float>',
-        'data': 'biomass data'}
+structure = {
+    COMPONENT_NAME: {
+        'enabled': bool, # 
+        'lifetime': int, # number years <int>
+        'start year': int, # start year <int>
         
-## list of data keys not to save when writing the CommunityData output
-yaml_not_to_save = []
+        'cost per btu/hrs': float,
+        'o&m per year': float,
+        
+        'sufficient biomass': 
+            bool,
+        'peak month % of total':float,
+        'capacity factor': float,
+        
+        'energy density': float,
+        
+    }
+}
 
+comments = {
+    'enabled': '[bool]', # 
+    'lifetime': '[int]', # number years <int>
+    'start year': '[int]', # start year <int>
+    
+    'cost per btu/hrs': '[float]',
+    'o&m per year': '[float]',
+    
+    'sufficient biomass': 
+        '[bool]',
+    'peak month % of total': '[float]',
+    'capacity factor': '[float]',
+    
+    'energy density': '[float]',
+}
+                
 ## list of prerequisites for module
 prereq_comps = ["Non-residential Energy Efficiency",]

@@ -11,7 +11,7 @@ import os
 from aaem.components.annual_savings import AnnualSavings
 from aaem.community_data import CommunityData
 from aaem.forecast import Forecast
-from aaem.diagnostics import diagnostics
+from aaem.diagnostics import Diagnostics
 import aaem.constants as constants
 from config import COMPONENT_NAME, UNKNOWN
 
@@ -82,16 +82,19 @@ class ASHPBase (AnnualSavings):
         except AttributeError:
             self.comp_specs = community_data.get_section(COMPONENT_NAME)
 
-        self.set_project_life_details(self.comp_specs["start year"],
-                                      self.comp_specs["lifetime"],
-                        self.forecast.end_year - self.comp_specs["start year"])
+        self.set_project_life_details(
+            self.comp_specs["start year"],
+            self.comp_specs["lifetime"]
+        )
 
         self.ashp_sector_system = "N/a"
 
         ### ADD other intiatzation stuff
         self.load_prerequisite_variables(prerequisites)
         self.regional_multiplier = \
-                community_data.get_item('community','construction multiplier')
+                community_data.get_item('community',
+                'regional construction multiplier'
+                )
 
     def load_prerequisite_variables (self, comps):
         """Load variables from prerequisites, placeholder for child
@@ -124,6 +127,7 @@ class ASHPBase (AnnualSavings):
                'Avg. Temp (F) OCT','Avg. Temp (F) NOV','Avg. Temp (F) DEC',
                'Avg. Temp (F) JAN','Avg. Temp (F) FEB','Avg. Temp (F) MAR',
                'Avg. Temp (F) APR','Avg. Temp (F) MAY','Avg. Temp (F) JUN']
+        #~ print self.comp_specs['data']
         monthly_temps = self.comp_specs['data'].ix[mtk].astype(float)
 
         monthly_temps = monthly_temps.T
@@ -300,9 +304,10 @@ class ASHPBase (AnnualSavings):
             cost of electricity for ASHP operation per year ($/kWh)
         """
         self.get_electricity_prices()
+        #~ print self.electricity_prices, self.electric_consumption
         cost = self.electricity_prices * self.electric_consumption +\
                                        self.comp_specs["o&m per year"]
-        self.proposed_ashp_operation_cost = cost.values.T[0].tolist()
+        self.proposed_ashp_operation_cost = cost.tolist()
 
     def calc_ashp_system_pramaters (self):
         """Calls each of the functions for caculating the ASHP

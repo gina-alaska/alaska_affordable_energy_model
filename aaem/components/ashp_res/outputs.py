@@ -59,16 +59,23 @@ def communities_summary (coms, res_dir):
                                 (24 * 31)
             try:
                 peak_monthly_btu_hr_hh = ashp.peak_monthly_btu_hr_hh
-                price =  float(ashp.electricity_prices.ix[ashp.start_year])
-                #~ print float(ashp.electricity_prices.ix[ashp.start_year])
             except AttributeError:
                 peak_monthly_btu_hr_hh = 0
+                    
+            try:
+                #~ ashp.get_electricity_prices()
+                price =  ashp.electricity_prices[0]
+                #~ print float(ashp.electricity_prices.ix[ashp.start_year])
+            except AttributeError:
+                
                 price = 0
            
-            try:
-                intertie = coms[c]['community data'].parent
-            except AttributeError:
-                intertie = c
+            intertie = ashp.cd['intertie']
+            if type(intertie) is list:
+                intertie  = intertie[0]
+            else:
+                intertie = ashp.cd['name']
+                
             try:
                 levelized_cost = ashp.levelized_cost_of_energy
             except AttributeError:

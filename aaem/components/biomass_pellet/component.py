@@ -10,7 +10,7 @@ import os
 from aaem.components.annual_savings import AnnualSavings
 from aaem.community_data import CommunityData
 from aaem.forecast import Forecast
-from aaem.diagnostics import diagnostics
+from aaem.diagnostics import Diagnostics
 import aaem.constants as constants
 from config import COMPONENT_NAME, UNKNOWN
 
@@ -106,12 +106,12 @@ class BiomassPellet (bmb.BiomassBase):
         -----
             Accepted scalers: capital costs.
         """
-        self.run = True
+        self.was_run = True
         self.reason = "OK"
         
-        tag = self.cd['name'].split('+')
+        tag = self.cd['file id'].split('+')
         if len(tag) > 1 and tag[1] != 'biomass_pellet':
-            self.run = False
+            self.was_run = False
             self.reason = ("Not a biomass pellet project.")
             return 
         
@@ -127,13 +127,24 @@ class BiomassPellet (bmb.BiomassBase):
               "Not on road or marine highway system, so it is assumed that" +\
               " pellets cannot be delivered cost effectively."
             return
+            
+        if np.isnan(float(self.comp_specs['peak month % of total'])):
+            self.diagnostics.add_warning(self.component_name, 
+                "bad config value for 'peak month % of total'")
+            self.max_boiler_output = 0
+            self.heat_displaced_sqft = 0
+            self.biomass_fuel_consumed = 0
+            self.fuel_price_per_unit = 0
+            self.heat_diesel_displaced = 0
+            self.reason = "bad config value for 'peak month % of total'"
+            return
         
         if self.cd["model heating fuel"]:
             self.calc_heat_displaced_sqft()
             self.calc_energy_output()
             efficiency = self.comp_specs["pellet efficiency"]
             self.calc_max_boiler_output(efficiency)
-            factor = self.comp_specs['data']['Capacity Factor']
+            factor = self.comp_specs['capacity factor']
             self.calc_biomass_fuel_consumed(factor)
             self.calc_diesel_displaced()
             
@@ -184,6 +195,6 @@ class BiomassPellet (bmb.BiomassBase):
             caclulated captial costs for heat recovery ($)
         """
         self.capital_costs = self.max_boiler_output * \
-                                self.comp_specs["cost per btu/hr"]
+                                self.comp_specs["cost per btu/hrs"]
         #~ print self.capital_costs
 

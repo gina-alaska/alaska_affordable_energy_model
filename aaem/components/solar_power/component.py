@@ -10,7 +10,7 @@ import os
 from aaem.components.annual_savings import AnnualSavings
 from aaem.community_data import CommunityData
 from aaem.forecast import Forecast
-from aaem.diagnostics import diagnostics
+from aaem.diagnostics import Diagnostics
 import aaem.constants as constants
 from config import COMPONENT_NAME, UNKNOWN
 
@@ -79,9 +79,10 @@ class SolarPower (AnnualSavings):
         self.comp_specs = community_data.get_section(COMPONENT_NAME)
         self.component_name = COMPONENT_NAME
 
-        self.set_project_life_details(self.comp_specs["start year"],
-                                      self.comp_specs["lifetime"],
-                        self.forecast.end_year - self.comp_specs["start year"])
+        self.set_project_life_details(
+            self.comp_specs["start year"],
+            self.comp_specs["lifetime"]
+        )
                         
         ### ADD other intiatzation stuff
         
@@ -110,13 +111,13 @@ class SolarPower (AnnualSavings):
         -----
             Accepted scalers: capital costs.
         """
-        self.run = True
+        self.was_run = True
         self.reason = "OK"
         
         
-        tag = self.cd['name'].split('+')
+        tag = self.cd['file id'].split('+')
         if len(tag) > 1 and tag[1] != 'solar':
-            self.run = False
+            self.was_run = False
             self.reason = "Not a solar project."
             return 
         
@@ -126,7 +127,7 @@ class SolarPower (AnnualSavings):
         except:
             self.diagnostics.add_warning(self.component_name, 
             "could not be run")
-            self.run = False
+            self.was_run = False
             self.reason = "Could not calculate average load," + \
                             " or proposed generation."
 
@@ -137,7 +138,7 @@ class SolarPower (AnnualSavings):
            not self.proposed_load > 0:
             self.diagnostics.add_note(self.component_name, 
             "model did not meet minimum generation requirments")
-            self.run = False
+            self.was_run = False
             #~ print self.proposed_load, self.average_load, self.comp_specs['average load limit']
             if self.average_load < self.comp_specs['average load limit']:
                 self.reason = "Average load too small for viable solar power."
@@ -201,10 +202,10 @@ class SolarPower (AnnualSavings):
             Proposed sloar power generatiod (kWh/yr)
         """
         self.proposed_load = self.average_load * \
-                        self.comp_specs['percent generation to offset']
+            (self.comp_specs['percent generation to offset'] / 100.0)
         #~ print self.proposed_load
-        existing_RE = self.comp_specs['data']['Installed Capacity'] + \
-                      self.comp_specs['data']['Wind Capacity']
+        existing_RE = self.cd['solar capacity'] + \
+                      self.cd['wind capacity']
         #~ print existing_RE, self.comp_specs['data']['Installed Capacity'], self.comp_specs['data']['Wind Capacity']
         self.proposed_load = max(self.proposed_load - existing_RE, 0)
         
@@ -212,17 +213,18 @@ class SolarPower (AnnualSavings):
                         #~ self.comp_specs['data']['Installed Capacity']               
         
         self.generation_proposed = self.proposed_load *\
-                        self.comp_specs['data']['Output per 10kW Solar PV'] /\
-                        10
+                        self.comp_specs['output per 10kW solar PV'] / 10.0
                         
         self.generation_proposed = self.generation_proposed *\
-                            self.comp_specs['percent solar degradation']**\
-                            np.arange(self.project_life)
+            ((100 - self.comp_specs['percent solar degradation'])/100.0)**\
+            np.arange(self.project_life)
         #~ print 'self.calc_proposed_generation'
         #~ print self.proposed_load
         #~ print self.generation_proposed
         
     def calc_generation_fuel_used (self):
+        """
+        """
         gen_eff = self.cd["diesel generation efficiency"]
         self.generation_fuel_used = self.generation_proposed/gen_eff
         
@@ -249,7 +251,7 @@ class SolarPower (AnnualSavings):
             maintenance cost as a percentage of the captial costs
         """
         self.maintenance_cost = self.capital_costs * \
-                    self.comp_specs['percent o&m']
+            (self.comp_specs['percent o&m']/100.0)
         #~ print "self.calc_maintenance_cost"
         #~ print self.maintenance_cost
     
@@ -267,7 +269,7 @@ class SolarPower (AnnualSavings):
             component_cost = self.proposed_load * self.comp_specs['cost per kW']
             
         powerhouse_cost = 0
-        if not self.cd['switchgear suatable for RE'] and \
+        if not self.cd['switchgear suatable for renewables'] and \
             self.comp_specs['switch gear needed for solar']:
             powerhouse_cost = self.cd['switchgear cost']
             
@@ -287,11 +289,10 @@ class SolarPower (AnnualSavings):
         """
         self.proposed_generation_cost = self.maintenance_cost
         
-        
         price = self.diesel_prices
         # fuel cost + maintance cost
-        self.baseline_generation_cost = (self.generation_fuel_used * price) +\
-                (self.generation_proposed * self.comp_specs['o&m cost per kWh'])
+        self.baseline_generation_cost = (self.generation_fuel_used * price)# +\
+                #~ (self.generation_proposed * self.comp_specs['o&m cost per kWh'])
         
         self.annual_electric_savings = self.baseline_generation_cost - \
                                        self.proposed_generation_cost
@@ -349,7 +350,7 @@ class SolarPower (AnnualSavings):
             output directory
 
         """
-        if not self.run:
+        if not self.was_run:
             #~ fname = os.path.join(directory,
                                    #~ self.component_name + "_output.csv")
             #~ fname = fname.replace(" ","_")

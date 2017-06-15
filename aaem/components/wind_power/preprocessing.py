@@ -11,204 +11,155 @@ import numpy as np
 import shutil
 from yaml import dump
 from config import UNKNOWN
-
-## List of raw data files required for wind power preproecssing 
-raw_data_files = ['wind_class_cf_assumptions.csv',
-                  'wind_kw_costs.csv',
-                  "wind_existing_systems.csv",
-                  #~ "wind_resource_data.csv",
-                  "diesel_powerhouse_data.csv",
-                  #~ 'wind_intertie_wind_classes.csv',
-                  'wind_classes.csv',
-                  "solar_existing_systems.csv",
-                  "wind_projects_potential.csv",
-                  'project_development_timeframes.csv']
-
-## wind preprocessing functons 
-def wind_preprocess_header (ppo):
-    """Generate preprocesed data file header
+import aaem.constants as constants
+import copy
+    
+def preprocess (preprocessor, **kwargs):
+    """preprocess wind power data 
     
     Parameters
     ----------
-        ppo: aaem.prerocessor.Preprocessor
-            a preprocessing object
-            
-    Returns
-    ------- 
-        String of header info
-    """
-    ## TODO Expand
-    return  "# " + ppo.com_id + " wind data\n"+ \
-            ppo.comments_dataframe_divide
-    
-def wind_preprocess (ppo):
-    """Preprocess data wind power data in wind_existing_systems.csv,
-    wind_intertie_wind_classes.csv, and wind_class_cf_assumptions.csv
-    
-    Parameters
-    ----------
-    ppo: preprocessor.Proprocessor
-        a preprocessor object
-    
-    """
-    try:
-        existing = read_csv(os.path.join(ppo.data_dir,"wind_existing_systems.csv"),
-                        comment = '#',index_col = 0).ix[ppo.com_id]
-        existing = existing['Rated Power (kW)']
-    except KeyError:
-        existing = 0
-    #~ #~ print existing
-    wind_classes = read_csv(os.path.join(ppo.data_dir, "wind_classes.csv"),
-                            comment = '#',index_col = 0)
-    try:
-        potential = wind_classes.ix[ppo.com_id]['Assumed Wind Class']
-    except KeyError:
-        potential = 0
-    try:
-        intertie = wind_classes.ix[ppo.com_id+"_intertie"]['Assumed Wind Class']
-    except KeyError:
-        intertie = 0
-        
-    #~ try:
-        #~ potential = read_csv(os.path.join(ppo.data_dir,
-                                #~ "wind_resource_data.csv"),
-                            #~ comment = '#',index_col = 0).ix[ppo.com_id]
-    #~ except KeyError:
-        #~ potential = DataFrame(index = ['Wind Potential','Wind-Resource',
-                                       #~ 'Assumed Wind Class',
-                                       #~ 'Wind Developability','Site Accessible ',
-                                       #~ 'Permittability','Site Availability',
-                                       #~ 'Load','Certainty',
-                                       #~ 'Estimated Generation','Estimated Cost',
-                                       #~ 'Note','Resource Note'])
-                                       
-    #~ try:
-        #~ intertie = read_csv(os.path.join(ppo.data_dir,
-                            #~ "wind_intertie_wind_classes.csv"),
-                            #~ comment = '#',
-                            #~ index_col = 0).ix[ppo.com_id+"_intertie"]
-        #~ intertie = int(intertie['Highest Wind Class on Intertie'])
-    #~ except KeyError:
-        #~ intertie = 0
-
-    try:
-        if intertie > int(potential):
-            potential = intertie
-            ppo.diagnostics.add_note("wind", 
-                    "Wind class updated to max on intertie")
-        
-    except KeyError:
-        pass
-    
-    assumptions = read_csv(os.path.join(ppo.data_dir,
-                                "wind_class_cf_assumptions.csv"),
-                           comment = '#',index_col = 0)
-                           
-    try:
-        solar_cap = read_csv(os.path.join(ppo.data_dir,
-                                "solar_existing_systems.csv"),
-                            comment = '#',index_col = 0).ix[ppo.com_id]
-        solar_cap = solar_cap['Installed Capacity (kW)']
-        if np.isnan(solar_cap):
-            solar_cap = 0
-    except (IOError,KeyError):
-        solar_cap = 0 
-    
-    try:
-        capa = assumptions.ix[int(float(potential))]
-        capa = capa.ix['REF V-VI Net CF']
-    except (TypeError,KeyError):
-        capa = 0
-    #~ print capa
-    
-    #~ #~ print potential
-    out_file = os.path.join(ppo.out_dir,"wind_power_data.csv")
-    #~ #~ print ppo.out_dir,"wind_power_data.csv"
-    fd = open(out_file,'w')
-    fd.write(wind_preprocess_header(ppo))
-    fd.write("key,value\n")
-    fd.write("existing wind," + str(existing) +'\n')
-    fd.write("existing solar," + str(solar_cap) + '\n')
-    fd.write('assumed capacity factor,' +str(capa) +'\n')
-    fd.write('Assumed Wind Class,' +str(potential) +'\n')
-    
-    fd.close()
-
-    #~ df = concat([ww_d,ww_a])
-    #~ potential.to_csv(out_file, mode = 'a',header=False)
-    #~ self.wastewater_data = df
-    ppo.MODEL_FILES['WIND_DATA'] = "wind_power_data.csv"
-    
-def copy_wind_cost_table(ppo):
-    """Copies wind cost table file to each community.
-    
-    Parameters
-    ----------
-    ppo: preprocessor.Proprocessor
-        a preprocessor object
-    """
-    data_dir = ppo.data_dir
-    out_dir = ppo.out_dir
-    shutil.copy(os.path.join(data_dir,"wind_kw_costs.csv"), out_dir)
-    ppo.MODEL_FILES['WIND_COSTS'] = "wind_kw_costs.csv"
-## end wind preprocessing functions
-
-def preprocess_existing_projects (ppo):
-    """Preprocess data related to existing projects
-    
-    Parameters
-    ----------
-    ppo: preprocessor.Proprocessor
+    preprocessor: preprocessor.Proprocessor
         a preprocessor object
         
     Returns
     -------
-    list
-        project names
+    dict
+        preprocessed data
     
     """
-    projects = []
-    p_data = {}
-    
-    project_data = read_csv(os.path.join(ppo.data_dir,"wind_projects_potential.csv"),
-                           comment = '#',index_col = 0)
-    
-    project_data = DataFrame(ppo.get_communities_data(project_data))
-    #~ print ppo.id_list
-    #~ print project_data
-    if len(project_data.T) == 1 :
-        project_data = project_data.T
 
-
-    for p_idx in range(len(project_data)):
-        cp = project_data.ix[p_idx]
+    wind_classes = read_csv(
+        os.path.join(preprocessor.data_dir, "wind_classes.csv"),
+        comment = '#',
+        index_col = 0
+    )
+                            
+    ids = preprocessor.communities + preprocessor.aliases
+    wind_class = wind_classes.ix[ids]['Assumed Wind Class'].max()
+    preprocessor.diagnostics.add_note( 'Wind Power',
+        'Using max wind class for all commuinites in intertie')
+    if np.isnan(wind_class):
+        wind_class = 0
+        preprocessor.diagnostics.add_warning( 'Wind Power',
+        'No wind class found, setting wind class to 0')
+    
+    assumptions = read_csv(
+        os.path.join(preprocessor.data_dir, "wind_class_cf_assumptions.csv"),
+        comment = '#',
+        index_col = 0
+    )
+                           
+    try:
+        capa = assumptions.ix[int(float(wind_class))].ix['REF V-VI Net CF']
+    except (TypeError,KeyError):
+        preprocessor.diagnostics.add_warning( 'Wind Power',
+        'No wind class found, setting capacity factor to 0')
+        capa = 0
         
-        p_name = cp['Project Name']
-        try:
-            if p_name == "" or np.isnan(p_name):
-                p_name = "project_" + str(p_idx)
-        except TypeError:
-            p_name = "project_" + str(p_idx)
-        p_name = 'wind+' + p_name
+    distance = 1
+    
+    estimated_costs = read_csv(
+        os.path.join(preprocessor.data_dir,'wind_kw_costs.csv'),
+        index_col = 0
+    )
+    # road needed assumed, otherwise it would be 250000
+    transmission_line_cost = 500000 
+
+    base = {
+        'Wind Power': {
+            'enabled': True,
+            'lifetime': 20, 
+            'start year': 2019,
+            'average load limit': 100.0,
+            'percent generation to offset': 150,
+            
+            'name': '',
+            'source': '',
+            'notes': '',
+            'proposed capacity': UNKNOWN,
+            'generation capital cost': UNKNOWN,
+            'operational costs': UNKNOWN,
+            'phase': 'Reconnaissance',
+            'proposed generation': UNKNOWN,
+            'distance to resource': distance, 
+            'transmission capital cost': UNKNOWN,
+            
+            
+            'wind class': wind_class,
+            'capacity factor': capa,
+            'percent heat recovered': 20,
+            'secondary load': True,
+            
+            
+            'secondary load cost': 200000, # 
+            'percent o&m': 1,
+            'estimated costs': estimated_costs,
+            'est. transmission line cost': transmission_line_cost,
+        }
+    }
+
+    p_data = {}
+ 
+    project_data = read_csv(os.path.join(preprocessor.data_dir,
+        "wind_projects_potential.csv"),
+        comment = '#',index_col = 0)
+        
+    data_file = os.path.join(
+        preprocessor.data_dir,
+        'project_development_timeframes.csv'
+    )
+    timeframes = read_csv(data_file, comment = '#',
+                    index_col=0, header=0)['Wind']
+    
+    ids = preprocessor.communities + preprocessor.aliases
+    if preprocessor.intertie_status == 'child':
+        ids = []
+    try:
+        project_data = project_data.ix[ids]
+        #~ print project_data
+        project_data = \
+            project_data[project_data.isnull().all(1) == False]
+        if len(project_data.T) == 1 :
+            project_data = project_data.T
+    except (ValueError, KeyError) as e:
+        #~ print e
+        project_data = []
+        
+    for p_idx in range(len(project_data)):
+        cp = project_data.iloc[p_idx]
+
+        
+        p_name = 'wind+project_' + str(p_idx) 
+        if cp.name not in \
+            [preprocessor.communities[0], preprocessor.aliases[0]]:
+            p_name +=  '_' + cp.name
         
         phase = cp['Phase']
+        try:
+            phase = phase[0].upper() + phase[1:]
+            if phase == "0":
+                preprocessor.diagnostics.add_note('Wind Power Projects', 
+                                            '"0" corrected to Reconnaissance')
+                phase = "Reconnaissance"
+        except TypeError:
+            preprocessor.diagnostics.add_note('Wind Power Projects', 
+                                        'missing value assuming Reconnaissance')
+            phase = 'Reconnaissance'
+        
+       
         proposed_capacity = cp['Proposed Capacity (kW)']
         proposed_generation = cp['Proposed Generation (kWh)']
         distance_to_resource = cp['Distance to Resource (ft)']
         generation_capital_cost = cp['Generation Capital Cost']
         transmission_capital_cost = cp['Transmission CAPEX']
         operational_costs = cp['Operational Costs / year']
-        #~ expected_years_to_operation = cp['Expected years to operation']
-        expected_years_to_operation = UNKNOWN
-        source = cp['link']
-        notes = cp['notes']
-        try:
-            np.isnan(notes)
-            notes = ""
-        except:
-            pass
-        if phase == "0":
-            continue
+
+        name = str(cp['Project Name'])
+        source = str(cp['link'])
+        notes = str(cp['notes'])
+
+
         try:
             if phase == "Reconnaissance" and np.isnan(proposed_capacity) and\
                np.isnan(proposed_generation) and \
@@ -221,7 +172,7 @@ def preprocess_existing_projects (ppo):
         except TypeError:
             continue
         
-        projects.append(p_name)
+        #~ projects.append(p_name)
         
         try:
             proposed_capacity = float(proposed_capacity)
@@ -238,11 +189,12 @@ def preprocess_existing_projects (ppo):
             proposed_generation = UNKNOWN
         
         try:
-            distance_to_resource = float(distance_to_resource)
+            distance_to_resource = \
+                float(distance_to_resource) * constants.feet_to_mi
             if np.isnan(distance_to_resource):
-                distance_to_resource = UNKNOWN
+                distance_to_resource = distance
         except ValueError:
-            distance_to_resource = UNKNOWN
+            distance_to_resource = distance
            
         try:
             generation_capital_cost = float(generation_capital_cost)
@@ -264,44 +216,35 @@ def preprocess_existing_projects (ppo):
                 operational_costs = UNKNOWN
         except ValueError:
             operational_costs = UNKNOWN
-            
-        #~ if np.isnan(source):
-            #~ source = "N/a"
-            
-        #~ expected_years_to_operation = float(expected_years_to_operation)
-        #~ if np.isnan(expected_years_to_operation):
-            #~ expected_years_to_operation = UNKNOWN
-            
-        p_data[p_name] = {'phase': phase,
-                    'name': str(cp['Project Name']),
-                    'proposed capacity': proposed_capacity,
-                    'proposed generation': proposed_generation,
-                    'distance to resource': distance_to_resource,
-                    'generation capital cost': generation_capital_cost,
-                    'transmission capital cost': transmission_capital_cost,
-                    'operational costs': operational_costs,
-                    'expected years to operation': expected_years_to_operation,
-                    'notes': notes,
-                    'source': source
-                        }
-                            
-    if len(p_data) != 0:
-        fd = open(os.path.join(ppo.out_dir,"wind_projects.yaml"),'w')
-        fd.write(dump(p_data,default_flow_style=False))
-        fd.close()
-    else:
-        fd = open(os.path.join(ppo.out_dir,"wind_projects.yaml"),'w')
-        fd.write("")
-        fd.close()
-        #~ return projects 
+        
+        #~ expected_years_to_operation = UNKNOWN
+        
+        try:
+            yto = int(round(float(timeframes[phase])))
+        except (TypeError, KeyError):
+            yto = 0
+        preprocessor.data['community']['current year']
+        start_year = preprocessor.data['community']['current year'] + yto
 
+        project = copy.deepcopy(base)
+        project['Wind Power'].update({
+            'name': name,
+            'source': source,
+            'notes': notes,
+            'start year': start_year,
+            'phase': phase,
+            'proposed capacity': proposed_capacity  ,
+            'generation capital cost': generation_capital_cost,
+            'operational costs': operational_costs,
+            'proposed generation': proposed_generation ,
+            'distance to resource': distance_to_resource,
+            'transmission capital cost': transmission_capital_cost ,
+        })
+        #~ print project 
+        p_data[p_name] = project 
+        #~ print p_data[p_name] 
 
-    ppo.MODEL_FILES['WIND_PROJECTS'] = "wind_projects.yaml"
-    shutil.copy(os.path.join(ppo.data_dir,'project_development_timeframes.csv'), 
-                ppo.out_dir)
-    ppo.MODEL_FILES['TIMEFRAMES'] = 'project_development_timeframes.csv'
-    #~ print ppo.MODEL_FILES
-    return projects
-
-## list of wind preprocessing functions
-preprocess_funcs = [wind_preprocess, copy_wind_cost_table]
+    
+    p_data['no project'] = base
+    #~ print p_data
+    return p_data

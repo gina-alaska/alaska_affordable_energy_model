@@ -50,13 +50,14 @@ def generate_web_summary (web_object, community):
     ## get forecast stuff (consumption, generation, etc)
     fc = modeled.forecast
 
-    generation = fc.generation_by_type['generation diesel'].\
+    generation = fc.generation['generation diesel'].\
                                         ix[start_year:end_year]
     
     ## get the diesel prices
     diesel_price = web_object.results[community]['community data'].\
                             get_item('community','diesel prices').\
-                            get_projected_prices(start_year, end_year+1)
+                            ix[start_year: end_year]#values
+    diesel_price = diesel_price[diesel_price.columns[0]]
            
     ## get diesel generator efficiency
     eff = modeled.cd['diesel generation efficiency']
@@ -92,7 +93,7 @@ def generate_web_summary (web_object, community):
     table3[0][-1]
     
     
-    buildings =  modeled.comp_specs['com building data']
+    buildings = modeled.comp_specs['building inventory']
     sqft = buildings['Square Feet'].sum()
     current = [{'words':"Esitmated square feet", 
                 'value':'{:,.0f}'.format(sqft)}]

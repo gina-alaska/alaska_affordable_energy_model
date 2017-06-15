@@ -10,7 +10,7 @@ import os
 from aaem.components.annual_savings import AnnualSavings
 from aaem.community_data import CommunityData
 from aaem.forecast import Forecast
-from aaem.diagnostics import diagnostics
+from aaem.diagnostics import Diagnostics
 import aaem.constants as constants
 from config import COMPONENT_NAME, UNKNOWN
 
@@ -112,7 +112,7 @@ class ASHPNonResidential (ashp_base.ASHPBase):
                 if 'Non-residential Energy Efficiency' component not found.
         
         """
-        tag = self.cd['name'].split('+')
+        tag = self.cd['file id'].split('+')
         if len(tag) > 1 and tag[1].split('_')[0] != 'ASHP_res':
             return 
         non_res = comps['Non-residential Energy Efficiency']
@@ -138,7 +138,8 @@ class ASHPNonResidential (ashp_base.ASHPBase):
             Heat energe produced per year in BTU
         """
         self.heat_displaced_sqft = self.non_res_sqft *\
-            self.cd[ 'assumed percent non-residential sqft heat displacement']
+            (self.cd[ 'assumed percent non-residential sqft heat displacement']\
+            /100.0)
         average_net_btu_per_hr_pr_sf = self.avg_gal_per_sqft * \
             self.cd["heating oil efficiency"] * \
             (1/constants.mmbtu_to_gal_HF) * 1e6/ constants.hours_per_year
@@ -170,12 +171,12 @@ class ASHPNonResidential (ashp_base.ASHPBase):
         -----
             Accepted scalers: capital costs.
         """
-        self.run = True
+        self.was_run = True
         self.reason = "OK"
         
-        tag = self.cd['name'].split('+')
+        tag = self.cd['file id'].split('+')
         if len(tag) > 1 and tag[1] != 'ASHP_non-res':
-            self.run = False
+            self.was_run = False
             self.reason = "Not a non-residential air source heat pump project."
             return 
         
@@ -256,7 +257,7 @@ class ASHPNonResidential (ashp_base.ASHPBase):
             output directory
             
         """
-        if not self.run:
+        if not self.was_run:
             return
         years = np.array(range(self.project_life)) + self.start_year
     

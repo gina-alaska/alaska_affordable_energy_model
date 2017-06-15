@@ -68,11 +68,13 @@ def make_costs_table (community, comp, projects, base_cost, directory):
         project = projects[p]
         ##print project.comp_specs['project details']
         try:
-            name = project.comp_specs['project details']['name']
+            name = project.comp_specs['name']
         except KeyError:
             name = 'nan'
         if name == 'nan':
             name = p.replace('+', ' ').replace('_',' ')
+        if name is None:
+            name = p
         net_benefit = DataFrame([range(project.start_year,
                                        project.actual_end_year+1),
                                  project.get_net_benefit()\
@@ -133,11 +135,13 @@ def make_consumption_table (community, comp, projects, base_con,
         project = projects[p]
         ##print project.comp_specs['project details']
         try:
-            name = project.comp_specs['project details']['name']
+            name = project.comp_specs['name']
         except KeyError:
             name = 'nan'
         if name == 'nan':
             name = p.replace('+', ' ').replace('_',' ')
+        if name is None:
+            name = p
         reduction = DataFrame([range(project.start_year,
                                 project.actual_end_year+1)],['Year']).T
                                 
@@ -226,17 +230,19 @@ def create_electric_system_summary (web_object, community ):
     
     
     
-    total_gen = fc.cd.get_item('community','generation').iloc[-1:]
+    total_gen = \
+        fc.cd.get_item('community','utility info')['net generation'].iloc[-1:]
+    #~ print 
     total_load = float(total_gen)/constants.hours_per_year
     year = int(total_gen.index[0])
     
     
     h_gen = float(fc.cd.get_item('community',
-            'generation numbers')['generation hydro'].iloc[-1:])
+            'utility info')['generation hydro'].iloc[-1:])
     w_gen = float(fc.cd.get_item('community',
-            'generation numbers')['generation wind'].iloc[-1:])
+            'utility info')['generation wind'].iloc[-1:])
     s_gen = float(fc.cd.get_item('community',
-            'generation numbers')['generation solar'].iloc[-1:])
+            'utility info')['generation solar'].iloc[-1:])
     
     current = [
         {'words':'Average community load (' + str(year) +')',
@@ -247,7 +253,7 @@ def create_electric_system_summary (web_object, community ):
         {'words':'Existing nameplate wind capacity', 
          'value': 
              '{:,.0f} kW'.format(
-             float(wind.comp_specs['resource data']['existing wind']))},
+             float(wind.cd['wind capacity']))},
         {'words':'Existing wind generation (' + str(year) +')',
          'value': '{:,.0f} kWh/year'.format(w_gen).replace('nan','0')},
         {'words':'Estimated proposed wind generation',
@@ -255,7 +261,7 @@ def create_electric_system_summary (web_object, community ):
         {'words':'Existing nameplate solar capacity', 
          'value': 
              '{:,.0f} kW'.format(
-             float(solar.comp_specs['data']['Installed Capacity']))},
+             float(solar.cd['solar capacity']))},
         {'words':'Existing solar generation (' + str(year) +')', 
          'value': '{:,.0f} kWh/year'.format(s_gen).replace('nan','0')},
         {'words':'Estimated proposed solar generation',
@@ -263,7 +269,7 @@ def create_electric_system_summary (web_object, community ):
         {'words':'Existing nameplate hydro capacity ', 
          'value': 
              '{:,.0f} kW'.format(
-             float(fc.cd.get_item('community','hydro generation capacity')))},
+             float(fc.cd.get_item('community','hydro capacity')))},
         {'words':'Existing hydro generation (' + str(year) +')', 
          'value': '{:,.0f} kWh/year'.format(h_gen).replace('nan','0')},
         {'words':'Estimated proposed hydro generation',

@@ -10,7 +10,7 @@ import os
 from aaem.components.annual_savings import AnnualSavings
 from aaem.community_data import CommunityData
 from aaem.forecast import Forecast
-from aaem.diagnostics import diagnostics
+from aaem.diagnostics import Diagnostics
 import aaem.constants as constants
 from config import COMPONENT_NAME, PROJECT_TYPE, UNKNOWN
 
@@ -85,13 +85,14 @@ class HeatRecovery (AnnualSavings):
         self.comp_specs = community_data.get_section(COMPONENT_NAME)
         self.component_name = COMPONENT_NAME
         
-        self.comp_specs["start year"] = self.cd['current year'] + \
-            self.comp_specs["project details"]['expected years to operation']
+        #~ self.comp_specs["start year"] = self.cd['current year'] + \
+            #~ self.comp_specs['expected years to operation']
 
 
-        self.set_project_life_details(self.comp_specs["start year"],
-                                      self.comp_specs["lifetime"],
-                        self.forecast.end_year - self.comp_specs["start year"])
+        self.set_project_life_details(
+            self.comp_specs["start year"],
+            self.comp_specs["lifetime"]
+        )
         
         ### ADD other intiatzation stuff  
         ### load prerequisites in the following function
@@ -133,19 +134,19 @@ class HeatRecovery (AnnualSavings):
         -----
             Accepted scalers: capital costs.
         """
-        self.run = True
+        self.was_run = True
         self.reason = "OK"
-        if self.cd['name'].find('+') == -1:
-            self.run = False
+        if self.cd['file id'].find('+') == -1:
+            self.was_run = False
             self.reason = "Heat recovery" + \
                 " requires that at least a reconnaissance-level heat recovery"+\
                 " study has been completed for the community."
             self.diagnostics.add_note(self.component_name, self.reason)
             return 
         
-        tag = self.cd['name'].split('+')
+        tag = self.cd['file id'].split('+')
         if len(tag) > 1 and tag[1] != PROJECT_TYPE:
-            self.run = False
+            self.was_run = False
             self.reason = "Not a " + "Heat recovery" + " project."
             self.diagnostics.add_note(self.component_name, self.reason)
             return 
@@ -154,14 +155,14 @@ class HeatRecovery (AnnualSavings):
             try:
                 self.calc_proposed_heat_recovery()
             except AttributeError:
-                self.run = False
+                self.was_run = False
                 self.reason = "Could not caclulate proposed heat recovery."
                 self.diagnostics.add_note(self.component_name, self.reason)
                 return 
                 
         if np.isnan(self.proposed_heat_recovery) or \
                 self.proposed_heat_recovery == 0:
-            self.run = False
+            self.was_run = False
             self.reason = "No proposed heat recovery."
             self.diagnostics.add_note(self.component_name, self.reason)
             return 
@@ -233,11 +234,9 @@ class HeatRecovery (AnnualSavings):
         ##else:
         ##    proposed_heat_recovery = 0
         
-        p_gallons = self.comp_specs["project details"]\
-                            ['proposed gallons diesel offset']
-        p_btu = self.comp_specs["project details"]\
-                            ['proposed Maximum btu/hr']
-                            
+        p_gallons = self.comp_specs['proposed gallons diesel offset']
+        p_btu = self.comp_specs['proposed maximum btu/hr']
+        #~ print p_gallons, p_btu
         # is there a project
         if p_gallons != UNKNOWN and p_btu != UNKNOWN:
             self.proposed_heat_recovery = p_gallons
@@ -265,7 +264,7 @@ class HeatRecovery (AnnualSavings):
         
         #~ # gallons 
         #~ diesel_consumed = generation / gen_eff
-        #~ hr_available = self.comp_specs['percent heat recovered'] * \
+        #~ hr_available = (self.comp_specs['percent heat recovered'] / 100.0) * \
                           #~ diesel_consumed
 
         #~ if hr_opp == 'Yes' and waste_heat_available == 'Yes' and \
@@ -290,18 +289,22 @@ class HeatRecovery (AnnualSavings):
         capital_costs : float
             caclulated or loaded captial costs for heat recovery
         """
-        capital_costs = self.comp_specs["project details"]['capital costs']
+        capital_costs = self.comp_specs['capital costs']
         if capital_costs == UNKNOWN:
 
             install_cost = 50000 * \
-                            self.comp_specs['estimate pipe distance']/1000.0
+                self.comp_specs['estimate pipe distance']/1000.0
 
             loop_cost = self.comp_specs['estimate pipe cost/ft'] * \
                         self.comp_specs['estimate pipe distance']
                         
             overhead_cost = self.comp_specs['estimate pipe distance']/1000.0 * \
                             140000
-            building_cost = self.comp_specs['estimate buildings to heat'] * \
+                            
+            num_buildings = self.comp_specs['number buildings']
+            if num_buildings == 'UNKNOWN':
+                num_buildings = self.comp_specs['estimate buildings to heat']
+            building_cost = num_buildings * \
                                 self.comp_specs['estimate cost/building']
             capital_costs = install_cost + loop_cost +\
                             overhead_cost + building_cost

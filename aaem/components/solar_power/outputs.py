@@ -57,11 +57,11 @@ def communities_summary (coms, res_dir):
             start_yr = solar.comp_specs['start year']
             solar.get_diesel_prices()
             diesel_price = float(solar.diesel_prices[0].round(2))
-            assumed_out = solar.comp_specs['data']['Output per 10kW Solar PV']
+            assumed_out = solar.comp_specs['output per 10kW solar PV']
             average_load = solar.average_load
             proposed_capacity = solar.proposed_load + 0
-            existing_capacity = solar.comp_specs['data']['Installed Capacity']
-            wind_capacity = solar.comp_specs['data']['Wind Capacity']
+            existing_capacity = solar.cd['solar capacity']
+            wind_capacity = solar.cd['wind capacity']
            
             try:
                 net_gen = solar.generation_proposed [0]

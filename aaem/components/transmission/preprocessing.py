@@ -9,51 +9,37 @@ import os.path
 from pandas import read_csv
 import numpy as np
 
-## List of raw data files required for wind power preproecssing 
-raw_data_files = [#"transmission_projects.csv",
-                  'project_development_timeframes.csv',
-                  'transmission_distances.csv',
-                  ]
-
-## preprocessing functons 
-def preprocess_header (ppo):
-    """Generate preprocesed data file header
+    
+def preprocess (preprocessor, **kwargs):
+    """preprocess wind power data 
     
     Parameters
     ----------
-        ppo: aaem.prerocessor.Preprocessor
-            a preprocessing object
-            
-    Returns
-    ------- 
-        String of header info
-    """
-    return  "# " + ppo.com_id + " Transmission data\n"+ \
-            ppo.comments_dataframe_divide
-    
-def preprocess (ppo):
-    """preprocess data in transmission_data.csv
-    
-    Parameters
-    ----------
-    ppo: preprocessor.Proprocessor
+    preprocessor: preprocessor.Proprocessor
         a preprocessor object
         
-
+    Returns
+    -------
+    dict
+        preprocessed data
+    
     """
-    #CHANGE THIS
-    out_file = os.path.join(ppo.out_dir,"transmission_data.csv")
-
-    data = read_csv(os.path.join(ppo.data_dir,'transmission_distances.csv'),
-                    comment = '#',index_col = 0)
-                    
+    data = read_csv(
+        os.path.join(preprocessor.data_dir,'transmission_distances.csv'),
+        comment = '#',
+        index_col = 0)
+      
+                
+    if not preprocessor.process_intertie:
+        if preprocessor.intertie_status == 'child':
+            ids = [preprocessor.communities[1],preprocessor.aliases[1]]
+        else:
+            ids = [preprocessor.communities[0],preprocessor.aliases[0]]
+    else:
+       ids = [preprocessor.communities[0],preprocessor.aliases[0]]
     
-    #~ try:
-    data = ppo.get_communities_data(data)
-    #~ except KeyError:
-        #~ data
+    data = data.ix[ids][data.ix[ids].isnull().all(1) == False]
     
-    #~ print data
     try:
         max_savings = float(data['Maximum savings ($/kWh)'])
         nearest_comm = data['Nearest Community with Lower Price Power']
@@ -63,22 +49,39 @@ def preprocess (ppo):
         distance = float(data['Distance to Community'])
     except TypeError:
         max_savings = np.nan
-        nearest_comm = np.nan
+        nearest_comm = ''
         distance = np.nan
+        
+    yto = 5 # years tp operation
+    start_year = preprocessor.data['community']['current year'] + yto
     
-    fd = open(out_file,'w')
-    fd.write(preprocess_header(ppo))
-    fd.write('key,value\n')
-    fd.write('Maximum savings ($/kWh),' + str(max_savings) +'\n')
-    fd.write('Nearest Community with Lower Price Power,' \
-                                        + str(nearest_comm) +'\n')
-    fd.write('Distance to Community,' + str(distance ) +'\n')
-    fd.close()
-    
-    # create data and uncomment this
-    #~ data.to_csv(out_file, mode = 'a',header=False)
-    
-    ppo.MODEL_FILES['TRANSMISSION_DATA'] = "transmission_data.csv" # CHANGE THIS
+    return  {
+        "Transmission and Interties" : {
+            'enabled': True,
+            'lifetime': 20,
+            'start year': start_year,
+            
+            'transmission loss per mile': .001 * 100,
+            'nearest community with lower price': nearest_comm,
+            'distance to community': distance,
+            'maximum savings': max_savings,
+
+            'percent o&m': 5,
+            'heat recovery o&m' : 1500,
+            'est. intertie cost per mile': {
+                'road needed': 500000, 
+                'road not needed': 250000
+            },
+            'diesel generator o&m': { # upper kW limit: price 
+                '150': 84181.00,
+                '360': 113410.00, 
+                '600': 134434.00, 
+                'else': 103851.00 
+            }
+        }
+    }
+
+
     
 ## list of wind preprocessing functions
 preprocess_funcs = [preprocess]

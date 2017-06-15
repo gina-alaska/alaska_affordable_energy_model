@@ -7,7 +7,7 @@ import os
 import shutil
 from pandas import read_csv, concat
 from aaem import summaries, __version__
-from aaem.components import get_raw_data_files
+
 import zipfile
 from datetime import datetime
    
@@ -249,7 +249,7 @@ def get_config_coms (base):
     """
     config = os.path.join(base,"config")
     gc = '__global_config.yaml'
-    s_text = '_config.yaml'
+    s_text = '.yaml'
     return [a.split(s_text)[0]\
                     for a in os.listdir(config) if (s_text in a and gc != a)]
     

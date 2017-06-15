@@ -33,17 +33,23 @@ def building_log(coms, res_dir):
     
     """
     out = []
+    #~ print 'NRB LOG'
     for c in sorted(coms.keys()):
         if c.find('+') != -1 or c.find("_intertie") != -1:
             continue
         try:
             com = coms[c]['Non-residential Energy Efficiency']
             
-            
+            #~ print  coms[c]['community data'].get_section('Non-residential Energy Efficiency')
             types = coms[c]['community data'].get_item('Non-residential Energy Efficiency',
-                                                "com building estimates").index
-            estimates =coms[c]['community data'].get_item('Non-residential Energy Efficiency',
-                                                "com building data").fillna(0)
+                                                "consumption estimates").index
+            estimates = deepcopy(com.comp_specs["building inventory"]).fillna(0)
+            
+            estimates = estimates.set_index('Building Type')
+            estimates = estimates.astype(float)
+
+            
+            #~ print estimates
             
             num  = 0
             try:
@@ -96,6 +102,7 @@ def building_log(coms, res_dir):
                             estimates['Propane'][t]/mmbtu_to_gal_LP + \
                             estimates['HW District'][t]/mmbtu_to_gal_HF +\
                             estimates['Biomass'][t]/mmbtu_to_cords
+                        #~ print hf_used
                         elec_used = estimates['Electric'][t]/mmbtu_to_kWh
                     
                     
@@ -194,7 +201,10 @@ def village_log (coms, res_dir):
         try:
             start_year = coms[c]['community data'].get_item('community', 
                                                         'current year')
-            consumption = int(coms[c]['forecast'].consumption.ix[start_year])
+            #~ print coms[c]['forecast'].consumption.ix[start_year]['consumption']
+            consumption = \
+                int(coms[c]['forecast']\
+                .consumption.ix[start_year]['consumption'])
             population = int(coms[c]['forecast'].population.ix[start_year])
             try:
                 res = coms[c]['Residential Energy Efficiency']
@@ -283,13 +293,10 @@ def fuel_oil_log (coms, res_dir):
                 eff = np.nan
             
             year = res.start_year
+
             try:
-                try:
-                    elec = float(coms[c]['forecast'].generation_by_type[\
+                elec = float(coms[c]['forecast'].generation[\
                                 "generation diesel"][year]) / eff
-                except KeyError:
-                    elec = float(coms[c]['forecast'].generation_by_type[\
-                                "generation_diesel [kWh/year]"][year]) / eff
             except KeyError:
                 elec = 0
             if it == 'child' or np.isnan(elec):
@@ -361,7 +368,7 @@ def forecast_comparison_log (coms, res_dir):
             first_year = max([res.start_year,
                               com.start_year,
                               wat.start_year,
-                              fc.start_year])
+                              fc.consumption.index[0]])
                               
             res_kwh = 0
             com_kwh = 0
@@ -388,15 +395,15 @@ def forecast_comparison_log (coms, res_dir):
             
             #~ print fc.consumption_to_save.ix[first_year]
             #~ print ""
-            fc_res = float(fc.consumption_to_save.ix[first_year]\
-                                ['residential kWh'])
-            fc_non_res = float(fc.consumption_to_save.ix[first_year]\
-                            ['non-residential kWh'])
+            fc_res = float(fc.consumption.ix[first_year]\
+                                ['consumption residential'])
+            fc_non_res = float(fc.consumption.ix[first_year]\
+                            ['consumption non-residential'])
             if np.isnan(fc_non_res):
                 fc_non_res = 0
             
-            fc_total = float(fc.consumption_to_save.ix[first_year]\
-                                    ['consumption kWh'])
+            fc_total = float(fc.consumption.ix[first_year]\
+                                    ['consumption'])
             
             if np.isnan(fc_total):
                 fc_total = 0
@@ -452,23 +459,24 @@ def electric_price_summary (coms, res_dir):
     out = None
     for c in sorted(coms.keys()):
         #~ print c
+        #~ print dir(coms[c]['community data'])
         try:
+            if c.find('+') != -1:
+                continue
             it = coms[c]['community data'].intertie
             if it is None:
                 it = 'parent'
             if it == 'child':
                 continue
             base_cost = float(coms[c]['community data'].get_item("community",
-                                            "elec non-fuel cost"))
+                                            "electric non-fuel price"))
             prices = deepcopy(coms[c]['community data'].get_item("community",
                                             "electric non-fuel prices"))
-            #~ print prices
-            
             name = c
             if name == 'Barrow':
                 name = 'Utqiagvik (Barrow)'
-            prices[name] = prices['price']
-            del prices['price']
+            prices[name] = prices[prices.columns[0]]#'price']
+            #~ del prices[prices.columns[0]]
             prices = prices.T
             prices["base cost"] = base_cost
             if out is None:
@@ -488,6 +496,9 @@ def electric_price_summary (coms, res_dir):
     #~ fd = open(f_name,'w')
     #~ fd.write(("# list of the electricty prices forecasted\n"))
     #~ fd.close()
+    out.index = [i.replace('_',' ') for i in out.index]
+    out = out.drop_duplicates()
+    
     out[[out.columns[-1]] + out.columns[:-1].tolist()].to_csv(f_name, mode='w')
 
 def genterate_npv_summary (coms, res_dir):
@@ -537,6 +548,300 @@ def genterate_npv_summary (coms, res_dir):
                          columns = cols).set_index('Component')
         npvs.to_csv(f_name)
         
+def community_forcast_summaries (community,  components, forecast, res_dir):
+    """generate community forecast summary
+    """
+    forecast = deepcopy(forecast)
+    componetns = deepcopy(components)
+    #~ components = coms[community]
+    if community.find('+') != -1:
+        return
+    #~ print community
+    
+    #### electricity
+    data = forecast.population
+    data['community'] = community
+    #~ print list(data.columns)[::-1]
+    data = data[['community', 'population']]
+    data['population_qualifier'] = 'I'
+    
+    try:
+        forecast.consumption.columns
+    except AttributeError:
+        return
+    data[forecast.consumption.columns] =\
+        forecast.consumption
+        
+    data['generation'] = forecast.generation['generation']
+        
+    
+    data.columns = ['community',
+        'population',
+        'population_qualifier',
+        'residential_electricity_consumed [kWh/year]',
+        'electricity_consumed/generation_qualifier',
+        'non-residential_electricity_consumed [kWh/year]',
+        'total_electricity_consumption [kWh/year]',
+        'total_electricity_generation [kWh/year]']
+    data = data[['community',
+        'population',
+        'population_qualifier',
+        'total_electricity_consumption [kWh/year]',
+        'residential_electricity_consumed [kWh/year]',
+        'non-residential_electricity_consumed [kWh/year]',
+        'total_electricity_generation [kWh/year]',
+        'electricity_consumed/generation_qualifier']]
+
+    f_name = os.path.join(res_dir,
+        community.replace(' ','_') + '_electricity_forecast.csv')
+    
+    with open(f_name, 'w') as s:
+        s.write((
+             '# Electricity Forecast for ' + community + '\n'							
+             '# Qualifier info: \n'					
+             '#   M indicates a measured value\n'							
+             '#   P indicates a projected value\n'
+             '#   I indicates a value carried over from the input data.'
+             ' May be projected or measured see input data metadata.\n'
+        ))
+                                     
+    data.to_csv(f_name, mode = 'a')
+    
+    #### generation ####
+    
+    data = forecast.generation
+    data['community'] = community
+    data['population'] = forecast.population['population']
+    data['population_qualifier'] = 'I'
+    data['generation_qualifier'] = \
+        forecast.\
+        consumption['consumption_qualifier']
+    
+    data = data[list(data.columns[-4:]) + list(data.columns[:-4])]
+    #~ print data
+    data.columns = [
+        'community',
+        'population', 
+        'population_qualifer',
+        'generation_qualifer',
+        'generation total (kWh/year)',
+        'generation diesel (kWh/year)',
+        'generation hydro (kWh/year)',
+        'generation natural gas (kWh/year)',
+        'generation wind (kWh/year)',
+        'generation solar (kWh/year)',
+        'generation biomass (kWh/year)'
+    ]
+    f_name = os.path.join(res_dir,
+        community.replace(' ','_') + '_generation_forecast.csv')
+    with open(f_name, 'w') as s:
+        s.write((
+             '# generation Forecast for ' + community + '\n'							
+             '# Qualifier info: \n'					
+             '#   M indicates a measured value\n'							
+             '#   P indicates a projected value\n'
+             '#   I indicates a value carried over from the input data.'
+             ' May be projected or measured see input data metadata.\n'
+        ))
+                                     
+    data.to_csv(f_name, mode = 'a')
+    
+   
+    
+    ires = components['Residential Energy Efficiency']
+    icom = components['Non-residential Energy Efficiency']
+    iwat = components['Water and Wastewater Efficiency']
+    
+    #### heat demand ####
+    data =  DataFrame(forecast.population['population'])
+    data['population_qualifier'] = 'I'
+    data['community'] = community
+    data = data[['community', 'population', 'population_qualifier']]
+    #~ data['heat_energy_demand_residential [mmbtu/year]'] = \
+
+    df = DataFrame(ires.baseline_HF_consumption,
+        columns =['col'],
+         index = range(ires.start_year, ires.end_year+1))
+    data['heat_energy_demand_residential [mmbtu/year]'] = df['col']
+    
+    try:
+        df = DataFrame(icom.baseline_HF_consumption,
+            columns =['col'],
+            index = range(icom.start_year, icom.end_year+1))
+    except AttributeError:
+        return
+    data['heat_energy_demand_non-residential [mmbtu/year]'] = df['col']
+    df = DataFrame(iwat.baseline_HF_consumption,
+        columns =['col'],
+         index = range(iwat.start_year, iwat.end_year+1))
+    data['heat_energy_demand_water-wastewater [mmbtu/year]'] = df['col']
+        
+        
+    hd_cols = [
+        'heat_energy_demand_residential [mmbtu/year]',
+        'heat_energy_demand_non-residential [mmbtu/year]',
+        'heat_energy_demand_water-wastewater [mmbtu/year]'
+    ]
+        
+    for col in hd_cols:
+        yr = data[~data[col].isnull()].index[-1]
+        data[col][data.index > yr] = data[col].ix[yr]
+    data['heat_energy_demand_total [mmbtu/year]'] = data[hd_cols].sum(1)
+    f_name = os.path.join(res_dir,
+        community.replace(' ','_') + '_heat_demand_forecast.csv')
+    with open(f_name, 'w') as s:
+        s.write((
+             '# heat demand Forecast for ' + community + '\n'							
+             '# Qualifier info: \n'					
+             '#   M indicates a measured value\n'							
+             '#   P indicates a projected value\n'
+             '#   I indicates a value carried over from the input data.'
+             ' May be projected or measured see input data metadata.\n'
+        ))
+    data.to_csv(f_name, mode = 'a')
+    
+    #### heating fuel ####
+    data =  DataFrame(forecast.population['population'])
+    data['population_qualifier'] = 'I'
+    data['community'] = community
+    data = data[['community', 'population', 'population_qualifier']]
+
+    
+    df = DataFrame(ires.baseline_fuel_Hoil_consumption,
+        columns =['col'],
+         index = range(ires.start_year, ires.end_year+1))
+    data['heating_fuel_residential_consumed [gallons/year]'] = \
+        df['col'].round()
+    df = DataFrame(
+        ires.baseline_fuel_Hoil_consumption/mmbtu_to_gal_HF,
+        columns =['col'],
+        index = range(ires.start_year, ires.end_year+1)
+    )
+    data['heating_fuel_residential_consumed [mmbtu/year]'] = \
+        df['col'].round()
+   
+    df = DataFrame(ires.baseline_fuel_wood_consumption,
+        columns =['col'],
+         index = range(ires.start_year, ires.end_year+1))
+    data['cords_wood_residential_consumed [cords/year]'] = df['col'].round()
+    df = DataFrame(
+        ires.baseline_fuel_wood_consumption/mmbtu_to_cords,
+        columns =['col'],
+         index = range(ires.start_year, ires.end_year+1)
+    )
+    data['cords_wood_residential_consumed [mmbtu/year]'] = df['col'].round()
+    
+    df = DataFrame(ires.baseline_fuel_gas_consumption,
+        columns =['col'],
+         index = range(ires.start_year, ires.end_year+1))
+    data['gas_residential_consumed [Mcf/year]'] = df['col'].round()
+    df = DataFrame(
+        ires.baseline_fuel_gas_consumption/mmbtu_to_gal_LP,
+        columns =['col'],
+         index = range(ires.start_year, ires.end_year+1)
+    )
+    data['gas_residential_consumed [mmbtu/year]'] = df['col'].round()
+    
+    df = DataFrame(ires.baseline_fuel_kWh_consumption,
+        columns =['col'],
+         index = range(ires.start_year, ires.end_year+1))
+    data['electric_residential_consumed [kWh/year]'] = df['col'].round()
+    df = DataFrame(
+        ires.baseline_fuel_kWh_consumption/mmbtu_to_kWh,
+        columns =['col'],
+         index = range(ires.start_year, ires.end_year+1)
+    )
+    data['electric_residential_consumed [mmbtu/year]'] = df['col'].round()
+    
+    df = DataFrame(ires.baseline_fuel_LP_consumption,
+        columns =['col'],
+         index = range(ires.start_year, ires.end_year+1))
+    data['propane_residential_consumed [gallons/year]'] = df['col'].round()
+    df = DataFrame(
+        ires.baseline_fuel_LP_consumption/mmbtu_to_Mcf,
+        columns =['col'],
+         index = range(ires.start_year, ires.end_year+1)
+    )
+    data['propane_residential_consumed [mmbtu/year]'] = df['col'].round()
+    
+    df = DataFrame(
+        icom.baseline_HF_consumption * mmbtu_to_gal_HF,
+        columns =['col'],
+         index = range(icom.start_year, icom.end_year+1))
+    data['heating_fuel_non-residential_consumed [gallons/year]'] = \
+        df['col'].round()
+    df = DataFrame(
+        icom.baseline_HF_consumption,
+        columns =['col'],
+         index = range(icom.start_year, icom.end_year+1)
+    )
+    data['heating_fuel_non-residential_consumed [mmbtu/year]'] = \
+        df['col'].round()
+   
+    df = DataFrame(
+        iwat.baseline_HF_consumption * mmbtu_to_gal_HF,
+        columns =['col'],
+         index = range(iwat.start_year, iwat.end_year+1))
+    data['heating_fuel_water-wastewater_consumed [gallons/year]'] = \
+        df['col'].round()
+    df = DataFrame(
+        iwat.baseline_HF_consumption,
+        columns =['col'],
+         index = range(iwat.start_year, iwat.end_year+1)
+    )
+    data['heating_fuel_water-wastewater_consumed [mmbtu/year]'] = \
+        df['col'].round()
+    
+    
+    hf_cols = [
+        'heating_fuel_residential_consumed [gallons/year]',
+        'heating_fuel_residential_consumed [mmbtu/year]',
+        'cords_wood_residential_consumed [cords/year]',
+        'cords_wood_residential_consumed [mmbtu/year]',
+        'gas_residential_consumed [Mcf/year]',
+        'gas_residential_consumed [mmbtu/year]',
+        'electric_residential_consumed [kWh/year]',	
+        'electric_residential_consumed [mmbtu/year]',
+        'propane_residential_consumed [gallons/year]',
+        'propane_residential_consumed [mmbtu/year]',
+        'heating_fuel_non-residential_consumed [gallons/year]',
+        'heating_fuel_non-residential_consumed [mmbtu/year]',
+        'heating_fuel_water-wastewater_consumed [gallons/year]',
+        'heating_fuel_water-wastewater_consumed [mmbtu/year]',
+    ]
+    for col in hf_cols:
+        yr = data[~data[col].isnull()].index[-1]
+        data[col][data.index > yr] = data[col].ix[yr]
+    
+    data['heating_fuel_total_consumed [gallons/year]'] = \
+        data[[
+            'heating_fuel_residential_consumed [gallons/year]',
+            'heating_fuel_non-residential_consumed [gallons/year]',
+            'heating_fuel_water-wastewater_consumed [gallons/year]',
+        ]].sum(1)
+    data['heating_fuel_total_consumed [mmbtu/year]'] = \
+        data[[
+            'heating_fuel_residential_consumed [mmbtu/year]',
+            'heating_fuel_non-residential_consumed [mmbtu/year]',
+            'heating_fuel_water-wastewater_consumed [mmbtu/year]',
+        ]].sum(1)
+        
+    f_name = os.path.join(res_dir,
+        community.replace(' ','_') + '_heating_fuel_forecast.csv')
+    with open(f_name, 'w') as s:
+        s.write((
+             '# heating fuel Forecast for ' + community + '\n'							
+             '# Qualifier info: \n'					
+             '#   M indicates a measured value\n'							
+             '#   P indicates a projected value\n'
+             '#   I indicates a value carried over from the input data.'
+             ' May be projected or measured see input data metadata.\n'
+        ))
+    data.to_csv(f_name, mode = 'a')
+     
+
+        
+        
 def consumption_summary (coms, res_dir):
     """ Function doc """
     consumption = []
@@ -544,7 +849,8 @@ def consumption_summary (coms, res_dir):
         if 1 != len(community.split('+')):
             continue
         it = coms[community]['community data'].intertie
-        region = coms[community]['community data'].get_item('community','region')
+        region = \
+            coms[community]['community data'].get_item('community','region')
         if it is None:
             it = 'parent'
         if it == 'child':
@@ -586,12 +892,14 @@ def call_comp_summaries (coms, res_dir):
     """
     genterate_npv_summary(coms, res_dir)
     consumption_summary(coms, res_dir)
+    
     for comp in comp_lib:
         try:
             log = import_module("aaem.components." +comp_lib[comp]).\
                                                         component_summary
             log(coms, res_dir)
-        except AttributeError:
+        except AttributeError as e:
+            #~ print e
             continue
             
 

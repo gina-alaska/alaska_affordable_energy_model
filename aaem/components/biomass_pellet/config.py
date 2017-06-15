@@ -22,33 +22,36 @@ COMPONENT_NAME = "Biomass for Heat (Pellet)"
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
 
+
+order = deepcopy(bmb.order) 
+order += [
+    "pellet efficiency",
+    "default pellet price"
+]
+
 ## List of yaml key/value pairs
-yaml = deepcopy(bmb.yaml)
-yaml["energy density"] = 17600000
-yaml["pellet efficiency"] = .8
-yaml["cost per btu/hr"] = .54
-yaml["default pellet price"] = 400
+structure = deepcopy(bmb.structure)
+structure[COMPONENT_NAME] = structure.pop(bmb.COMPONENT_NAME)
+structure[COMPONENT_NAME].update(    
+    {
+        "pellet efficiency": float,
+        "default pellet price": float
+    }
+)
 
 
-## default values for yaml key/Value pairs
-yaml_defaults = deepcopy(bmb.yaml_defaults)
-    
-## order to save yaml
-yaml_order = deepcopy(bmb.yaml_order) + ["pellet efficiency",
-                                "cost per btu/hr",
-                                "default pellet price"]
+
 
 ## comments for the yaml key/value pairs
-yaml_comments = deepcopy(bmb.yaml_comments)
-yaml_comments["energy density"] = "energy density of pellets (btu/ton) <float>"
-yaml_comments["pellet efficiency"] = \
-                        "effcicieny of pellets (% as decimal) <float>"
-yaml_comments["cost per btu/hr"] = "cost per btu/hr ($) <float>"
-yaml_comments["default pellet price"] = "pellet cost per ton ($) <float>" 
-
-## list of data keys not to save when writing the CommunityData output
-yaml_not_to_save = []
+comments = deepcopy(bmb.comments)
+comments.update(    
+    {
+        "pellet efficiency": '[float]',
+        "default pellet price": '[float]'
+    }
+) 
 
 ## list of prerequisites for module
 prereq_comps = deepcopy(bmb.prereq_comps)
+
 

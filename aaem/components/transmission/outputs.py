@@ -51,8 +51,7 @@ def communities_summary (coms, res_dir):
         try:
             # ??? NPV or year one
             it = coms[c][COMPONENT_NAME]
-            connect_to = it.comp_specs['nearest community']\
-                        ['Nearest Community with Lower Price Power']
+            connect_to = it.comp_specs['nearest community with lower price']
                 
             if it.reason == 'Not a transmission project.':
                 continue
@@ -64,7 +63,7 @@ def communities_summary (coms, res_dir):
                 
             start_yr = it.comp_specs['start year']
             
-            dist = it.comp_specs['nearest community']['Distance to Community']
+            dist = it.comp_specs['distance to community']
             
             it.get_diesel_prices()
             diesel_price = float(it.diesel_prices[0].round(2))
@@ -75,10 +74,10 @@ def communities_summary (coms, res_dir):
                 diesel_price_it = np.nan
             
             
-            if not it.comp_specs["project details"] is None:
-                phase = it.comp_specs["project details"]['phase']
-            else:
-                phase = "Reconnaissance"
+            #~ if not it.comp_specs["project details"] is None:
+                #~ phase = it.comp_specs["project details"]['phase']
+            #~ else:
+            phase = "Reconnaissance"
                 
                 
                 
@@ -279,6 +278,7 @@ def create_regional_summary (results):
     regions = {}
     for c in results:
         c_region = results[c]['community data'].get_item('community','region')
+        #~ print c, results[c].keys()
         comp = results[c][COMPONENT_NAME]
         #~ print comp
         bc_ratio = comp.get_BC_ratio()

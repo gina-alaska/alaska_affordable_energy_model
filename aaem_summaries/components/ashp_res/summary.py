@@ -6,6 +6,7 @@ output functions for Air Source Heat Pump Residential component
 
 """
 import os.path
+from pandas import DataFrame
 import aaem.constants as constants
 from aaem.components import comp_order
 import aaem_summaries.web_lib as wl
@@ -41,30 +42,31 @@ def generate_web_summary (web_object, community):
     modeled = web_object.results[community][COMPONENT_NAME]
     start_year = modeled.start_year
     end_year = modeled.actual_end_year
-    
     ## for make table functions
     projects = {'Modeled ' + COMPONENT_NAME:  modeled}
     
     ## get forecast stuff (consumption, generation, etc)
-    fc = modeled.forecast
-
-    fuel_consumed = \
-        fc.heating_fuel_dataframe['heating_fuel_residential_consumed [gallons/year]']\
-        .ix[start_year:end_year]
+    r_comp = web_object.results[community]["Residential Energy Efficiency"]
+    fuel_consumed = DataFrame(
+        r_comp.baseline_HF_consumption,
+        columns=['fuel consumed'], 
+        index = range(r_comp.start_year, r_comp.end_year+1)
+    )['fuel consumed'].ix[start_year:end_year]
     
+    fuel_consumed = fuel_consumed * constants.mmbtu_to_gal_HF
+
     ## get the diesel prices
-    diesel_price = web_object.results[community]['community data'].\
-                            get_item('community','diesel prices').\
-                            get_projected_prices(start_year, end_year+1) + \
-                        web_object.results[community]['community data'].\
-                            get_item('community','heating fuel premium')
-           
+    diesel_price = \
+        modeled.cd['diesel prices'] + modeled.cd['heating fuel premium']
+    #~ print diesel_price
+    diesel_price = diesel_price[diesel_price.columns[0]].ix[start_year:end_year]
+    
     ## get diesel generator efficiency
     eff = modeled.cd['diesel generation efficiency']
     
     
-    
     ## get generation fuel costs per year (modeled)
+    #~ print diesel_price
     base_cost = fuel_consumed  * diesel_price
     base_cost.name = 'Base Cost'
     
@@ -74,7 +76,7 @@ def generate_web_summary (web_object, community):
     
     
     ## get generation fule used (modeled)
-    base_con = fuel_consumed
+    base_con = (base_cost - base_cost) + fuel_consumed 
     base_con.name = 'Base Consumption'
     table2 = wl.make_consumption_table(community, COMPONENT_NAME, 
                                     projects, base_con,

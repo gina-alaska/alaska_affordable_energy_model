@@ -57,24 +57,28 @@ def generate_web_summary (web_object, community):
     fc = modeled.forecast
    
     
-    generation = fc.generation_by_type['generation diesel'].\
+    generation = fc.generation['generation diesel'].\
                                         ix[start_year:end_year]
     
     ## get the diesel prices
     diesel_price = web_object.results[community]['community data'].\
                             get_item('community','diesel prices').\
-                            get_projected_prices(start_year, end_year+1)#values
+                            ix[start_year: end_year]#values
+    diesel_price = diesel_price[diesel_price.columns[0]]
 
     ## get diesel generator efficiency
     eff = modeled.cd['diesel generation efficiency']
     
     
-    
+    #~ print diesel_price, generation
     
     ## get generation fuel costs per year (modeled)
     base_cost = generation/eff * diesel_price
     base_cost.name = 'Base Cost'
-
+    
+    fix_index = base_cost[base_cost.isnull()].index
+    base_cost.ix[fix_index] = generation[fix_index]/eff * diesel_price.iloc[-1]
+    #~ print base_cost
     
     table1 = wl.make_costs_table(community, COMPONENT_NAME, projects, base_cost,
                               web_object.directory)
@@ -107,7 +111,10 @@ def generate_web_summary (web_object, community):
     for p in order:
         project = projects[p]
         try:
-            name = project.comp_specs['project details']['name'].decode('unicode_escape').encode('ascii','ignore')
+            name = \
+                project.comp_specs['name'].\
+                decode('unicode_escape').\
+                encode('ascii','ignore')
         except KeyError:
             name = 'nan'
         if name == 'nan':
@@ -160,18 +167,17 @@ def create_project_details_list (project):
     -------
         A dictionary with values used by summary
     """
-
-    cost = project.comp_specs['project details']['generation capital cost'] +\
-           project.comp_specs['project details']['transmission capital cost'] 
+    cost = float(project.comp_specs['generation capital cost']) +\
+           float(project.comp_specs['transmission capital cost'])
     
-    pen = project.comp_specs['project details']['proposed generation']/\
-          float(project.forecast.cd.get_item('community',
-                                                'generation').iloc[-1:])
+    pen = float(project.comp_specs['proposed generation'])/\
+        float(project.forecast.cd.get_item('community',
+            'utility info')['net generation'].iloc[-1:])
     pen *= 100
     
     try:
         source = "<a href='" + \
-            project.comp_specs['project details']['source'] + "'> link </a>"
+            project.comp_specs['source'] + "'> link </a>"
     except StandardError as e:
         source = "unknown"
     
@@ -185,15 +191,15 @@ def create_project_details_list (project):
         {'words':'Benefit-cost ratio', 
             'value': '{:,.1f}'.format(project.get_BC_ratio())},
         {'words':'Proposed nameplate capacity', 
-            'value': 
-            '{:,.0f} kW'.format(project.comp_specs['project details']\
-            ['proposed capacity'])},
+        'value': 
+            '{:,.0f} kW'.\
+                format(float(project.comp_specs['proposed capacity']))},
         {'words':'Expected yearly generation', 
          'value': 
-         '{:,.0f} kWh/year'.format(project.comp_specs['project details']\
-                                ['proposed generation'])},
+            '{:,.0f} kWh/year'.\
+                format(float(project.comp_specs['proposed generation']))},
         {'words':'Phase', 
-         'value': project.comp_specs['project details']['phase']},
+         'value': project.comp_specs['phase']},
         {'words':'Total capital cost', 
             'value': '${:,.0f}'.format(cost)},
         {'words':'Estimated hydro penetration level', 

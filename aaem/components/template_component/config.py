@@ -34,9 +34,6 @@ yaml_order = ['enabled', 'lifetime', 'start year']
 yaml_comments = {'enabled': '',
         'lifetime': 'number years <int>',
         'start year': 'start year <int>'}
-
-## list of data keys not to save when writing the CommunityData output
-yaml_not_to_save = []
     
 ## list of prerequisites for module
 prereq_comps = [] ## FILL in if needed

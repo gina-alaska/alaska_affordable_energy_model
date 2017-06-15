@@ -10,7 +10,7 @@ import os
 from aaem.components.annual_savings import AnnualSavings
 from aaem.community_data import CommunityData
 from aaem.forecast import Forecast
-from aaem.diagnostics import diagnostics
+from aaem.diagnostics import Diagnostics
 import aaem.constants as constants
 from config import COMPONENT_NAME, UNKNOWN
 
@@ -112,15 +112,15 @@ class ASHPResidential (ashp_base.ASHPBase):
                 if 'Non-residential Energy Efficiency' component not found.
         
         """
-        tag = self.cd['name'].split('+')
+        tag = self.cd['file id'].split('+')
         if len(tag) > 1 and tag[1].split('_')[0] != 'ASHP_res':
             return 
         res = comps['Residential Energy Efficiency']
         self.pre_ashp_heating_oil_used =  res.init_HF
         self.pre_ashp_heating_electricty_used = res.init_kWh
         self.num_houses = res.init_HH
-        self.precent_heated_oil = res.comp_specs['data'].T["Fuel Oil"]
-        self.precent_heated_elec = res.comp_specs['data'].T["Electricity"]
+        self.precent_heated_oil = res.comp_specs['data']["Fuel Oil"]
+        self.precent_heated_elec = res.comp_specs['data']["Electricity"]
         #~ print self.pre_ashp_heating_oil_used
         #~ print self.num_houses
         
@@ -166,7 +166,7 @@ class ASHPResidential (ashp_base.ASHPBase):
                         self.electric_heat_energy_reduction * \
                         self.electricity_prices
         self.electric_heat_energy_savings = \
-                        self.electric_heat_energy_savings.values.T[0]
+                        self.electric_heat_energy_savings#.values.T[0]
         #~ print self.electric_heat_energy_savings
         
         
@@ -193,12 +193,12 @@ class ASHPResidential (ashp_base.ASHPBase):
         -----
             Accepted scalers: capital costs.
         """
-        self.run = True
+        self.was_run = True
         self.reason = "OK"
         
-        tag = self.cd['name'].split('+')
+        tag = self.cd['file id'].split('+')
         if len(tag) > 1 and tag[1] != 'ASHP_res':
-            self.run = False
+            self.was_run = False
             self.reason = "Not a residential air source heat pump project."
             return 
         
@@ -302,7 +302,7 @@ class ASHPResidential (ashp_base.ASHPBase):
             output directory
             
         """
-        if not self.run:
+        if not self.was_run:
             return
         years = np.array(range(self.project_life)) + self.start_year
     

@@ -10,21 +10,15 @@ from pandas import DataFrame, read_csv
 from config import UNKNOWN
 from yaml import dump
 import shutil
-
-## List of raw data files required for wind power preproecssing 
-raw_data_files = ["hydro_project_potentials.csv",
-                  'project_development_timeframes.csv']
-
-## all preprocessing is for existing projects
-preprocess_funcs = [] 
+import copy
 
 ## preprocess the existing projects
-def preprocess_existing_projects (ppo):
+def preprocess (preprocessor, **kwargs):
     """preprocess data related to existing projects
     
     Parameters
     ----------
-    ppo: preprocessor.Proprocessor
+    preprocessor: preprocessor.Proprocessor
         a preprocessor object
         
     Returns
@@ -33,89 +27,135 @@ def preprocess_existing_projects (ppo):
         project names
     
     """
+    base = {
+        'Hydropower': {
+            'enabled': True,
+            'start year': 2016,
+            'lifetime': 50,
+            
+            'name': 'none',
+            'phase': 'none',
+            'proposed capacity': 'none',
+            'proposed generation': 'none',
+            'generation capital cost': 'none',
+            'transmission capital cost': 'none',
+            'expected years to operation': 'none',
+            'source': 'none',
+            
+            'percent o&m': 1,
+            'percent heat recovered': 15,
+        }
+    }
+    if preprocessor.intertie_status == 'child':
+        return base
+    if preprocessor.intertie_status == 'parent' and\
+        preprocessor.process_intertie == False:
+        return base
+    
     projects = []
     p_data = {}
-    
-    ## CHANGE THIS
-    project_data = read_csv(os.path.join(ppo.data_dir,
+ 
+    project_data = read_csv(os.path.join(preprocessor.data_dir,
         "hydro_projects_potential.csv"),
         comment = '#',index_col = 0)
+        
+    data_file = os.path.join(
+        preprocessor.data_dir,
+        'project_development_timeframes.csv'
+    )
+    timeframes = read_csv(data_file, comment = '#',
+                    index_col=0, header=0)['Hydroelectric']
+    
+    
+    ids = preprocessor.communities + preprocessor.aliases
+    if preprocessor.intertie_status == 'child':
+        ids = []
+        
+    #~ print ids
     
     try:
-        project_data = DataFrame(project_data.ix[ppo.com_id])
+        project_data = project_data.ix[ids]
+        #~ print project_data
+        project_data = \
+            project_data[project_data.isnull().all(1) == False]
         if len(project_data.T) == 1 :
             project_data = project_data.T
-    except KeyError:
+    except (ValueError, KeyError) as e:
+        #~ print e
         project_data = []
-
-    #~ ## FILL IN LOOP see function in wind _power.py for an example
-    names = []
-    for p_idx in range(len(project_data)):
-        cp = project_data.ix[p_idx]
-        p_name = 'hydro+project_' + str(p_idx) #+ str(cp['Project']).\
-            # replace(' ','_').replace('/','-').replace(';','').\
-            # replace('.','').replace("'",'').replace('_-_','_').\
-            # replace(',','').replace('(','').replace(')','')
-        #~ i = 1
-        #~ i = 1
-        #~ while (p_name in names):
-            #~ p_name = 'hydro+' + str(cp['Project']).replace(' ','_').\
-            #~ replace('/','-').replace(';','').replace('.','').\
-            #~ replace("'",'').replace('_-_','_').replace(',','').\
-            #~ replace('(','').replace(')','') + '_' + str(i)
-            #~ i += 1
-        #~ names.append(p_name)
-
         
+    names = []
+    #~ print project_data
+    for p_idx in range(len(project_data)):
+        cp = project_data.iloc[p_idx]
+        
+        #~ print '--------'
+        #~ print cp.values
+        #~ print '--------'
+        
+        p_name = 'hydro+project_' + str(p_idx) 
+        if cp.name not in \
+            [preprocessor.communities[0], preprocessor.aliases[0]]:
+            p_name +=  '_' + cp.name
+            
         phase = cp['Phase Completed']
         try:
             phase = phase[0].upper() + phase[1:]
         except TypeError:
-            ppo.diagnostics.add_note('Hydropower Projects', 
+            preprocessor.diagnostics.add_note('Hydropower Projects', 
                                         'missing value assuming Reconnaissance')
             phase = 'Reconnaissance'
+        
+            
+        
         proposed_capacity = float(cp['AAEM Capacity (kW)'])
         proposed_generation = float(cp['AAEM Generation (kWh)'])
         #~ distance_to_resource = float(cp['Distance'])
         generation_capital_cost = float(cp['Construction Cost (2014$)'])
         transmission_capital_cost = float(cp['Transmission Cost (current)'])
         source = cp['Source']
-        expected_years_to_operation = UNKNOWN
+        #~ expected_years_to_operation = UNKNOWN
         if phase == "0":
-            ppo.diagnostics.add_note('Hydropower Projects', 
+            preprocessor.diagnostics.add_note('Hydropower Projects', 
                                             '"0" corrected to Reconnaissance')
             phase = "Reconnaissance"
             
+        try:
+            yto = int(round(float(timeframes[phase])))
+        except (TypeError, KeyError):
+            yto = 0
+        
+        start_year = base['Hydropower']['start year'] + yto
 
         projects.append(p_name)
         #actual name
         a_name = str(cp['Project'])
         if a_name.find(str(cp['Stream'])) == -1 and str(cp['Stream']) != 'nan':
             a_name += ' -- ' + str(cp['Stream'])
-            
-        p_data[p_name] = {'name': a_name,
-                    'phase': phase,
-                    'proposed capacity': proposed_capacity,
-                    'proposed generation': proposed_generation,
-                    #~ 'distance to resource': distance_to_resource,
-                    'generation capital cost': generation_capital_cost,
-                    'transmission capital cost': transmission_capital_cost,
-                    'expected years to operation': expected_years_to_operation,
-                    'source':source
-                        }
+        #~ print a_name
+        a_name = \
+            '"' + a_name.decode('unicode_escape').encode('ascii','ignore') + '"'
+        #~ print a_name
+        project = copy.deepcopy(base)
+        project['Hydropower'].update({
+            'start year': start_year,
+            'name': a_name,
+            'phase': phase,
+            'proposed capacity': proposed_capacity,
+            'proposed generation': proposed_generation,
+            'generation capital cost': generation_capital_cost,
+            'transmission capital cost': transmission_capital_cost,
+            #~ 'expected years to operation': expected_years_to_operation,
+            'source':source
+        })
+        #~ print project 
+        p_data[p_name] = project 
+        #~ print p_data[p_name] 
+
     
-    with open(os.path.join(ppo.out_dir,"hydro_projects.yaml"),'w') as fd:
-        if len(p_data) != 0:
-            fd.write(dump(p_data,default_flow_style=False))
-        else:
-            fd.write("")
-        
-    ## CHANGE THIS
-    ppo.MODEL_FILES['COMPONENT_PROJECTS'] = "hydro_projects.yaml"
-    shutil.copy(os.path.join(ppo.data_dir,'project_development_timeframes.csv'), 
-                ppo.out_dir)
-    ppo.MODEL_FILES['TIMEFRAMES'] = 'project_development_timeframes.csv'
-    #~ print ppo.MODEL_FILES
-    return projects
+    p_data['no project'] = base
+    #~ print p_data
+    return p_data
+    
 
 

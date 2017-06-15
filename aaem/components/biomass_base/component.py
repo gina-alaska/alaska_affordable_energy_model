@@ -10,7 +10,7 @@ import os
 from aaem.components.annual_savings import AnnualSavings
 from aaem.community_data import CommunityData
 from aaem.forecast import Forecast
-from aaem.diagnostics import diagnostics
+from aaem.diagnostics import Diagnostics
 import aaem.constants as constants
 from config import COMPONENT_NAME, UNKNOWN
 
@@ -79,9 +79,10 @@ class BiomassBase (AnnualSavings):
         self.comp_specs = community_data.get_section(self.component_name)
         
 
-        self.set_project_life_details(self.comp_specs["start year"],
-                                      self.comp_specs["lifetime"],
-                        self.forecast.end_year - self.comp_specs["start year"])
+        self.set_project_life_details(
+            self.comp_specs["start year"],
+            self.comp_specs["lifetime"]
+        )
     
         #~ print self.comp_specs['data']
                 
@@ -102,7 +103,7 @@ class BiomassBase (AnnualSavings):
         comps : Dict
             Dictionary of components
         """
-        tag = self.cd['name'].split('+')
+        tag = self.cd['file id'].split('+')
         
         if len(tag) > 1 and tag[1].split('_')[0] != 'biomass':
             return 
@@ -141,8 +142,11 @@ class BiomassBase (AnnualSavings):
         heat_displaced_sqft : float
             Square footage assumed to be heated by biomass.
         """
-        self.heat_displaced_sqft = self.non_res_sqft * \
-            self.cd['assumed percent non-residential sqft heat displacement']
+        percent = \
+            (self.cd['assumed percent non-residential sqft heat displacement']\
+            /100.0)
+        self.heat_displaced_sqft = self.non_res_sqft * percent
+            
         
     def calc_energy_output (self):
         """Calculate the net and monthly energy output of heating oil.
@@ -159,7 +163,7 @@ class BiomassBase (AnnualSavings):
                                     constants.hours_per_year) * \
                                     self.cd['heating oil efficiency']
         self.peak_monthly_energy_output = self.average_net_energy_output * 12 *\
-                                self.comp_specs['data']['Peak Month % of total']
+            (self.comp_specs['peak month % of total']/100.0)
         
     def calc_max_boiler_output (self, efficiency):
         """Calculate the max boiler output.
@@ -176,8 +180,8 @@ class BiomassBase (AnnualSavings):
         max_boiler_output_per : float
             boiler energy output (mmbtu/hr)
         """
-        self.max_boiler_output_per_sf = self.peak_monthly_energy_output / \
-                                        efficiency
+        self.max_boiler_output_per_sf = \
+            float(self.peak_monthly_energy_output) / efficiency
         self.max_boiler_output = self.max_boiler_output_per_sf * \
                                     self.heat_displaced_sqft
         
@@ -197,7 +201,7 @@ class BiomassBase (AnnualSavings):
         self.biomass_fuel_consumed = capacity_factor * self.max_boiler_output *\
                                      constants.hours_per_year /\
                                      self.comp_specs['energy density']
-        
+                                             
     def calc_diesel_displaced (self):
         """Calculate the disel of set by biomass
         
@@ -312,7 +316,7 @@ class BiomassBase (AnnualSavings):
             output directory
 
         """
-        if not self.run:
+        if not self.was_run:
             return
         
         fuel_consumed_key = self.component_name + \

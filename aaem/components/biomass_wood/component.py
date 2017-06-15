@@ -10,7 +10,7 @@ import os
 from aaem.components.annual_savings import AnnualSavings
 from aaem.community_data import CommunityData
 from aaem.forecast import Forecast
-from aaem.diagnostics import diagnostics
+from aaem.diagnostics import Diagnostics
 import aaem.constants as constants
 from config import COMPONENT_NAME, UNKNOWN
 
@@ -109,33 +109,35 @@ class BiomassCordwood (bmb.BiomassBase):
         -----
             Accepted scalers: capital costs.
         """
-        s_key = 'Sufficient Biomass for 30% of Non-residential buildings'
+        tag = self.cd['file id'].split('+')
+        self.was_run = True
+        self.reason = "OK"
         
-        tag = self.cd['name'].split('+')
         if len(tag) > 1 and tag[1] != 'biomass_wood':
-            self.run = False
+            self.was_run = False
             self.reason = "Not a biomass cordwood project."
             return 
         
-        if not self.comp_specs['data'][s_key]:
+        if not self.comp_specs['sufficient biomass']:
             self.diagnostics.add_warning(self.component_name, 
-                                    "not " + s_key)
+                "There is not sufficient biomass in community")
             self.max_boiler_output = 0
             self.heat_displaced_sqft = 0
             self.biomass_fuel_consumed = 0
             self.fuel_price_per_unit = 0
             self.heat_diesel_displaced = 0
-            self.reason = s_key[0].upper() + s_key[1:].lower() + ' not available.'
+            self.reason = 'Sufficient biomass not available.'
             return
         
         if self.cd["model heating fuel"]:
             self.calc_heat_displaced_sqft()
             self.calc_energy_output()
-            efficiency = self.comp_specs["percent at max output"]*\
-                         self.comp_specs["cordwood system efficiency"]
+            
+            percent_max = (self.comp_specs["percent at max output"] / 100.0)
+            efficiency = percent_max * \
+                self.comp_specs["cordwood system efficiency"]
             self.calc_max_boiler_output(efficiency)
-            factor = self.comp_specs["percent at max output"] * \
-                     self.comp_specs['data']['Capacity Factor']
+            factor = percent_max * self.comp_specs['capacity factor']
             self.calc_biomass_fuel_consumed(factor)
             self.calc_diesel_displaced()
             
@@ -205,5 +207,5 @@ class BiomassCordwood (bmb.BiomassBase):
         """
         self.capital_costs = self.number_boilers * \
                              self.comp_specs["boiler assumed output"] *\
-                             self.comp_specs["cost per btu/hr"] 
+                             self.comp_specs["cost per btu/hrs"] 
         #~ print self.capital_costs

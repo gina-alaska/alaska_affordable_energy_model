@@ -13,36 +13,72 @@ Hydropower configuration
     
     
 """
+from aaem.components import definitions
+
 COMPONENT_NAME = "Hydropower"
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
 
-## List of yaml key/value pairs
-yaml = {'enabled': False,
-        "project details": IMPORT,
-        'lifetime': 'ABSOLUTE DEFAULT',
-        'start year': 'ABSOLUTE DEFAULT',
 
-        'percent o&m': .01,
-        'percent heat recovered': .15,
-        }
+order = [
+    'enabled',
+    'lifetime',
+    'start year',
 
-## default values for yaml key/Value pairs
-yaml_defaults = {'enabled': True,
-        'lifetime': 50,
-        #~ 'start year': 2017,
-        }
+    'name',
+    'phase',
+    'proposed capacity',
+    'proposed generation',
+    'generation capital cost',
+    'transmission capital cost',
+    'source',
+
+    'percent o&m',
+    'percent heat recovered',
     
-## order to save yaml
-yaml_order = ['enabled', 'lifetime', 'start year']
+]
 
-## comments for the yaml key/value pairs
-yaml_comments = {'enabled': '',
-        'lifetime': 'number years <int>',
-        'start year': 'start year <int>'}
+structure = {
+    'Hydropower': {
+        'enabled': bool, 
+        'start year': int,
+        'lifetime': int, 
         
-## list of data keys not to save when writing the CommunityData output
-yaml_not_to_save = []
+        'name': [unicode, str],
+        'phase': str,
+        'proposed capacity': [str, float],
+        'proposed generation': [str, float],
+        'generation capital cost': [str, float],
+        'transmission capital cost': [str, float],
+        'source': str,
+        
+        'percent o&m': float,
+        'percent heat recovered': float,
+    }
+}
+
+comments = {
+    'enabled': definitions.ENABLED,
+    'start year': definitions.START_YEAR_WITH_TYPE,
+    'lifetime': definitions.LIFETIME,
+    
+    'name': '[str] name of project',
+    'phase': '[str] current project phase',
+    'proposed capacity': '[float] proposed generation capacity in kW',
+    'proposed generation': '[float] proposed generation per year in kWh',
+    'generation capital cost': 
+        '[float] cost of installing generation infrastructure',
+    'transmission capital cost': 
+        '[float] cost of installing any transmission infrastructure',
+    'source': '[str] link to source document',
+    
+    'percent o&m': '[float] percent of capital costs used for annual o&m costs',
+    'percent heat recovered': '[float] percent heat recovery by hydro system',
+}
+
+
+
+        
 
 ## list of prerequisites for module
-prereq_comps = []
+prereq_comps = ['Non-residential Energy Efficiency']

@@ -47,13 +47,14 @@ def generate_web_summary (web_object, community):
     ## get forecast stuff (consumption, generation, etc)
     fc = modeled.forecast
 
-    generation = fc.generation_by_type.\
+    generation = fc.generation.\
                                         ix[start_year:end_year].sum(1)
     
     ## get the diesel prices
     diesel_price = web_object.results[community]['community data'].\
                             get_item('community','diesel prices').\
-                            get_projected_prices(start_year, end_year+1)
+                            ix[start_year: end_year]#values
+    diesel_price = diesel_price[diesel_price.columns[0]]
            
     ## get diesel generator efficiency
     eff = modeled.cd['diesel generation efficiency']
@@ -144,15 +145,14 @@ def create_project_details_list (project):
         {'words':'Benefit-cost ratio', 
             'value': '{:,.1f}'.format(project.get_BC_ratio())},
         {'words':'Nearest community', 
-            'value': project.comp_specs['nearest community']\
-            ['Nearest Community with Lower Price Power'] },
+            'value': project.comp_specs\
+            ['nearest community with lower price'] },
         {'words':'Distance', 
             'value': '{:,.0f} miles'.format(project.comp_specs\
-            ['nearest community']['Distance to Community'] )},
+                ['distance to community'] )},
         {'words':'Maximum savings', 
             'value': '${:,.2f}/kWh'.format(
-                project.comp_specs['nearest community']\
-                ['Maximum savings ($/kWh)']) },
+                project.comp_specs['maximum savings']) },
         #~ {'words':'Expected Yearly Generation (kWh/year)', 
          #~ 'value': 
                 #~ '{:,.0f}'.format(project.proposed_load *\

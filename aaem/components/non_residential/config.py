@@ -12,54 +12,73 @@ Non-residential Efficiency configuration
         'com building data'
         'number buildings'
         'com building estimates'
-        'heating cost precent'
+        'heating percent'
         'HW District price %'
     
 """
+from pandas import DataFrame
+from aaem.components import definitions
+
 COMPONENT_NAME = "Non-residential Energy Efficiency"
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
 
-yaml = {'enabled': False,
-        'lifetime': 'ABSOLUTE DEFAULT',
-        'start year': 'ABSOLUTE DEFAULT',
-        'average refit cost': 7.00,
-        'cohort savings multiplier': .26,
-        'com building data': 'IMPORT',
-        'number buildings': 'IMPORT',
-        'com building estimates': 'IMPORT',
-        'heating cost precent': .6,
-        'HW District price %': .5,
-            }
-            
-yaml_defaults = {'enabled': True,
-        'lifetime': 15,
-        'start year': 2017,
-        }
-            
-yaml_order = {'enabled','lifetime','start year','average refit cost',
-                 'cohort savings multiplier','com building data',
-                 'number buildings', 'com building estimates'
-            }
+order = [
+    'enabled',
+    'start year',
+    'lifetime',
+    'average refit cost',
+    'cohort savings percent',
+    'heating percent',
+    'waste oil cost percent',
+    'number buildings',
+    'consumption estimates',
+    'building inventory'
+]
 
-yaml_comments = {'enabled': '',
-                'lifetime': 'number years <int>',
-                'start year': 'start year <int>',
-                'average refit cost': 'cost/sqft. <float>',
-                'cohort savings multiplier': 'pecent as decimal <float>',
-                'com building data': '',
-                'number buildings': '',
-                'com building estimates': '',
-                'heating cost precent': 
-                    ('% of total capital costs used for thermal efficiency'
-                        ' pecent as decimal <float>'),
-                'HW District price %': 
-                    ('the percent of the heaing oil price that is'
-                                                ' the HW District price'),
-            }
-            
-## list of data keys not to save when writing the CommunityData output
-yaml_not_to_save = []          
+structure = {
+    'Non-residential Energy Efficiency':{
+        'enabled': bool,
+        'start year': int,
+        'lifetime': int,
+        'average refit cost': float,
+        'cohort savings percent': float,
+        'heating percent': float,
+        'waste oil cost percent': float,
+        'number buildings': int,
+        'consumption estimates':  DataFrame,
+        'building inventory': DataFrame
+    }
+
+}
+
+comments = {
+        'enabled': definitions.ENABLED,
+        'start year': definitions.START_YEAR_WITH_TYPE,
+        'lifetime': definitions.LIFETIME,
+        'average refit cost': 
+            ('[float > 0] Average refit cost per square foot ($/sqft) for '
+            'non-residential buildings'),
+        'cohort savings percent': 
+            ('[float > 0] Amount of energy saved in a retrofit system'
+            ' as a percent'),
+        'heating percent': (
+            '[float > 0] percent of energy consumption from heating'
+            ),
+        'waste oil cost percent': 
+            ('[float > 0] The precentage of the heating oil price that'
+            ' should be used as waste oil price'),
+        'number buildings': 
+            ('[int >= 0] number non-residential buildings'
+            ' in community'),
+        'consumption estimates': 
+            ('[DataFrame] estimates for consumption and size of '
+            'unknown buildings in a community'),
+        'building inventory': 
+            ('[DataFrame] An inventory of known buildings in a commuity and '
+            'their consumption values if known')
+
+}
 
 ## list of prerequisites for module
 prereq_comps = []

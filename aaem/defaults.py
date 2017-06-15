@@ -3,157 +3,225 @@ defaults.py
 
 for generating default config structures
 """
-from importlib import import_module
 
 
-import aaem.config as config
-from aaem.components import comp_lib, comp_order
+from pandas import DataFrame
 
-def save_config (filename, config, comments, s_order = None, i_orders = None, 
-                        indent = '  ' , header = ''):
-    """
-    write a config yaml file
+base_order = [
+    'model electricity',
+    'model heating fuel',
+    'model financial',
+    'model as intertie',
+    'file id',
+    'natural gas used',
+    'interest rate',
+    'discount rate',
+    'current year',
+
+    'name',
+    'alternate name',
+    'region',
+    'regional construction multiplier',
+    'GNIS ID',
+    'FIPS ID',
+    'intertie',
+    'senate district',
+    'house district',
+    'community goals',
+    'regional goals',
+    'population',
+     
+    'heating degree days',
+    'heating fuel premium',
+    'on road system',
     
-    inputs:
-        filename: filename to save file at <string>
-        config: dictionary of configs <dict>
-        comments: dictionary of comments <dict>
-        s_order: (optional) order of sections <list>
-        i_orders: (optional) order of items in sections <dict>
-        indent: (optional) indent spacing <sting>
-        header: (optional) header line <string>
+    'diesel prices',
+    'heating fuel prices',
+    'electric non-fuel prices',
+    
+    'residential non-PCE electric price',
+    'electric non-fuel price',
+    'propane price',
+    'cordwood price',
+    'pellet price',
+    'natural gas price',
+    
+    
+    'utility info',
+    'percent diesel generation',
+    'line losses',
+    'diesel generation efficiency',
+    'heat recovery operational',
+    'switchgear suatable for renewables',
+    'total capacity',
+    
+    'hydro generation limit',
+    'solar generation limit',
+    'wind generation limit',
+    'hydro capacity',
+    'solar capacity',
+    'wind capacity',
+    
+    'max wind generation percent',
+    
+    'percent excess energy',
+    'percent excess energy capturable',
+    'efficiency electric boiler',
+    'efficiency heating oil boiler',
+    
+    'diesel generator o&m cost percent',
+    'switchgear cost',
+    'number diesel generators',
+    'largest generator',
+    'diesel generator sizing',
+    
+    'assumed percent non-residential sqft heat displacement',
+    'heating oil efficiency'
+]
+
+base_structure = {
+    'community': {
+        'model electricity': bool,
+        'model heating fuel': bool,
+        'model financial': bool,
+        'model as intertie': bool,
+        'file id': str,
+        'natural gas used': bool,
+        'interest rate':float,
+        'discount rate':float,
+        'current year': int,
+    
+        'name': str,
+        'alternate name': str,
+        'region': str,
+        'regional construction multiplier': float,
+        'GNIS ID': int,
+        'FIPS ID': int,
+        'senate district': list,
+        'house district': list,
+        'community goals': list,
+        'regional goals': list,
+        'population': DataFrame,
+        'intertie': [list, str], 
+        'heating degree days': float,
+        'heating fuel premium': float,
+        'on road system': bool,
         
-    outputs:
-        saves config .yaml file at path
-    """
-    nl = '\n'
-    text = '# ' + header + nl
-    
-    if s_order is None:
-        s_order = config.keys()
-    
-    for section in s_order:
-        text += section + ':' + nl
+        'diesel prices': DataFrame,
+        'heating fuel prices': DataFrame,
+        'electric non-fuel prices': DataFrame,
         
-        if i_orders is None:
-            current_i_order = config[section].keys()
-        else: 
-            current_i_order = i_orders[section]
+        'residential non-PCE electric price': float,
+        'electric non-fuel price': float,
+        'propane price': float,
+        'cordwood price': float,
+        'pellet price': float,
+        'natural gas price': float,
+        
+        
+        'utility info': DataFrame,
+        'percent diesel generation': float,
+        'line losses': float,
+        'diesel generation efficiency': float,
+        'heat recovery operational': bool,
+        'switchgear suatable for renewables': bool,
+        'total capacity': float,
+        
+        'hydro generation limit': float,
+        'solar generation limit': float,
+        'wind generation limit': float,
+        'hydro capacity': float,
+        'solar capacity': float,
+        'wind capacity': float,
+        
+        'max wind generation percent': float,
+        
+        'percent excess energy': float,
+        'percent excess energy capturable': float,
+        'efficiency electric boiler': float,
+        'efficiency heating oil boiler': float,
+        
+        'diesel generator o&m cost percent': float,
+        'switchgear cost': float,
+        'number diesel generators': [int, str],
+        'largest generator': [int, str],
+        'diesel generator sizing': str,
+        
+        'assumed percent non-residential sqft heat displacement': float,
+        'heating oil efficiency': float
+    }
+
+}
+
+
+base_comments = {
+    'community': {
+        'model electricity': bool,
+        'model financial': bool,
+        'file id': str,
+        'natural gas used': bool,
+        'interest rate':float,
+        'discount rate':float,
+        'current year': int,
             
-        for item in current_i_order:
-            try:
-                if type(config[section][item]) is dict:
-                    
-                    text += indent + str(item) + ': '
-                    try: 
-                        text +=  ' # ' +  str(comments[section][item]) 
-                    except KeyError:
-                        pass
-                    text += nl
-                    for sub_item in config[section][item]:
-                        text += indent + indent
-                        text += str(sub_item) + ': '  +\
-                                str(config[section][item][sub_item])
-                       
-                        text += nl
-                    continue
-            except KeyError:
-                pass
-            
-            try:
-                text += indent + str(item) + ': ' +  str(config[section][item])
-            except KeyError:
-                continue
-            try:
-                text +=  ' # ' +  str(comments[section][item]) 
-            except KeyError:
-                pass
-            
-            text += nl
-        text += nl + nl        
+    
+        'name': str,
+        'alternate name': str,
+        'region': str,
+        'regional construction multiplier': float,
+        'GNIS ID': int,
+        'FIPS ID': int,
+        'senate district': list,
+        'house district': list,
+        'community goals': list,
+        'regional goals': list,
+        'population': DataFrame,
+        'intertie': [list, str], 
+        'heating degree days': float,
+        'heating fuel premium': float,
+        'on road system': bool,
         
-    with open(filename, 'w') as conf:
-        conf.write(text)
-    
-def save_structure ( filename = "default_config.yaml"):
-    """
-    save the full model structure
-    
-    input:
-        filename
-    
-    output:
-        saves a file
-    """
-    section_order, conf, orders, comments, defaults = \
-                                        gennerate_config_structures()
-            
-    save_config(filename, conf, comments, section_order, orders,
-                            header = "structure of model config file")
-    
-def gennerate_config_structures ():
-    """
-    generate all the configuratin structure info
-    
-    input: none
-    
-    output:
-        returns the desired section order[list], full configuration{dict}, 
-            item orders for each section{dict}, comments {dict}, and 
-            default values {dict},
-    """
-    
-    conf, orders, comments, defaults = \
-            config.get_config(config.non_component_config_sections)
-    
-    for comp in comp_lib:
-        cfg = import_module("aaem.components." + comp_lib[comp]+ '.config')
+        'diesel prices': DataFrame,
+        'heating fuel prices': '[DataFrame] known heating fuel prices',
+        'electric non-fuel prices': DataFrame,
         
-        order = list(cfg.yaml_order) + \
-                    list(set(cfg.yaml_order) ^ set(cfg.yaml.keys()))
-        orders[comp] = order
-        
-        conf[comp] = cfg.yaml
-        comments[comp] = cfg.yaml_comments
-        defaults[comp] = cfg.yaml_defaults
+        'electric non-fuel price': float,
+        'propane price': float,
+        'cordwood price': float,
+        'pellet price': float,
+        'natural gas price': float,
         
         
+        'untility info': DataFrame,
+        'percent diesel generation': float,
+        'line losses': float,
+        'diesel generation efficiency': float,
+        'heat recovery operational': bool,
+        'switchgear suatable for renewables': bool,
+        'total capacity': float,
         
-    section_order = config.non_component_config_sections + comp_order
-    return section_order, conf, orders, comments, defaults
-    
+        'hydro generation limit': float,
+        'solar generation limit': float,
+        'wind generation limit': float,
+        'hydro capacity': float,
+        'solar capacity': float,
+        'wind capacity': float,
+        
+        'max wind generation percent': float,
+        
+        'percent excess energy': float,
+        'percent excess energy capturable': float,
+        'efficiency electric boiler': float,
+        'efficiency heating oil boiler': float,
+        
+        'diesel generator o&m cost percent':float,
+        'switchgear cost': float,
+        'number diesel generators': [int, str],
+        'largest generator': int,
+        'diesel generator sizing': str,
+        
+        'assumed percent non-residential sqft heat displacement': float,
+        'heating oil efficiency': float
+    }
 
-def build_defaults (comp_lib = None):
-    """
-    build defaults 
-    
-    input:
-        comp_lib: left in for old code
-        
-    output:
-        returns a configuration
-    """
-    return gennerate_config_structures()[1]
-
-
-def build_setup_defaults (comp_lib = None):
-    """
-    build defaults with defaults values filled in
-    
-    input:
-        comp_lib: left in for old code
-        
-    output:
-        returns a configuration
-    """
-    cfg = gennerate_config_structures()
-    conf = cfg[1]
-    defaults = cfg[4]
-    
-    
-    for section in defaults:
-        for item in defaults[section]:
-           conf[section][item] = defaults[section][item]
-                      
-    
-    return conf
+}
