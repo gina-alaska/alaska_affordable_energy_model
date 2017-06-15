@@ -43,6 +43,7 @@ class GetDataCommand(pycommand.CommandBase):
             
         if self.args and os.path.exists(self.args[0]):
             repo = os.path.abspath(self.args[0])
+            print repo
         else:
             msg = "GET-DATA ERROR: path to the repo must exist"
             cli_lib.print_error_message(msg, GetDataCommand.usagestr)
@@ -54,14 +55,16 @@ class GetDataCommand(pycommand.CommandBase):
             #~ msg = "GET-DATA ERROR: needs an output directory"
             #~ cli_lib.print_error_message(msg, GetDataCommand.usagestr)
             #~ return 0    
+        print out
         
         force = True
         if self.flags.force is None:
             force = False
             
         if os.path.exists(out) and force:
-            #~ print 'exists'
             shutil.rmtree(out)
+        elif not os.path.exists(out):
+            pass
         else:
             msg =  "RUN ERROR: " + out + \
                             " exists. Use force flag (-f) to overwrite"
