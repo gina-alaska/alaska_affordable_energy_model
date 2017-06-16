@@ -113,16 +113,16 @@ class DieselEfficiency(AnnualSavings):
         -----
             Accepted scalers: capital costs.
         """
-        self.run = True
+        self.was_run = True
         self.reason = "OK"
         tag = self.cd['file id'].split('+')
         if len(tag) > 1 and tag[1] != 'diesel_efficiency':
-            self.run = False
+            self.was_run = False
             self.reason = "Not a diesel efficiency project."
             return 
         
         if not self.cd["model electricity"]:
-            self.run = False
+            self.was_run = False
             self.reason = "Electricity must be modeled to analyze diesel" +\
                                 " efficiency. It was not for this community"
 
@@ -132,7 +132,7 @@ class DieselEfficiency(AnnualSavings):
         self.calc_average_load()
         #~ print  self.average_load
         if np.isnan( self.average_load ):
-            self.run = False
+            self.was_run = False
             self.reason = (
                 "The Average diesel load is not available for this community. "
                 "Is diesel generation present?"
@@ -322,7 +322,7 @@ class DieselEfficiency(AnnualSavings):
             output directory
 
         """
-        if not self.run:
+        if not self.was_run:
             return
         
         years = np.array(range(self.project_life)) + self.start_year

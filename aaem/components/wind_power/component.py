@@ -113,11 +113,11 @@ class WindPower(AnnualSavings):
             Accepted scalers: capital costs.
         """
         
-        self.run = True
+        self.was_run = True
         self.reason = "OK"
         tag = self.cd['file id'].split('+')
         if len(tag) > 1 and tag[1] != 'wind':
-            self.run = False
+            self.was_run = False
             self.reason = "Not a Wind project"
             return 
             
@@ -128,7 +128,7 @@ class WindPower(AnnualSavings):
         except AttributeError:
             self.diagnostics.add_warning(self.component_name, 
                             "could not be run")
-            self.run = False
+            self.was_run = False
             self.reason = ("Could not Calculate average load or "
                                     "proposed generation")
             return
@@ -176,7 +176,7 @@ class WindPower(AnnualSavings):
                 self.calc_levelized_costs(self.maintainance_cost)
         else:
             #~ print "wind project not feasiable"
-            self.run = False
+            self.was_run = False
             if self.load_offset_proposed <= 0: 
                 self.reason = "Proposed load offset less than 0"
             else:
@@ -535,7 +535,7 @@ class WindPower(AnnualSavings):
             path to save at
         """
         #~ return
-        if not self.run:
+        if not self.was_run:
             #~ fname = os.path.join(directory,
                                    #~ self.component_name + "_output.csv")
             #~ fname = fname.replace(" ","_")

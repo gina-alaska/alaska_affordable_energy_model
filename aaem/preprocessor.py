@@ -238,7 +238,7 @@ class Preprocessor (object):
                  N_slope_price
         
         self.data = merge_configs(self.data,
-            {'community': {'percent diesel generation': percent_diesel}})
+            {'community': {'percent diesel generation': percent_diesel * 100}})
             
             
         for comp in comp_lib:
@@ -259,6 +259,10 @@ class Preprocessor (object):
                 del data['no project']
                 self.projects.update( data )
             #~ del data
+            
+        if 'ng_com' in kwargs and kwargs['ng_com']:
+            self.data['community']['natural gas price'] = 3.0
+            self.data['community']['natural gas used'] = True
             
     def save_config (self, out_dir):
         """Save the configuration yaml file
@@ -510,8 +514,8 @@ class Preprocessor (object):
                 
                 'population':population,
                 
-                'interest rate': .05,
-                'discount rate': .03,
+                'interest rate': .05 * 100,
+                'discount rate': .03 * 100,
                 
                 'heating degree days': self.load_heating_degree_days(),
                 'heating fuel premium': self.load_heating_fuel_premium(),

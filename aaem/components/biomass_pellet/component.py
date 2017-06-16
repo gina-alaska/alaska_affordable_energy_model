@@ -106,12 +106,12 @@ class BiomassPellet (bmb.BiomassBase):
         -----
             Accepted scalers: capital costs.
         """
-        self.run = True
+        self.was_run = True
         self.reason = "OK"
         
         tag = self.cd['file id'].split('+')
         if len(tag) > 1 and tag[1] != 'biomass_pellet':
-            self.run = False
+            self.was_run = False
             self.reason = ("Not a biomass pellet project.")
             return 
         

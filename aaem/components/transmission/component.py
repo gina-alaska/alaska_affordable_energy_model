@@ -115,21 +115,21 @@ class Transmission (AnnualSavings):
         -----
             Accepted scalers: capital costs.
         """
-        self.run = True
+        self.was_run = True
         self.reason = "OK"
         tag = self.cd['file id'].split('+')
         if len(tag) > 1 and tag[1] != 'transmission':
-            self.run = False
+            self.was_run = False
             self.reason = "Not a transmission project."
             return 
             
         if not self.cd["model electricity"]:
-            self.run = False
+            self.was_run = False
             self.reason = "Electricity must be modeled to analyze "+\
                                 "transmission. It was not for this community."
             return 
         if np.isnan(float(self.comp_specs['distance to community'])):
-            self.run = False
+            self.was_run = False
             self.reason = ("There are no communities within 30 miles with"
                             " lower cost of electricity.")
             return 
@@ -138,7 +138,7 @@ class Transmission (AnnualSavings):
         try:
             self.get_intertie_values()
         except ValueError:
-            self.run = False
+            self.was_run = False
             self.reason = ("Could not find data on community to intertie to.")
             return 
         self.calc_pre_intertie_generation()

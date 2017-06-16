@@ -70,10 +70,12 @@ def communities_summary (coms, res_dir):
                 
                 price = 0
            
-            try:
-                intertie = coms[c]['community data'].parent
-            except AttributeError:
-                intertie = c
+            intertie = ashp.cd['intertie']
+            if type(intertie) is list:
+                intertie  = intertie[0]
+            else:
+                intertie = ashp.cd['name']
+                
             try:
                 levelized_cost = ashp.levelized_cost_of_energy
             except AttributeError:

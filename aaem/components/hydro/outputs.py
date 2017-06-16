@@ -100,9 +100,9 @@ def communities_summary (coms, res_dir):
             #~ except ZeroDivisionError:
                 #~ red_per_year = 0
             
-            name = c
-            if name == 'Barrow':
-                name = 'Utqiagvik (Barrow)'
+            community = c
+            if community == 'Barrow':
+                community = 'Utqiagvik (Barrow)'
             l = [name,  
                 name,
                 start_yr,

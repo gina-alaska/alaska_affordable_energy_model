@@ -81,4 +81,4 @@ comments = {
         
 
 ## list of prerequisites for module
-prereq_comps = []
+prereq_comps = ['Non-residential Energy Efficiency']

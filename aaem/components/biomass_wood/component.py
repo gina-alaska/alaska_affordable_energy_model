@@ -110,8 +110,11 @@ class BiomassCordwood (bmb.BiomassBase):
             Accepted scalers: capital costs.
         """
         tag = self.cd['file id'].split('+')
+        self.was_run = True
+        self.reason = "OK"
+        
         if len(tag) > 1 and tag[1] != 'biomass_wood':
-            self.run = False
+            self.was_run = False
             self.reason = "Not a biomass cordwood project."
             return 
         

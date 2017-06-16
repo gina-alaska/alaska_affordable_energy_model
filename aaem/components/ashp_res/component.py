@@ -193,12 +193,12 @@ class ASHPResidential (ashp_base.ASHPBase):
         -----
             Accepted scalers: capital costs.
         """
-        self.run = True
+        self.was_run = True
         self.reason = "OK"
         
         tag = self.cd['file id'].split('+')
         if len(tag) > 1 and tag[1] != 'ASHP_res':
-            self.run = False
+            self.was_run = False
             self.reason = "Not a residential air source heat pump project."
             return 
         
@@ -302,7 +302,7 @@ class ASHPResidential (ashp_base.ASHPBase):
             output directory
             
         """
-        if not self.run:
+        if not self.was_run:
             return
         years = np.array(range(self.project_life)) + self.start_year
     
