@@ -1,5 +1,9 @@
 #Change Log
 
+## [0.27.2]
+### fixes
+- longs in charts converted to ints
+
 ## [0.27.1]
 ### fixes
 - conversion factor for fuel consumed in ASHP summaries

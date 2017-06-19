@@ -84,7 +84,7 @@ class WebSummary(object):
             pass
         #~ print "fine"
         self.env = Environment(loader=PackageLoader('aaem_summaries','templates/'))
-        
+        #~ print self.env.list_templates()
         self.component_html = self.env.get_template('component.html')
         self.general_summaries_html = self.env.get_template('demo.html')
         self.potential_projects_html = \

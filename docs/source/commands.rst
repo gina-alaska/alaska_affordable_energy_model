@@ -64,6 +64,7 @@ regenerate(or generate) the model directory structure needed for running the mod
 Options:
  * Dev (--dev, -d): use only the development communities
  * Force (--force, -f): force overwriting of existing directories  
+ * Make Globals (--make_globals, -g): splits the configurations generated into a global file and community files
 
 Example, tagged:
      

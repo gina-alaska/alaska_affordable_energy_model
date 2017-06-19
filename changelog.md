@@ -1,6 +1,22 @@
 #Change Log
 
-## [0.27.2]
+## [0.27.4]
+### adds
+-- spilt configs option to refresh CLI
+-- golbal config option added back to script files
+
+### changes
+-- setup.py now requires setup tools
+
+### updates
+-- sphinx docs
+
+### fixes
+-- missing conversion in calulation of levelized costs
+-- intertie calculations for non residential preprocessing
+-- intertie electricity prices
+
+## [0.27.3]
 ### adds
 -- running of AAEM from a script file has been re-implemented and updated
 -- individual community forecast csv files have been re-implemented and updated

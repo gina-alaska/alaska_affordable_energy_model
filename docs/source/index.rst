@@ -23,7 +23,6 @@ The source for this website/the model documentation is managed in the same code 
    :maxdepth: 2
 
    instructions
-   scripts
    aaem.components
    software
    

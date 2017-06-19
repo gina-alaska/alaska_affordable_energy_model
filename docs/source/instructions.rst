@@ -9,4 +9,5 @@ Instructions
    
    installation
    commands
+   scripts
 
