@@ -191,9 +191,14 @@ def preprocess(preprocessor, **kwargs):
         else:
             inventory_ids = [inventory_ids[0]]
             count_ids = [count_ids[0]]
-    
+    #~ print inventory_ids
     population = \
         preprocessor.data['community']['population'].ix[2010]['population']
+    #~ print 'C', population
+    if not preprocessor.process_intertie and \
+        preprocessor.intertie_status == 'child':    
+        population = preprocessor.load_population(get_it_ids = True).ix[2010]['population']
+    
     
     data = {
         'Non-residential Energy Efficiency':{
