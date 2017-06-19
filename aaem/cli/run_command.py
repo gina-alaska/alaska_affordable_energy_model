@@ -28,6 +28,9 @@ class RunCommand(pycommand.CommandBase):
             ('tag',('t', '<tag>', "tag for results directory")),
             ('scalers', ('s', '<scalers>',
                                     'dictioanry of scalers as a string')),
+            ('global_config', ('g', '<global_configuration_file>', 
+                ('A configuration yaml file containing varaiables to apply'
+                ' all communites being run'))),
            )
     description =('Run model for given communities. (default = all communities)'
                     'options: \n'
@@ -93,7 +96,7 @@ class RunCommand(pycommand.CommandBase):
                     #~ print com['config']
                     run_driver.run(
                         com['config'],
-                        #~ global_config = script['global']['global config'],
+                        global_config = script['global']['global config'],
                         tag = script['global']['results tag'],
                         scalers = com['scalers'],
                         alt_save_name = com['ID'])
@@ -157,6 +160,21 @@ class RunCommand(pycommand.CommandBase):
                 rd = 'results_' + tag 
             else:
                 rd = 'results'
+               
+            global_config = None
+            if not self.flags.global_config is None:
+                global_config = self.flags.global_config
+                if not os.path.isfile(global_config):
+                    msg = 'FLAG ERROR: global config specified with option' + \
+                        ' --global(-g) is not a file'
+                    raise RuntimeError, msg
+            if global_config is None:
+                gc = os.path.join(base, 'config', '__global_config.yaml')
+                if os.path.isfile(gc):
+                    print 'Using ' + gc + ' ad global config'
+                    global_config = gc 
+        
+        
                 
             scalers = driver.default_scalers
             if not self.flags.scalers is None:
@@ -194,7 +212,12 @@ class RunCommand(pycommand.CommandBase):
                     print com
                 try:
                     pth = os.path.join(base,'config',com + '.yaml')
-                    run_driver.run(pth, tag = tag, scalers = scalers)
+                    run_driver.run(
+                        pth, 
+                        global_config = global_config,
+                        tag = tag, 
+                        scalers = scalers
+                    )
                                     
                 except (RuntimeError, IOError) as e:
                     print e

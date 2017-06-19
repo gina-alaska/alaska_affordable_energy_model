@@ -20,6 +20,9 @@ class RefreshCommand(pycommand.CommandBase):
     optionList = (
            ('dev', ('d', False, "use only development communities")),
            ('force',('f', False, "force refresh of existing directory")),
+           ('make_globals', 
+                ('g', False, "make a seperate config for global values")
+           )
     )
 
     description = ('Refresh the data from the data repo\n\n'
@@ -71,9 +74,18 @@ class RefreshCommand(pycommand.CommandBase):
             coms = read_csv(os.path.join(repo,'community_list.csv'),
                          comment="#",index_col=0).Community.tolist()
     
+    
+        make_globals = True
+        if self.flags.make_globals is None:
+            make_globals = False
+    
         #~ coms = ['Brevig Mission']
         my_setup = driver.Setup(model_root, repo, sorted(coms), tag)
-        if not my_setup.setup(force = force, ng_coms=['Barrow','Nuiqsut']):
+        if not my_setup.setup(
+                    force = force,
+                    ng_coms=['Barrow','Nuiqsut'],
+                    make_globals = make_globals
+                ):
             pth = os.path.join(model_root, my_setup.tag)
             msg = "REFRESH ERRO: " + pth + \
                     " exists. Use force flag (-f) to overwrite"

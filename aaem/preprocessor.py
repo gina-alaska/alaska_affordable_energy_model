@@ -264,41 +264,112 @@ class Preprocessor (object):
             self.data['community']['natural gas price'] = 3.0
             self.data['community']['natural gas used'] = True
             
-    def save_config (self, out_dir):
+    def save_config (self, out_dir, keys_to_split = {}):
         """Save the configuration yaml file
         
         parameters
         ----------
         out_dir: path
             path to directory to save the config in 
+        keys_to_split: dict of lists
+            sections and thier keys to split
         """
         if len(self.projects) == 0:
-            self.save_single(out_dir)
+            self.save_single(out_dir, keys_to_split )
         else:
-            self.save_projects(out_dir)
+            self.save_projects(out_dir, keys_to_split )
             
-    def save_projects (self, out_dir):
-        """
+    def save_projects (self, out_dir, keys_to_split  ={}):
+        """Save the configuration yaml file for each project
+        
+        parameters
+        ----------
+        out_dir: path
+            path to directory to save the config in 
+        keys_to_split: dict of lists
+            sections and thier keys to split
         """
         original_tag = self.data['community']['file id']
-        self.save_single(out_dir)
+        self.save_single(out_dir, keys_to_split )
         my_copy = copy.deepcopy(self.data)
         for project in self.projects:
             self.data['community']['file id'] = original_tag + '+' + project
             #~ print self.projects[project]
             self.data = merge_configs(self.data, self.projects[project])
-            self.save_single(out_dir)
+            self.save_single(out_dir, keys_to_split)
         
         self.data = my_copy
         #~ self.data['community']['file id'] = original_tag
         
-    def save_single (self, out_dir):
+    def split_config(self, keys):
+        """split confing into to, usefull for creating global config
+        
+        parameters
+        ----------
+        keys: dict of lists
+            sections and thier keys to split
+        """
+        with_keys = {}
+        without_keys = {}
+        
+        
+        for section in keys:
+            with_keys[section] = {}
+            for item in keys[section]:
+                with_keys[section][item] = self.data[section][item]
+        
+        for section in self.data:
+            without_keys[section] = {}
+            
+            try:
+                community_keys = \
+                    set(self.data[section].keys()) ^ set(keys[section])
+            except KeyError:
+                community_keys = self.data[section].keys()
+            for item in community_keys:
+                without_keys[section][item] = self.data[section][item]
+                
+                
+        return with_keys, without_keys
+        
+    def save_global_congfig(self, f_name, keys_to_split={}):
+        """Save the global configuration yaml file
+        
+        parameters
+        ----------
+        f_name: path
+            path to save file with
+        keys_to_split: dict of lists
+            sections and thier keys to split
+        """
+        gc, data = self.split_config(keys_to_split)
+        
+        s_order = ['community'] + comp_order
+        i_order = {'community': base_order}
+        comments = {}
+        for comp in comp_lib:
+            module = self.import_component(comp_lib[comp])
+            i_order[comp] = module.config.order
+            comments[comp] = module.config.comments
+
+        save_config(f_name,
+            gc,
+            comments = comments,
+            s_order = s_order,
+            i_orders = i_order,
+            header = ''
+        )
+        
+        
+    def save_single (self, out_dir, keys_to_split={}):
         """Save the configuration yaml file
         
         parameters
         ----------
         out_dir: path
             path to directory to save the config in 
+        keys_to_split: dict of lists
+            sections and thier keys to split
         """
         community = self.data['community']['file id']\
             .replace(' ', '_').replace("'", '')
@@ -313,9 +384,11 @@ class Preprocessor (object):
             i_order[comp] = module.config.order
             comments[comp] = module.config.comments
         
+        gc, data = self.split_config(keys_to_split)
+        
         out_path = os.path.join(out_dir, community+'.yaml')
         save_config(out_path,
-            self.data,
+            data,
             comments = comments,
             s_order = s_order,
             i_orders = i_order,
