@@ -112,7 +112,7 @@ class AnnualSavings (object):
             maintenance = maintenance[:self.actual_project_life]
         maintenance = np.array(maintenance)
         
-        maintenance_npv = np.npv(self.cd['discount rate'], 
+        maintenance_npv = np.npv((self.cd['discount rate']/100.0), 
                                     np.append(yts, maintenance))
         
         
@@ -121,7 +121,7 @@ class AnnualSavings (object):
         else:
             fuel_amount = fuel_amount[:self.actual_project_life]  
         
-        fuel_npv = np.npv(self.cd['discount rate'], 
+        fuel_npv = np.npv((self.cd['discount rate']/100.0), 
                                     np.append(yts, fuel_amount))    
                                 
         
