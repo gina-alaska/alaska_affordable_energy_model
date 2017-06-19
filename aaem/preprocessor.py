@@ -211,17 +211,20 @@ class Preprocessor (object):
         ## caclulate 'electric non-fuel prices'
         if not source == 'none':
             efficiency = self.data['community']['diesel generation efficiency']
+            #~ print efficiency
             percent_diesel = \
                 self.data['community']['utility info']['generation diesel']\
                 .fillna(0)\
                 /self.data['community']['utility info']['net generation']
+            #~ print self.data['community']['utility info'][['generation diesel', 'net generation']]
             percent_diesel = float(percent_diesel.iloc[-1])
-        
+            #~ print percent_diesel
+            #~ print self.data['community']['diesel prices'].iloc[0]
             adder = percent_diesel * \
                 self.data['community']['diesel prices'] / efficiency
             adder = adder.fillna(0)
             
-            
+            #~ print self.data['community']['electric non-fuel price'] 
             self.data['community']['electric non-fuel prices'] = \
                 self.data['community']['electric non-fuel price'] + adder
           
@@ -657,14 +660,13 @@ class Preprocessor (object):
             #~ print ids
             if not self.process_intertie:
                 ## parent community or only community 
-                if self.intertie_status in ['parent', 'not in intertie']:
+                if self.intertie_status in ['not in intertie']:
                     ids = [self.communities[0], self.aliases[0]]
-                else:
-                    ## name and ailias of first child (community of interest)
-                    ids = [self.communities[1], self.aliases[1]]
+                #~ else:
+                    #~ ## name and ailias of first child (community of interest)
+                    #~ ids = [self.communities[1], self.aliases[1]]
         ## cleanup ids
         ids = [i for i in ids if i != ""]
-        
         ## Klukwan fix - see not at top of function
         if 'Klukwan' in ids:
             ids += ["Chilkat Valley"]   
@@ -678,7 +680,7 @@ class Preprocessor (object):
         
         # filter out 'Purchased Power' from child communities as they
         # buy it from the parent so its counted there
-        if self.process_intertie:
+        if self.intertie_status in ['parent', 'child'] :
             children = self.communities[1:] +  self.aliases[1:]
             for child in children:
                 try: 
@@ -712,7 +714,7 @@ class Preprocessor (object):
             "government_kwh_sold",
             "unbilled_kwh", "fuel_cost"
         ]]
-        
+        #~ print len(data)
         ## get last year with full data
         last_year = data["year"].max()
         while len(data[data["year"] == last_year])%12 != 0:
@@ -754,8 +756,8 @@ class Preprocessor (object):
         """
         ## get ids
         ids = self.communities + self.aliases
-        if not self.process_intertie:
-            ids = [self.communities[0], self.aliases[0]]
+        #~ if not self.process_intertie:
+            #~ ids = [self.communities[0], self.aliases[0]]
         ids = [i for i in ids if i != ""]
         
         ## TODO: weird
@@ -892,7 +894,7 @@ class Preprocessor (object):
                     "povided type is not 'diesel', 'natural gas', "
                     "'wind', or 'solar'.")
                 )
-          
+        #~ print purchase_type, other_type_1, other_type_2 
         ## reindex by year
         data = data.set_index('year')
         data_by_year = []
@@ -929,9 +931,10 @@ class Preprocessor (object):
             years_data['generation natural gas'] = 0
             years_data['generation biomass'] = 0
             
-            
+            #~ print years_data
             ## add generation from purchases
             if not purchase_type is None:
+                #~ print years_data["kwh_purchased"]
                 years_data['generation ' + purchase_type ] += \
                     years_data["kwh_purchased"]
             
@@ -970,7 +973,7 @@ class Preprocessor (object):
                 years_data['generation'] = years_data['generation'] + phc
             else:
                 years_data['net generation'] = years_data['generation'] - phc
-                
+            #~ print years_data['generation diesel'], years_data['net generation']
             # other values
             years_data['fuel used'] = years_data['fuel_used_gal']
             years_data['line loss'] = \
