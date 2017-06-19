@@ -1897,6 +1897,11 @@ class WebSummary(object):
                 os.path.join(
                     self.directory, community.replace("'",""),'csv', fname),
                 index=False)
+                
+        for row in plotting_table:
+            for idx in range(len(row)):
+                if type(row[idx]) is long:
+                   row[idx] = int(row[idx])
         plotting_table.insert(0,header)
         #~ print plotting_table
         return plotting_table 
@@ -1954,6 +1959,10 @@ class WebSummary(object):
                                              community,'csv', fname),
                                 index=False)
         
+        for row in plotting_table:
+            for idx in range(len(row)):
+                if type(row[idx]) is long:
+                   row[idx] = int(row[idx])
         plotting_table.insert(0,header)
         return plotting_table 
     
