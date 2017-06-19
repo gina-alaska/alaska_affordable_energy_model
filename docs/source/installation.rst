@@ -121,7 +121,17 @@ For windows
 ~~~~~~~~~~~
 
 Add the python27 and aaem/bin directory to your path using a powershell profile. 
+
+Follow the first few setps here to create a power shell profile here if nessary:
 https://www.howtogeek.com/50236/customizing-your-powershell-profile/
+
+add python and aaem/bin directory like this
+
+.. code-block:: bash
+    
+    $env:path += ";C:\Python27;C:\Users\user\alaska_affordable_energy_model\bin"
+    
+    
 
 	
 Step 5: perform initial setup 
