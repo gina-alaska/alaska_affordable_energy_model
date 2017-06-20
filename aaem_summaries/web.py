@@ -1726,6 +1726,9 @@ class WebSummary(object):
                         name is None or name == "UNKNOWN":
                     name = comp
                 
+                if name != comp:
+                    name = comp + ': ' + name
+                
                 name = name.decode('unicode_escape').encode('ascii','ignore')
                 
                 #~ print name
