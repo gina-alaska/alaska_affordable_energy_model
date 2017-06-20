@@ -1302,18 +1302,13 @@ class WebSummary(object):
                     ## -2 for year, and annotation
                     dashed += str(col-2) +": { lineDashStyle: [4, 2] },"
                 dashed += "},"
-               
-               
-                #~ dashed = "series: {0: { lineDashStyle: [4, 2] },"
-                                         #~ "1: { lineDashStyle: [4, 2] },"
-                                        #~ "2: { lineDashStyle: [4, 2] },},"
                 
                 generation_table = self.make_plot_table(generation, sigfig = 2,
                                                 community = com, 
                                                 fname = com+"_generation.csv")
                 charts.append({'name':'generation', 'data': 
                            str(generation_table).replace('nan','null'), 
-                                'title':'generation',
+                                'title':'Electricity generation by source',
                                 'type': "'kWh'",'plot': True,
                             'dashed': (dashed),})  
             
