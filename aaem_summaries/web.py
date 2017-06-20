@@ -1268,6 +1268,7 @@ class WebSummary(object):
                         ["Maximum expected generation solar [kWh/year]"] = \
                         res['Solar Power'].generation_proposed[0]
                 except AttributeError:
+                    pass
                     generation["Maximum expected generation solar [kWh/year]"]\
                         = 0
                     
@@ -1291,6 +1292,22 @@ class WebSummary(object):
                 generation = generation[['year','annotation'] +\
                     list(generation.columns[1:-1])]
                 
+                
+                generation = generation.loc[:, (generation != 0).any(axis=0)]
+                
+                dashed = "series: { "
+                for col in range(len(generation.columns)):
+                    if generation.columns[col].find('expected') == -1:
+                        continue
+                    ## -2 for year, and annotation
+                    dashed += str(col-2) +": { lineDashStyle: [4, 2] },"
+                dashed += "},"
+               
+               
+                #~ dashed = "series: {0: { lineDashStyle: [4, 2] },"
+                                         #~ "1: { lineDashStyle: [4, 2] },"
+                                        #~ "2: { lineDashStyle: [4, 2] },},"
+                
                 generation_table = self.make_plot_table(generation, sigfig = 2,
                                                 community = com, 
                                                 fname = com+"_generation.csv")
@@ -1298,9 +1315,7 @@ class WebSummary(object):
                            str(generation_table).replace('nan','null'), 
                                 'title':'generation',
                                 'type': "'kWh'",'plot': True,
-                            'dashed': ("series: {0: { lineDashStyle: [4, 2] },"
-                                         "1: { lineDashStyle: [4, 2] },"
-                                        "2: { lineDashStyle: [4, 2] },},"),})  
+                            'dashed': (dashed),})  
             
                     
                                  
@@ -1520,32 +1535,31 @@ class WebSummary(object):
                 h_gen = "unknown"
                 
             table = [
-                [True, "Power House", ""],
-                [False, "Efficiency", '{:,.2f} kWh/gallon'.format(eff)],
-                [False, "Total number of generators", num_gens],
-                [False, "Total capacity", cap], 
-                [False, "Largest generator", largest],
-                [False, "Sizing", size],
+                [False, "<b>Power House</b>", "", "[DIVIDER]",
+                    "<b>Wind Power</b>", ""],
+                [False, "Efficiency", '{:,.2f} kWh/gallon'.format(eff),
+                    "[DIVIDER]", "Current wind capacity", 
+                    '{:,.0f} kW'.format(w_cap)],
+                [False, "Total number of generators", num_gens, "[DIVIDER]",
+                    "Current wind generation", w_gen ],
+                [False, "Total capacity", cap, "[DIVIDER]", 
+                    "Current wind capacity factor", '{:,.2f}'.format(w_fac)], 
+                [False, "Largest generator", largest, "[DIVIDER]",
+                    "<b>Solar Power</b>", ""],
+                [False, "Sizing", size, "[DIVIDER]",
+                    "Current solar capacity",  '{:,.0f} kW'.format(s_cap)],
                 [False, "Ratio of total capacity to average load", 
-                                                        '{:,.2f}'.format(ratio)],
-                [True, "Heat Recovery", ""],
-                [False, "Operational",  hr_opp],
+                    '{:,.2f}'.format(ratio), "[DIVIDER]", 
+                    "Current solar generation",  s_gen],
+                [False, "<b>Heat Recovery<b>", "",  "[DIVIDER]",
+                    "Current output per 10kW Solar PV", '{:,.0f}'.format(s_pv)],
+                [False, "Operational",  hr_opp,  "[DIVIDER]",
+                    "<b>Hydropower</b>", ""],
                 [False, 
                     "Estimated number of gallons of heating oil displaced", 
-                                            '{:,.0f} gallons'.format(hr_ava)],
-                [True, "Wind Power", ""],
-                [False, "Current wind capacity", '{:,.0f} kW'.format(w_cap)],
-                [False, "Current wind generation", w_gen],
-                [False, "Current wind capacity factor", '{:,.2f}'.format(w_fac)],
-                [True, "Solar Power", ""],
-                [False, "Current solar capacity",  '{:,.0f} kW'.format(s_cap)],
-                [False, "Current solar generation",  s_gen],
-                [False, "Current output per 10kW Solar PV",
-                    '{:,.0f}'.format(s_pv)],
-                [True, "Hydropower", ""],
-                [False, "Current hydro capacity",  '{:,.0f} kW'.format(h_cap)],
-                [False, "Current hydro generation",  h_gen],
-                
+                    '{:,.0f} gallons'.format(hr_ava), "[DIVIDER]", 
+                    "Current hydro capacity",'{:,.0f} kW'.format(h_cap)],
+                [False, '', '', "[DIVIDER]", "Current hydro generation",  h_gen]
                 ]
     
                 
@@ -1713,7 +1727,8 @@ class WebSummary(object):
                     name = c.comp_specs['name']
                 except (KeyError, TypeError):
                     name = comp
-                if name == 'None' or name == 'none' or name is None:
+                if name == 'None' or name == 'none' or\
+                        name is None or name == "UNKNOWN":
                     name = comp
                 
                 name = name.decode('unicode_escape').encode('ascii','ignore')
@@ -1723,6 +1738,10 @@ class WebSummary(object):
                     success = True if ratio > 1.0 and ratio != 'N/A' else False
                 except TypeError:
                     success = True if ratio > 1.0 else False
+                if name in ['Hydropower', 'Heat Recovery']:
+                    continue
+                if name in ['Wind Power']:
+                    name += ' (Modeled)'  
                 cats[comp].append({'name': name,
                               'sucess': success,
                               'negitive': True if ratio < 0 else False,
