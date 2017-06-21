@@ -926,21 +926,22 @@ class WebSummary(object):
              #~ [False,'% Buildings identified', '{:,.2f}%'.format(percent_id*100)],
              #~ [False,'% Square feet measured','{:,.2f}%'.format(percent_sf*100)]]
             description = "There is a estimated total of " + \
-                    '{:,.0f}'.format(estimates['Square Feet'].sum()) + \
-                    " square feet for the " + str(int(count+num)) + \
-                    " non-residential buildings in this community. " +\
-                    '{:,.1f}%'.format(percent_id*100) + " of the buildings " +\
-                    "have been identified. The others are assumed to exist. " +\
-                    '{:,.1f}%'.format(percent_sf*100) + " of the assumed" +\
-                    " square footage is from measured sources." +\
-                    " The break down of heating fuel consumption by building" +\
-                    " type is pesented in the pie chart"
+                '{:,.0f}'.format(estimates['Square Feet'].sum()) + \
+                " square feet for the " + str(int(count+num)) + \
+                " non-residential buildings in this community. <br><br>" +\
+                '{:,.1f}%'.format(percent_id*100) + " of the buildings " +\
+                "have been identified. The others are assumed to exist. "+\
+                " <br><br> "+\
+                '{:,.1f}%'.format(percent_sf*100) + " of the assumed" +\
+                " square footage is from measured sources. <br><br>" +\
+                " The break down of heating fuel consumption by building" +\
+                " type is pesented in the pie chart"
              
             for t in building_types:
                 n = t
                 if n == 'Average':
                     n = 'Unknown'
-                n = 'Consumption by ' + n 
+                #~ n = 'Consumption by ' + n 
                 v = (building_types[t]/total)*100
                 table.append([n,v])
                              
@@ -948,7 +949,7 @@ class WebSummary(object):
             #~ print table
             charts.append({'name':'non_residential_buildings', 
                 'data': str(table),
-                'title':'Non-residential Buildings',
+                'title':'Non-residential building heating fuels consumption',
                 'pie': True,
                 'plot':True,
                 'type': "'pie'",
@@ -956,7 +957,7 @@ class WebSummary(object):
         else:
             charts.append({'name':'non_residential_buildings', 
                 'data': "No Building data avaialble." ,
-                'title':'Non-residential Buildings'})
+                'title':'Non-residential building heating fuels consumption',})
         
         ## Consumption chart
         if res['community data'].intertie == 'child':
