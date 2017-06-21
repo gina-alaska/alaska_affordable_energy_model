@@ -97,9 +97,10 @@ def generate_web_summary (web_object, community):
         {'words':
             'Households praticipating weatherazation of home ' + \
             'energy rebate programs ('+ str(int(year)) +')',
-         'value': str(modeled.comp_specs['data']['BEES Number'])},
+         'value': str(modeled.comp_specs['data']['Post-Retrofit Number'])},
          
-         {'words':'Estimated Total Households ('+ str(int(modeled.start_year)) +')',
+         {'words':'Estimated Total Households (' +\
+            str(int(modeled.start_year)) +')',
             'value': modeled.init_HH},
         
                 ]
@@ -160,6 +161,12 @@ def create_project_details_list (project):
         A dictionary with values used by summary
     """
    
+   
+    ex_h_savings = (1 - \
+        (
+        project.proposed_HF_consumption / project.baseline_HF_consumption
+        )[0])*100
+    #~ print ex_h_savings
     return [
         {'words':'Capital cost', 
             'value': '${:,.0f}'.format(project.get_NPV_costs())},
@@ -169,18 +176,12 @@ def create_project_details_list (project):
             'value': '${:,.0f}'.format(project.get_NPV_net_benefit())},
         {'words':'Benefit-cost ratio', 
             'value': '{:,.1f}'.format(project.get_BC_ratio())},
+        {'words':'Expected space heating savings ', 
+            'value': '{:,.2f}%'.format(ex_h_savings)},
         {'words':
             'Estimated households to be retofit ('\
                 + str(int(project.start_year)) +')' ,
             'value': int(project.opportunity_HH)},
         {'words':'Estimated cost to refit household', 
             'value': '${:,.2f}/home'.format(project.refit_cost_rate)},
-        #~ {'words':'Expected Yearly Generation (kWh/year)', 
-         #~ 'value': 
-                #~ '{:,.0f}'.format(project.proposed_load *\
-                                 #~ constants.hours_per_year)},
-
-        #~ {'words':'Output per 10kW Solar PV', 
-            #~ 'value': project.comp_specs['data']\
-                                         #~ ['Output per 10kW Solar PV']},
             ]
