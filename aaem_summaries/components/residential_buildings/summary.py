@@ -14,7 +14,7 @@ from pandas import DataFrame
 
 COMPONENT_NAME = "Residential Energy Efficiency"
 DESCRIPTION = """
-    This component calculates the potential reduction heating oil by improving the efficiency of residential buildings
+    This component calculates the potential reduction in heating fuels by improving the efficiency of residential buildings
 """
 
 def generate_web_summary (web_object, community):
@@ -87,13 +87,21 @@ def generate_web_summary (web_object, community):
                                     'savings_HF')
     #~ table3[0][-1]
     year = modeled.comp_specs['data']['Year']
-    current = [{'words':'Households '+ str(int(year)) ,
+    current = [
+        {'words':'Households ('+ str(int(year)) + ')' ,
                 'value': int(modeled.comp_specs['data']['Total Occupied'])},
-        {'words':'Estimated Total Households ('+ str(int(modeled.start_year)) +')',
-        'value': modeled.init_HH},
+        
+        {'words':'Households with BEES certifcation' + \
+                ' ('+ str(int(year)) +')',
+            'value': str(modeled.comp_specs['data']['BEES Number'])},
         {'words':
-            'Estimated Households to be retofit ('+ str(int(modeled.start_year)) +')' ,
-        'value': int(modeled.opportunity_HH)},
+            'Households praticipating weatherazation of home ' + \
+            'energy rebate programs ('+ str(int(year)) +')',
+         'value': str(modeled.comp_specs['data']['BEES Number'])},
+         
+         {'words':'Estimated Total Households ('+ str(int(modeled.start_year)) +')',
+            'value': modeled.init_HH},
+        
                 ]
                 
     ## info for modeled
@@ -161,6 +169,10 @@ def create_project_details_list (project):
             'value': '${:,.0f}'.format(project.get_NPV_net_benefit())},
         {'words':'Benefit-cost ratio', 
             'value': '{:,.1f}'.format(project.get_BC_ratio())},
+        {'words':
+            'Estimated households to be retofit ('\
+                + str(int(project.start_year)) +')' ,
+            'value': int(project.opportunity_HH)},
         {'words':'Estimated cost to refit household', 
             'value': '${:,.2f}/home'.format(project.refit_cost_rate)},
         #~ {'words':'Expected Yearly Generation (kWh/year)', 
