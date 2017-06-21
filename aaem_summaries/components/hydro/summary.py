@@ -15,7 +15,7 @@ import numpy as np
 COMPONENT_NAME = "Hydropower"
 
 DESCRIPTION = """
-    This component calculates the potential electricity generation from diesel that could be offset by installing new Hydropower generation infrastructure. Requires that at least a reconnaissance-level heat recovery study has been completed for the community to be run. 
+    This component calculates the potential electricity generation from diesel that could be offset by installing new Hydropower generation infrastructure. Requires that at least a reconnaissance-level hydropower study has been completed for the community to be run. 
 """
 
 def generate_web_summary (web_object, community):
