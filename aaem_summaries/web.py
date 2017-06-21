@@ -1532,32 +1532,45 @@ class WebSummary(object):
                 s_gen = "unknown"
                 h_gen = "unknown"
                 
+            try:
+                current_total_gen = \
+                    res['community data'].get_item('community',
+                    'utility info')['net generation'].iloc[-1:]
+                current_total_load = float(current_total_gen)/hours_per_year
+                current_year = str(current_total_gen.index[0])
+            except TypeError:
+                current_total_gen = 0
+                current_total_load = float(current_total_gen)/hours_per_year
+                current_year = ''
+                
+            #~ print current_total_gen, current_total_load, current_year
             table = [
                 [False, "<b>Power House</b>", "", "[DIVIDER]",
                     "<b>Wind Power</b>", ""],
-                [False, "Efficiency", '{:,.2f} kWh/gallon'.format(eff),
+                    
+                [False, 'Average Load ('+ current_year + ')', 
+                    '{:,.0f} kW'.format(current_total_load),
                     "[DIVIDER]", "Current wind capacity", 
                     '{:,.0f} kW'.format(w_cap)],
+                [False, 'Average Genneration ('+ current_year + ')', 
+                    '{:,.0f} kWh'.format(float(current_total_gen)), "[DIVIDER]",
+                    "Current wind generation", w_gen],
+                [False, "Efficiency", '{:,.2f} kWh/gallon'.format(eff), "[DIVIDER]", "Current wind capacity factor", '{:,.2f}'.format(w_fac)   ],
                 [False, "Total number of generators", num_gens, "[DIVIDER]",
-                    "Current wind generation", w_gen ],
-                [False, "Total capacity", cap, "[DIVIDER]", 
-                    "Current wind capacity factor", '{:,.2f}'.format(w_fac)], 
-                [False, "Largest generator", largest, "[DIVIDER]",
-                    "<b>Solar Power</b>", ""],
-                [False, "Sizing", size, "[DIVIDER]",
-                    "Current solar capacity",  '{:,.0f} kW'.format(s_cap)],
+                    "<b>Solar Power</b>", ""     ],
+                [False, "Total capacity", cap, "[DIVIDER]",  "Current solar capacity",  '{:,.0f} kW'.format(s_cap)
+                    ], 
+                [False, "Largest generator", largest,   "[DIVIDER]",  "Current solar generation",  s_gen],
+                [False, "Sizing", size, "[DIVIDER]", "Current output per 10kW Solar PV", '{:,.0f}'.format(s_pv)],
                 [False, "Ratio of total capacity to average load", 
-                    '{:,.2f}'.format(ratio), "[DIVIDER]", 
-                    "Current solar generation",  s_gen],
-                [False, "<b>Heat Recovery<b>", "",  "[DIVIDER]",
-                    "Current output per 10kW Solar PV", '{:,.0f}'.format(s_pv)],
-                [False, "Operational",  hr_opp,  "[DIVIDER]",
-                    "<b>Hydropower</b>", ""],
+                    '{:,.2f}'.format(ratio), "[DIVIDER]", "<b>Hydropower</b>", ""],
+                [False, "<b>Heat Recovery<b>", "",  "[DIVIDER]","Current hydro capacity",'{:,.0f} kW'.format(h_cap)
+                    ],
+                [False, "Operational",  hr_opp,  "[DIVIDER]","Current hydro generation",  h_gen
+                    ],
                 [False, 
                     "Estimated number of gallons of heating oil displaced", 
-                    '{:,.0f} gallons'.format(hr_ava), "[DIVIDER]", 
-                    "Current hydro capacity",'{:,.0f} kW'.format(h_cap)],
-                [False, '', '', "[DIVIDER]", "Current hydro generation",  h_gen]
+                    '{:,.0f} gallons'.format(hr_ava), "[DIVIDER]", '', '' ],
                 ]
     
                 

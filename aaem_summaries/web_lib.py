@@ -215,64 +215,68 @@ def create_electric_system_summary (web_object, community ):
         
     returns a list of items to use with the html template
     """
-    community_results = web_object.results[community]
-    fc = community_results['forecast']
-    hydro = community_results['Hydropower']
-    solar = community_results['Solar Power']
-    wind = community_results['Wind Power']
+    #~ community_results = web_object.results[community]
+    #~ fc = community_results['forecast']
+    #~ hydro = community_results['Hydropower']
+    #~ solar = community_results['Solar Power']
+    #~ wind = community_results['Wind Power']
     
-    expected_wind_total = wind.cd['wind generation limit']
-    expected_hydro_total = hydro.cd['hydro generation limit']
+    #~ expected_wind_total = wind.cd['wind generation limit']
+    #~ expected_hydro_total = hydro.cd['hydro generation limit']
                                         
                                         
-    expected_solar_total = \
-        '{:,.0f} kWh/year'.format(solar.generation_proposed[0])
+    #~ expected_solar_total = \
+        #~ '{:,.0f} kWh/year'.format(solar.generation_proposed[0])
     
     
     
-    total_gen = \
-        fc.cd.get_item('community','utility info')['net generation'].iloc[-1:]
+    #~ total_gen = \
+        #~ fc.cd.get_item('community','utility info')['net generation'].iloc[-1:]
     #~ print 
-    total_load = float(total_gen)/constants.hours_per_year
-    year = int(total_gen.index[0])
+    #~ total_load = float(total_gen)/constants.hours_per_year
+    #~ year = int(total_gen.index[0])
     
     
-    h_gen = float(fc.cd.get_item('community',
-            'utility info')['generation hydro'].iloc[-1:])
-    w_gen = float(fc.cd.get_item('community',
-            'utility info')['generation wind'].iloc[-1:])
-    s_gen = float(fc.cd.get_item('community',
-            'utility info')['generation solar'].iloc[-1:])
+    #~ h_gen = float(fc.cd.get_item('community',
+            #~ 'utility info')['generation hydro'].iloc[-1:])
+    #~ w_gen = float(fc.cd.get_item('community',
+            #~ 'utility info')['generation wind'].iloc[-1:])
+    #~ s_gen = float(fc.cd.get_item('community',
+            #~ 'utility info')['generation solar'].iloc[-1:])
     
-    current = [
-        {'words':'Average community load (' + str(year) +')',
-         'value': '{:,.0f} kW'.format(total_load)},
-        {'words':'Average generation (' + str(year) +')' , 
-         'value': '{:,.0f} kWh/year'.format(float(total_gen))},
-        {'words':'Peak load', 'value': 'Unknown'},
-        {'words':'Existing nameplate wind capacity', 
-         'value': 
-             '{:,.0f} kW'.format(
-             float(wind.cd['wind capacity']))},
-        {'words':'Existing wind generation (' + str(year) +')',
-         'value': '{:,.0f} kWh/year'.format(w_gen).replace('nan','0')},
-        {'words':'Estimated proposed wind generation',
-         'value': '{:,.0f} kWh/year'.format(expected_wind_total)},
-        {'words':'Existing nameplate solar capacity', 
-         'value': 
-             '{:,.0f} kW'.format(
-             float(solar.cd['solar capacity']))},
-        {'words':'Existing solar generation (' + str(year) +')', 
-         'value': '{:,.0f} kWh/year'.format(s_gen).replace('nan','0')},
-        {'words':'Estimated proposed solar generation',
-         'value': expected_solar_total},
-        {'words':'Existing nameplate hydro capacity ', 
-         'value': 
-             '{:,.0f} kW'.format(
-             float(fc.cd.get_item('community','hydro capacity')))},
-        {'words':'Existing hydro generation (' + str(year) +')', 
-         'value': '{:,.0f} kWh/year'.format(h_gen).replace('nan','0')},
-        {'words':'Estimated proposed hydro generation',
-         'value': '{:,.0f} kWh/year'.format(expected_hydro_total)}
-    ]
+    #~ current = [
+        #~ {'words':'Average community load (' + str(year) +')',
+         #~ 'value': '{:,.0f} kW'.format(total_load)},
+        #~ {'words':'Average generation (' + str(year) +')' , 
+         #~ 'value': '{:,.0f} kWh/year'.format(float(total_gen))},
+        #~ {'words':'Peak load', 'value': 'Unknown'},
+        #~ {'words':'Existing nameplate wind capacity', 
+         #~ 'value': 
+             #~ '{:,.0f} kW'.format(
+             #~ float(wind.cd['wind capacity']))},
+        #~ {'words':'Existing wind generation (' + str(year) +')',
+         #~ 'value': '{:,.0f} kWh/year'.format(w_gen).replace('nan','0')},
+        #~ {'words':'Estimated proposed wind generation',
+         #~ 'value': '{:,.0f} kWh/year'.format(expected_wind_total)},
+        #~ {'words':'Existing nameplate solar capacity', 
+         #~ 'value': 
+             #~ '{:,.0f} kW'.format(
+             #~ float(solar.cd['solar capacity']))},
+        #~ {'words':'Existing solar generation (' + str(year) +')', 
+         #~ 'value': '{:,.0f} kWh/year'.format(s_gen).replace('nan','0')},
+        #~ {'words':'Estimated proposed solar generation',
+         #~ 'value': expected_solar_total},
+        #~ {'words':'Existing nameplate hydro capacity ', 
+         #~ 'value': 
+             #~ '{:,.0f} kW'.format(
+             #~ float(fc.cd.get_item('community','hydro capacity')))},
+        #~ {'words':'Existing hydro generation (' + str(year) +')', 
+         #~ 'value': '{:,.0f} kWh/year'.format(h_gen).replace('nan','0')},
+        #~ {'words':'Estimated proposed hydro generation',
+         #~ 'value': '{:,.0f} kWh/year'.format(expected_hydro_total)}
+    #~ ]
+    current = [{'words':"See", 
+            'value':"<a href='./generation.html'>Generation </a> "+\
+                "for more details of the current generation systems"},
+         ]
     return current

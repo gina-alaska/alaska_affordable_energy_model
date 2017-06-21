@@ -99,7 +99,7 @@ def generate_web_summary (web_object, community):
         {'words':"Esitmated square feet", 'value':'{:,.0f}'.format(sqft)},
         {'words':"See", 
             'value':"<a href='./consumption.html'>consumption </a> "+\
-                "more details of the current non-residential buildings"},
+                "for more details of the current non-residential buildings"},
     ]
     
     ## info for modeled
