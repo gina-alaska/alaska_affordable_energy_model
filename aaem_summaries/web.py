@@ -539,6 +539,13 @@ class WebSummary(object):
         g_year = '(' + str(g_year) + ')'
         leff_year = '(' + str(leff_year) + ')'
         
+        ## Heating degree day chart
+        HDD = res['community data'].get_item('community','heating degree days')
+        #~ charts.append({'name':'hdd', 
+                #~ 'data': [],
+                #~ 'title':'Heating Degree Days',
+                #~ 'table': True,})
+        
         if res['community data'].intertie != 'child':
             table = [
              [ False, "<b>Demographics</b>", "", "[DIVIDER]",
@@ -561,10 +568,11 @@ class WebSummary(object):
              [ False, "<b>Consumption</b>", "", "[DIVIDER]",
                 "Line losses estimated " + str(leff_year), ll],
              [ False, "Total electricity consumption " + str(con_year), con,
-                "[DIVIDER]",'',''],
+                "[DIVIDER]",'<b>Other Info</b>',''],
              [ False, 
                 "Estimated residential heating fuel " + str(oil_year),
-                res_gal, "[DIVIDER]",'',''],
+                res_gal, "[DIVIDER]",
+                'Heating Degree Days per year','{:,.0f}'.format(HDD)],
              [ False, 
                 "Estimated non-residential heating fuel " + str(oil_year),
                 nr_gal, "[DIVIDER]",'',''],
@@ -842,14 +850,7 @@ class WebSummary(object):
         template = self.general_summaries_html
         res = self.results[com]
         charts = []
-        
-        ## Heating degree day chart
-        HDD = res['community data'].get_item('community','heating degree days')
-        charts.append({'name':'hdd', 
-                'data': [[False, 'Heating Degree Days per year', 
-                                                '{:,.0f}'.format(HDD)]],
-                'title':'Heating Degree Days',
-                'table': True,})
+    
         
         ## Residential building chart
         r = res['Residential Energy Efficiency'] # res. eff. component
