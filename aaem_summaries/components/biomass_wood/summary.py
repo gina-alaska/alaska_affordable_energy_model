@@ -369,7 +369,7 @@ def create_project_details_list (project):
     return [
         {'words':'Capital cost', 
             'value': costs},
-        {'words':'Lifetime savings', 
+        {'words':'Lifetime energy cost savings', 
             'value': benefits},
         {'words':'Net lifetime savings', 
             'value': net_benefits},

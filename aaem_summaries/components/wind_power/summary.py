@@ -186,7 +186,7 @@ def create_project_details_list (project):
     return [
         {'words':'Capital cost', 
             'value': '${:,.0f}'.format(project.get_NPV_costs())},
-        {'words':'Lifetime savings', 
+        {'words':'Lifetime energy cost savings', 
             'value': '${:,.0f}'.format(project.get_NPV_benefits())},
         {'words':'Net lifetime savings', 
             'value': '${:,.0f}'.format(project.get_NPV_net_benefit())},
