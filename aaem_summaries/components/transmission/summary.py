@@ -135,9 +135,16 @@ def create_project_details_list (project):
         A dictionary with values used by summary
     """
    
+    road_needed = 'road needed'
+    if project.cd['on road system']:
+        road_needed = 'road not needed'
+   
     return [
-        {'words':'Capital cost', 
+        {'words':'Capital cost (total)', 
             'value': '${:,.0f}'.format(project.get_NPV_costs())},
+        {'words':'Capital cost (cost per mile)', 
+            'value': '${:,.0f}/mile'.format(
+            project.comp_specs['est. intertie cost per mile'][road_needed])},
         {'words':'Lifetime energy cost savings', 
             'value': '${:,.0f}'.format(project.get_NPV_benefits())},
         {'words':'Net lifetime savings', 
