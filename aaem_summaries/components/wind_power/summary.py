@@ -10,6 +10,8 @@ import aaem.constants as constants
 from aaem.components import comp_order
 import aaem_summaries.web_lib as wl
 
+import numpy as np
+
 COMPONENT_NAME = "Wind Power"
 
 DESCRIPTION = """
@@ -172,37 +174,46 @@ def create_project_details_list (project):
         'utility info')['net generation'].iloc[-1:])
     pen *= 100  
     
-    try:
-        notes = project.comp_specs['notes']
-    except:
+
+    notes = project.comp_specs['notes']
+    
+    if type(notes) is float:    
         notes = ''
     
-    try:
+    if type(project.comp_specs['source']) is str:
         source = "<a href='" + \
             project.comp_specs['source'] + "'> link </a>"
-    except StandardError as e:
+    else:
         source = "unknown"  
+        
+    if not np.isnan(project.cost_per_kw):
+        cost = '${:,.0f}/kW'.format(project.cost_per_kw)
+    else:
+        cost = 'Value not determined as capital cost of project was known'
     
     return [
-        {'words':'Capital cost', 
+        {'words':'Capital cost (total)', 
             'value': '${:,.0f}'.format(project.get_NPV_costs())},
+        {'words':'Capital cost (cost per kW)', 
+            'value': cost},
         {'words':'Lifetime energy cost savings', 
             'value': '${:,.0f}'.format(project.get_NPV_benefits())},
         {'words':'Net lifetime savings', 
             'value': '${:,.0f}'.format(project.get_NPV_net_benefit())},
         {'words':'Benefit-cost ratio', 
             'value': '{:,.1f}'.format(project.get_BC_ratio())},
-        {'words':'Proposed mameplate Capacity', 
+        {'words':'Proposed nameplate capacity', 
             'value': '{:,.0f} kW'.format(project.load_offset_proposed)},
-        {'words':'Expected Yearly Generation', 
+        {'words':'Expected yearly generation', 
          'value': 
                 '{:,.0f} kWh/year'.format(project.load_offset_proposed *\
-                                 constants.hours_per_year)},
+            constants.hours_per_year*\
+                float(project.comp_specs['capacity factor']))},
 
-        {'words':'Estimated wind lass', 'value': wind_class},
-        {'words':'Estimated Capacity Factor', 
+        {'words':'Estimated wind class', 'value': wind_class},
+        {'words':'Estimated capacity factor', 
             'value': 
-                project.comp_specs['capacity factor']},
+                float(project.comp_specs['capacity factor'])},
         {'words':'Estimated wind penetration level', 
             'value': '{:,.2f}%'.format(pen)},
         {'words':'Notes', 
