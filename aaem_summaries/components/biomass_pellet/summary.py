@@ -10,6 +10,8 @@ import aaem.constants as constants
 from aaem.components import comp_order
 import aaem_summaries.web_lib as wl
 
+from pandas import DataFrame
+
 COMPONENT_NAME = "Biomass for Heat (Pellet)"
 
 DESCRIPTION = """
@@ -50,10 +52,41 @@ def generate_web_summary (web_object, community):
     ## get forecast stuff (consumption, generation, etc)
     fc = modeled.forecast
 
-    fuel_consumed = \
-        fc.heating_fuel_dataframe['heating_fuel_total_consumed [gallons/year]']\
-        .ix[start_year:end_year]
+    #~ ires = web_object.results[community]['Residential Energy Efficiency']
+    icom = web_object.results[community]['Non-residential Energy Efficiency']
+    #~ iwat = web_object.results[community]['Water and Wastewater Efficiency']
     
+    data =  DataFrame(fc.population['population'])
+    #~ df = DataFrame(ires.baseline_fuel_Hoil_consumption,
+        #~ columns =['col'],
+         #~ index = range(ires.start_year, ires.end_year+1))
+    #~ data['heating_fuel_residential_consumed [gallons/year]'] = \
+        #~ df['col'].round()
+        
+    df = DataFrame(
+        icom.baseline_HF_consumption * constants.mmbtu_to_gal_HF,
+        columns =['col'],
+         index = range(icom.start_year, icom.end_year+1))
+    data['heating_fuel_non-residential_consumed [gallons/year]'] = \
+        df['col'].round()
+        
+    #~ df = DataFrame(
+        #~ iwat.baseline_HF_consumption * constants.mmbtu_to_gal_HF,
+        #~ columns =['col'],
+         #~ index = range(iwat.start_year, iwat.end_year+1))
+    #~ data['heating_fuel_water-wastewater_consumed [gallons/year]'] = \
+        #~ df['col'].round()
+        
+    data['heating_fuel_total_consumed [gallons/year]'] = \
+        data[[
+            #~ 'heating_fuel_residential_consumed [gallons/year]',
+            'heating_fuel_non-residential_consumed [gallons/year]',
+            #~ 'heating_fuel_water-wastewater_consumed [gallons/year]',
+        ]].sum(1)
+
+
+    fuel_consumed = data['heating_fuel_total_consumed [gallons/year]']\
+        .ix[start_year:end_year]
     ## get the diesel prices
     diesel_price = web_object.results[community]['community data'].\
                             get_item('community','diesel prices').\
@@ -100,7 +133,6 @@ def generate_web_summary (web_object, community):
          'title':'Heating Fuel Consumed for non-residential sector',
          'type': "'other'",'plot': True,}
             ]
-        
     ## generate html
     ## generate html
     msg = None
@@ -170,10 +202,14 @@ def create_project_details_list (project):
             'value': net_benefits},
         {'words':'Benefit-cost ratio', 
             'value': BC},
-        {'words':"Energy Density [Btu/ton]", 
-            'value': project.comp_specs['energy density'] },
-        {'words':"Capacity factor", 
-            'value': project.comp_specs['data']['Capacity Factor'] },
+        {'words':'Proposed max capacity', 
+            'value': '{:,.0f} mmbtu/hr'.format(project.max_boiler_output)},
+        {'words':'Area heated', 
+            'value': '{:,.0f} sqft'.format(project.heat_displaced_sqft)},
+        {'words':'Fuel consumed per year', 
+            'value': '{:,.0f} tons of pellets'.\
+            format(project.biomass_fuel_consumed )},
+
             ]
 
 
