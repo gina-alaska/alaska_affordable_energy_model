@@ -49,6 +49,7 @@ order = [
     'name',
     'phase',
     'project type',
+    'identified as priority'
     'capital costs',
     'number buildings',
     'buildings',
@@ -88,6 +89,7 @@ structure = {
         'link': str,
         'notes': str,
         
+        'identified as priority': str
         
     }
 }
@@ -122,7 +124,7 @@ comments = {
     'proposed gallons diesel offset': '[float]',
     'link': '[str]',
     'notes': '[str]',
-
+    'identified as priority': '[str]',
 }
 
 

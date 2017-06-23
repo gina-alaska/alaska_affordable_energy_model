@@ -9,6 +9,7 @@ import os.path
 import aaem.constants as constants
 from aaem.components import comp_order
 import aaem_summaries.web_lib as wl
+from pandas import DataFrame
 
 import numpy as np
 
@@ -74,14 +75,13 @@ def generate_web_summary (web_object, community):
     ## get forecast stuff (consumption, generation, etc)
     fc = modeled.forecast
 
-    try:
-        fuel_consumed = \
-        fc.heating_fuel_dataframe['heating_fuel_non-residential_consumed [gallons/year]']\
-        .ix[start_year:end_year]
-    except:
-        fuel_consumed = \
-        fc.heating_fuel_dataframe['heating_fuel_total_consumed [gallons/year]']\
-        .ix[start_year:end_year] 
+    nr_comp = web_object.results[community]["Non-residential Energy Efficiency"]
+    fuel_consumed = DataFrame(
+        nr_comp.baseline_HF_consumption,
+        columns=['fuel consumed'], 
+        index = range(nr_comp.start_year, nr_comp.end_year+1)
+    )['fuel consumed'].ix[start_year:end_year]
+    fuel_consumed = fuel_consumed * constants.mmbtu_to_gal_HF
     
     ## get the diesel prices
     diesel_price = web_object.results[community]['community data'].\
@@ -109,45 +109,38 @@ def generate_web_summary (web_object, community):
     
     
     ## info for modeled
-    ests = modeled.comp_specs['estimate data']
+    #~ ests = modeled.comp_specs['estimate data']
     try:
         current_hr = float(
-            ests['Est. current annual heating fuel gallons displaced'])
-        if not ests['Waste Heat Recovery Opperational'].lower == 'no' and\
+            modeled.comp_specs['est. current annual heating fuel gallons displaced'])
+        if not modeled.cd['heat recovery operational'].lower == 'no' and\
            not np.isnan(current_hr):
             current_hr = '{:,.0f}'.format(
-                ests['Est. current annual heating fuel gallons displaced'])
-        elif ests['Waste Heat Recovery Opperational'].lower == 'no':
+                modeled.comp_specs['est. current annual heating fuel gallons displaced'])
+        elif modeled.comp_specs['heat recovery operational'].lower == 'no':
             current_hr = 0
         else:
             current_hr = "unknown"
     except ValueError:
         current_hr = "unknown"
         
-    try:
-        potential_hr = '{:,.0f}'.format(float(
-            ests['Est. potential annual heating fuel gallons displaced']))
-    except ValueError:
-        potential_hr =\
-            ests['Est. potential annual heating fuel gallons displaced']
+    
         
     
     current = [
         {'words':'Waste Heat Recovery Operational', 
-         'value': ests['Waste Heat Recovery Opperational']},
+         'value': modeled.cd['heat recovery operational']},
         {'words':'Identified as priority by HR working group', 
-         'value': ests['Identified as priority by HR working group']},
+         'value': modeled.comp_specs['identified as priority']},
         {'words':'Est. current annual heating fuel gallons displaced', 
          'value': current_hr},
-        {'words':'Est. potential annual heating fuel gallons displaced', 
-         'value': potential_hr},
+        
     ]
         
     
-    info = create_project_details_list(modeled)
+    #~ info = create_project_details_list(modeled)
          
     ## info table (list to send to template)
-    
     info_for_projects = [{'name': 'Current System', 'info':current}]
     
     if not np.isnan(modeled.get_net_benefit()).all():
@@ -158,9 +151,9 @@ def generate_web_summary (web_object, community):
     ## get info for projects (updates info_for_projects )
     for p in order:
         project = projects[p]
-        name = project.comp_specs['project details']['name']
+        name = project.comp_specs['name']
         info = create_project_details_list(project)
-            
+        #~ print info
         info_for_projects.append({'name':name,'info':info})
             
     
@@ -173,7 +166,7 @@ def generate_web_summary (web_object, community):
          'title':'Heating Fuel Consumed for community',
          'type': "'other'",'plot': True,}
             ]
-        
+
     ## generate html
     msg = None
     if community in web_object.bad_data_coms:
@@ -230,16 +223,32 @@ def create_project_details_list (project):
         
     try:
         source = "<a href='" + \
-            project.comp_specs['project details']['link'] + "'> link </a>"
+            project.comp_specs['link'] + "'> link </a>"
     except StandardError as e:
         source = "unknown"
         
     try:
-        notes = project.comp_specs['project details']['notes'] 
+        notes = project.comp_specs['notes'] 
     except StandardError as e:
         notes = "N/a"
+        
+    try:
+        potential_hr = '{:,.0f} gallons'.format(float(
+             project.comp_specs[
+                'proposed gallons diesel offset']))
+    except ValueError:
+        potential_hr =\
+            str(project.comp_specs[
+                'proposed gallons diesel offset'])
     
-    
+    try:
+        dist = \
+            '{:,.0f} ft'.format(\
+                float(project.comp_specs['total feet piping needed']))
+    except ValueError:
+        dist = 'Unknown'
+        
+    #~ print dist
     return [
         {'words':'Capital cost', 
             'value': costs},
@@ -249,8 +258,17 @@ def create_project_details_list (project):
             'value': net_benefits},
         {'words':'Benefit-cost ratio', 
             'value': BC},
+        {'words':'Est. potential annual heating fuel gallons displaced', 
+            'value': potential_hr},
+        {'words':'Number of buildings to be connected', 
+            'value': str(project.comp_specs['estimate buildings to heat'])},
+        {'words':'Round-trip distance of piping', 
+            'value': dist},
+         
+         
         {'words':'Source', 
             'value': source},
         {'words':'Notes', 
             'value': notes},
+        
             ]

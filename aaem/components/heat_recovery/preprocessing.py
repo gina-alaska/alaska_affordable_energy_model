@@ -75,6 +75,7 @@ def preprocess (preprocessor, **kwargs):
             
             'name': UNKNOWN,
             'phase': 'Reconnaissance',
+            'identified as priority': UNKNOWN,
             'project type': UNKNOWN,
             'capital costs': UNKNOWN,
             'number buildings': UNKNOWN,
@@ -99,7 +100,9 @@ def preprocess (preprocessor, **kwargs):
         'Number of Buildings/Facilities', 'Buildings/Facilities to be Served',
         'Proposed Gallons of Diesel Offset', 'Proposed Maximum Btu/hr',
         'Total CAPEX', 'Source', 'Link', 'Notes', 
-        'Est. current annual heating fuel gallons displaced']
+        'Est. current annual heating fuel gallons displaced',
+        'Identified as priority by HR working group'
+        ]
     project_data = read_csv(
         os.path.join(
             preprocessor.data_dir, 
@@ -157,6 +160,8 @@ def preprocess (preprocessor, **kwargs):
         p_name = 'heat_recovery+project_' + str(p_idx)
         
         name = str(cp['Project Name'])
+        
+        priority = str(cp['Identified as priority by HR working group']) 
         phase = str(cp['Phase Completed'])
         phase = phase[0].upper() + phase[1:]
         project_type = str(cp['New/Repair/Extension'])
@@ -189,6 +194,7 @@ def preprocess (preprocessor, **kwargs):
             'start year': start_year,
             'name': name, 
             'phase': phase,
+            'identified as priority': priority,
             'project type': project_type,
             'capital costs':capex,
             'total feet piping needed': total_piping_needed, 
