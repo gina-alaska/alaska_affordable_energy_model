@@ -389,21 +389,51 @@ class WebSummary(object):
         diesel = copy.deepcopy(
             res['community data'].get_item('community','diesel prices')
         )
-        fuel_year = diesel.index[0]
-        diesel_c = float(diesel.ix[fuel_year])
-        HF_c = diesel_c + \
-            res['community data'].get_item('community','heating fuel premium')
-        elec_price = res['community data'].get_item('community',
-            'electric non-fuel prices')
-        ###### as strings
-        diesel_c = '${:,.2f}/gallon'.format(diesel_c)
-        HF_c = '${:,.2f}/gallon'.format(HF_c)
+        hf_prices = copy.deepcopy(
+            res['community data'].get_item('community','heating fuel prices')
+        )
+        hf_premium = res['community data'].get_item('community',
+            'heating fuel premium')
+        try:
+            fuel_year = hf_prices.index[-1]
+            diesel_c = max(float(hf_prices.ix[fuel_year]) - hf_premium, 0)
+            HF_c = float(hf_prices.ix[fuel_year])
+            #~ HF_c = diesel_c + \
+            #~ res['community data'].get_item('community','heating fuel premium')
+            #~ elec_price = res['community data'].get_item('community',
+                #~ 'electric non-fuel prices')
+            ###### as strings
         
-        elec_price = float(elec_price.ix[fuel_year])
-        if np.isnan( elec_price ):
-            elec_c = "unknown"
-        else:
+        
+            percent_diesel = \
+                float(res['community data'].get_item('community',
+                'percent diesel generation') )/ 100.0
+            efficiency = \
+                res['community data'].get_item('community',
+                'diesel generation efficiency')
+            adder = percent_diesel * diesel_c / efficiency
+            #~ print res['community data'].data['community']\
+                #~ ['electric non-fuel price'] 
+            elec_price = \
+                float(res['community data'].data['community']\
+                ['electric non-fuel price']) \
+                + adder
+            diesel_c = '${:,.2f}/gallon'.format(diesel_c)
+            HF_c = '${:,.2f}/gallon'.format(HF_c)
             elec_c = '${:,.2f}/kWh'.format(elec_price)
+        except IndexError:
+            fuel_year = ''
+            diesel_c = "unknown"
+            HF_c= "unknown"
+            elec_c = "unknown"
+        #float(elec_price.ix[fuel_year])
+        
+        
+
+        #~ if np.isnan( elec_price ):
+            #~ elec_c = "unknown"
+        #~ else:
+            #~ elec_c = '${:,.2f}/kWh'.format(elec_price)
          
         #### Consumption & Generation sections
         ###### measured consumption & generation
@@ -426,11 +456,11 @@ class WebSummary(object):
             con = gen
           
         ###### forecasted residential (first year)
-        oil_year = res['Residential Energy Efficiency'].start_year
+        oil_year = \
+            res['Residential Energy Efficiency'].comp_specs['data']['Year']
         if hasattr(res['Residential Energy Efficiency'], 
             'baseline_fuel_Hoil_consumption'):
-            res_gal = res['Residential Energy Efficiency'].\
-                baseline_fuel_Hoil_consumption[0]
+            res_gal = res['Residential Energy Efficiency'].init_HF
             res_gal = '{:,.0f} gallons'.format(res_gal)
         else:
             res_gal = "unknown"
@@ -556,13 +586,13 @@ class WebSummary(object):
                 "Average load " + str(gen_year), al],
              [ False, "<b>Financial</b>", "","[DIVIDER]", 
                 "Generation from diesel " + str(g_year), g_diesel],
-             [ False, "Forecasted diesel fuel cost " + str(fuel_year),
+             [ False, "Diesel fuel cost " + str(fuel_year),
                 diesel_c,"[DIVIDER]", 
                 "Generation from hydropower " + str(g_year), g_hydro],
-             [ False, "Forecasted heating fuel cost " + str(fuel_year),
+             [ False, "Heating fuel cost " + str(fuel_year),
                 HF_c, "[DIVIDER]",
                 "Generation from wind " + str(g_year), g_wind],
-             [ False, "Forecasted electricity cost " + str(fuel_year),
+             [ False, "Electricity cost " + str(fuel_year),
                 elec_c,"[DIVIDER]",  
                 "Diesel generator efficiency " + str(leff_year) , eff],
              [ False, "<b>Consumption</b>", "", "[DIVIDER]",
@@ -570,14 +600,14 @@ class WebSummary(object):
              [ False, "Total electricity consumption " + str(con_year), con,
                 "[DIVIDER]",'<b>Other Info</b>',''],
              [ False, 
-                "Estimated residential heating fuel " + str(oil_year),
+                "Residential heating fuel " + str(oil_year),
                 res_gal, "[DIVIDER]",
                 'Heating Degree Days per year','{:,.0f}'.format(HDD)],
              [ False, 
-                "Estimated non-residential heating fuel " + str(oil_year),
+                "Non-residential heating fuel " + str(oil_year),
                 nr_gal, "[DIVIDER]",'',''],
              [ False,
-                "Estimated utility diesel " + str(oil_year),
+                "Utility diesel " + str(oil_year),
                 utility, "[DIVIDER]",'',''],
         ]
         else:
@@ -597,14 +627,14 @@ class WebSummary(object):
              [ False, "<b>Financial</b>", "","[DIVIDER]",
                 "Generation from diesel " + str(g_year), link_element],
              [ False,
-                "Forecasted diesel fuel cost " + str(fuel_year),
+                "Diesel fuel cost " + str(fuel_year),
                 diesel_c,"[DIVIDER]",
                 "Generation from hydropower " + str(g_year), link_element],
              [ False,
-                "Forecasted heating fuel cost " + str(fuel_year),
+                "Heating fuel cost " + str(fuel_year),
                  HF_c, "[DIVIDER]", "Generation from wind " + str(g_year),
                 link_element],
-             [ False, "Forecasted electricity cost " + str(fuel_year),
+             [ False, "Electricity cost " + str(fuel_year),
                 elec_c,"[DIVIDER]",
                 "Diesel generator efficiency " + str(leff_year), link_element],
              [ False, "<b>Consumption</b>", "", "[DIVIDER]",
@@ -614,14 +644,14 @@ class WebSummary(object):
                 link_element, 
                 "[DIVIDER]", '<b>Other Info</b>',''],#,'',''],
              [ False, 
-                "Estimated residential heating fuel " + str(oil_year),
+                "Residential heating fuel " + str(oil_year),
                 res_gal, "[DIVIDER]",
                 'Heating Degree Days per year','{:,.0f}'.format(HDD)],
              [ False, 
-                "Estimated non-residential heating fuel " + str(oil_year),
+                "Non-residential heating fuel " + str(oil_year),
                 nr_gal, "[DIVIDER]",'',''],
              [ False,
-                "Estimated utility diesel " + str(oil_year),
+                "Utility diesel " + str(oil_year),
                 link_element,
                 "[DIVIDER]",'',''],
         ]     
@@ -857,27 +887,37 @@ class WebSummary(object):
         r = res['Residential Energy Efficiency'] # res. eff. component
         rd = r.comp_specs['data'] # res. data
         
-        table = [[ True, "", "Number Houses",
-                        "Houshold Avg. Square Feet",
-                         "Avg. EUI" ],
-                 [ False, "BEES", 
-                            '{:,.0f}'.format(float(rd["BEES Number"])),
-                            '{:,.0f}'.format(float(rd['BEES Avg Area (SF)'])),
-                            '{:,.2f}'.format(\
-                                float(rd['BEES Avg EUI (MMBtu/sf)']))],
-                 [ False, "Post-Retrofit", 
-                            '{:,.0f}'.format(float(rd["Post-Retrofit Number"])),
-                            '{:,.0f}'.format(\
-                                float(rd['Post-Retrofit Avg Area (SF)'])),
-                            '{:,.2f}'.format(\
-                                float(rd['Post-Retrofit Avg EUI (MMBtu/sf)']))],
-                 [ False, "Pre-Retrofit", 
-                            '{:,.0f}'.format(r.opportunity_HH),  
-                            '{:,.0f}'.format(float(\
-                                        rd['Pre-Retrofit Avg Area (SF)'])), 
-                            '{:,.2f}'.format(\
-                                float(rd['Pre-Retrofit Avg EUI (MMBtu/sf)']))],
-                ]
+        baseline = r.baseline_fuel_Hoil_consumption[0]
+        b_sqft = baseline/ (float(rd['Pre-Retrofit Avg Area (SF)']) * r.opportunity_HH)
+        b_hh = baseline/  r.opportunity_HH
+        
+        proposed = r.proposed_fuel_Hoil_consumption[0]
+        
+        table = [
+            [ True, "",
+                "Number Houses",
+                "Houshold Avg. Square Feet", 
+                #~ "Average gallons/sf",
+                #~ "Average gallons/houshold",
+
+                #~ "Average gallons/sf" 
+            ],
+            [ False, "BEES", 
+                '{:,.0f}'.format(float(rd["BEES Number"])),
+                '{:,.0f}'.format(float(rd['BEES Avg Area (SF)'])),
+                #~ '{:,.2f}'.format(float(rd['BEES Avg EUI (MMBtu/sf)']))
+            ],
+            [ False, "Post-Retrofit", 
+                '{:,.0f}'.format(float(rd["Post-Retrofit Number"])),
+                '{:,.0f}'.format(float(rd['Post-Retrofit Avg Area (SF)'])),
+                #~ '{:,.2f}'.format(float(rd['Post-Retrofit Avg EUI (MMBtu/sf)'])),
+            ],
+            [ False, "Pre-Retrofit", 
+                '{:,.0f}'.format(r.opportunity_HH),  
+                '{:,.0f}'.format(float(rd['Pre-Retrofit Avg Area (SF)'])), 
+                #~ '{:,.2f}'.format(float(rd['Pre-Retrofit Avg EUI (MMBtu/sf)'])),
+            ],
+        ]
         
         charts.append({'name':'residential_buildings', 
                 'data': table,
