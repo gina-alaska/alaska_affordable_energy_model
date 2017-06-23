@@ -155,6 +155,8 @@ def make_consumption_table (community, comp, projects, base_con,
         reduction.index = reduction.index.astype(int)
         cons_table[name] = \
                     cons_table['Base Consumption'] - reduction['savings']
+                    
+        cons_table[name][cons_table[name] < 0] = 0
         names.append(name)
     ## format table
     cons_table = cons_table[['year','Base Consumption'] + names]
@@ -165,8 +167,12 @@ def make_consumption_table (community, comp, projects, base_con,
         os.makedirs(os.path.join(directory,community.replace("'",""),'csv'))
     except OSError:
         pass
+    
+        
     cons_table.to_csv(os.path.join(directory,community.replace("'",""),'csv', fname),index=False)
     #~ ## make list from of table
+    
+    
     plotting_table = cons_table.round().values.tolist()
     
     header = []
