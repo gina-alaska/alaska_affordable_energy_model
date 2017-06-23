@@ -78,14 +78,25 @@ class GetDataCommand(pycommand.CommandBase):
         
         formats = ['csv', 'yaml']
         files = [f for f in os.listdir(repo) if f.split('.')[-1] in formats]
-        metadata = {f: 'repo - '+ version for f in files}
+        self.metadata = {f: 'repo - '+ version for f in files}
         from pprint import pprint
         #~ pprint(metadata)
-        
-        
+
         for f in files:
             shutil.copy2(os.path.join(repo,f),out)
         
+        self.getpce_data(out)
+        self.geteia_data(out)
+
+        with open(os.path.join(out, '__metadata.yaml'),'w') as meta:
+            meta.write(yaml.dump(self.metadata, default_flow_style=False))
+        
+        
+        with open(os.path.join(out,'VERSION'),'w') as v:
+            v.write('generated from command')
+        
+        
+    def getpce_data(self, out):
         name = 'power-cost-equalization-pce-data.csv'
         data = get_api_data('pcedata')
         
@@ -102,15 +113,26 @@ class GetDataCommand(pycommand.CommandBase):
             ]
         data[order].to_csv(os.path.join(out,name),index = False)
         
-        metadata[name] = 'api - ' + str(datetime.now()) 
+        self.metadata[name] = 'api - ' + str(datetime.now()) 
         
+    def geteia_data(self, out):
+        name = 'eia_sales.csv'
+        data = get_api_data('eia_861_retail_sales')
         
-        with open(os.path.join(out, '__metadata.yaml'),'w') as meta:
-            meta.write(yaml.dump(metadata, default_flow_style=False))
+        order = [
+            u'id', u'year', u'utility', u'residential_revenues',
+            u'residential_customers', u'commercial_revenues', u'commercial_sales', u'commercial_customers',
+            u'industrial_revenues', u'indestrial_customers', u'total_revenue',
+            u'total_sales', u'total_customers',
+            ]
+        col_names = [
+            'id', 'year', 'utility', 'Residential Thousand Dollars', 'Residential Megwatthours',
+            'Residential Count', 'Commercial Thousand dollars', 'Commercial Megwatthours', 'Commercial Count',
+            'Industrial Thousand Dollars', 'Industrial Megwatthours', 'Industrial Count', 'Total Thousand Dollars',
+            'Total Megawatthours', 'Total CustomerCount'
+            ]
+
+        data[order].to_csv(os.path.join(out,name),index = col_names)
         
-        
-        with open(os.path.join(out,'VERSION'),'w') as v:
-            v.write('generated from command')
-        
-       
+        self.metadata[name] = 'api - ' + str(datetime.now()) 
         
