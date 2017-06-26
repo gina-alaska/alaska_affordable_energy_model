@@ -418,6 +418,10 @@ class WebSummary(object):
                 float(res['community data'].data['community']\
                 ['electric non-fuel price']) \
                 + adder
+            if res['community data'].data['community']['region'] ==\
+                    'North Slope':
+                elec_price = .15
+                
             diesel_c = '${:,.2f}/gallon'.format(diesel_c)
             HF_c = '${:,.2f}/gallon'.format(HF_c)
             elec_c = '${:,.2f}/kWh'.format(elec_price)
