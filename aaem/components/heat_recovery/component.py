@@ -289,7 +289,8 @@ class HeatRecovery (AnnualSavings):
         capital_costs : float
             caclulated or loaded captial costs for heat recovery
         """
-        capital_costs = self.comp_specs['capital costs']
+        #~ print self.comp_specs
+        capital_costs = float(self.comp_specs['capital costs'])
         if capital_costs == UNKNOWN:
 
             install_cost = 50000 * \
@@ -309,6 +310,7 @@ class HeatRecovery (AnnualSavings):
             capital_costs = install_cost + loop_cost +\
                             overhead_cost + building_cost
         self.capital_costs = capital_costs
+        #~ print self.capital_costs 
         
     
     def calc_annual_electric_savings (self):

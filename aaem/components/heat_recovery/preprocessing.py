@@ -173,7 +173,7 @@ def preprocess (preprocessor, **kwargs):
         diesel_offset = float(cp['Proposed Gallons of Diesel Offset'])
         max_btu_per_hr = float(cp['Proposed Maximum Btu/hr'])
         capex = float(cp['Total CAPEX'])
-        
+        #~ print capex
         #~ expected_years_to_operation = UNKNOWN
         if phase == "0":
             preprocessor.diagnostics.add_note(
@@ -190,26 +190,27 @@ def preprocess (preprocessor, **kwargs):
         start_year = preprocessor.data['community']['current year'] + yto
 
         project = copy.deepcopy(base)
-        project['Heat Recovery'].update({
-            'start year': start_year,
-            'name': name, 
-            'phase': phase,
-            'identified as priority': priority,
-            'project type': project_type,
-            'capital costs':capex,
-            'total feet piping needed': total_piping_needed, 
-            'number buildings': num_buildings,
-            'buildings': buildings,
-            'proposed gallons diesel offset':diesel_offset,
-            'proposed maximum btu/hr': max_btu_per_hr, 
-            'link':cp['Link'],
-            'notes':cp['Notes'],
-        })
+        
+        project['Heat Recovery']['start year'] = start_year
+        project['Heat Recovery']['name'] =  name
+        project['Heat Recovery']['phase'] =  phase
+        project['Heat Recovery']['identified as priority'] =  priority
+        project['Heat Recovery']['project type'] =  project_type
+        project['Heat Recovery']['capital costs'] = capex
+        project['Heat Recovery']['total feet piping needed'] =  total_piping_needed
+        project['Heat Recovery']['number buildings'] =  num_buildings
+        project['Heat Recovery']['buildings'] =  buildings
+        project['Heat Recovery']['proposed gallons diesel offset'] = diesel_offset
+        project['Heat Recovery']['proposed maximum btu/hr'] =  max_btu_per_hr
+        project['Heat Recovery']['link'] = cp['Link']
+        project['Heat Recovery']['notes'] = cp['Notes']
+
+        #~ print project 
         p_data[p_name] = project  
 
     
     p_data['no project'] = base
-    #~ print p_data
+
     return p_data
 
 

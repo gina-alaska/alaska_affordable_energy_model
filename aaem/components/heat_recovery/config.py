@@ -49,7 +49,7 @@ order = [
     'name',
     'phase',
     'project type',
-    'identified as priority'
+    'identified as priority',
     'capital costs',
     'number buildings',
     'buildings',
