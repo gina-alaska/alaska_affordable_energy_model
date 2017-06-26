@@ -721,7 +721,7 @@ class CommunityBuildings (AnnualSavings):
         return HF_savings #+ \
                 #~ self.refit_savings_kWh_total / gen_eff
                                 
-    def get_total_enery_produced (self):
+    def get_total_energy_produced (self):
         """get total energy produced
         
         Returns

@@ -199,7 +199,7 @@ class ResidentialBuildings(AnnualSavings):
 
         return (base_heat - post_heat) * constants.mmbtu_to_gal_HF
 
-    def get_total_enery_produced (self):
+    def get_total_energy_produced (self):
         """Get total energy produced.
 
         Returns
