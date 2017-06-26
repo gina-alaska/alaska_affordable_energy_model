@@ -20,7 +20,7 @@ def component_summary (results, res_dir):
 
     Parameters
     ----------
-    results : dictionay
+    results : dictionary
         results from the model, dictionary with each community or project
         as key
     res_dir :  path
@@ -35,7 +35,7 @@ def communities_summary (coms, res_dir):
 
     Parameters
     ----------
-    coms : dictionay
+    coms : dictionary
         results from the model, dictionary with each community or project
         as key
     res_dir :  path
@@ -85,14 +85,14 @@ def communities_summary (coms, res_dir):
            'Residential Heating Oil Consumed (MMBtu) - year 1',
            'Residential Efficiency Heating Oil Saved (MMBtu/year)',
            'Residential Heating Oil as percent of Total Heating Fuels',
-           'Total Residentital Heating Fuels (MMBtu) - year 1',
+           'Total Residential Heating Fuels (MMBtu) - year 1',
            'Residential Efficiency Total Heating Fuels Saved (MMBtu/year)',
             ]
     data = DataFrame(out,columns = cols).set_index('Community').round(2)
     f_name = os.path.join(res_dir,
                 COMPONENT_NAME.lower().replace(' ','_') + '_summary.csv')
     fd = open(f_name,'w')
-    fd.write(("# residental building component summary by community\n"
+    fd.write(("# resident building component summary by community\n"
            '# community: '+ definitions.COMMUNITY + '\n'
            '# Residential Efficiency NPV Benefit: ' + definitions.NPV_BENEFITS + '\n'
            '# Residential Efficiency NPV Cost: ' + definitions.NPV_COSTS + '\n'
@@ -107,7 +107,7 @@ def communities_summary (coms, res_dir):
            '# Residential Heating Oil Consumed (MMBtu) - year 1: Heating oil consumed by current systems.\n'
            '# Residential Efficiency Heating Oil Saved (MMBtu/year): Heating oil saved by retrofit systems.\n'
            '# Residential Heating Oil as percent of Total Heating Fuels: Percentage of heating fuels that is heating oil.\n'
-           '# Total Residentital Heating Fuels (MMBtu) - year 1: Heating fuel consumed by current systems.\n'
+           '# Total Residential Heating Fuels (MMBtu) - year 1: Heating fuel consumed by current systems.\n'
            '# Residential Efficiency Total Heating Fuels Saved (MMBtu/year): Heating fuel consumed by current systems.\n'
         ))
     fd.close()
@@ -125,7 +125,7 @@ def create_regional_summary (results):
     Returns
     -------
     DataFrame
-        containg regional results
+        containing regional results
 
     """
     #~ print "start"
@@ -194,7 +194,7 @@ def save_regional_summary (summary, res_dir):
 
     Parameters
     ----------
-    summary : Dataframe
+    summary : DataFrame
         compiled regional results
     res_dir :  path
         location to save file

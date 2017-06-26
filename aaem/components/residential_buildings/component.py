@@ -38,7 +38,7 @@ class ResidentialBuildings(AnnualSavings):
     Attributes
     ----------
     diagnostics : diagnostics
-        for tracking error/warning messeges
+        for tracking error/warning messages
         initial value: diag or new diagnostics object
     forecast : forecast
         community forecast for estimating future values
@@ -72,7 +72,7 @@ class ResidentialBuildings(AnnualSavings):
         forecast : Forecast
             forecast for a community
         diagnostics : diagnostics, optional
-            diagnostics for tracking error/warning messeges
+            diagnostics for tracking error/warning messages
         prerequisites : dictionary of components, optional
             prerequisite component data
 
@@ -124,7 +124,7 @@ class ResidentialBuildings(AnnualSavings):
 
         Parameters
         ----------
-        scalers : dictionay of valid scalers, optional
+        scalers : dictionary of valid scalers, optional
             Scalers to adjust normal run variables.
             See note on accepted  scalers
 
@@ -318,7 +318,7 @@ class ResidentialBuildings(AnnualSavings):
         self.diagnostics.add_note(self.component_name, msg)
 
     def calc_savings_opportunities (self):
-        """Calculate savings opertunities
+        """Calculate savings opportunities
 
         Attributes
         ----------
@@ -401,7 +401,7 @@ class ResidentialBuildings(AnnualSavings):
         fuel_amnt: float
             % of fuel used
         total_consumption : float
-            total consumption for residnetial buildings
+            total consumption for residential buildings
         HH : float
             a # of houses
         cf: float
@@ -485,7 +485,7 @@ class ResidentialBuildings(AnnualSavings):
         self.baseline_kWh_consumption = self.avg_kWh_consumption_per_HH * HH
 
     def calc_baseline_fuel_cost (self):
-        """caclulat base line heating fuel costs
+        """calculate base line heating fuel costs
 
         Attributes
         ----------
@@ -541,7 +541,7 @@ class ResidentialBuildings(AnnualSavings):
         proposed_fuel_gas_consumption : np.array
             proposed natural gas consumption
         proposed_fuel_kWh_consumption : np.array
-            propoed electric consumption
+            proposed electric consumption
         proposed_HF_consumption : np.array
             proposed total electric consumption
         """
@@ -616,7 +616,7 @@ class ResidentialBuildings(AnnualSavings):
         Attributes
         ----------
         capital_costs : float
-             total cost of improvments ($)
+             total cost of improvements ($)
         """
         self.capital_costs = self.opportunity_HH * self.refit_cost_rate
 
