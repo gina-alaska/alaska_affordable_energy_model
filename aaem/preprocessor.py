@@ -984,7 +984,10 @@ class Preprocessor (object):
             other_type_2 = None
         else: 
             other_type_2, count = Counter(other_sources_2).most_common(1)[0]
-            other_type_2 = other_type_2.lower()
+            try:
+                other_type_2 = other_type_2.lower()
+            except AttributeError:
+                other_type_2 = ''
             self.diagnostics.add_note("Community: generation(PCE)",
                 "Other energy type no. 2 is being set as " + other_type_2 +\
                 " as it occured most as the type for other generatio no. 2 (" +
