@@ -142,23 +142,25 @@ def create_project_details_list (project):
     pen = pen[0]
    
     return [
-        {'words':'Capital cost', 
+        {'words':'Capital cost (total)', 
             'value': '${:,.0f}'.format(project.get_NPV_costs())},
-        {'words':'Lifetime savings', 
+        {'words':'Capital cost (cost per kW)', 
+            'value': '${:,.0f}/kW'.format(project.comp_specs['cost per kW'])},
+        {'words':'Lifetime energy cost savings', 
             'value': '${:,.0f}'.format(project.get_NPV_benefits())},
         {'words':'Net lifetime savings', 
             'value': '${:,.0f}'.format(project.get_NPV_net_benefit())},
         {'words':'Benefit-cost ratio', 
             'value': '{:,.1f}'.format(project.get_BC_ratio())},
-        {'words':'Proposed nameplate Capacity', 
+        {'words':'Proposed nameplate capacity', 
             'value': '{:,.0f} kW'.format(project.proposed_load)},
-        {'words':'Expected Yearly Generation', 
+        {'words':'Expected yearly generation', 
          'value': 
                 '{:,.0f} kWh/year'.format(project.generation_proposed[0])},
 
-        {'words':'Output per 10kW Solar PV', 
+        {'words':'Output per 10kW solar PV', 
             'value': '{:,.0f} kWh/year'.format(project.comp_specs\
                                          ['output per 10kW solar PV'])},
-        {'words':'Estimated Solar Penetration Level', 
+        {'words':'Estimated solar penetration level', 
             'value': '{:,.0f}%'.format(pen)},
             ]

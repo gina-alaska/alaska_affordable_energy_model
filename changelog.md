@@ -1,5 +1,10 @@
 #Change Log
 
+## [0.27.5]
+### adds
+- cost per kWh attribute to wind power component
+- weighted average to prices for interties with pce generation
+
 ## [0.27.4]
 ### adds
 -- spilt configs option to refresh CLI

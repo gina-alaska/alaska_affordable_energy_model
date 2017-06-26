@@ -790,6 +790,7 @@ class Preprocessor (object):
             "government_kwh_sold",
             "unbilled_kwh", "fuel_cost"
         ]]
+        coms = list(set(data.index))
         #~ print len(data)
         ## get last year with full data
         last_year = data["year"].max()
@@ -801,10 +802,35 @@ class Preprocessor (object):
             "residential_kwh_sold", "commercial_kwh_sold", 
             "community_kwh_sold", "government_kwh_sold", "unbilled_kwh"
         ]
-        elec_fuel_cost = (
-            data[data["year"] == last_year]['fuel_cost']/\
-            data[data["year"] == last_year][cols].sum(axis = 1)
-        ).mean()
+        
+        elec_fuel_cost = 0
+        res_nonPCE_price = 0
+        total_sold = data[data["year"] == last_year][cols].sum(axis = 1).mean()
+        
+        #~ print (data[data["year"] == last_year]['fuel_cost']/\
+                #~ data[data["year"] == last_year][cols].sum(axis = 1)).mean()
+        
+        for com in  coms:
+            #~ print data[data["year"] == last_year].ix[com]['fuel_cost']
+            #~ print data[data["year"] == last_year].ix[com][cols].sum(axis = 1)
+            
+            com_elec_fuel_cost = (
+                data[data["year"] == last_year].ix[com]['fuel_cost'].fillna(0)/\
+                data[data["year"] == last_year].ix[com][cols].sum(axis = 1)
+            ).mean()
+            weight = \
+                data[data["year"] == last_year].\
+                ix[com][cols].sum(axis = 1).mean()/\
+                total_sold
+            elec_fuel_cost += (com_elec_fuel_cost * weight)
+            
+            res_pce = \
+                data[data["year"] == last_year].ix[com]\
+                ["residential_rate"].mean()
+        
+            res_nonPCE_price += (res_pce * weight)
+        
+        #~ print elec_fuel_cost
         
         if np.isnan(elec_fuel_cost):
             elec_fuel_cost = 0.0
@@ -813,6 +839,8 @@ class Preprocessor (object):
                 
         res_nonPCE_price = data[data["year"] == \
                                 last_year]["residential_rate"].mean()
+        
+                                
         elec_nonFuel_cost = res_nonPCE_price - elec_fuel_cost
         
         self.diagnostics.add_note("Community: Electric Prices(PCE)",

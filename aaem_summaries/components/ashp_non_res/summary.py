@@ -39,7 +39,6 @@ def generate_web_summary (web_object, community):
     ## get the component (the modelded one)
   
     modeled = web_object.results[community][COMPONENT_NAME]
-    nr_comp = web_object.results[community]["Non-residential Energy Efficiency"]
     start_year = modeled.start_year
     end_year = modeled.actual_end_year
     
@@ -48,11 +47,11 @@ def generate_web_summary (web_object, community):
     
     ## get forecast stuff (consumption, generation, etc)
     #~ fuel_consumed = nr_comp.baseline_HF_consumption 
-    r_comp = web_object.results[community]["Residential Energy Efficiency"]
+    nr_comp = web_object.results[community]["Non-residential Energy Efficiency"]
     fuel_consumed = DataFrame(
-        r_comp.baseline_HF_consumption,
+        nr_comp.baseline_HF_consumption,
         columns=['fuel consumed'], 
-        index = range(r_comp.start_year, r_comp.end_year+1)
+        index = range(nr_comp.start_year, nr_comp.end_year+1)
     )['fuel consumed'].ix[start_year:end_year]
     fuel_consumed = fuel_consumed * constants.mmbtu_to_gal_HF
 
@@ -170,14 +169,21 @@ def create_project_details_list (project):
     return [
         {'words':'Capital cost ($)', 
             'value': costs},
-        {'words':'Lifetime savings ($)', 
+        {'words':'Lifetime energy cost savings ($)', 
             'value': benefits},
         {'words':'Net lifetime savings ($)', 
             'value': net_benefits},
         {'words':'Benefit-cost ratio', 
             'value': BC},
         {'words': 'Estimated square feet heated by ASHP systems',
-            'value':  sqft}
+            'value':  sqft},
+        #~ {'words': 'Average proposed capacity per residence (Btu/hr)',
+            #~ 'value': int(project.peak_monthly_btu_hr_hh)},
+        {'words': 'Excess generation capacity needed (kW)',
+            'value': '{:,.0f} kW'.format(
+                project.monthly_value_table['kWh consumed'].max()/(24 * 31))},
+        {'words': 'Expected average coefficient of performance (COP)',
+            'value': '{:,.2f}'.format(project.average_cop)},
         #~ {'words':"btu/hrs", 
             #~ 'value': project.comp_specs['btu/hrs'] },
         #~ {'words':"Cost per btu/hrs", 

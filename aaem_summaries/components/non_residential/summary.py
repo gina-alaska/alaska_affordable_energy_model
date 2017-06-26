@@ -95,8 +95,12 @@ def generate_web_summary (web_object, community):
     
     buildings = modeled.comp_specs['building inventory']
     sqft = buildings['Square Feet'].sum()
-    current = [{'words':"Esitmated square feet", 
-                'value':'{:,.0f}'.format(sqft)}]
+    current = [
+        {'words':"Esitmated square feet", 'value':'{:,.0f}'.format(sqft)},
+        {'words':"See", 
+            'value':"<a href='./consumption.html'>consumption </a> "+\
+                "for more details of the current non-residential buildings"},
+    ]
     
     ## info for modeled
     info = create_project_details_list (modeled)
@@ -154,10 +158,20 @@ def create_project_details_list (project):
         A dictionary with values used by summary
     """
    
+    ex_h_savings = (1 - \
+        (
+        project.proposed_HF_consumption / project.baseline_HF_consumption
+        ))*100
+   
+    ex_e_savings = (1 - \
+        (
+        project.proposed_kWh_consumption / project.baseline_kWh_consumption
+        ))*100
+   
     return [
         {'words':'Capital cost', 
             'value': '${:,.0f}'.format(project.get_NPV_costs())},
-        {'words':'Lifetime savings', 
+        {'words':'Lifetime energy cost savings', 
             'value': '${:,.0f}'.format(project.get_NPV_benefits())},
         {'words':'Net lifetime savings', 
             'value': '${:,.0f}'.format(project.get_NPV_net_benefit())},
@@ -165,12 +179,8 @@ def create_project_details_list (project):
             'value': '{:,.1f}'.format(project.get_BC_ratio())},
         {'words':'Refit cost rate', 
             'value': '${:,.2f}/sqft'.format(project.refit_cost_rate)},
-        #~ {'words':'Expected Yearly Generation (kWh/year)', 
-         #~ 'value': 
-                #~ '{:,.0f}'.format(project.proposed_load *\
-                                 #~ constants.hours_per_year)},
-
-        #~ {'words':'Output per 10kW Solar PV', 
-            #~ 'value': project.comp_specs['data']\
-                                         #~ ['Output per 10kW Solar PV']},
+        {'words':'Expected space heating savings ', 
+            'value': '{:,.2f}%'.format(ex_h_savings)},
+        {'words':'Expected electrical savings ', 
+            'value': '{:,.2f}%'.format(ex_e_savings)},
             ]

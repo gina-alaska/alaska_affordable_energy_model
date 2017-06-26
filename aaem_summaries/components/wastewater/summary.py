@@ -11,6 +11,7 @@ from aaem.components import comp_order
 import aaem_summaries.web_lib as wl
 
 from pandas import DataFrame
+import numpy as np
 
 COMPONENT_NAME = 'Water and Wastewater Efficiency'
 
@@ -92,8 +93,22 @@ def generate_web_summary (web_object, community):
     
     
     
-    current = [{'words':'System type', 
-                "value":str(modeled.comp_specs['data']['System Type'])},
+    current = [
+        {'words':'System type', 
+            "value":str(modeled.comp_specs['data']['System Type'])},
+        {'words':'Current system heating fuels', 
+            "value": 'Modeled' \
+            if np.isnan(float(modeled.comp_specs['data']['HF Used']))\
+            else 'Reported'},
+        {'words':'Current system electicity reported', 
+            "value": 'Modeled' \
+            if np.isnan(float(modeled.comp_specs['data']['kWh/yr']))\
+            else 'Reported'},
+        
+        {'words':'Uses biomass', 
+            "value":'Yes' if modeled.comp_specs['data']['Biomass'] else 'No'},
+        {'words':'Uses recovered heat', 
+        "value":'Yes' if modeled.comp_specs['data']['HR Installed'] else 'No'},
             ]
     ## info for modeled
     info = create_project_details_list (modeled)
@@ -151,24 +166,33 @@ def create_project_details_list (project):
         A dictionary with values used by summary
     """
    
+    ex_h_savings = (1 - \
+        (
+        project.proposed_HF_consumption / project.baseline_HF_consumption
+        )[0])*100
+   
+    ex_e_savings = (1 - \
+        (
+        project.proposed_kWh_consumption / project.baseline_kWh_consumption
+        )[0])*100
+   
     return [
         {'words':'Capital cost', 
             'value': '${:,.0f}'.format(project.get_NPV_costs())},
-        {'words':'Lifetime savings', 
+        {'words':'Capital cost', 
+            "value": 'Estimated' \
+            if np.isnan(float(project.comp_specs['data']['kWh/yr']))\
+            else 'From audit'},
+        {'words':'Lifetime energy cost savings', 
             'value': '${:,.0f}'.format(project.get_NPV_benefits())},
         {'words':'Net lifetime savings', 
             'value': '${:,.0f}'.format(project.get_NPV_net_benefit())},
         {'words':'Benefit-cost ratio', 
             'value': '{:,.1f}'.format(project.get_BC_ratio())},
-        #~ {'words':'Refit cost Rate', 
-            #~ 'value': '${:,.2f}/person'.format(project.cost_per_person)},
-        #~ {'words':'Expected Yearly Generation (kWh/year)', 
-         #~ 'value': 
-                #~ '{:,.0f}'.format(project.proposed_load *\
-                                 #~ constants.hours_per_year)},
-
-        #~ {'words':'Output per 10kW Solar PV', 
-            #~ 'value': project.comp_specs['data']\
-                                         #~ ['Output per 10kW Solar PV']},
+        
+        {'words':'Expected space heating savings ', 
+            'value': '{:,.2f}%'.format(ex_h_savings)},
+        {'words':'Expected electrical savings ', 
+            'value': '{:,.2f}%'.format(ex_e_savings)},
             ]
 

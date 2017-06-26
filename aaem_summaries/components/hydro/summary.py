@@ -15,7 +15,7 @@ import numpy as np
 COMPONENT_NAME = "Hydropower"
 
 DESCRIPTION = """
-    This component calculates the potential electricity generation from diesel that could be offset by installing new Hydropower generation infrastructure. Requires that at least a reconnaissance-level heat recovery study has been completed for the community to be run. 
+    This component calculates the potential electricity generation from diesel that could be offset by installing new Hydropower generation infrastructure. Requires that at least a reconnaissance-level hydropower study has been completed for the community to be run. 
 """
 
 def generate_web_summary (web_object, community):
@@ -182,9 +182,9 @@ def create_project_details_list (project):
         source = "unknown"
     
     return [
-        {'words':'Capital cost', 
+        {'words':'Present value of capital cost', 
             'value': '${:,.0f}'.format(project.get_NPV_costs())},
-        {'words':'Lifetime savings', 
+        {'words':'Lifetime energy cost savings', 
             'value': '${:,.0f}'.format(project.get_NPV_benefits())},
         {'words':'Net lifetime savings', 
             'value': '${:,.0f}'.format(project.get_NPV_net_benefit())},
@@ -200,7 +200,7 @@ def create_project_details_list (project):
                 format(float(project.comp_specs['proposed generation']))},
         {'words':'Phase', 
          'value': project.comp_specs['phase']},
-        {'words':'Total capital cost', 
+        {'words':'Upfront capital cost', 
             'value': '${:,.0f}'.format(cost)},
         {'words':'Estimated hydro penetration level', 
             'value': '{:,.2f}%'.format(pen)},

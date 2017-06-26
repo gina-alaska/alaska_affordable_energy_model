@@ -163,14 +163,21 @@ def create_project_details_list (project):
     return [
         {'words':'Capital cost', 
             'value': costs},
-        {'words':'Lifetime savings', 
+        {'words':'Lifetime energy cost savings', 
             'value': benefits},
         {'words':'Net lifetime savings', 
             'value': net_benefits},
         {'words':'Benefit-cost ratio', 
             'value': BC},
         {'words': 'Number of homes',
-            'value': int(project.num_houses)}
+            'value': int(project.num_houses)},
+        {'words': 'Average proposed capacity per residence (Btu/hr)',
+            'value': '{:,.0f} Btu/hr'.format(project.peak_monthly_btu_hr_hh)},
+        {'words': 'Excess generation capacity needed (kW)',
+            'value': '{:,.0f} kW'.format(
+                project.monthly_value_table['kWh consumed'].max()/(24 * 31))},
+        {'words': 'Expected average coefficient of performance (COP)',
+            'value': '{:,.2f}'.format(project.average_cop)},
         #~ {'words':"Btu/hrs", 
             #~ 'value': project.comp_specs['btu/hrs'] },
         #~ {'words':"Cost per btu/hrs", 

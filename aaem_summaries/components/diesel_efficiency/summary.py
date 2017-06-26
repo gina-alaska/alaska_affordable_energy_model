@@ -138,13 +138,15 @@ def create_project_details_list (project):
     return [
        {'words':'Capital cost', 
             'value': '${:,.0f}'.format(project.get_NPV_costs())},
-        {'words':'Lifetime savings', 
+        {'words':'Lifetime energy cost savings', 
             'value': '${:,.0f}'.format(project.get_NPV_benefits())},
         {'words':'Net lifetime savings', 
             'value': '${:,.0f}'.format(project.get_NPV_net_benefit())},
         {'words':'Benefit-cost ratio', 
             'value': '{:,.1f}'.format(project.get_BC_ratio())},
-        {'words':'Improvment in generation efficiency', 
+        {'words':'Proposed maximum capacity', 
+            'value': '{:,.0f} kW'.format(project.max_capacity)},
+        {'words':'Expected improvement in generation efficiency', 
             'value': '{:,.0f}%'.format((project.comp_specs\
             ['efficiency improvment']))},
         

@@ -1,5 +1,35 @@
 #Change Log
 
+## [0.27.3]
+### adds
+- pie chart for fuels for residential consumption on consumption page
+
+### changes
+- reformats generation table
+- removes non-projects for hydropower and heat recovery on potential projects page
+- added modeled tag to wind power modeled project on potential projects page
+- plot titles on generation page
+- consumption pie chart labels
+- phrasing on many summaries fixed and expanded
+- moved the heating degree days to the chart on the overview chart
+- added link to consumption page, and expected savings on non-residential page 
+- added new info to water wastewater summary
+- moves current genertion stuff from technologies to generation page
+- added more info to wind power component
+- added more info to solar power component
+- added more info to transmission component
+- added more info to biomass components
+- added more info to ASHP components
+- added more info to diesel efficiency component
+- added more info to heat recovery component
+- added a zero limit for consumption charts
+- changes overview chart to used konwn values
+- values in residential chart on consumption page
+
+### fixes
+- project labeling on potential projects page
+- transmission summary charts
+
 ## [0.27.2]
 ### fixes
 - longs in charts converted to ints

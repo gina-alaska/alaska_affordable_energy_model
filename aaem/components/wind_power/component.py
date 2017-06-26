@@ -422,7 +422,9 @@ class WindPower(AnnualSavings):
         Attributes
         ----------
         capital_costs : float
-             total cost of improvments ($),
+            total cost of improvments ($),
+        cost_per_kwh: float
+            cost per kW used to determine captial costs  ($/kW)
         """
         powerhouse_control_cost = 0
         if not self.cd['switchgear suatable for renewables']:
@@ -452,6 +454,7 @@ class WindPower(AnnualSavings):
             != 'UNKNOWN':
             wind_cost = \
               int(self.comp_specs['generation capital cost'])
+            self.cost_per_kw = np.nan
         else:
             for i in range(len(self.comp_specs['estimated costs'])):
                 if int(self.comp_specs['estimated costs'].iloc[i].name) < \
@@ -465,7 +468,7 @@ class WindPower(AnnualSavings):
                 break
             
             wind_cost = self.load_offset_proposed * cost
-        
+            self.cost_per_kw = cost
         
         #~ print powerhouse_control_cost 
         #~ print transmission_line_cost 

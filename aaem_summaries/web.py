@@ -389,21 +389,51 @@ class WebSummary(object):
         diesel = copy.deepcopy(
             res['community data'].get_item('community','diesel prices')
         )
-        fuel_year = diesel.index[0]
-        diesel_c = float(diesel.ix[fuel_year])
-        HF_c = diesel_c + \
-            res['community data'].get_item('community','heating fuel premium')
-        elec_price = res['community data'].get_item('community',
-            'electric non-fuel prices')
-        ###### as strings
-        diesel_c = '${:,.2f}/gallon'.format(diesel_c)
-        HF_c = '${:,.2f}/gallon'.format(HF_c)
+        hf_prices = copy.deepcopy(
+            res['community data'].get_item('community','heating fuel prices')
+        )
+        hf_premium = res['community data'].get_item('community',
+            'heating fuel premium')
+        try:
+            fuel_year = hf_prices.index[-1]
+            diesel_c = max(float(hf_prices.ix[fuel_year]) - hf_premium, 0)
+            HF_c = float(hf_prices.ix[fuel_year])
+            #~ HF_c = diesel_c + \
+            #~ res['community data'].get_item('community','heating fuel premium')
+            #~ elec_price = res['community data'].get_item('community',
+                #~ 'electric non-fuel prices')
+            ###### as strings
         
-        elec_price = float(elec_price.ix[fuel_year])
-        if np.isnan( elec_price ):
-            elec_c = "unknown"
-        else:
+        
+            percent_diesel = \
+                float(res['community data'].get_item('community',
+                'percent diesel generation') )/ 100.0
+            efficiency = \
+                res['community data'].get_item('community',
+                'diesel generation efficiency')
+            adder = percent_diesel * diesel_c / efficiency
+            #~ print res['community data'].data['community']\
+                #~ ['electric non-fuel price'] 
+            elec_price = \
+                float(res['community data'].data['community']\
+                ['electric non-fuel price']) \
+                + adder
+            diesel_c = '${:,.2f}/gallon'.format(diesel_c)
+            HF_c = '${:,.2f}/gallon'.format(HF_c)
             elec_c = '${:,.2f}/kWh'.format(elec_price)
+        except IndexError:
+            fuel_year = ''
+            diesel_c = "unknown"
+            HF_c= "unknown"
+            elec_c = "unknown"
+        #float(elec_price.ix[fuel_year])
+        
+        
+
+        #~ if np.isnan( elec_price ):
+            #~ elec_c = "unknown"
+        #~ else:
+            #~ elec_c = '${:,.2f}/kWh'.format(elec_price)
          
         #### Consumption & Generation sections
         ###### measured consumption & generation
@@ -426,11 +456,11 @@ class WebSummary(object):
             con = gen
           
         ###### forecasted residential (first year)
-        oil_year = res['Residential Energy Efficiency'].start_year
+        oil_year = \
+            res['Residential Energy Efficiency'].comp_specs['data']['Year']
         if hasattr(res['Residential Energy Efficiency'], 
             'baseline_fuel_Hoil_consumption'):
-            res_gal = res['Residential Energy Efficiency'].\
-                baseline_fuel_Hoil_consumption[0]
+            res_gal = res['Residential Energy Efficiency'].init_HF
             res_gal = '{:,.0f} gallons'.format(res_gal)
         else:
             res_gal = "unknown"
@@ -539,6 +569,13 @@ class WebSummary(object):
         g_year = '(' + str(g_year) + ')'
         leff_year = '(' + str(leff_year) + ')'
         
+        ## Heating degree day chart
+        HDD = res['community data'].get_item('community','heating degree days')
+        #~ charts.append({'name':'hdd', 
+                #~ 'data': [],
+                #~ 'title':'Heating Degree Days',
+                #~ 'table': True,})
+        
         if res['community data'].intertie != 'child':
             table = [
              [ False, "<b>Demographics</b>", "", "[DIVIDER]",
@@ -549,27 +586,28 @@ class WebSummary(object):
                 "Average load " + str(gen_year), al],
              [ False, "<b>Financial</b>", "","[DIVIDER]", 
                 "Generation from diesel " + str(g_year), g_diesel],
-             [ False, "Forecasted diesel fuel cost " + str(fuel_year),
+             [ False, "Diesel fuel cost " + str(fuel_year),
                 diesel_c,"[DIVIDER]", 
                 "Generation from hydropower " + str(g_year), g_hydro],
-             [ False, "Forecasted heating fuel cost " + str(fuel_year),
+             [ False, "Heating fuel cost " + str(fuel_year),
                 HF_c, "[DIVIDER]",
                 "Generation from wind " + str(g_year), g_wind],
-             [ False, "Forecasted electricity cost " + str(fuel_year),
+             [ False, "Electricity cost " + str(fuel_year),
                 elec_c,"[DIVIDER]",  
                 "Diesel generator efficiency " + str(leff_year) , eff],
              [ False, "<b>Consumption</b>", "", "[DIVIDER]",
                 "Line losses estimated " + str(leff_year), ll],
              [ False, "Total electricity consumption " + str(con_year), con,
-                "[DIVIDER]",'',''],
+                "[DIVIDER]",'<b>Other Info</b>',''],
              [ False, 
-                "Estimated residential heating fuel " + str(oil_year),
-                res_gal, "[DIVIDER]",'',''],
+                "Residential heating fuel " + str(oil_year),
+                res_gal, "[DIVIDER]",
+                'Heating Degree Days per year','{:,.0f}'.format(HDD)],
              [ False, 
-                "Estimated non-residential heating fuel " + str(oil_year),
+                "Non-residential heating fuel " + str(oil_year),
                 nr_gal, "[DIVIDER]",'',''],
              [ False,
-                "Estimated utility diesel " + str(oil_year),
+                "Utility diesel " + str(oil_year),
                 utility, "[DIVIDER]",'',''],
         ]
         else:
@@ -589,14 +627,14 @@ class WebSummary(object):
              [ False, "<b>Financial</b>", "","[DIVIDER]",
                 "Generation from diesel " + str(g_year), link_element],
              [ False,
-                "Forecasted diesel fuel cost " + str(fuel_year),
+                "Diesel fuel cost " + str(fuel_year),
                 diesel_c,"[DIVIDER]",
                 "Generation from hydropower " + str(g_year), link_element],
              [ False,
-                "Forecasted heating fuel cost " + str(fuel_year),
+                "Heating fuel cost " + str(fuel_year),
                  HF_c, "[DIVIDER]", "Generation from wind " + str(g_year),
                 link_element],
-             [ False, "Forecasted electricity cost " + str(fuel_year),
+             [ False, "Electricity cost " + str(fuel_year),
                 elec_c,"[DIVIDER]",
                 "Diesel generator efficiency " + str(leff_year), link_element],
              [ False, "<b>Consumption</b>", "", "[DIVIDER]",
@@ -604,15 +642,16 @@ class WebSummary(object):
                 link_element],
              [ False, "Total electricity consumption " + str(con_year), 
                 link_element, 
-                "[DIVIDER]", "",""],#,'',''],
+                "[DIVIDER]", '<b>Other Info</b>',''],#,'',''],
              [ False, 
-                "Estimated residential heating fuel " + str(oil_year),
-                res_gal, "[DIVIDER]",'',''],
+                "Residential heating fuel " + str(oil_year),
+                res_gal, "[DIVIDER]",
+                'Heating Degree Days per year','{:,.0f}'.format(HDD)],
              [ False, 
-                "Estimated non-residential heating fuel " + str(oil_year),
+                "Non-residential heating fuel " + str(oil_year),
                 nr_gal, "[DIVIDER]",'',''],
              [ False,
-                "Estimated utility diesel " + str(oil_year),
+                "Utility diesel " + str(oil_year),
                 link_element,
                 "[DIVIDER]",'',''],
         ]     
@@ -635,7 +674,7 @@ class WebSummary(object):
         if goals is None:
             charts.append({'name':'goals', 
                     'data':"Community Goals not avaialble", 
-                    'title':'Community Goals',
+                    'title':"Community Goals <a href='http://www.akenergyauthority.org/Policy/RegionalPlanning'(from AEA regional plans)</a>",
                     })
         else:
             table = [[True,'Priority','Goal']]
@@ -842,45 +881,75 @@ class WebSummary(object):
         template = self.general_summaries_html
         res = self.results[com]
         charts = []
-        
-        ## Heating degree day chart
-        HDD = res['community data'].get_item('community','heating degree days')
-        charts.append({'name':'hdd', 
-                'data': [[False, 'Heating Degree Days per year', 
-                                                '{:,.0f}'.format(HDD)]],
-                'title':'Heating Degree Days',
-                'table': True,})
+    
         
         ## Residential building chart
         r = res['Residential Energy Efficiency'] # res. eff. component
         rd = r.comp_specs['data'] # res. data
         
-        table = [[ True, "", "Number Houses",
-                        "Houshold Avg. Square Feet",
-                         "Avg. EUI" ],
-                 [ False, "BEES", 
-                            '{:,.0f}'.format(float(rd["BEES Number"])),
-                            '{:,.0f}'.format(float(rd['BEES Avg Area (SF)'])),
-                            '{:,.2f}'.format(\
-                                float(rd['BEES Avg EUI (MMBtu/sf)']))],
-                 [ False, "Post-Retrofit", 
-                            '{:,.0f}'.format(float(rd["Post-Retrofit Number"])),
-                            '{:,.0f}'.format(\
-                                float(rd['Post-Retrofit Avg Area (SF)'])),
-                            '{:,.2f}'.format(\
-                                float(rd['Post-Retrofit Avg EUI (MMBtu/sf)']))],
-                 [ False, "Pre-Retrofit", 
-                            '{:,.0f}'.format(r.opportunity_HH),  
-                            '{:,.0f}'.format(float(\
-                                        rd['Pre-Retrofit Avg Area (SF)'])), 
-                            '{:,.2f}'.format(\
-                                float(rd['Pre-Retrofit Avg EUI (MMBtu/sf)']))],
-                ]
+        pre_sqft =  float(rd['Pre-Retrofit Avg Area (SF)']) 
+        post_sqft =  float(rd['Post-Retrofit Avg Area (SF)']) 
+        bees_sqft =  float(rd['BEES Avg Area (SF)']) 
+
+    
+        pre_eui = float(rd['Pre-Retrofit Avg EUI (MMBtu/sf)'])
+        post_eui = float(rd['Post-Retrofit Avg EUI (MMBtu/sf)'])
+        bees_eui = float(rd['BEES Avg EUI (MMBtu/sf)'])
+        
+        table = [
+            [ True, "",
+                "Number Houses",
+                "Houshold Avg. Square Feet", 
+                "Average gallons/sf",
+                "Average gallons/houshold",
+            ],
+            [ False, "BEES", 
+                '{:,.0f}'.format(float(rd["BEES Number"])),
+                '{:,.0f}'.format(float(rd['BEES Avg Area (SF)'])),
+                '{:,.2f}'.format(bees_eui * mmbtu_to_gal_HF),
+                '{:,.2f}'.format(bees_eui * bees_sqft * mmbtu_to_gal_HF)
+            ],
+            [ False, "Post-Retrofit", 
+                '{:,.0f}'.format(float(rd["Post-Retrofit Number"])),
+                '{:,.0f}'.format(float(rd['Post-Retrofit Avg Area (SF)'])),
+                '{:,.2f}'.format(post_eui * mmbtu_to_gal_HF),
+                '{:,.2f}'.format(post_eui * post_sqft * mmbtu_to_gal_HF),
+            ],
+            [ False, "Pre-Retrofit", 
+                '{:,.0f}'.format(r.opportunity_HH),  
+                '{:,.0f}'.format(float(rd['Pre-Retrofit Avg Area (SF)'])), 
+                '{:,.2f}'.format(pre_eui * mmbtu_to_gal_HF),
+                '{:,.2f}'.format(pre_eui * pre_sqft * mmbtu_to_gal_HF),
+            ],
+        ]
         
         charts.append({'name':'residential_buildings', 
                 'data': table,
                 'title':'Residential Buildings',
                 'table': True,})
+                
+        table = [
+            ['name','value'],
+            ['Fuel Oil', rd['Fuel Oil']],
+            ['Electricity', rd['Electricity']],
+            ['Utility Gas', rd['Utility Gas']],
+            ['Propane', rd['LP']],
+            ['Coal', rd['Coal']],
+            ['Wood', rd['Wood']],
+            ['Solar', rd['Solar']],
+            ['Other', rd['No fuel used'] + rd['Other']],
+        ]
+        description = "Percent of residential heating fuel consumption per type"
+                         
+                      
+        #~ print table
+        charts.append({'name':'rb_consumtions_percents', 
+            'data': str(table),
+            'title':'Residential building heating fuels consumption',
+            'pie': True,
+            'plot':True,
+            'type': "'pie'",
+            'description': description})
         
         
         ## Non-res pie chart
@@ -926,21 +995,22 @@ class WebSummary(object):
              #~ [False,'% Buildings identified', '{:,.2f}%'.format(percent_id*100)],
              #~ [False,'% Square feet measured','{:,.2f}%'.format(percent_sf*100)]]
             description = "There is a estimated total of " + \
-                    '{:,.0f}'.format(estimates['Square Feet'].sum()) + \
-                    " square feet for the " + str(int(count+num)) + \
-                    " non-residential buildings in this community. " +\
-                    '{:,.1f}%'.format(percent_id*100) + " of the buildings " +\
-                    "have been identified. The others are assumed to exist. " +\
-                    '{:,.1f}%'.format(percent_sf*100) + " of the assumed" +\
-                    " square footage is from measured sources." +\
-                    " The break down of heating fuel consumption by building" +\
-                    " type is pesented in the pie chart"
+                '{:,.0f}'.format(estimates['Square Feet'].sum()) + \
+                " square feet for the " + str(int(count+num)) + \
+                " non-residential buildings in this community. <br><br>" +\
+                '{:,.1f}%'.format(percent_id*100) + " of the buildings " +\
+                "have been identified. The others are assumed to exist. "+\
+                " <br><br> "+\
+                '{:,.1f}%'.format(percent_sf*100) + " of the assumed" +\
+                " square footage is from measured sources. <br><br>" +\
+                " The break down of heating fuel consumption by building" +\
+                " type is pesented in the pie chart"
              
             for t in building_types:
                 n = t
                 if n == 'Average':
                     n = 'Unknown'
-                n = 'Consumption by ' + n 
+                #~ n = 'Consumption by ' + n 
                 v = (building_types[t]/total)*100
                 table.append([n,v])
                              
@@ -948,7 +1018,7 @@ class WebSummary(object):
             #~ print table
             charts.append({'name':'non_residential_buildings', 
                 'data': str(table),
-                'title':'Non-residential Buildings',
+                'title':'Non-residential building heating fuels consumption',
                 'pie': True,
                 'plot':True,
                 'type': "'pie'",
@@ -956,7 +1026,7 @@ class WebSummary(object):
         else:
             charts.append({'name':'non_residential_buildings', 
                 'data': "No Building data avaialble." ,
-                'title':'Non-residential Buildings'})
+                'title':'Non-residential building heating fuels consumption',})
         
         ## Consumption chart
         if res['community data'].intertie == 'child':
@@ -1268,6 +1338,7 @@ class WebSummary(object):
                         ["Maximum expected generation solar [kWh/year]"] = \
                         res['Solar Power'].generation_proposed[0]
                 except AttributeError:
+                    pass
                     generation["Maximum expected generation solar [kWh/year]"]\
                         = 0
                     
@@ -1291,16 +1362,25 @@ class WebSummary(object):
                 generation = generation[['year','annotation'] +\
                     list(generation.columns[1:-1])]
                 
+                
+                generation = generation.loc[:, (generation != 0).any(axis=0)]
+                
+                dashed = "series: { "
+                for col in range(len(generation.columns)):
+                    if generation.columns[col].find('expected') == -1:
+                        continue
+                    ## -2 for year, and annotation
+                    dashed += str(col-2) +": { lineDashStyle: [4, 2] },"
+                dashed += "},"
+                
                 generation_table = self.make_plot_table(generation, sigfig = 2,
                                                 community = com, 
                                                 fname = com+"_generation.csv")
                 charts.append({'name':'generation', 'data': 
                            str(generation_table).replace('nan','null'), 
-                                'title':'generation',
+                                'title':'Electricity generation by source',
                                 'type': "'kWh'",'plot': True,
-                            'dashed': ("series: {0: { lineDashStyle: [4, 2] },"
-                                         "1: { lineDashStyle: [4, 2] },"
-                                        "2: { lineDashStyle: [4, 2] },},"),})  
+                            'dashed': (dashed),})  
             
                     
                                  
@@ -1519,33 +1599,45 @@ class WebSummary(object):
                 s_gen = "unknown"
                 h_gen = "unknown"
                 
+            try:
+                current_total_gen = \
+                    res['community data'].get_item('community',
+                    'utility info')['net generation'].iloc[-1:]
+                current_total_load = float(current_total_gen)/hours_per_year
+                current_year = str(current_total_gen.index[0])
+            except TypeError:
+                current_total_gen = 0
+                current_total_load = float(current_total_gen)/hours_per_year
+                current_year = ''
+                
+            #~ print current_total_gen, current_total_load, current_year
             table = [
-                [True, "Power House", ""],
-                [False, "Efficiency", '{:,.2f} kWh/gallon'.format(eff)],
-                [False, "Total number of generators", num_gens],
-                [False, "Total capacity", cap], 
-                [False, "Largest generator", largest],
-                [False, "Sizing", size],
+                [False, "<b>Power House</b>", "", "[DIVIDER]",
+                    "<b>Wind Power</b>", ""],
+                    
+                [False, 'Average Load ('+ current_year + ')', 
+                    '{:,.0f} kW'.format(current_total_load),
+                    "[DIVIDER]", "Current wind capacity", 
+                    '{:,.0f} kW'.format(w_cap)],
+                [False, 'Average Genneration ('+ current_year + ')', 
+                    '{:,.0f} kWh'.format(float(current_total_gen)), "[DIVIDER]",
+                    "Current wind generation", w_gen],
+                [False, "Efficiency", '{:,.2f} kWh/gallon'.format(eff), "[DIVIDER]", "Current wind capacity factor", '{:,.2f}'.format(w_fac)   ],
+                [False, "Total number of generators", num_gens, "[DIVIDER]",
+                    "<b>Solar Power</b>", ""     ],
+                [False, "Total capacity", cap, "[DIVIDER]",  "Current solar capacity",  '{:,.0f} kW'.format(s_cap)
+                    ], 
+                [False, "Largest generator", largest,   "[DIVIDER]",  "Current solar generation",  s_gen],
+                [False, "Sizing", size, "[DIVIDER]", "Current output per 10kW Solar PV", '{:,.0f}'.format(s_pv)],
                 [False, "Ratio of total capacity to average load", 
-                                                        '{:,.2f}'.format(ratio)],
-                [True, "Heat Recovery", ""],
-                [False, "Operational",  hr_opp],
+                    '{:,.2f}'.format(ratio), "[DIVIDER]", "<b>Hydropower</b>", ""],
+                [False, "<b>Heat Recovery<b>", "",  "[DIVIDER]","Current hydro capacity",'{:,.0f} kW'.format(h_cap)
+                    ],
+                [False, "Operational",  hr_opp,  "[DIVIDER]","Current hydro generation",  h_gen
+                    ],
                 [False, 
                     "Estimated number of gallons of heating oil displaced", 
-                                            '{:,.0f} gallons'.format(hr_ava)],
-                [True, "Wind Power", ""],
-                [False, "Current wind capacity", '{:,.0f} kW'.format(w_cap)],
-                [False, "Current wind generation", w_gen],
-                [False, "Current wind capacity factor", '{:,.2f}'.format(w_fac)],
-                [True, "Solar Power", ""],
-                [False, "Current solar capacity",  '{:,.0f} kW'.format(s_cap)],
-                [False, "Current solar generation",  s_gen],
-                [False, "Current output per 10kW Solar PV",
-                    '{:,.0f}'.format(s_pv)],
-                [True, "Hydropower", ""],
-                [False, "Current hydro capacity",  '{:,.0f} kW'.format(h_cap)],
-                [False, "Current hydro generation",  h_gen],
-                
+                    '{:,.0f} gallons'.format(hr_ava), "[DIVIDER]", '', '' ],
                 ]
     
                 
@@ -1713,8 +1805,12 @@ class WebSummary(object):
                     name = c.comp_specs['name']
                 except (KeyError, TypeError):
                     name = comp
-                if name == 'None' or name == 'none' or name is None:
+                if name == 'None' or name == 'none' or\
+                        name is None or name == "UNKNOWN":
                     name = comp
+                
+                if name != comp:
+                    name = comp + ': ' + name
                 
                 name = name.decode('unicode_escape').encode('ascii','ignore')
                 
@@ -1723,6 +1819,10 @@ class WebSummary(object):
                     success = True if ratio > 1.0 and ratio != 'N/A' else False
                 except TypeError:
                     success = True if ratio > 1.0 else False
+                if name in ['Hydropower', 'Heat Recovery']:
+                    continue
+                if name in ['Wind Power']:
+                    name += ' (Modeled)'  
                 cats[comp].append({'name': name,
                               'sucess': success,
                               'negitive': True if ratio < 0 else False,
