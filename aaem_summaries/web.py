@@ -674,7 +674,7 @@ class WebSummary(object):
         if goals is None:
             charts.append({'name':'goals', 
                     'data':"Community Goals not avaialble", 
-                    'title':'Community Goals',
+                    'title':"Community Goals <a href='http://www.akenergyauthority.org/Policy/RegionalPlanning'(from AEA regional plans)</a>",
                     })
         else:
             table = [[True,'Priority','Goal']]
@@ -887,35 +887,39 @@ class WebSummary(object):
         r = res['Residential Energy Efficiency'] # res. eff. component
         rd = r.comp_specs['data'] # res. data
         
-        baseline = r.baseline_fuel_Hoil_consumption[0]
-        b_sqft = baseline/ (float(rd['Pre-Retrofit Avg Area (SF)']) * r.opportunity_HH)
-        b_hh = baseline/  r.opportunity_HH
-        
-        proposed = r.proposed_fuel_Hoil_consumption[0]
+        pre_sqft =  float(rd['Pre-Retrofit Avg Area (SF)']) 
+        post_sqft =  float(rd['Post-Retrofit Avg Area (SF)']) 
+        bees_sqft =  float(rd['BEES Avg Area (SF)']) 
+
+    
+        pre_eui = float(rd['Pre-Retrofit Avg EUI (MMBtu/sf)'])
+        post_eui = float(rd['Post-Retrofit Avg EUI (MMBtu/sf)'])
+        bees_eui = float(rd['BEES Avg EUI (MMBtu/sf)'])
         
         table = [
             [ True, "",
                 "Number Houses",
                 "Houshold Avg. Square Feet", 
-                #~ "Average gallons/sf",
-                #~ "Average gallons/houshold",
-
-                #~ "Average gallons/sf" 
+                "Average gallons/sf",
+                "Average gallons/houshold",
             ],
             [ False, "BEES", 
                 '{:,.0f}'.format(float(rd["BEES Number"])),
                 '{:,.0f}'.format(float(rd['BEES Avg Area (SF)'])),
-                #~ '{:,.2f}'.format(float(rd['BEES Avg EUI (MMBtu/sf)']))
+                '{:,.2f}'.format(bees_eui * mmbtu_to_gal_HF),
+                '{:,.2f}'.format(bees_eui * bees_sqft * mmbtu_to_gal_HF)
             ],
             [ False, "Post-Retrofit", 
                 '{:,.0f}'.format(float(rd["Post-Retrofit Number"])),
                 '{:,.0f}'.format(float(rd['Post-Retrofit Avg Area (SF)'])),
-                #~ '{:,.2f}'.format(float(rd['Post-Retrofit Avg EUI (MMBtu/sf)'])),
+                '{:,.2f}'.format(post_eui * mmbtu_to_gal_HF),
+                '{:,.2f}'.format(post_eui * post_sqft * mmbtu_to_gal_HF),
             ],
             [ False, "Pre-Retrofit", 
                 '{:,.0f}'.format(r.opportunity_HH),  
                 '{:,.0f}'.format(float(rd['Pre-Retrofit Avg Area (SF)'])), 
-                #~ '{:,.2f}'.format(float(rd['Pre-Retrofit Avg EUI (MMBtu/sf)'])),
+                '{:,.2f}'.format(pre_eui * mmbtu_to_gal_HF),
+                '{:,.2f}'.format(pre_eui * pre_sqft * mmbtu_to_gal_HF),
             ],
         ]
         
@@ -923,6 +927,29 @@ class WebSummary(object):
                 'data': table,
                 'title':'Residential Buildings',
                 'table': True,})
+                
+        table = [
+            ['name','value'],
+            ['Fuel Oil', rd['Fuel Oil']],
+            ['Electricity', rd['Electricity']],
+            ['Utility Gas', rd['Utility Gas']],
+            ['Propane', rd['LP']],
+            ['Coal', rd['Coal']],
+            ['Wood', rd['Wood']],
+            ['Solar', rd['Solar']],
+            ['Other', rd['No fuel used'] + rd['Other']],
+        ]
+        description = "Percent of residential heating fuel consumption per type"
+                         
+                      
+        #~ print table
+        charts.append({'name':'rb_consumtions_percents', 
+            'data': str(table),
+            'title':'Residential building heating fuels consumption',
+            'pie': True,
+            'plot':True,
+            'type': "'pie'",
+            'description': description})
         
         
         ## Non-res pie chart

@@ -182,7 +182,7 @@ def create_project_details_list (project):
         source = "unknown"
     
     return [
-        {'words':'Capital cost', 
+        {'words':'Present value of capital cost', 
             'value': '${:,.0f}'.format(project.get_NPV_costs())},
         {'words':'Lifetime energy cost savings', 
             'value': '${:,.0f}'.format(project.get_NPV_benefits())},
@@ -200,7 +200,7 @@ def create_project_details_list (project):
                 format(float(project.comp_specs['proposed generation']))},
         {'words':'Phase', 
          'value': project.comp_specs['phase']},
-        {'words':'Total capital cost', 
+        {'words':'Upfront capital cost', 
             'value': '${:,.0f}'.format(cost)},
         {'words':'Estimated hydro penetration level', 
             'value': '{:,.2f}%'.format(pen)},

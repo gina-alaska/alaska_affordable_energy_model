@@ -160,10 +160,10 @@ def generate_web_summary (web_object, community):
     ## create list of charts
     charts = [
         {'name':'costs', 'data': str(table1).replace('nan','null'), 
-         'title': 'Estimated Heating Fuel Costs',
+         'title': 'Estimated Heating Fuel Costs for non-residential buildings',
          'type': "'$'",'plot': True,},
         {'name':'consumption', 'data': str(table2).replace('nan','null'), 
-         'title':'Heating Fuel Consumed for community',
+         'title':'Heating Fuel Consumed for non-residential buildings',
          'type': "'other'",'plot': True,}
             ]
 

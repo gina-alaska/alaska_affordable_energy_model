@@ -10,6 +10,8 @@ import aaem.constants as constants
 from aaem.components import comp_order
 import aaem_summaries.web_lib as wl
 
+from pandas import DataFrame
+
 COMPONENT_NAME = "Transmission and Interties"
 DESCRIPTION = """
     This component calculates the potential electricity generation from diesel offset by connecting it to annother community via transmission line. 
@@ -46,10 +48,10 @@ def generate_web_summary (web_object, community):
     
     ## get forecast stuff (consumption, generation, etc)
     fc = modeled.forecast
-
-    generation = fc.generation.\
-                                        ix[start_year:end_year].sum(1)
     
+    generation = fc.generation['generation']\
+        .ix[start_year:end_year]
+            
     ## get the diesel prices
     diesel_price = web_object.results[community]['community data'].\
                             get_item('community','diesel prices').\
@@ -64,7 +66,7 @@ def generate_web_summary (web_object, community):
     ## get generation fuel costs per year (modeled)
     base_cost = generation/eff * diesel_price
     base_cost.name = 'Base Cost'
-    
+    #~ print 
     
     table1 = wl.make_costs_table(community, COMPONENT_NAME, projects, base_cost,
                               web_object.directory)
