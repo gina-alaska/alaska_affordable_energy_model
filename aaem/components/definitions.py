@@ -18,7 +18,7 @@ BREAK_EVEN_COST_DIESEL = "Average diesel price where project would become cost e
 PRICE_HF = "Heating fuel price in the community during the first year of project operation."
 PRICE_ELECTRICITY = "Electricity price in the community during the first year of project operation."
 PRICE_DIESEL = "Diesel fuel price in the community during the first year of project operation."
-FUEL_DISPLACED = "Fuel that would be displaced by improvments." 
+FUEL_DISPLACED = "Fuel that would be displaced by improvments."
 COMMUNITY = "Name of community/project."
 START_YEAR = "Year the project is projected to start operation."
 PHASE = "Current phase of project."
@@ -28,6 +28,6 @@ HR_OP = "Boolean indcating if heat recovey is operational in community."
 PREMIUM = "Extra cost of heating fuel above utility diesel"
 
 
-ENABLED = '[bool] Boolean Indicating if the component should be run'
-LIFETIME = '[int] lifetime of the load for the project'
+ENABLED = '[bool] Indicates if the component should be run'
+LIFETIME = '[int] lifetime of the loan for the project'
 START_YEAR_WITH_TYPE = '[int] Operation start year for the project'
