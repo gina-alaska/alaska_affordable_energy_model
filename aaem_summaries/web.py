@@ -199,7 +199,7 @@ class WebSummary(object):
                 
                 
             charts.append({'name':'goals', 'data':table, 
-                    'title':'Regional Goals',
+                    'title':"Regional goals <a href='http://www.akenergyauthority.org/Policy/RegionalPlanning'>(from AEA regional plans)</a>",
                     'table': True,})
     
             pth = os.path.join(self.directory,
@@ -573,7 +573,7 @@ class WebSummary(object):
         HDD = res['community data'].get_item('community','heating degree days')
         #~ charts.append({'name':'hdd', 
                 #~ 'data': [],
-                #~ 'title':'Heating Degree Days',
+                #~ 'title':'Heating degree days',
                 #~ 'table': True,})
         
         if res['community data'].intertie != 'child':
@@ -658,7 +658,7 @@ class WebSummary(object):
                  
         #### insert into page
         charts.insert(0,{'name':'overview', 'data':table, 
-                    'title': 'Community Overview',
+                    'title': 'Community overview',
                     'table': True,})
         
         ## END community overview table
@@ -673,8 +673,8 @@ class WebSummary(object):
            
         if goals is None:
             charts.append({'name':'goals', 
-                    'data':"Community Goals not avaialble", 
-                    'title':"Community Goals <a href='http://www.akenergyauthority.org/Policy/RegionalPlanning'(from AEA regional plans)</a>",
+                    'data':"Community goals not avaialble", 
+                    'title':"Community goals <a href='http://www.akenergyauthority.org/Policy/RegionalPlanning'>(from AEA regional plans)</a>",
                     })
         else:
             table = [[True,'Priority','Goal']]
@@ -683,7 +683,7 @@ class WebSummary(object):
                 table.append([False, p, g])
                 p += 1
             charts.append({'name':'goals', 'data':table, 
-                    'title':'Community Goals',
+                    'title':"Community goals <a href='http://www.akenergyauthority.org/Policy/RegionalPlanning'>(from AEA regional plans)</a>",
                     'table': True,})
         
         ## Intertie Info
@@ -696,7 +696,7 @@ class WebSummary(object):
                 table.append([False, i, 'Secondary'])
                                                     
             charts.append({'name':'interties', 'data':table, 
-                    'title':'Intertied Communities',
+                    'title':'Intertied communities',
                     'table': True,})
 
             
@@ -741,7 +741,7 @@ class WebSummary(object):
         charts = [
         {'name':'population',
          'data': str(population_table).replace('nan','null'), 
-         'title': 'Population Forecast',
+         'title': 'Population forecast',
          'type': "'people'",
          'plot': True,},
             ]
@@ -776,7 +776,7 @@ class WebSummary(object):
         charts.append({
             'name':'e_price', 
             'data': str(ep_table).replace('nan','null'), 
-            'title':'Electricity Price ($/kWh)',
+            'title':'Electricity price ($/kWh)',
             'type': "'currency'",
             'plot': True,
         })
@@ -784,7 +784,7 @@ class WebSummary(object):
         #~ else:
             #~ diesel_data = None
             #~ charts.append({'name':'e_price', 'data': "No electricity price for community.", 
-                        #~ 'title':'Electricity Price ($/kWh)',
+                        #~ 'title':'Electricity price ($/kWh)',
                         #~ 'type': "'currency'",})
         
         ## Diesel & fuel Prices chart
@@ -843,7 +843,7 @@ class WebSummary(object):
         charts.insert(-1,{
             'name':'d_price',
             'data': str(d_table).replace('nan','null'), 
-            'title':'Fuel Price',
+            'title':'Fuel price',
             'type': "'currency'",
             'plot': True,})  
                         
@@ -925,7 +925,7 @@ class WebSummary(object):
         
         charts.append({'name':'residential_buildings', 
                 'data': table,
-                'title':'Residential Buildings',
+                'title':'Residential buildings',
                 'table': True,})
                 
         table = [
@@ -1039,7 +1039,7 @@ class WebSummary(object):
                                      " intertie for consumption plot for" + \
                                      " all communities on the intertie."}
                                     ],
-                                'title':'Electricity Consumed',
+                                'title':'Electricity consumed',
                                 'links_list': True,})
                                 
         elif hasattr(res['forecast'], 'consumption'):
@@ -1073,13 +1073,13 @@ class WebSummary(object):
             #~ print consumption_table
             charts.append({'name':'consumption', 
                     'data': str(consumption_table).replace('nan','null'), 
-                    'title':'Electricity Consumed',
+                    'title':'Electricity consumed',
                     'type': "'kWh'",
                         'plot': True,})
         else: 
             charts.append({'name':'consumption', 
                     'data': "No consumption data avaialble.", 
-                    'title':'Electricity Consumed',
+                    'title':'Electricity consumed',
                     'type': "'kWh'"})
             
         ## energy consumption pie chart
@@ -1162,7 +1162,7 @@ class WebSummary(object):
             
             charts.append({'name':'diesel_consumption',
                             'data': str(diesel_consumption_table),
-                            'title':'Energy Consumption by sector',
+                            'title':'Energy consumption by sector',
                             'pie': True,
                             'plot':True,
                             'type': "'pie'",})  
@@ -1170,7 +1170,7 @@ class WebSummary(object):
             charts.append({
                 'name':'diesel_consumption',
                 'data': 'Data not available',
-                'title':'Energy Consumption by sector',
+                'title':'Energy consumption by sector',
             })    
         
         ## costs by sector pie chart
@@ -1264,7 +1264,7 @@ class WebSummary(object):
             costs_table.insert(0,['name','value'])
             #~ if costs_data:
             charts.append({'name':'costs', 'data': str(costs_table),
-                                'title':'Energy costs by Sector',
+                                'title':'Energy costs by sector',
                                 'type': "'percent'",
                                 'pie': True,
                                 'plot':True,
@@ -1273,7 +1273,7 @@ class WebSummary(object):
             charts.append({
                 'name':'costs',
                 'data': 'Data not available',
-                'title':'Energy costs by Sector',})    
+                'title':'Energy costs by sector',})    
         ## ========================= END Energy costs by Sector ================
 
         ## save to page
@@ -1425,13 +1425,13 @@ class WebSummary(object):
             
                 charts.append({'name':'avg_load',
                         'data': str(avg_load_table).replace('nan','null'), 
-                        'title':'Average Load',
+                        'title':'Average load',
                         'type': "'kW'",'plot': True,})
             else:
                 charts.append({'name':'avg_load', 
                     'data': 
                         "No Consumption available to calculate average load", 
-                    'title':'Average Load',
+                    'title':'Average load',
                     'type': "'kW'",})
             
             ## ENdAverage load chart
@@ -1503,7 +1503,7 @@ class WebSummary(object):
                 fname = com+"_generation_efficiency.csv")
             charts.append({'name':'generation_efficiency',
                     'data': str(gen_eff_table).replace('nan','null'), 
-                    'title':'Diesel Generation Efficiency',
+                    'title':'Diesel generation efficiency',
                     'type': "'gal/kWh'",'plot': True,})
                     
                     
@@ -1642,7 +1642,7 @@ class WebSummary(object):
     
                 
             charts.insert(0,{'name':'gen_summary', 'data':table, 
-                    'title':'Generation Overview',
+                    'title':'Generation overview',
                     'table': True,})
         else:
             parent = res['community data'].get_item('community','intertie')[0]
@@ -1655,7 +1655,7 @@ class WebSummary(object):
                                      " intertie for generation plot for" + \
                                      " all communities on the intertie."}
                                     ],
-                                'title':'generation',
+                                'title':'Generation',
                                 'links_list': True,})
         
         ## Intertie list
@@ -1675,7 +1675,7 @@ class WebSummary(object):
                     table.append([False,c,'Child'])
             
                 charts.insert(0,{'name':'it_l', 'data':table, 
-                    'title':'Intertied Communities',
+                    'title':'Intertied communities',
                     'table': True,})
         
         ## End Intertie list
