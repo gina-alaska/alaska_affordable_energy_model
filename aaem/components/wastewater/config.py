@@ -47,7 +47,7 @@ comments = {
     'lifetime': definitions.LIFETIME,
     'start year': definitions.START_YEAR_WITH_TYPE,
     'audit cost': '[float] price [$]',
-    'average refit cost': '[float] Statewide average cost per person for refitting water and wastewater facilities [$]'
+    'average refit cost': '[float] Statewide average cost per person for refitting water and wastewater facilities [$]',
     'data': '[dict] Data',
     'electricity refit reduction':
         '[float] percent saved by performing electricity refit [%]',
