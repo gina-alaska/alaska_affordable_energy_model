@@ -48,12 +48,12 @@ class ASHPResidential (ashp_base.ASHPBase):
 
     See also
     --------
-    aaem.community_data :
-        community data module, see for information on CommintyData Object
-    aaem.forecast :
-        forecast module, see for information on Forecast Object
+    aaem.community_data : 
+        community data module, see information on CommintyData Object
+    aaem.forecast : 
+        forecast module, see information on Forecast Object
     aaem.diagnostics :
-        diagnostics module, see for information on diagnostics Object
+        diagnostics module, see information on diagnostics Object
     aaem.components.residential :
         'residential Energy Efficiency' component is a required prerequisite
         for this component
