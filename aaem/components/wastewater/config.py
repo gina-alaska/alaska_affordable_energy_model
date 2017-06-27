@@ -5,17 +5,9 @@ Water Wastewater Configuration
     Contains Water Wastewater configuration info for community
     data yaml file, and other set-up requirements
 
-    **Unique Configuration keys**
-
-        'audit cost'
-        'average refit cost'
-        'data'
-        'electricity refit reduction'
-        'heating fuel refit reduction'
-        'heat recovery multiplier'
-        'heating cost percent'
-
 """
+from aaem.components import definitions
+
 COMPONENT_NAME = 'Water and Wastewater Efficiency'
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
@@ -51,21 +43,18 @@ structure = {
 
 ## comments for the yaml key/value pairs
 comments = {
-    'enabled':'',
-    'lifetime': 'number years <int>',
-    'start year': 'start year <int>',
-    'audit cost': 'price <float> (ex. 10000)',
-    'average refit cost': 'cost/per person <float>',
-    'data': '',
+    'enabled': definitions.ENABLED,
+    'lifetime': definitions.LIFETIME,
+    'start year': definitions.START_YEAR_WITH_TYPE,
+    'audit cost': '[float] price [$]',
+    'average refit cost': '[float] Statewide average cost per person for refitting water and wastewater facilities [$]'
+    'data': '[dict] Data',
     'electricity refit reduction':
-        'percent <float> percent saved by preforming electricity refit',
+        '[float] percent saved by performing electricity refit [%]',
     'heating fuel refit reduction':
-         'percent <float> percent saved by heating fuel refit',
-    'heat recovery multiplier': ''
+         '[float] percent saved by performing heating fuel refit [%]',
+    'heat recovery multiplier': '[float] multiplier for assumed baseline heat fuel consumption if heat recovery is used in the community'
     }
 
 ## list of prerequisites for module
 prereq_comps = []
-
-## List of raw data files required for  preproecssing
-raw_data_files = []

@@ -63,7 +63,7 @@
 -- percents in configuration are now writtens as 40 for 40% (was .4)
 
 ### fixes
--- preprocessing of interties, for electric data and fuel prices, now finds the proper communites, and avoids dupilcation
+-- preprocessing of interties, for electric data and fuel prices, now finds the proper communities, and avoids dupilcation
 -- preprocessing of fuel prices, regional averaging is fixed
 
 ### removes
@@ -110,7 +110,7 @@
 
 ## [0.24.3]
 ### fixed
-- bug with regional creating summaries if there were no communites for a given  project amoung the communites run
+- bug with regional creating summaries if there were no communities for a given  project amoung the communities run 
 
 ## [0.24.2]
 ### fixed
@@ -218,7 +218,7 @@
 
 ## [0.21.5]
 ### changes
-- html: map communites are color coded by region
+- html: map communities are color coded by region
 - html: line loss and generator efficiency are the last known value if possible
 
 ### fixes
@@ -844,9 +844,9 @@
 
 ### fixed
 - missing generation_forecast.csv files
-- issue where not all intertie subcommunites were being used
+- issue where not all intertie subcommunities were being used
 - issue in creating forecast compareison file
-- issue in preprocessor indexing cauing some communites to get the wrong data input files
+- issue in preprocessor indexing cauing some communities to get the wrong data input files
 
 ## [0.9.3]
 ### fixed
@@ -952,7 +952,7 @@
 
 ## [0.7.1]
 ### changed
-- Order of communites has been alphabetized
+- Order of communities has been alphabetized
 
 ### fixed
 - Square footage not being included for single building categories

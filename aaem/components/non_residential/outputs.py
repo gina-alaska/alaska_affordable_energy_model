@@ -15,7 +15,8 @@ from aaem.components import comp_order, definitions
 
 ## component summary
 def component_summary (results, res_dir):
-    """Creates the regional and community summary for the component in provided 
+    """Creates the regional and communities summary for the component in provided 
+
     directory
     
     Parameters

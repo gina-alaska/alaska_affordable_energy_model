@@ -498,11 +498,11 @@ class Preprocessor (object):
         ## is community a parent
         if community in data.index: 
             plant = data.ix[community]['Plant Intertied']
-            other_communites = data.ix[community]['Other Community on Intertie']
-            if plant.lower()  == 'yes' and other_communites != "''":
+            other_communities = data.ix[community]['Other Community on Intertie']
+            if plant.lower()  == 'yes' and other_communities != "''":
                 status = "parent"
             else: 
-                # if 'Plant Intertied' not yes or no communites listed
+                # if 'Plant Intertied' not yes or no communities listed
                 # in interite, community is not part of intertie
                 status = "not in intertie"
         ## is it a child
@@ -1701,7 +1701,7 @@ class Preprocessor (object):
         return premium 
         
     def load_election_divisions (self, **kwargs):
-        """load the data for a communites election districts
+        """load the data for a communities election districts
         
         Returns
         -------

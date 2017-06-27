@@ -20,7 +20,7 @@ def get_projects (web_object, community, comp, tag):
             provided component
             
     outputs:
-        returns: projects, a dictioanry of communites projects for the 
+        returns: projects, a dictioanry of communities projects for the 
         component, start_year: eariliest start year in projects. end_year,
         latest actual end year in projects
     """
