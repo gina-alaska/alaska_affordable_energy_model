@@ -16,7 +16,7 @@ import numpy as np
 COMPONENT_NAME = "Heat Recovery"
 
 DESCRIPTION = """
-    This component calculates the potential change in heating oil usage from the installation of new heat recovery systems in non-residential buildings. Requires that at least a reconnaissance-level heat recovery study has been completed for the community.
+    This component calculates the potential change in heating oil usage from the installation of a new or upgraded heat recovery system to service non-residential buildings. Requires that at least a reconnaissance-level heat recovery study has been completed for the community.
 """
 
 def generate_web_summary (web_object, community):

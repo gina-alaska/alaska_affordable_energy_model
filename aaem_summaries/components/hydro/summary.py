@@ -15,7 +15,7 @@ import numpy as np
 COMPONENT_NAME = "Hydropower"
 
 DESCRIPTION = """
-    This component calculates the potential change in diesel fuel used for electricity generation from the installation of new hydropower infrastructure. Requires that at least a reconnaissance-level hydropower study has been completed for the community. 
+    This component calculates the potential cost savings through changes in the amount of diesel fuel used for electricity generation from the installation of new hydropower infrastructure. Requires that at least a reconnaissance-level hydropower study has been completed for the community.
 """
 
 def generate_web_summary (web_object, community):
