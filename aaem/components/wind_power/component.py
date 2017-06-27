@@ -15,16 +15,16 @@ import aaem.constants as constants
 from config import COMPONENT_NAME, UNKNOWN
 
 class WindPower(AnnualSavings):
-    """Transmission of the Alaska Affordable Eenergy Model
+    """Transmission of the Alaska Affordable Energy Model
 
     Parameters
     ----------
-    commnity_data : CommunityData
-        CommintyData Object for a community
+    community_data : CommunityData
+        CommunityData Object for a community
     forecast : Forecast
-        forcast for a community 
+        forecast for a community 
     diagnostics : diagnostics, optional
-        diagnostics for tracking error/warining messeges
+        diagnostics for tracking error/warning messages
     prerequisites : dictionary of components, optional
         prerequisite component data this component has no prerequisites 
         leave empty
@@ -32,10 +32,10 @@ class WindPower(AnnualSavings):
     Attributes
     ----------
     diagnostics : diagnostics
-        for tracking error/warining messeges
+        for tracking error/warning messages
         initial value: diag or new diagnostics object
     forecast : forecast
-        community forcast for estimating future values
+        community forecast for estimating future values
         initial value: forecast
     cd : dictionary
         general data for a community.
@@ -47,7 +47,7 @@ class WindPower(AnnualSavings):
     See also
     --------
     aaem.community_data : 
-        community data module, see information on CommintyData Object
+        community data module, see information on CommunityData Object
     aaem.forecast : 
         forecast module, see information on Forecast Object
     aaem.diagnostics :
@@ -60,12 +60,12 @@ class WindPower(AnnualSavings):
         
         Parameters
         ----------
-        commnity_data : CommunityData
-            CommintyData Object for a community
+        community_data : CommunityData
+            CommunityData Object for a community
         forecast : Forecast
-            forcast for a community 
+            forecast for a community 
         diagnostics : diagnostics, optional
-            diagnostics for tracking error/warining messeges
+            diagnostics for tracking error/warning messages
         prerequisites : dictionary of components, optional
             prerequisite component data
 
@@ -84,7 +84,7 @@ class WindPower(AnnualSavings):
             self.comp_specs["lifetime"]
         )
                         
-        ### ADD other intiatzation stuff
+        ### ADD other initialization stuff
         
         
     
@@ -97,7 +97,7 @@ class WindPower(AnnualSavings):
         
         Parameters
         ----------
-        scalers: dictionay of valid scalers, optional
+        scalers: dictionary of valid scalers, optional
             Scalers to adjust normal run variables. 
             See note on accepted  scalers
         
@@ -175,7 +175,7 @@ class WindPower(AnnualSavings):
                 #~ print self.benefit_cost_ratio
                 self.calc_levelized_costs(self.maintainance_cost)
         else:
-            #~ print "wind project not feasiable"
+            #~ print "wind project not feasible"
             self.was_run = False
             if self.load_offset_proposed <= 0: 
                 self.reason = "Proposed load offset less than 0"
@@ -187,14 +187,14 @@ class WindPower(AnnualSavings):
         #~ print self.benefit_cost_ratio
         
     def calc_average_load (self):
-        """Caclulate the Average Diesel load of the current system
+        """Calculate the Average Diesel load of the current system
         
         Attributes
         ----------
         generation: np.array
             current diesel generation
         average_load : float 
-            average disel load of current system
+            average diesel load of current system
         """
         if self.comp_specs['proposed capacity'] != UNKNOWN:
             self.average_load = None
@@ -205,7 +205,7 @@ class WindPower(AnnualSavings):
         #~ print 'self.average_load',self.average_load
         
     def calc_generation_wind_proposed (self):
-        """Calulate the proposed generation for wind.
+        """Calculate the proposed generation for wind.
         
         Attributes
         ----------
@@ -266,7 +266,7 @@ class WindPower(AnnualSavings):
             
         Attributes
         ----------
-        transmission_losses : flaot
+        transmission_losses : float
             transmission losses (kWh/year)
         """
         #~ print self.generation_wind_proposed, self.cd['line losses']
@@ -279,7 +279,7 @@ class WindPower(AnnualSavings):
             
         Attributes
         ----------
-        excess_energy : flaot
+        excess_energy : float
             excess energy(kWh/year)
         """
         #~ print sorted(self.cd.keys())
@@ -293,7 +293,7 @@ class WindPower(AnnualSavings):
         
         Attributes
         ----------
-        net_wind_generation : flaot
+        net_wind_generation : float
             net wind generation (kWh/year)
         """
         self.net_generation_wind = self.generation_wind_proposed  - \
@@ -306,7 +306,7 @@ class WindPower(AnnualSavings):
         
         Attributes
         ----------
-        electric_diesel_reduction : flaot
+        electric_diesel_reduction : float
             reduction in generation diesel (gal/year)
         """
         gen_eff = self.cd["diesel generation efficiency"]
@@ -318,7 +318,7 @@ class WindPower(AnnualSavings):
             self.electric_diesel_reduction = electric_diesel
         
     def calc_diesel_equiv_captured (self):
-        """calcualte heat energy captured
+        """calculate heat energy captured
         
         Attributes
         ----------
@@ -347,7 +347,7 @@ class WindPower(AnnualSavings):
         #~ print 'self.diesel_equiv_captured ',self.diesel_equiv_captured 
         
     def calc_loss_heat_recovery (self):
-        """Calcualte heat recovery lost.
+        """Calculate heat recovery lost.
         
         Attributes
         ----------
@@ -362,7 +362,7 @@ class WindPower(AnnualSavings):
         #~ print 'self.loss_heat_recovery',self.loss_heat_recovery
         
     def calc_reduction_diesel_used (self):
-        """Calcualte Diesel generation reduction.
+        """Calculate Diesel generation reduction.
         
         Attributes
         ----------
@@ -399,8 +399,8 @@ class WindPower(AnnualSavings):
         Attributes
         ----------
         maintainance_costs : float
-             total cost of improvments ($), calculated from transmission and
-             generagion costs
+             total cost of improvements ($), calculated from transmission and
+             generation costs
         """
         
         if str(self.comp_specs['operational costs']) \
@@ -422,9 +422,9 @@ class WindPower(AnnualSavings):
         Attributes
         ----------
         capital_costs : float
-            total cost of improvments ($),
+            total cost of improvements ($),
         cost_per_kwh: float
-            cost per kW used to determine captial costs  ($/kW)
+            cost per kW used to determine capital costs  ($/kW)
         """
         powerhouse_control_cost = 0
         if not self.cd['switchgear suatable for renewables']:
@@ -507,7 +507,7 @@ class WindPower(AnnualSavings):
         
         
         
-    # Make this do sruff. Remember the different fuel type prices if using
+    # Make this do stuff. Remember the different fuel type prices if using
     def calc_annual_heating_savings (self):
         """Calculate annual heating savings created by the project.
             
@@ -544,7 +544,7 @@ class WindPower(AnnualSavings):
             #~ fname = fname.replace(" ","_")
         
             #~ fd = open(fname, 'w')
-            #~ fd.write("Wind Power minimum requirments not met\n")
+            #~ fd.write("Wind Power minimum requirements not met\n")
             #~ fd.close()
             return
         

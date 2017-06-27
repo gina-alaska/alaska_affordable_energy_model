@@ -19,7 +19,7 @@ def preprocess (preprocessor, **kwargs):
     
     Parameters
     ----------
-    preprocessor: preprocessor.Proprocessor
+    preprocessor: preprocessor.Preprocessor
         a preprocessor object
         
     Returns
@@ -38,7 +38,7 @@ def preprocess (preprocessor, **kwargs):
     ids = preprocessor.communities + preprocessor.aliases
     wind_class = wind_classes.ix[ids]['Assumed Wind Class'].max()
     preprocessor.diagnostics.add_note( 'Wind Power',
-        'Using max wind class for all commuinites in intertie')
+        'Using max wind class for all communities in intertie')
     if np.isnan(wind_class):
         wind_class = 0
         preprocessor.diagnostics.add_warning( 'Wind Power',
