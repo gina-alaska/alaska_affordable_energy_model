@@ -48,11 +48,11 @@ class ASHPBase (AnnualSavings):
     See also
     --------
     aaem.community_data :
-        community data module, see for information on CommintyData Object
+        community data module, see information on CommintyData Object
     aaem.forecast :
-        forecast module, see for information on Forecast Object
+        forecast module, see information on Forecast Object
     aaem.diagnostics :
-        diagnostics module, see for information on diagnostics Object
+        diagnostics module, see information on diagnostics Object
 
     """
     def __init__ (self, community_data, forecast,
