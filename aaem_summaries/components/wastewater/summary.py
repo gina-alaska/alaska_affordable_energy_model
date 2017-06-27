@@ -126,7 +126,7 @@ def generate_web_summary (web_object, community):
          'type': "'$'",'plot': True,},
         {'name':'E_consumption', 'data': str(table2).replace('nan','null'), 
          'title':'Electricity Consumed by water/wastewater sector',
-         'type': "'other'",'plot': True,},
+         'type': "'kWh'",'plot': True,},
         {'name':'H_consumption', 'data': str(table3).replace('nan','null'), 
          'title':'Heating Oil Consumed by water/wastewater sector',
          'type': "'other'",'plot': True,}

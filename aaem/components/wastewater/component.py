@@ -228,6 +228,12 @@ class WaterWastewaterSystems (AnnualSavings):
             self.was_run = False
             self.reason = "Not a water/wastewater project."
             return 
+        #~ print self.comp_specs['data']['assumption type used']
+        if self.comp_specs['data']['assumption type used'] == 'UNKNOWN':
+            self.was_run = False
+            self.reason = "Water/wastewater system type unknown."
+            #~ print self.reason
+            return 
             
         if self.cd["model electricity"]:
             self.calc_baseline_kWh_consumption()
@@ -347,9 +353,12 @@ class WaterWastewaterSystems (AnnualSavings):
         percent = 1 - (self.comp_specs['electricity refit reduction']/100.0)
         con = np.float64(self.comp_specs['data']['kWh/yr'])
         retro_con = np.float64(self.comp_specs['data']['kWh/yr w/ retro']) 
-        if (not (np.isnan(con) and np.isnan(retro_con))) and \
+        if (not np.isnan(con) and not np.isnan(retro_con)) and \
                 (con != 0 and retro_con != 0):
             percent = retro_con/con
+            self.diagnostics.add_note(self.component_name, 
+                'Using caclulated electric consumption percent '\
+                + str(percent * 100))
         consumption = self.baseline_kWh_consumption * percent
         self.proposed_kWh_consumption = consumption 
 
@@ -366,12 +375,13 @@ class WaterWastewaterSystems (AnnualSavings):
             mmbtu/year values(floats) over the project lifetime
         """
         percent = 1 - (self.comp_specs['heating fuel refit reduction']/100.0)
-        if (not (np.isnan(np.float64(self.comp_specs['data']['HF w/Retro']))\
-            and np.isnan(np.float64(self.comp_specs['data']['HF Used']))))\
-            and (np.float64(self.comp_specs['data']['HF Used']) != 0 and\
-                 np.float64(self.comp_specs['data']['HF w/Retro'])):
-            percent = np.float64(self.comp_specs['data']['HF w/Retro'])/\
-                      np.float64(self.comp_specs['data']['HF Used'])
+        con = np.float64(self.comp_specs['data']['HF Used'])
+        retro_con = np.float64(self.comp_specs['data']['HF w/Retro'])
+        if (not np.isnan(con) and not np.isnan(retro_con))\
+            and (con != 0 and retro_con != 0):
+            percent = retro_con / con
+            self.diagnostics.add_note(self.component_name, 
+                'Using caclulated HF consumption percent ' + str(percent * 100))
         consumption = self.baseline_fuel_Hoil_consumption * percent
         self.proposed_fuel_Hoil_consumption = consumption
         consumption = self.baseline_fuel_biomass_consumption * percent

@@ -671,11 +671,16 @@ def community_forcast_summaries (community,  components, forecast, res_dir):
     except AttributeError:
         return
     data['heat_energy_demand_non-residential [mmbtu/year]'] = df['col']
-    df = DataFrame(iwat.baseline_HF_consumption,
+   
+    try: 
+        w_con = iwat.baseline_HF_consumption
+    except AttributeError:
+        w_con = 0
+   
+    df = DataFrame(w_con,
         columns =['col'],
          index = range(iwat.start_year, iwat.end_year+1))
     data['heat_energy_demand_water-wastewater [mmbtu/year]'] = df['col']
-        
         
     hd_cols = [
         'heat_energy_demand_residential [mmbtu/year]',
@@ -778,14 +783,16 @@ def community_forcast_summaries (community,  components, forecast, res_dir):
     data['heating_fuel_non-residential_consumed [mmbtu/year]'] = \
         df['col'].round()
    
+   
+    
     df = DataFrame(
-        iwat.baseline_HF_consumption * mmbtu_to_gal_HF,
+        w_con * mmbtu_to_gal_HF,
         columns =['col'],
          index = range(iwat.start_year, iwat.end_year+1))
     data['heating_fuel_water-wastewater_consumed [gallons/year]'] = \
         df['col'].round()
     df = DataFrame(
-        iwat.baseline_HF_consumption,
+        w_con,
         columns =['col'],
          index = range(iwat.start_year, iwat.end_year+1)
     )
