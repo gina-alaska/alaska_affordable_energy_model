@@ -1765,6 +1765,7 @@ class WebSummary(object):
                 c = self.results[i][comp]
                 ratio = c.get_BC_ratio()
                 
+                
                 fs = "N/A"
                 lcoe_e = "N/A"
                 lcoe_hf = "N/A"
@@ -1786,27 +1787,53 @@ class WebSummary(object):
                         lcoe_e = c.levelized_cost_of_energy
                     else:
                         lcoe_hf = c.levelized_cost_of_energy
-                
-                if np.isinf(lcoe_e) or np.isnan(lcoe_e):
-                    lcoe_e = "N/A"
-                if np.isinf(lcoe_hf) or np.isnan(lcoe_hf):
-                    lcoe_hf = "N/A"
+                    
+                try:
+                    if np.isinf(lcoe_e) or np.isnan(lcoe_e):
+                        lcoe_e = "N/A"
+                except TypeError:
+                    pass
+                try:
+                    if np.isinf(lcoe_hf) or np.isnan(lcoe_hf):
+                        lcoe_hf = "N/A"
+                except TypeError:
+                    pass
                 
                 net = c.get_NPV_net_benefit()
                 #~ if net == 'N/A': 
                     #~ net = 0
+                try:
+                    if np.isnan(net):
+                        net = 'N/A'
+                except:
+                    pass
                 
                 benefit = c.get_NPV_benefits()
+                try:
+                    if np.isnan(benefit):
+                        benefit = 'N/A'
+                except:
+                    pass
                 #~ if benefit == 'N/A': 
                     #~ benefit = 0
                     
                 costs = c.get_NPV_costs()
+                try:
+                    if np.isnan(costs):
+                        costs = 'N/A'
+                except:
+                    pass
                 #~ if costs == 'N/A': 
                     #~ costs = 0
                 
                 #~ if 'N/A' == ratio:
                     #~ ratio = 0
   
+                try:
+                    if np.isnan(ratio):
+                        ratio = 'N/A'
+                except:
+                    pass
                 
                 try:
                     name = c.comp_specs['name']
