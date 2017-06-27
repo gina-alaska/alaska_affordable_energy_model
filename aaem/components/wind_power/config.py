@@ -88,23 +88,23 @@ comments = {
     'source': definitions.SOURCE,
     'notes': definitions.NOTES_WITH_TYPE,
     'phase': definitions.PHASE_WITH_TYPE,
-    'proposed capacity': '[float, str] Proposed wind generation capacity[kW] form known project, or UNKNOWN',
+    'proposed capacity': '[float, str] Proposed wind generation capacity form known project [kW], or UNKNOWN',
     'generation capital cost': '[float, str] Capital costs for generation infastructure [$], or UNKNOWN',
-    'operational costs': '[float, str] Operational costs for generation infastructure, or UNKNOWN',
-    'proposed generation': '[float, str] Proposed yearly wind generation[kWh] form known project, or UNKNOWN',',
+    'operational costs': '[float, str] Operational costs for generation infastructure [$], or UNKNOWN',
+    'proposed generation': '[float, str] Proposed yearly wind generation from known project [kWh], or UNKNOWN',',
     'distance to resource': '[float] Distance to proposed wind infastructure [ft], or UNKNOWN',
     'transmission capital cost': '[float, str] Capital costs for transmission infastructure [$], or UNKNOWN',
 
-    'wind class': '[float]',
-    'capacity factor': '[float]',
+    'wind class': '[float] classification system to describe typical wind conditions in community',
+    'capacity factor': '[float] unitless ratio of actual electrical energy output to maximum possible output over given time period',
     'percent heat recovered': '[float] Precent heat recoverable in wind generation systems',
     'secondary load': '[bool] secondary load available',
 
 
     'secondary load cost': '[float] cost for secondary load [$]', #
-    'percent o&m': '[float] percent of captial costs to use as yearly operational costs to use if operational costs are UNKNOWN',
-    'estimated costs': '[DataFrame] Table Estimated cost[$] for generation infastructure at different capacities[kW] if generation costs are UNKNOWN',
-    'est. transmission line cost': '[float]  Estimated cost for transmission generation infastructure if transmission costs are UNKNOWN[$]'',
+    'percent o&m': '[float] percent of capital costs to use as yearly operational costs if operational costs are UNKNOWN',
+    'estimated costs': '[DataFrame] Table estimated cost for generation infastructure [$] at different capacities [kW] if generation costs are UNKNOWN',
+    'est. transmission line cost': '[float] Estimated cost for transmission generation infastructure [$] if transmission costs are UNKNOWN',
 }
 
 ## list of prerequisites for module
