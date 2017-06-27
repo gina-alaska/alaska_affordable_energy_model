@@ -330,7 +330,7 @@ class SolarPower (AnnualSavings):
         return (base_gen_fuel - post_gen_fuel) + \
                     self.fuel_displaced[:self.actual_project_life]
     
-    def get_total_enery_produced (self):
+    def get_total_energy_produced (self):
         """Get total energy produced.
         
         Returns

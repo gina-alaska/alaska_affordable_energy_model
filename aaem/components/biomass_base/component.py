@@ -297,7 +297,7 @@ class BiomassBase (AnnualSavings):
         """
         return self.heat_diesel_displaced
                                 
-    def get_total_enery_produced (self):
+    def get_total_energy_produced (self):
         """Get total energy produced
         
         Returns

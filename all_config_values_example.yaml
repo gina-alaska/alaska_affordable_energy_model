@@ -28,7 +28,7 @@ community:
   natural gas price: 0	 # natural gas price ($) <float>
   hydro generation limit: IMPORT	 # Maximum Hydro generation for current system (kWh) <float>
   wind generation limit: IMPORT	 # Maximum Wind generation for current system (kWh) <float>
-  wind generation precent: 0.2	 # Percent of maximum wind generation useable (% as decimal) <float>
+  wind generation percent: 0.2	 # Percent of maximum wind generation useable (% as decimal) <float>
   generation numbers: IMPORT	 # (read from file)
   switchgear suatable for RE: IMPORT	 # Flag indicating if power house controls are suatable for renewable sources <bool>
   switchgear cost: 150000	 # cost of switch gear ($) <float>
@@ -52,7 +52,7 @@ construction multipliers:
   North Slope: 1.8
 
 residential buildings:
-  enabled: False	 # 
+  enabled: False	 #
   min kWh per household: 6000	 # minimum average consumed kWh/year per house<int>
   lifetime: ABSOLUTE DEFAULT	 # number years <int>
   start year: ABSOLUTE DEFAULT	 # start year <int>
@@ -60,37 +60,37 @@ residential buildings:
   data: IMPORT	 # IMPORT
 
 water wastewater:
-  enabled: False	 # 
+  enabled: False	 #
   lifetime: ABSOLUTE DEFAULT	 # number years <int>
   start year: ABSOLUTE DEFAULT	 # start year <int>
   audit cost: 10000	 # price <float> (ex. 10000)
   average refit cost: 360.0	 # cost/per person <float>
-  data: IMPORT	 # 
-  electricity refit reduction: 0.25	 # decimal precent <float> percent saved by preforming electricity refit
-  heating fuel refit reduction: 0.35	 # decimal precent <float> percent saved by heating fuel refit
-  heat recovery multiplier: {False: 1.0, True: 0.5}	 # 
+  data: IMPORT	 #
+  electricity refit reduction: 0.25	 # decimal percent <float> percent saved by preforming electricity refit
+  heating fuel refit reduction: 0.35	 # decimal percent <float> percent saved by heating fuel refit
+  heat recovery multiplier: {False: 1.0, True: 0.5}	 #
 
 non-residential buildings:
   average refit cost: 7.0	 # cost/sqft. <float>
-  number buildings: IMPORT	 # 
-  enabled: False	 # 
+  number buildings: IMPORT	 #
+  enabled: False	 #
   cohort savings multiplier: 0.26	 # pecent as decimal <float>
   start year: ABSOLUTE DEFAULT	 # start year <int>
-  com building data: IMPORT	 # 
-  com building estimates: IMPORT	 # 
+  com building data: IMPORT	 #
+  com building estimates: IMPORT	 #
   lifetime: ABSOLUTE DEFAULT	 # number years <int>
 
 wind power:
-  enabled: False	 # 
+  enabled: False	 #
   lifetime: ABSOLUTE DEFAULT	 # number years <int>
   start year: ABSOLUTE DEFAULT	 # start year <int>
   average load limit: 100.0	 # lower limint in kW on averge load reqired to do project
-  percent generation to offset: 1.0	 # 
+  percent generation to offset: 1.0	 #
   data: IMPORT
   wind cost: UNKNOWN
-  secondary load: True	 # 
-  secondary load cost: 200000	 # 
-  road needed for transmission line: True	 # 
+  secondary load: True	 #
+  secondary load cost: 200000	 #
+  road needed for transmission line: True	 #
   transmission line distance: 1	 # miles defaults to 1 mile
   transmission line cost: {False: 250000, True: 500000}	 # cost/mile
   costs: IMPORT
@@ -115,6 +115,5 @@ solar power:
   percent o&m: 0.01	 # yearly maintenance cost as percent as decimal of total cost <float>
   percent generation to offset: 0.15	 # pecent of the generation in kW to offset with solar power <float>
   switch gear needed for solar: False
-  percent solar degradation: 0.992	 # the precent of the of solar panel that carries over from the previous year
+  percent solar degradation: 0.992	 # the percent of the of solar panel that carries over from the previous year
   o&m cost per kWh: 0.02	 # cost of repairs for generator per kWh <float>
-

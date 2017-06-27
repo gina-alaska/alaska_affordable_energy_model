@@ -404,7 +404,7 @@ class Hydropower (AnnualSavings):
         return (self.captured_energy - self.lost_heat_recovery) + \
                 self.generation_diesel_reduction
     
-    def get_total_enery_produced (self):
+    def get_total_energy_produced (self):
         """Get total energy produced.
         
         Returns

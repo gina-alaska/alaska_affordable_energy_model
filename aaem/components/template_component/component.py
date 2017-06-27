@@ -217,7 +217,7 @@ class ComponentName (AnnualSavings):
         #~ return <savings>
     
     # return savings mmbtu
-    def get_total_enery_produced (self):
+    def get_total_energy_produced (self):
         """Save the component output csv in directory.
 
         Parameters

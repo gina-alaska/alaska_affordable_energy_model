@@ -397,7 +397,7 @@ class ASHPBase (AnnualSavings):
         #~ proposed = self.electric_consumption/eff
         return self.heating_oil_saved #- proposed
 
-    def get_total_enery_produced (self):
+    def get_total_energy_produced (self):
         """Get total energy produced
         
         Returns

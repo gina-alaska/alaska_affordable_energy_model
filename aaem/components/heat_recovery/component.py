@@ -195,7 +195,7 @@ class HeatRecovery (AnnualSavings):
         """
         return self.proposed_heat_recovery
     
-    def get_total_enery_produced (self):
+    def get_total_energy_produced (self):
         """
         Returns
         ------- 

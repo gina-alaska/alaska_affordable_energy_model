@@ -303,7 +303,7 @@ class DieselEfficiency(AnnualSavings):
         return self.baseline_generation_fuel_use - \
                 self.proposed_generation_fuel_use
     
-    def get_total_enery_produced (self):
+    def get_total_energy_produced (self):
         """get total energy produced
         
         Returns

@@ -466,7 +466,7 @@ class WaterWastewaterSystems (AnnualSavings):
         #~ print (base_elec - proposed_elec)
         return (base_heat - proposed_heat) + (base_elec - proposed_elec)
                                 
-    def get_total_enery_produced (self):
+    def get_total_energy_produced (self):
         """Get total energy produced.
         
         Returns

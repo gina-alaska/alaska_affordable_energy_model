@@ -383,7 +383,7 @@ class WindPower(AnnualSavings):
         """
         return self.electric_diesel_reduction + self.reduction_diesel_used   
     
-    def get_total_enery_produced (self):
+    def get_total_energy_produced (self):
         """Get total energy produced.
         
         Returns
