@@ -21,8 +21,8 @@ def component_summary (results, res_dir):
     
     Parameters
     ----------
-    results : dictionay
-        results from the model, dictionay with each community or project 
+    results : dictionary
+        results from the model, dictionary with each community or project 
         as key
     res_dir :  path
         location to save file
@@ -36,8 +36,8 @@ def communities_summary (coms, res_dir):
     
     Parameters
     ----------
-    coms : dictionay
-        results from the model, dictionay with each community or project 
+    coms : dictionary
+        results from the model, dictionary with each community or project 
         as key
     res_dir :  path
         location to save file
@@ -101,7 +101,7 @@ def communities_summary (coms, res_dir):
                     COMPONENT_NAME.lower().replace(' ','_').\
                     replace('&','and') + '_summary.csv')
     fd = open(f_name,'w')
-    fd.write(("# non residental building component summary by community\n"
+    fd.write(("# non residential building component summary by community\n"
         '# \n'
         '# Community: '+definitions.COMMUNITY+'\n'
         '# Water/Wastewater Efficiency NPV Benefit: '+definitions.NPV_BENEFITS+'\n'
@@ -116,9 +116,9 @@ def communities_summary (coms, res_dir):
         '# Levelized Cost of Energy [$/MMBtu]: \n'
         '# Levelized Cost of Energy [$/kWh]: \n'
         '# Water/Wastewater Heating Oil Equiv. Consumed (gal) - year 1:'
-            ' heating oil equilivent consumed by water wastewater system\n'
+            ' heating oil equivalent consumed by water wastewater system\n'
         '# Water/Wastewater Electricity Consumed (kWh) - year 1:'
-            ' Eletricity consumed by water wastewater system\n'
+            ' Electricity consumed by water wastewater system\n'
         '# Water/Wastewater Efficiency Heating Oil Equiv. Saved [gal/year]:\n'
         '# Water/Wastewater Efficiency Electricity Saved [kWh/year]:\n'))
     fd.close()
@@ -129,14 +129,14 @@ def create_regional_summary (results):
     
     Parameters
     ----------
-    results : dictionay
-        results from the model, dictionay with each community or project 
+    results : dictionary
+        results from the model, dictionary with each community or project 
         as key
             
     Returns
     -------
     DataFrame 
-        containg regional results
+        containing regional results
     
     """
     #~ print "start"
@@ -215,7 +215,7 @@ def save_regional_summary (summary, res_dir):
     
     Parameters
     ----------
-    summary : Dataframe
+    summary : DataFrame
         compiled regional results
     res_dir :  path
         location to save file
