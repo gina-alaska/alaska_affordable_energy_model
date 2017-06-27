@@ -16,17 +16,17 @@ import aaem.constants as constants
 from config import COMPONENT_NAME, UNKNOWN
 
 class CommunityBuildings (AnnualSavings):
-    """Non-residential Efficiency component of the Alaska Affordable Eenergy 
+    """Non-residential Efficiency component of the Alaska Affordable Energy 
     Model
 
     Parameters
     ----------
-    commnity_data : CommunityData
-        CommintyData Object for a community
+    community_data : CommunityData
+        CommunityData Object for a community
     forecast : Forecast
-        forcast for a community 
+        forecast for a community 
     diagnostics : diagnostics, optional
-        diagnostics for tracking error/warining messeges
+        diagnostics for tracking error/warning messages
     prerequisites : dictionary of components, optional
         prerequisite component data this component has no prerequisites 
         leave empty
@@ -34,10 +34,10 @@ class CommunityBuildings (AnnualSavings):
     Attributes
     ----------
     diagnostics : diagnostics
-        for tracking error/warining messeges
+        for tracking error/warning messages
         initial value: diag or new diagnostics object
     forecast : forecast
-        community forcast for estimating future values
+        community forecast for estimating future values
         initial value: forecast
     cd : dictionary
         general data for a community.
@@ -49,7 +49,7 @@ class CommunityBuildings (AnnualSavings):
     See also
     --------
     aaem.community_data : 
-        community data module, see for information on CommintyData Object
+        community data module, see for information on CommunityData Object
     aaem.forecast : 
         forecast module, see for information on Forecast Object
     aaem.diagnostics :
@@ -63,12 +63,12 @@ class CommunityBuildings (AnnualSavings):
         
         Parameters
         ----------
-        commnity_data : CommunityData
-            CommintyData Object for a community
+        community_data : CommunityData
+            CommunityData Object for a community
         forecast : Forecast
-            forcast for a community 
+            forecast for a community 
         diagnostics : diagnostics, optional
-            diagnostics for tracking error/warining messeges
+            diagnostics for tracking error/warning messages
         prerequisites : dictionary of components, optional
             prerequisite component data
 
@@ -109,7 +109,7 @@ class CommunityBuildings (AnnualSavings):
         
         
     def save_building_summay(self, file_name):
-        """save builing summary for community
+        """save building summary for community
         
         Parameters
         ----------
@@ -187,7 +187,7 @@ class CommunityBuildings (AnnualSavings):
         
         Parameters
         ----------
-        scalers: dictionay of valid scalers, optional
+        scalers: dictionary of valid scalers, optional
             Scalers to adjust normal run variables. 
             See note on accepted  scalers
         
@@ -283,13 +283,13 @@ class CommunityBuildings (AnnualSavings):
             
             self.calc_npv(self.cd['discount rate'], self.cd["current year"])
             
-            ## no maintaince cost
+            ## no maintenance cost
             self.calc_levelized_costs(0)
             heating_cost_percent = self.comp_specs['heating percent']/100.0
             #scale by heating_cost_percent
             self.break_even_cost *= heating_cost_percent
             
-        ## revert building invertory structure
+        ## revert building inventory structure
         
         self.comp_specs['building inventory']['Building Type'] = \
             self.comp_specs['building inventory'].index
@@ -307,7 +307,7 @@ class CommunityBuildings (AnnualSavings):
         num_buildings : int 
             # buildings estimated
         additional_buildings : int 
-            difference in estimated buildings as # in iventory
+            difference in estimated buildings as # in inventory
             
         """
         self.num_buildings = self.comp_specs["number buildings"]
@@ -327,7 +327,7 @@ class CommunityBuildings (AnnualSavings):
                 self.add_additional_buildings()
             
     def add_additional_buildings (self, num_not_heated = 0):
-        """adds additional buildings to the building dataframe 
+        """adds additional buildings to the building DataFrame 
         (self.comp_specs['building inventory']) if needed.
         
         """
@@ -371,8 +371,8 @@ class CommunityBuildings (AnnualSavings):
         
         
     def calc_total_sqft_to_retrofit (self):
-        """estimates(updates values for each building) building squarefootage 
-        were needed, and total calulate retrofit square feet.
+        """estimates(updates values for each building) building square footage 
+        were needed, and total calculate retrofit square feet.
           
         Attributes
         ----------
@@ -418,7 +418,7 @@ class CommunityBuildings (AnnualSavings):
         Attributes
         ----------
         capital_costs : float
-             total cost of improvments ($)
+             total cost of improvements ($)
         """
         measure = "implementation cost"
         data = self.comp_specs['building inventory']
@@ -437,7 +437,7 @@ class CommunityBuildings (AnnualSavings):
         self.capital_costs = data[measure].sum()
         
     def calc_baseline_HF_consumption (self):
-        """Calculate base line heating fuel consumptions by type from known
+        """Calculate base line heating fuel consumption by type from known
         values and estimates(updates values for each building). 
         Estimates are assumed to be from heating oil, except where natural gas
         is used.
@@ -447,7 +447,7 @@ class CommunityBuildings (AnnualSavings):
         baseline_HF_consumption : float
             total heating consumption (mmbtu/year)
         baseline_fuel_Hoil_consumption : float
-            heaitng oil consumption for heating (gal/year)
+            heating oil consumption for heating (gal/year)
         baseline_fuel_hr_consumption : float
             heat recovery consumption for heating (gal/year)
         baseline_fuel_lng_consumption : float
@@ -629,7 +629,7 @@ class CommunityBuildings (AnnualSavings):
         proposed_HF_consumption : float
             total heating consumption (mmbtu/year)
         proposed_fuel_Hoil_consumption : float
-            heaitng oil consumption for heating (gal/year)
+            heating oil consumption for heating (gal/year)
         proposed_fuel_hr_consumption : float
             heat recovery consumption for heating (gal/year)
         proposed_fuel_lng_consumption : float

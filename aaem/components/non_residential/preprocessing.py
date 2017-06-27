@@ -22,14 +22,14 @@ def get_number_buildings (community, data_dir, diagnostics):
     community: list
         list of community ids (community names)
     data_dir: path
-        path to datafile
+        path to data file
     diagnostics: Diagnostics
         diagnostics object
     
     Returns
     -------
     int:
-        # buidings in community
+        # buildings in community
     """
     datafile = os.path.join(data_dir, 'non-res_count.csv')
     try:

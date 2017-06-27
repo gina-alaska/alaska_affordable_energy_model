@@ -15,13 +15,13 @@ from aaem.components import comp_order, definitions
 
 ## component summary
 def component_summary (results, res_dir):
-    """Creates the regional and communites summary for the component in provided 
+    """Creates the regional and community summary for the component in provided 
     directory
     
     Parameters
     ----------
-    results : dictionay
-        results from the model, dictionay with each community or project 
+    results : dictionary
+        results from the model, dictionary with each community or project 
         as key
     res_dir :  path
         location to save file
@@ -31,12 +31,12 @@ def component_summary (results, res_dir):
     save_regional_summary(create_regional_summary (results), res_dir)
 
 def communities_summary (coms, res_dir):
-    """Saves the summary by: community non-residentail_building_summary.csv
+    """Saves the summary by: community non-residential_building_summary.csv
     
     Parameters
     ----------
-    coms : dictionay
-        results from the model, dictionay with each community or project 
+    coms : dictionary
+        results from the model, dictionary with each community or project 
         as key
     res_dir :  path
         location to save file
@@ -94,7 +94,7 @@ def communities_summary (coms, res_dir):
     data = DataFrame(out,columns = cols).set_index('Community').round(2)
     f_name = os.path.join(res_dir, COMPONENT_NAME.lower().replace(' ','_') + '_summary.csv')
     fd = open(f_name,'w')
-    fd.write(("# non residental building component summary by community\n"
+    fd.write(("# non residential building component summary by community\n"
             '# Community: '+ definitions.COMMUNITY + '\n'
             '# Non-residential Efficiency NPV Benefit: ' + definitions.NPV_BENEFITS + '\n'
             '# Non-residential Efficiency NPV Cost: ' + definitions.NPV_COSTS + '\n'
@@ -108,9 +108,9 @@ def communities_summary (coms, res_dir):
             '# Breakeven Heating Fuel Price [$/gal heating oil equiv.]: ' + definitions.BREAK_EVEN_COST_HF + '\n'
             '# Levelized Cost of Energy [$/MMBtu]: ' + definitions.LCOE + '\n'
             '# Levelized Cost of Energy [$/kWh]: ' + definitions.LCOE + '\n'
-            '# Non-residential Heating Oil equiv. Consumed(gal) - year 1: Heating energy consumed in a community with out improvments.\n'
+            '# Non-residential Heating Oil equiv. Consumed(gal) - year 1: Heating energy consumed in a community with out improvements.\n'
             '# Non-residential Electricity Consumed (kWh) - year 1: Electricity consumed in a community without improvements.\n'
-            '# Non-residential Efficiency Heating oil equiv. Saved[gal/year]: Heating energy saved in a community with improvments.\n'
+            '# Non-residential Efficiency Heating oil equiv. Saved[gal/year]: Heating energy saved in a community with improvements.\n'
             '# Non-residential Efficiency Electricity Saved [kWh/year]: Electricity consumed in a community with improvements.\n'))
     fd.close()
     data.to_csv(f_name, mode='a')
@@ -120,14 +120,14 @@ def create_regional_summary (results):
     
     Parameters
     ----------
-    results : dictionay
-        results from the model, dictionay with each community or project 
+    results : dictionary
+        results from the model, dictionary with each community or project 
         as key
             
     Returns
     -------
     DataFrame 
-        containg regional results
+        containing regional results
     
     """
     #~ print "start"
@@ -203,7 +203,7 @@ def save_regional_summary (summary, res_dir):
     
     Parameters
     ----------
-    summary : Dataframe
+    summary : DataFrame
         compiled regional results
     res_dir :  path
         location to save file

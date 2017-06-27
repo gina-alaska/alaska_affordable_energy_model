@@ -66,7 +66,7 @@ comments = {
             '[float > 0] percent of energy consumption from heating'
             ),
         'waste oil cost percent': 
-            ('[float > 0] The precentage of the heating oil price that'
+            ('[float > 0] The percentage of the heating oil price that'
             ' should be used as waste oil price'),
         'number buildings': 
             ('[int >= 0] number non-residential buildings'
@@ -75,7 +75,7 @@ comments = {
             ('[DataFrame] estimates for consumption and size of '
             'unknown buildings in a community'),
         'building inventory': 
-            ('[DataFrame] An inventory of known buildings in a commuity and '
+            ('[DataFrame] An inventory of known buildings in a community and '
             'their consumption values if known')
 
 }
