@@ -10,18 +10,18 @@ from aaem.components import comp_order
 
 def get_projects (web_object, community, comp, tag):
     """
-    get a communities projects for a provided copoonent
+    get a communities projects for a provided component
     
     inputs:
-        web_opject: an aaem.web.WebSummary object
+        web_object: an aaem.web.WebSummary object
         community: a community <string>
         comp: name of component <string>
         tag: tag used in results directory to indicate it is a project for the 
             provided component
             
     outputs:
-        returns: projects, a dictioanry of communities projects for the 
-        component, start_year: eariliest start year in projects. end_year,
+        returns: projects, a dictionary of communities projects for the 
+        component, start_year: earliest start year in projects. end_year,
         latest actual end year in projects
     """
     projects = {}
@@ -49,17 +49,17 @@ def make_costs_table (community, comp, projects, base_cost, directory):
     
     inputs:
         community: <string>
-        comp: componet name <string>
-        projects: dictioany of projects
-        base_cost: dataframe with base cost for all years needed as index
+        comp: component name <string>
+        projects: dictionary of projects
+        base_cost: DataFrame with base cost for all years needed as index
                     Base Cost
             2011    1200
             ...
             2015    1400
-        directory: directory where web outputs are beign saved
+        directory: directory where web outputs are begin saved
     
     outputs:    
-        returns plotting_table, a table that can be used to make a google chart
+        returns plotting_table, a table that can be used to make a Google chart
     """
     costs_table = DataFrame(base_cost)
     costs_table['year'] = costs_table.index
@@ -114,19 +114,19 @@ def make_consumption_table (community, comp, projects, base_con,
     
     inputs:
         community: <string>
-        comp: componet name <string>
-        projects: dictioany of projects
-        base_con: dataframe with base cost for all years needed as index
+        comp: component name <string>
+        projects: dictionary of projects
+        base_con: DataFrame with base cost for all years needed as index
                     Base Consumption
             2011    1200
             ...
             2015    1400
-        directory: directory where web outputs are beign saved
+        directory: directory where web outputs are being saved
         savings_attribute: string representing the savings attribute/ function 
             in the current component
     
     outputs:    
-        returns plotting_table, a table that can be used to make a google chart
+        returns plotting_table, a table that can be used to make a Google chart
     """
     cons_table = DataFrame(base_con)
     cons_table['year'] = cons_table.index
@@ -183,14 +183,14 @@ def make_consumption_table (community, comp, projects, base_con,
 
 def correct_dates (start, s1, end, e1):
     """ 
-        takes start and end years from the modeled projcet and other prjects 
+        takes start and end years from the modeled project and other projects 
     and finds the start and end year to use
     
     inputs:
         start: modeled start year <int>
-        s1: pojects start year <int>
+        s1: projects start year <int>
         end: modeled end year <int>
-        e1: pojects end year <int>
+        e1: projects end year <int>
         
     outputs: 
         returns start_year, end_year
@@ -214,12 +214,12 @@ def correct_dates (start, s1, end, e1):
 
 def create_electric_system_summary (web_object, community ):
     """
-    creates a summary of the corrent electrical systems
+    creates a summary of the current electrical systems
     
     inputs:
         community_results the results for a given community
         
-    returns a list of items to use with the html template
+    returns a list of items to use with the HTML template
     """
     #~ community_results = web_object.results[community]
     #~ fc = community_results['forecast']

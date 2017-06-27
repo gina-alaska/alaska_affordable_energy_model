@@ -18,9 +18,9 @@ from pickle import PicklingError
 import copy
 
 class WebSummary(object):
-    """Tool for generating html web summaries """
+    """Tool for generating HTML web summaries """
     def __init__ (self, model_root, directory, tag = ''):
-        """Tool for generating html web summaries
+        """Tool for generating HTML web summaries
         
         Parameters
         ----------
@@ -29,7 +29,7 @@ class WebSummary(object):
         directory: path
             output path
         tag: str
-            resultes tag to use
+            results tag to use
         """
         self.max_year = 2040
         self.viable_communities = {"Residential Energy Efficiency":set(),
@@ -60,7 +60,7 @@ class WebSummary(object):
             
         except StandardError as e:
             #~ print e
-            print "Could not analyze bad commuities"
+            print "Could not analyze bad communities"
             pass
         self.version = model_version
         self.version_summary = __version__
@@ -278,7 +278,7 @@ class WebSummary(object):
         self.create_community_generation_summary(com)
         self.create_community_projects_summary(com)
         
-        ## tech/componet summaries
+        ## tech/component summaries
         components = set(comp_order)
         it = self.results[com]['community data'].intertie
         if not it is None:
@@ -328,7 +328,7 @@ class WebSummary(object):
                                     metadata = self.metadata,
                                     message = msg))
                                    
-        ## geneate redirect pages for intertie related pages
+        ## generate redirect pages for intertie related pages
         template = self.comp_redir_html
         for comp in re_dirs:
             c_clean = comp.replace(' ','_').\
@@ -673,7 +673,7 @@ class WebSummary(object):
            
         if goals is None:
             charts.append({'name':'goals', 
-                    'data':"Community Goals not avaialble", 
+                    'data':"Community Goals not available", 
                     'title':"Community Goals <a href='http://www.akenergyauthority.org/Policy/RegionalPlanning'(from AEA regional plans)</a>",
                     })
         else:
@@ -1004,7 +1004,7 @@ class WebSummary(object):
                 '{:,.1f}%'.format(percent_sf*100) + " of the assumed" +\
                 " square footage is from measured sources. <br><br>" +\
                 " The break down of heating fuel consumption by building" +\
-                " type is pesented in the pie chart"
+                " type is presented in the pie chart"
              
             for t in building_types:
                 n = t
@@ -1025,7 +1025,7 @@ class WebSummary(object):
                 'description': description})
         else:
             charts.append({'name':'non_residential_buildings', 
-                'data': "No Building data avaialble." ,
+                'data': "No Building data available." ,
                 'title':'Non-residential building heating fuels consumption',})
         
         ## Consumption chart
@@ -1078,7 +1078,7 @@ class WebSummary(object):
                         'plot': True,})
         else: 
             charts.append({'name':'consumption', 
-                    'data': "No consumption data avaialble.", 
+                    'data': "No consumption data available.", 
                     'title':'Electricity Consumed',
                     'type': "'kWh'"})
             
@@ -1947,7 +1947,7 @@ class WebSummary(object):
         Returns
         -------    
         plotting_table, List of lists,
-            a table that can be used to make a google chart plot
+            a table that can be used to make a Google chart plot
         """
         if type(xs) == DataFrame and len(xs.columns) > 1:
             x_name = xs.columns[0]
@@ -2022,7 +2022,7 @@ class WebSummary(object):
         Returns
         -------    
         plotting_table, List of lists,
-            a table that can be used to make a google chart table
+            a table that can be used to make a Google chart table
         """
         if type(xs) == DataFrame and len(xs.columns) > 1:
             x_name = xs.columns[0]
