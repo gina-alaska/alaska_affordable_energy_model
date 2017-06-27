@@ -17,7 +17,12 @@ from config import COMPONENT_NAME, UNKNOWN
 
 class CommunityBuildings (AnnualSavings):
     """Non-residential Efficiency component of the Alaska Affordable Energy
-    Model
+    Model. This module estimates potential improvements in heating and
+    electrical efficiency to non-residential buildings (commercial,
+    education, health care, etc.). Consumption and savings are based on
+    estimated square footage per building that may be retrofit and prices of
+    fuels (electricity, biomass, diesel, etc.). The cost to retrofit each
+    non-residential building is also calculated.
 
     Parameters
     ----------
