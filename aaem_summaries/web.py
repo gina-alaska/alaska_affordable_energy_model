@@ -1783,7 +1783,10 @@ class WebSummary(object):
                     else:
                         lcoe_hf = c.levelized_cost_of_energy
                 
-                
+                if np.isinf(lcoe_e) or np.isnan(lcoe_e):
+                    lcoe_e = "N/A"
+                if np.isinf(lcoe_hf) or np.isnan(lcoe_hf):
+                    lcoe_hf = "N/A"
                 
                 net = c.get_NPV_net_benefit()
                 #~ if net == 'N/A': 
