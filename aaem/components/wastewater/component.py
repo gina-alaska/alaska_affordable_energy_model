@@ -17,7 +17,12 @@ from config import COMPONENT_NAME, UNKNOWN
 
 
 class WaterWastewaterSystems (AnnualSavings):
-    """Water wastewater of the Alaska Affordable Energy Model
+    """Water/wastewater systems of the Alaska Affordable Energy Model. This
+    module estimates potential improvements in heating and electrical
+    efficiency to water and wastewater systems. Consumption and savings are
+    calculated based on system type, population, and heating degree days
+    per year for a community. Project costs are based on audits, or estimated
+    by the community size.
 
     Parameters
     ----------
@@ -92,13 +97,8 @@ class WaterWastewaterSystems (AnnualSavings):
         mult = community_data.get_item('community','regional construction multiplier')
         self.cost_per_person = average * mult
 
-
-
         self.hdd = self.cd["heating degree days"]
 
-
-        #~ print self.comp_specs['data']['value']
-        #~ print self.comp_specs['data']
         self.pop = self.forecast.get_population(int(self.comp_specs['data']\
                                                            ['Year']))
         self.population_fc = self.forecast.get_population(self.start_year,
