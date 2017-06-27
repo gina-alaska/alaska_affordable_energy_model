@@ -22,7 +22,7 @@ def building_log(coms, res_dir):
         coms: the run model outputs: a dictionary 
                     {<"community_name">:
                         {'model':<a run driver object>,
-                        'output dir':<a path to the given communites outputs>
+                        'output dir':<a path to the given communities outputs>
                         },
                      ... repeated for each community
                     }
@@ -183,7 +183,7 @@ def village_log (coms, res_dir):
         coms: the run model outputs: a dictionary 
                     {<"community_name">:
                         {'model':<a run driver object>,
-                        'output dir':<a path to the given communites outputs>
+                        'output dir':<a path to the given communities outputs>
                         },
                      ... repeated for each community
                     }
@@ -336,7 +336,7 @@ def forecast_comparison_log (coms, res_dir):
         coms: the run model outputs: a dictionary 
                     {<"community_name">:
                         {'model':<a run driver object>,
-                        'output dir':<a path to the given communites outputs>
+                        'output dir':<a path to the given communities outputs>
                         },
                      ... repeated for each community
                     }
@@ -509,7 +509,7 @@ def genterate_npv_summary (coms, res_dir):
         coms: the run model outputs: a dictionary 
                     {<"community_name">:
                         {'model':<a run driver object>,
-                        'output dir':<a path to the given communites outputs>
+                        'output dir':<a path to the given communities outputs>
                         },
                      ... repeated for each community
                     }
@@ -881,7 +881,7 @@ def call_comp_summaries (coms, res_dir):
         coms: the run model outputs: a dictionary 
                     {<"community_name">:
                         {'model':<a run driver object>,
-                        'output dir':<a path to the given communites outputs>
+                        'output dir':<a path to the given communities outputs>
                         },
                      ... repeated for each community
                     }

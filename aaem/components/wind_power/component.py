@@ -183,7 +183,7 @@ class WindPower(AnnualSavings):
                 self.reason = \
                     "Average load too small for viable wind generation."
             self.diagnostics.add_note(self.component_name, 
-            "communites average load is not large enough to consider project")
+            "communities average load is not large enough to consider project")
         #~ print self.benefit_cost_ratio
         
     def calc_average_load (self):

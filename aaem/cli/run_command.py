@@ -30,7 +30,7 @@ class RunCommand(pycommand.CommandBase):
                                     'dictioanry of scalers as a string')),
             ('global_config', ('g', '<global_configuration_file>', 
                 ('A configuration yaml file containing varaiables to apply'
-                ' all communites being run'))),
+                ' all communities being run'))),
            )
     description =('Run model for given communities. (default = all communities)'
                     'options: \n'
@@ -118,7 +118,7 @@ class RunCommand(pycommand.CommandBase):
                     
         else:
             # run regular
-            # Get communites to run
+            # Get communities to run
             if self.flags.dev:
                 # Developmet coms
                 coms = __DEV_COMS__

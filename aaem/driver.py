@@ -599,7 +599,7 @@ class Driver (object):
         
     def run_many (self, directory):
         """
-        run a list of communites using default options
+        run a list of communities using default options
         
         inputs:
             communities: a list of communities <list>
