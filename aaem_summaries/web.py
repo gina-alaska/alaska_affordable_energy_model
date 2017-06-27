@@ -386,50 +386,42 @@ class WebSummary(object):
             
         #### Financial section
         ###### get data
-        diesel = copy.deepcopy(
-            res['community data'].get_item('community','diesel prices')
-        )
+        #~ diesel = copy.deepcopy(
+            #~ res['community data'].get_item('community','diesel prices')
+        #~ )
         hf_prices = copy.deepcopy(
             res['community data'].get_item('community','heating fuel prices')
         )
-        hf_premium = res['community data'].get_item('community',
-            'heating fuel premium')
+        utility_data = \
+            copy.deepcopy(res['community data'].get_item('community', 'utility info'))  
+        
         try:
             fuel_year = hf_prices.index[-1]
-            diesel_c = max(float(hf_prices.ix[fuel_year]) - hf_premium, 0)
             HF_c = float(hf_prices.ix[fuel_year])
-            #~ HF_c = diesel_c + \
-            #~ res['community data'].get_item('community','heating fuel premium')
-            #~ elec_price = res['community data'].get_item('community',
-                #~ 'electric non-fuel prices')
-            ###### as strings
-        
-        
-            percent_diesel = \
-                float(res['community data'].get_item('community',
-                'percent diesel generation') )/ 100.0
-            efficiency = \
-                res['community data'].get_item('community',
-                'diesel generation efficiency')
-            adder = percent_diesel * diesel_c / efficiency
-            #~ print res['community data'].data['community']\
-                #~ ['electric non-fuel price'] 
-            elec_price = \
-                float(res['community data'].data['community']\
-                ['electric non-fuel price']) \
-                + adder
-            if res['community data'].data['community']['region'] ==\
-                    'North Slope':
-                elec_price = .15
-                
-            diesel_c = '${:,.2f}/gallon'.format(diesel_c)
             HF_c = '${:,.2f}/gallon'.format(HF_c)
-            elec_c = '${:,.2f}/kWh'.format(elec_price)
         except IndexError:
             fuel_year = ''
-            diesel_c = "unknown"
             HF_c= "unknown"
+        
+        try:
+            diesel_c_year = utility_data[['diesel price']].index[-1]
+            diesel_c = float(
+                utility_data[['diesel price']].ix[diesel_c_year]
+            )
+            diesel_c = '${:,.2f}/gallon'.format(diesel_c)
+        except IndexError:
+            diesel_c_year = ''
+            diesel_c = "unknown"
+        
+        try:
+            elec_price_year = utility_data[['residential rate']].index[-1]
+            elec_price = float(
+                utility_data[['residential rate']].ix[elec_price_year]
+            )
+            elec_c = '${:,.2f}/kWh'.format(elec_price)
+        except IndexError:
             elec_c = "unknown"
+            elec_price_year = ''
         #float(elec_price.ix[fuel_year])
         
         
@@ -566,7 +558,9 @@ class WebSummary(object):
             al = "unknown"
         
         ### create table
-        fuel_year = '(' + str(fuel_year) + ')'
+        hf_year = '(' + str(fuel_year) + ')'
+        diesel_year = '(' + str(diesel_c_year) + ')'
+        elec_year = '(' + str(elec_price_year) + ')'
         con_year = '(' + str(con_year) + ')'
         oil_year = '(' + str(oil_year) + ')'
         gen_year = '(' + str(gen_year) + ')'
@@ -590,13 +584,13 @@ class WebSummary(object):
                 "Average load " + str(gen_year), al],
              [ False, "<b>Financial</b>", "","[DIVIDER]", 
                 "Generation from diesel " + str(g_year), g_diesel],
-             [ False, "Diesel fuel cost " + str(fuel_year),
+             [ False, "Diesel fuel cost " + str(diesel_year),
                 diesel_c,"[DIVIDER]", 
                 "Generation from hydropower " + str(g_year), g_hydro],
-             [ False, "Heating fuel cost " + str(fuel_year),
+             [ False, "Heating fuel cost " + str(hf_year),
                 HF_c, "[DIVIDER]",
                 "Generation from wind " + str(g_year), g_wind],
-             [ False, "Electricity cost " + str(fuel_year),
+             [ False, "Electricity cost " + str(elec_year),
                 elec_c,"[DIVIDER]",  
                 "Diesel generator efficiency " + str(leff_year) , eff],
              [ False, "<b>Consumption</b>", "", "[DIVIDER]",
@@ -631,14 +625,14 @@ class WebSummary(object):
              [ False, "<b>Financial</b>", "","[DIVIDER]",
                 "Generation from diesel " + str(g_year), link_element],
              [ False,
-                "Diesel fuel cost " + str(fuel_year),
+                "Diesel fuel cost " + str(diesel_year),
                 diesel_c,"[DIVIDER]",
                 "Generation from hydropower " + str(g_year), link_element],
              [ False,
-                "Heating fuel cost " + str(fuel_year),
+                "Heating fuel cost " + str(hf_year),
                  HF_c, "[DIVIDER]", "Generation from wind " + str(g_year),
                 link_element],
-             [ False, "Electricity cost " + str(fuel_year),
+             [ False, "Electricity cost " + str(elec_year),
                 elec_c,"[DIVIDER]",
                 "Diesel generator efficiency " + str(leff_year), link_element],
              [ False, "<b>Consumption</b>", "", "[DIVIDER]",
