@@ -47,11 +47,11 @@ class WindPower(AnnualSavings):
     See also
     --------
     aaem.community_data : 
-        community data module, see for information on CommintyData Object
+        community data module, see information on CommintyData Object
     aaem.forecast : 
-        forecast module, see for information on Forecast Object
+        forecast module, see information on Forecast Object
     aaem.diagnostics :
-        diagnostics module, see for information on diagnostics Object
+        diagnostics module, see information on diagnostics Object
 
     """
     def __init__ (self, community_data, forecast, 
@@ -183,7 +183,7 @@ class WindPower(AnnualSavings):
                 self.reason = \
                     "Average load too small for viable wind generation."
             self.diagnostics.add_note(self.component_name, 
-            "communites average load is not large enough to consider project")
+            "communities average load is not large enough to consider project")
         #~ print self.benefit_cost_ratio
         
     def calc_average_load (self):
@@ -383,7 +383,7 @@ class WindPower(AnnualSavings):
         """
         return self.electric_diesel_reduction + self.reduction_diesel_used   
     
-    def get_total_enery_produced (self):
+    def get_total_energy_produced (self):
         """Get total energy produced.
         
         Returns
@@ -422,7 +422,9 @@ class WindPower(AnnualSavings):
         Attributes
         ----------
         capital_costs : float
-             total cost of improvments ($),
+            total cost of improvments ($),
+        cost_per_kwh: float
+            cost per kW used to determine captial costs  ($/kW)
         """
         powerhouse_control_cost = 0
         if not self.cd['switchgear suatable for renewables']:
@@ -452,6 +454,7 @@ class WindPower(AnnualSavings):
             != 'UNKNOWN':
             wind_cost = \
               int(self.comp_specs['generation capital cost'])
+            self.cost_per_kw = np.nan
         else:
             for i in range(len(self.comp_specs['estimated costs'])):
                 if int(self.comp_specs['estimated costs'].iloc[i].name) < \
@@ -465,7 +468,7 @@ class WindPower(AnnualSavings):
                 break
             
             wind_cost = self.load_offset_proposed * cost
-        
+            self.cost_per_kw = cost
         
         #~ print powerhouse_control_cost 
         #~ print transmission_line_cost 

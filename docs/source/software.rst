@@ -15,7 +15,7 @@ Python
 * `pycommand <http://pythonhosted.org/pycommand/>`_ used in the creation of the command line interface.
 * `IPython <https://ipython.org>`_ used a primary python interpreter during development. 
 * `Sphinx <http://www.sphinx-doc.org/en/1.5.1/>`_ used for generating documentation.
-* `Numpydoc <https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt>_` is a plugin for sphinx used to handle NumPy style docstrings. Code documentation follows the numpy standard.
+* `Numpydoc <https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt>`_ is a plugin for sphinx used to handle NumPy style docstrings. Code documentation follows the numpy standard.
 * `Jinja2 <http://jinja.pocoo.org>`_ is the template engine used to create the web summaries.
 
 

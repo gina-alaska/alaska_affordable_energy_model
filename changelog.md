@@ -1,6 +1,27 @@
 #Change Log
 
-## [0.27.2]
+## [0.27.5]
+### adds
+- cost per kWh attribute to wind power component
+- weighted average to prices for interties with pce generation
+
+## [0.27.4]
+### adds
+-- spilt configs option to refresh CLI
+-- golbal config option added back to script files
+
+### changes
+-- setup.py now requires setup tools
+
+### updates
+-- sphinx docs
+
+### fixes
+-- missing conversion in calulation of levelized costs
+-- intertie calculations for non residential preprocessing
+-- intertie electricity prices
+
+## [0.27.3]
 ### adds
 -- running of AAEM from a script file has been re-implemented and updated
 -- individual community forecast csv files have been re-implemented and updated
@@ -32,26 +53,26 @@
 -- add explict conversion of long ints to ints in save_config file
 
 ## [0.27.0]
-### adds 
+### adds
 -- Transmissinon & Interties component has a test to see if communitys to intertie are alreay connected
 
 ### changes
 -- CommunityData loads all values from single config file
 -- Prprocesor rewritten to create the single config file
 -- generation of electric_non-fuel_prices was moved to preprocessor
--- precents in configuration are now writtens as 40 for 40% (was .4)
+-- percents in configuration are now writtens as 40 for 40% (was .4)
 
 ### fixes
--- preprocessing of interties, for electric data and fuel prices, now finds the proper communites, and avoids dupilcation
+-- preprocessing of interties, for electric data and fuel prices, now finds the proper communities, and avoids dupilcation
 -- preprocessing of fuel prices, regional averaging is fixed
 
-### removes 
+### removes
 -- all code relating to the input_files directory
 -- plotting feature from forecast, and cli
 
 ## [0.26.1]
 ### changes
-- in diesel efficiency component. the LCOE numerator is set to the generation for the community 
+- in diesel efficiency component. the LCOE numerator is set to the generation for the community
 
 ## [0.26.0]
 ### changes
@@ -73,11 +94,11 @@
 - updated all comments based on numpydoc format
 
 ## [0.24.6]
-### updated 
+### updated
 - added google analytics code to docs and summaries
 
 ## [0.24.5]
-### updated 
+### updated
 - Html: updated disclaimer
 
 ## [0.24.4]
@@ -89,7 +110,7 @@
 
 ## [0.24.3]
 ### fixed
-- bug with regional creating summaries if there were no communites for a given  project amoung the communites run 
+- bug with regional creating summaries if there were no communities for a given  project amoung the communities run 
 
 ## [0.24.2]
 ### fixed
@@ -101,7 +122,7 @@
 - html: tech summaries
 - cli: run use * after a single community to run all it and it's projects (i.e. aaem run <model> Adak* will run Adak, Adak+hydo+project_1, ...)
 
-### changed 
+### changed
 - html: potential projects b/c ratio < 0 projets are red
 - html: added not on b/c ratio to potential projets page
 - html: potential projets table header
@@ -114,9 +135,9 @@
 - changed preprocessor for new diesel_fuel_price data format
 
 ### fixed
-- preporcessor bug where diesel generation was not being summed properly with purchased diesel 
+- preporcessor bug where diesel generation was not being summed properly with purchased diesel
 - cli code for changing barrow's name is ignored if barrow is not called
-- cli run: Utqiagvik can be used as individual community 
+- cli run: Utqiagvik can be used as individual community
 
 ## [0.23.3]
 ### changed
@@ -128,7 +149,7 @@
 - HTML: fix heat recovery links
 
 ## [0.23.1]
-### added 
+### added
 - HTML: 'report errors' messege in footer
 - HTML: notes for wind power projects
 
@@ -144,7 +165,7 @@
 - html: links to sources for hydro and wind
 
 ### fixed
-- missing data in forecast_component_consumption_comparison_summary.csv 
+- missing data in forecast_component_consumption_comparison_summary.csv
 
 ## [0.22.1]
 ### fixed
@@ -159,17 +180,17 @@
 - preprocessor: fixes the purchasesed power lib use
 
 ## [0.21.10]
-### fixed 
+### fixed
 - Html: dupilcation on potential projects page
 - Html: ashp name is not biomass any more
 
 ## [0.21.9]
-### added 
+### added
 - html: known diesel prices
-- adds lower limit of 0 to heating feul premium 
+- adds lower limit of 0 to heating feul premium
 
-### fixes 
-- water wastewater: levelized cost of energy 
+### fixes
+- water wastewater: levelized cost of energy
 
 ## [0.21.8]
 ### added
@@ -197,7 +218,7 @@
 
 ## [0.21.5]
 ### changes
-- html: map communites are color coded by region
+- html: map communities are color coded by region
 - html: line loss and generator efficiency are the last known value if possible
 
 ### fixes
@@ -208,14 +229,14 @@
 ## [0.21.4]
 ### fixed
 - html: missing plot bug, by removing unessary passing of communitys to templates
-- html: misspelled footer.css is fixed 
+- html: misspelled footer.css is fixed
 
 ## [0.21.3]
 ### fixed
 - html: fixed "'" character in path names
 
 ## [0.21.2]
-### added 
+### added
 - html: regions to navbar
 - html: regional summaries
 - html: overview added intertie info
@@ -231,7 +252,7 @@
 ### added
 - html: component descriptions
 - html: messages about missing data
-- html: redirects for interties 
+- html: redirects for interties
 - html: map
 
 ## [0.21.0]
@@ -239,15 +260,15 @@
 - overview and goals html page
 - hydro to current generation table in html
 - existing hydro capacity added to cd and preprocessor
-- consumption html summary heating degree day table 
+- consumption html summary heating degree day table
 - consumption html summary heating residential buildings table
 
-### changed 
+### changed
 - LCOE heat is converted from mmbtu to gallons
 - efficiency project side bars have info for current system/ prices per unit
 
-### fixed 
-- hydro limit preprocessing 
+### fixed
+- hydro limit preprocessing
 - existing hydro capacity in existing generation component html sidebar
 - wind and solar penetration levels in html
 
@@ -256,15 +277,15 @@
 - windows pickling error
 
 ## [0.20.12]
-### added 
+### added
 - html index page
-- multiprocessing support 
+- multiprocessing support
 - existing generation in html
 - interties table in html
 - non res consumtion table in html
 
 ### fixed
-- values displayed in protenital projects table are formated 
+- values displayed in protenital projects table are formated
 
 
 ## [0.20.11]
@@ -274,9 +295,9 @@
 - collapsible panels on main summaries
 - messages for missing plots
 
-### changed 
+### changed
 - clean-up of heat recovery component code preformed
-- some summary plots will plot available data 
+- some summary plots will plot available data
 - some summary plots will appear as empty if data is missing
 
 ### fixed
@@ -285,7 +306,7 @@
 ## [0.20.10]
 ### added
 - footer
-- place holder pages for intertie rediects, needs to be updated with links to parents/childern 
+- place holder pages for intertie rediects, needs to be updated with links to parents/childern
 - annotations to summary plots
 
 ### changed
@@ -298,7 +319,7 @@
 - new summary pages
 
 ### changed
-- seconday nav bar 
+- seconday nav bar
 
 ## [0.20.8]
 ### added
@@ -353,7 +374,7 @@
 
 ## [0.20.0]
 ### added
-- Hydropower: diagnostic messages in preprocess projects function 
+- Hydropower: diagnostic messages in preprocess projects function
 - Hydropower: default for missing project phase
 
 ### changed
@@ -361,7 +382,7 @@
 - component names updated
 - residential efficiency: changed data keys
 - moved some common values in component configs to community section of config
-- intertie projects for electricity are now sorted to into the intertie 
+- intertie projects for electricity are now sorted to into the intertie
 - electric projects are only run for interties/ not intetied communities
 - heating projects not run on interties
 - wind power: start date is calculated from phase
@@ -392,7 +413,7 @@
 - functionality to easily save a community data config file
 
 ### changed
-- restructured input file and config directories, 
+- restructured input file and config directories,
 - a community and its project will have different config files, but the same input files
 - completely rewrote driver internal functionality
 - updated all cli command messages
@@ -409,7 +430,7 @@
 - updates the sphinx docs config
 
 ## [0.18.0]
-### adds 
+### adds
 - regional option to cli run command
 
 ### changes
@@ -432,7 +453,7 @@
 - diesel efficiency component
 
 ## [0.17.11]
-### changes 
+### changes
 - for components break even cost in gal heating oil equiv.
 - renames efficiency components function names to be more consistent with newer components
 - moves res/non-res summary functions to respective component files
@@ -475,7 +496,7 @@
 - biomass cordwood levelized cost of energy caclulation
 
 ## [0.17.6]
-### changes 
+### changes
 - non residential buildings component: changes to calculation of pre retrofit diesel price
 
 ### adds
@@ -491,7 +512,7 @@
 - documentation setup files
 
 ### updated
-- ashp reasons for not running 
+- ashp reasons for not running
 
 ## [0.17.3]
 ### changes
@@ -499,8 +520,8 @@
 
 ### fixes
 - method for caclulating intertie prices
-- waste water summary 
-- res/non-res fuel_amouts for calculating Levelized and Breakeven cost 
+- waste water summary
+- res/non-res fuel_amouts for calculating Levelized and Breakeven cost
 
 ## [0.17.2]
 ### changes
@@ -526,7 +547,7 @@
 
 ## [0.16.12]
 ### added
-- levelized cost of energy, and break even costs added to components 
+- levelized cost of energy, and break even costs added to components
 
 ### updated
 - biomass includes maintanance cost in savings
@@ -545,7 +566,7 @@
 
 ## [0.16.9]
 ### updated
-- interties cost savings 
+- interties cost savings
 
 ## [0.16.8]
 ### added
@@ -573,7 +594,7 @@
 
 ## [0.16.4]
 ### changed
-- intertied community prices (diesel & electric) are the same 
+- intertied community prices (diesel & electric) are the same
 - hydro proposed generation is capped for actual diesel generation
 - fixed diesel prices when community is tagged with a project
 
@@ -634,7 +655,7 @@
 
 ## [0.15.2]
 ### fixed
-- bug in summaries related to rounding 
+- bug in summaries related to rounding
 
 ## [0.15.1]
 ### changed
@@ -646,7 +667,7 @@
 - added test for running for biomass wood based on resource availability
 
 ## [0.14.9]
-### added 
+### added
 - ASHP (air source heat pump) base component
 - Non-residential ASHP component
 - Residential ASHP component
@@ -657,7 +678,7 @@
 - bug in fuel oil summary, where non-res heating fuel total was shown as opposed to non-res heating oil.
 
 ## [0.14.8]
-### added 
+### added
 - electric price summary
 
 ## [0.14.7]
@@ -682,19 +703,19 @@
 - solar power, proposed generation takes existing wind generation into account
 - biomass pellet, added road_system test
 
-### fixed 
-- copy errors between biomass base and biomass pellet and biomass cordwood 
+### fixed
+- copy errors between biomass base and biomass pellet and biomass cordwood
 - Klukwan preprocessing for generation data, now includes Chilkat Valley
-- missing prices fix; if a given fuel price is N/A, default to 0 
+- missing prices fix; if a given fuel price is N/A, default to 0
 
 ## [0.14.5]
-### added 
+### added
 - biomass base
 - biomass cordwood
 - biomass pellet
 
 ## [0.14.4]
-### changed 
+### changed
 - updated solar and wind component outputs
 - changed solar default values (.3 -> .15, no powerhouse cost)
 
@@ -702,7 +723,7 @@
 - generation calculation with missing lineloss fixed
 
 ## [0.14.3]
-### changed 
+### changed
 - solar and wind output headers
 - subtracts existing solar load from propoesed when calculating proposed
 
@@ -717,7 +738,7 @@
 - default starting date for RE projects is 2020
 
 ### fixed
-- PCE generator efficiency is now calculated from only the diesel generation 
+- PCE generator efficiency is now calculated from only the diesel generation
 
 ## [0.14.1]
 ### fixed
@@ -771,7 +792,7 @@
 - wind component
 
 ### changed
-- some component_template.py modifcations 
+- some component_template.py modifcations
 
 ## [0.12.2]
 ### changed
@@ -799,11 +820,11 @@
 
 ## [0.10.2]
 ### added
-- biomass heating fuel to waterwaste/water components 
+- biomass heating fuel to waterwaste/water components
 - none added to waterwaste/water system type map in preprocessor. Acts like unknown system type.
 
 ### fixed
-- correctet consumption summing of measured values 
+- correctet consumption summing of measured values
 
 ## [0.10.1]
 ### added
@@ -823,9 +844,9 @@
 
 ### fixed
 - missing generation_forecast.csv files
-- issue where not all intertie subcommunites were being used
+- issue where not all intertie subcommunities were being used
 - issue in creating forecast compareison file
-- issue in preprocessor indexing cauing some communites to get the wrong data input files
+- issue in preprocessor indexing cauing some communities to get the wrong data input files
 
 ## [0.9.3]
 ### fixed
@@ -872,7 +893,7 @@
 
 ### fixed
 - residential component output csv uses the right prices for a community and not the temp prices uesd before
-- sqft values in the  non-res output files dont inclued the Water & Sewer systems 
+- sqft values in the  non-res output files dont inclued the Water & Sewer systems
 
 ## [0.8.2]
 ### added
@@ -882,7 +903,7 @@
 - ability to change the limits on linelosses in config files
 - generation will scale back on renewable sources if predicted generation drops
 
-### fixed 
+### fixed
 - heating oil summary has been fixed for intertied communities
 
 ## [0.8.1]
@@ -894,16 +915,16 @@
 - generation forecast is now part of the forecast component
 
 ### fixed
-- negative EIA diesel generation values are set to zero, while still accounting for the fuel used in said generation 
-- other fuel types in the PCE data are picked up by the preprocessor. 
+- negative EIA diesel generation values are set to zero, while still accounting for the fuel used in said generation
+- other fuel types in the PCE data are picked up by the preprocessor.
 
 ## [0.8.0]
-### fixed 
+### fixed
 - residential heating fuel for interties
 - fixes generation forecast where natural gas was shown as present when it was in fact not
 - fixes some preprocessor issues for the interties where some columns were not summed for the yearly electric summary
 - gross generation vs net generation has been fixed in the PCE data where the power house consumption is not available
-- measured generation is now used in the output files (before it was being over written with calculated values) 
+- measured generation is now used in the output files (before it was being over written with calculated values)
 
 ### changed
 - moved calculation of residential average kWh/household to the preprocessor
@@ -912,7 +933,7 @@
 ### added
 - timing feature for all commands. use: aaem -t <command> ...  to time any command
 
-### changed 
+### changed
 - colors on generation forecast plot
 
 ### fixed
@@ -931,7 +952,7 @@
 
 ## [0.7.1]
 ### changed
-- Order of communites has been alphabetized
+- Order of communities has been alphabetized
 
 ### fixed
 - Square footage not being included for single building categories
@@ -956,7 +977,7 @@
 
 ### fixed
 - in residential component houses to retrofit has minimum of 0
-- 'North Slope' $/kWh prices are set to a default value ($0.15) 
+- 'North Slope' $/kWh prices are set to a default value ($0.15)
 
 
 ## [0.6.1]
@@ -965,7 +986,7 @@
 
 ### fixed
 - negative residential consumption values
-- preprocessor overwriting copies.csv for intertie sub communities. 
+- preprocessor overwriting copies.csv for intertie sub communities.
 - wastewater kWh costs are calculated correctly
 - cost of a project per year is now calculated over proper period
 
@@ -983,8 +1004,8 @@
 ### fixed
 - mmbtu is used in electricity consumption
 - heating oil prices are output correctly
-- non_residential_buildings_summary.csv has correct name 
-- non_residential_buildings_summary.csv has correct columns 
+- non_residential_buildings_summary.csv has correct name
+- non_residential_buildings_summary.csv has correct columns
 
 ## [0.5.4]
 ### changed
@@ -993,15 +1014,15 @@
 
 ### fixed
 - summary output files now have correct units (mmbtu)
-- Valdez prices have been fixed 
+- Valdez prices have been fixed
 
 ## [0.5.3]
 ### changed
-- residential building component output file was reformatted. 
+- residential building component output file was reformatted.
 - natural gas numbers are only calculated if a price is provided
 
 ### added
-- propane, biomass, and natural gas price prices as options in config 
+- propane, biomass, and natural gas price prices as options in config
 - propane, and biomass prices preprocessed
 - summary file have been added.
 
@@ -1019,7 +1040,7 @@
 
 ## [0.4.2]
 ### fixed
-- fixed memory bug in plotting	
+- fixed memory bug in plotting
 
 ## [0.4.1]
 ### added
@@ -1041,11 +1062,11 @@
 - general plotting functionality (plot.py, colors.py)
 - automatic plotting for forecast and generation forecast
 - added frame work for components to have additional output files
-- added non-residential building summary file to outputs 
+- added non-residential building summary file to outputs
 
 ### Fixed
 - typo in water/wastewater system map
-- project lifetimes are correct, while maintaining longer forecast period 
+- project lifetimes are correct, while maintaining longer forecast period
 - reading in diesel fuel prices corrected to match data file format
 
 ## [0.3.2]
@@ -1064,7 +1085,7 @@
 ## [0.3.0]
 ### Changed
 - in .yaml config files (IMPORT) can now, and should, be (--see input_data)
-- natural gas will now absorb extra consumption in generation forecast when available 
+- natural gas will now absorb extra consumption in generation forecast when available
 - community names are in diagnostic file names
 - in  CommunityBuildigns module the post refit consumption formulas has been changed to use real data if available.
 

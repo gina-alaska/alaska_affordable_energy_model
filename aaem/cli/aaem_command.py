@@ -24,7 +24,7 @@ class AaemCommand(pycommand.CommandBase):
         '  run          Run aaem model\n'
         '  copy         Create a copy of a model run\n'
         '  help         See info on a given commands\n'
-        '  list         List communites in a model run\n'
+        '  list         List communities in a model run\n'
         '  compare      compare the results of 2 model runs\n'
         '  refresh      refresh the data in the model\n'
         '  summaries         create web summaries\n'

@@ -13,7 +13,7 @@ import aaem.constants as constants
 
 ## component summary (WRITE THIS)
 def component_summary (coms, res_dir):
-    """Creates the regional and communites summary for the component in provided 
+    """Creates the regional and communities summary for the component in provided 
     directory
     
     Parameters

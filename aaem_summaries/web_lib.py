@@ -10,18 +10,18 @@ from aaem.components import comp_order
 
 def get_projects (web_object, community, comp, tag):
     """
-    get a communities projects for a provided copoonent
+    get a communities projects for a provided component
     
     inputs:
-        web_opject: an aaem.web.WebSummary object
+        web_object: an aaem.web.WebSummary object
         community: a community <string>
         comp: name of component <string>
         tag: tag used in results directory to indicate it is a project for the 
             provided component
             
     outputs:
-        returns: projects, a dictioanry of communites projects for the 
-        component, start_year: eariliest start year in projects. end_year,
+        returns: projects, a dictionary of communities projects for the 
+        component, start_year: earliest start year in projects. end_year,
         latest actual end year in projects
     """
     projects = {}
@@ -49,17 +49,17 @@ def make_costs_table (community, comp, projects, base_cost, directory):
     
     inputs:
         community: <string>
-        comp: componet name <string>
-        projects: dictioany of projects
-        base_cost: dataframe with base cost for all years needed as index
+        comp: component name <string>
+        projects: dictionary of projects
+        base_cost: DataFrame with base cost for all years needed as index
                     Base Cost
             2011    1200
             ...
             2015    1400
-        directory: directory where web outputs are beign saved
+        directory: directory where web outputs are begin saved
     
     outputs:    
-        returns plotting_table, a table that can be used to make a google chart
+        returns plotting_table, a table that can be used to make a Google chart
     """
     costs_table = DataFrame(base_cost)
     costs_table['year'] = costs_table.index
@@ -114,19 +114,19 @@ def make_consumption_table (community, comp, projects, base_con,
     
     inputs:
         community: <string>
-        comp: componet name <string>
-        projects: dictioany of projects
-        base_con: dataframe with base cost for all years needed as index
+        comp: component name <string>
+        projects: dictionary of projects
+        base_con: DataFrame with base cost for all years needed as index
                     Base Consumption
             2011    1200
             ...
             2015    1400
-        directory: directory where web outputs are beign saved
+        directory: directory where web outputs are being saved
         savings_attribute: string representing the savings attribute/ function 
             in the current component
     
     outputs:    
-        returns plotting_table, a table that can be used to make a google chart
+        returns plotting_table, a table that can be used to make a Google chart
     """
     cons_table = DataFrame(base_con)
     cons_table['year'] = cons_table.index
@@ -155,6 +155,8 @@ def make_consumption_table (community, comp, projects, base_con,
         reduction.index = reduction.index.astype(int)
         cons_table[name] = \
                     cons_table['Base Consumption'] - reduction['savings']
+                    
+        cons_table[name][cons_table[name] < 0] = 0
         names.append(name)
     ## format table
     cons_table = cons_table[['year','Base Consumption'] + names]
@@ -165,8 +167,12 @@ def make_consumption_table (community, comp, projects, base_con,
         os.makedirs(os.path.join(directory,community.replace("'",""),'csv'))
     except OSError:
         pass
+    
+        
     cons_table.to_csv(os.path.join(directory,community.replace("'",""),'csv', fname),index=False)
     #~ ## make list from of table
+    
+    
     plotting_table = cons_table.round().values.tolist()
     
     header = []
@@ -177,14 +183,14 @@ def make_consumption_table (community, comp, projects, base_con,
 
 def correct_dates (start, s1, end, e1):
     """ 
-        takes start and end years from the modeled projcet and other prjects 
+        takes start and end years from the modeled project and other projects 
     and finds the start and end year to use
     
     inputs:
         start: modeled start year <int>
-        s1: pojects start year <int>
+        s1: projects start year <int>
         end: modeled end year <int>
-        e1: pojects end year <int>
+        e1: projects end year <int>
         
     outputs: 
         returns start_year, end_year
@@ -208,71 +214,75 @@ def correct_dates (start, s1, end, e1):
 
 def create_electric_system_summary (web_object, community ):
     """
-    creates a summary of the corrent electrical systems
+    creates a summary of the current electrical systems
     
     inputs:
         community_results the results for a given community
         
-    returns a list of items to use with the html template
+    returns a list of items to use with the HTML template
     """
-    community_results = web_object.results[community]
-    fc = community_results['forecast']
-    hydro = community_results['Hydropower']
-    solar = community_results['Solar Power']
-    wind = community_results['Wind Power']
+    #~ community_results = web_object.results[community]
+    #~ fc = community_results['forecast']
+    #~ hydro = community_results['Hydropower']
+    #~ solar = community_results['Solar Power']
+    #~ wind = community_results['Wind Power']
     
-    expected_wind_total = wind.cd['wind generation limit']
-    expected_hydro_total = hydro.cd['hydro generation limit']
+    #~ expected_wind_total = wind.cd['wind generation limit']
+    #~ expected_hydro_total = hydro.cd['hydro generation limit']
                                         
                                         
-    expected_solar_total = \
-        '{:,.0f} kWh/year'.format(solar.generation_proposed[0])
+    #~ expected_solar_total = \
+        #~ '{:,.0f} kWh/year'.format(solar.generation_proposed[0])
     
     
     
-    total_gen = \
-        fc.cd.get_item('community','utility info')['net generation'].iloc[-1:]
+    #~ total_gen = \
+        #~ fc.cd.get_item('community','utility info')['net generation'].iloc[-1:]
     #~ print 
-    total_load = float(total_gen)/constants.hours_per_year
-    year = int(total_gen.index[0])
+    #~ total_load = float(total_gen)/constants.hours_per_year
+    #~ year = int(total_gen.index[0])
     
     
-    h_gen = float(fc.cd.get_item('community',
-            'utility info')['generation hydro'].iloc[-1:])
-    w_gen = float(fc.cd.get_item('community',
-            'utility info')['generation wind'].iloc[-1:])
-    s_gen = float(fc.cd.get_item('community',
-            'utility info')['generation solar'].iloc[-1:])
+    #~ h_gen = float(fc.cd.get_item('community',
+            #~ 'utility info')['generation hydro'].iloc[-1:])
+    #~ w_gen = float(fc.cd.get_item('community',
+            #~ 'utility info')['generation wind'].iloc[-1:])
+    #~ s_gen = float(fc.cd.get_item('community',
+            #~ 'utility info')['generation solar'].iloc[-1:])
     
-    current = [
-        {'words':'Average community load (' + str(year) +')',
-         'value': '{:,.0f} kW'.format(total_load)},
-        {'words':'Average generation (' + str(year) +')' , 
-         'value': '{:,.0f} kWh/year'.format(float(total_gen))},
-        {'words':'Peak load', 'value': 'Unknown'},
-        {'words':'Existing nameplate wind capacity', 
-         'value': 
-             '{:,.0f} kW'.format(
-             float(wind.cd['wind capacity']))},
-        {'words':'Existing wind generation (' + str(year) +')',
-         'value': '{:,.0f} kWh/year'.format(w_gen).replace('nan','0')},
-        {'words':'Estimated proposed wind generation',
-         'value': '{:,.0f} kWh/year'.format(expected_wind_total)},
-        {'words':'Existing nameplate solar capacity', 
-         'value': 
-             '{:,.0f} kW'.format(
-             float(solar.cd['solar capacity']))},
-        {'words':'Existing solar generation (' + str(year) +')', 
-         'value': '{:,.0f} kWh/year'.format(s_gen).replace('nan','0')},
-        {'words':'Estimated proposed solar generation',
-         'value': expected_solar_total},
-        {'words':'Existing nameplate hydro capacity ', 
-         'value': 
-             '{:,.0f} kW'.format(
-             float(fc.cd.get_item('community','hydro capacity')))},
-        {'words':'Existing hydro generation (' + str(year) +')', 
-         'value': '{:,.0f} kWh/year'.format(h_gen).replace('nan','0')},
-        {'words':'Estimated proposed hydro generation',
-         'value': '{:,.0f} kWh/year'.format(expected_hydro_total)}
-    ]
+    #~ current = [
+        #~ {'words':'Average community load (' + str(year) +')',
+         #~ 'value': '{:,.0f} kW'.format(total_load)},
+        #~ {'words':'Average generation (' + str(year) +')' , 
+         #~ 'value': '{:,.0f} kWh/year'.format(float(total_gen))},
+        #~ {'words':'Peak load', 'value': 'Unknown'},
+        #~ {'words':'Existing nameplate wind capacity', 
+         #~ 'value': 
+             #~ '{:,.0f} kW'.format(
+             #~ float(wind.cd['wind capacity']))},
+        #~ {'words':'Existing wind generation (' + str(year) +')',
+         #~ 'value': '{:,.0f} kWh/year'.format(w_gen).replace('nan','0')},
+        #~ {'words':'Estimated proposed wind generation',
+         #~ 'value': '{:,.0f} kWh/year'.format(expected_wind_total)},
+        #~ {'words':'Existing nameplate solar capacity', 
+         #~ 'value': 
+             #~ '{:,.0f} kW'.format(
+             #~ float(solar.cd['solar capacity']))},
+        #~ {'words':'Existing solar generation (' + str(year) +')', 
+         #~ 'value': '{:,.0f} kWh/year'.format(s_gen).replace('nan','0')},
+        #~ {'words':'Estimated proposed solar generation',
+         #~ 'value': expected_solar_total},
+        #~ {'words':'Existing nameplate hydro capacity ', 
+         #~ 'value': 
+             #~ '{:,.0f} kW'.format(
+             #~ float(fc.cd.get_item('community','hydro capacity')))},
+        #~ {'words':'Existing hydro generation (' + str(year) +')', 
+         #~ 'value': '{:,.0f} kWh/year'.format(h_gen).replace('nan','0')},
+        #~ {'words':'Estimated proposed hydro generation',
+         #~ 'value': '{:,.0f} kWh/year'.format(expected_hydro_total)}
+    #~ ]
+    current = [{'words':"See", 
+            'value':"<a href='./generation.html'>Generation </a> "+\
+                "for more details of the current generation systems"},
+         ]
     return current

@@ -1,6 +1,6 @@
 global:
   root: ./model/m0.27.2_d0.27.0/
-  #~ global config: ./model/m0.27.2_d0.27.0/__global_config.yaml
+  global config: ./model/m0.27.2_d0.27.0/__global_config.yaml
   results tag: 'scripts_test'
   
 communities:

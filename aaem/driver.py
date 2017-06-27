@@ -25,6 +25,124 @@ except ImportError:
     
 from pandas import read_csv
 
+KEYS_FOR_GLOBAL = { 
+    'community': [
+        'model electricity',
+        'model heating fuel',
+        'model financial',
+        'interest rate',
+        'discount rate',
+        'current year',
+    ],
+    'Residential Energy Efficiency': [
+        'enabled',
+        'lifetime',
+        'min kWh per household',
+        'average refit cost',
+    ],
+    'Non-residential Energy Efficiency': [
+        'enabled',
+        'lifetime',
+        'average refit cost', 
+        'cohort savings percent',
+        'heating percent',
+        'waste oil cost percent'
+    ],
+    'Water and Wastewater Efficiency':[
+        'enabled',
+        'lifetime',
+        'audit cost',
+        'average refit cost',
+        'electricity refit reduction',
+        'heating fuel refit reduction',
+        'heat recovery multiplier',
+        'heating cost percent',
+    ],
+    'Wind Power':[
+        'enabled',
+        'lifetime',
+        'average load limit',
+        'percent generation to offset',
+    ],
+    'Solar Power':[
+        'enabled',
+        'lifetime',
+        'average load limit',
+        'percent generation to offset',
+        'percent solar degradation',
+        'cost per kW',
+        'percent o&m',
+    ],
+    'Biomass for Heat (Cordwood)':[
+        'enabled',
+        'lifetime',
+        'cost per btu/hrs',
+        'o&m per year',
+        'energy density',
+        'hours of storage for peak',
+        'percent at max output',
+        'cordwood system efficiency',
+        'hours operation per cord',
+        'operation cost per hour',
+        'boiler assumed output',
+    ],
+    'Biomass for Heat (Pellet)':[
+        'enabled',
+        'lifetime',
+        'cost per btu/hrs',
+        'o&m per year',
+        'energy density',
+        'pellet efficiency',
+        'default pellet price',
+    ],
+    'Residential ASHP':[
+        'enabled',
+        'lifetime',
+        'btu/hrs',
+        'cost per btu/hrs',
+        'o&m per year'
+    ],
+    'Non-Residential ASHP':[
+        'enabled',
+        'lifetime',
+        'btu/hrs',
+        'cost per btu/hrs',
+        'o&m per year',
+    ],
+    'Hydropower':[
+        'enabled',
+        'lifetime',
+        'percent o&m',
+        'percent heat recovered',
+    ],
+    'Transmission and Interties':[
+        'enabled',
+        'lifetime',
+        'transmission loss per mile',
+        'percent o&m',
+        'heat recovery o&m',
+        'est. intertie cost per mile',
+        'diesel generator o&m',
+    ],
+    'Heat Recovery':[
+        'enabled',
+        'lifetime',
+        'estimate pipe distance',
+        'estimate pipe cost/ft',
+        'estimate buildings to heat',
+        'heating conversion efficiency',
+        'percent heat recovered',
+        'estimate cost/building',
+        'o&m per year',
+    ],
+    'Diesel Efficiency':[
+        'enabled',
+        'lifetime',
+        'efficiency improvment',
+        'o&m costs'
+    ],
+}
+
 
 default_scalers = {'diesel price': 1.0,
                    'diesel price adder': 0.0,
@@ -481,7 +599,7 @@ class Driver (object):
         
     def run_many (self, directory):
         """
-        run a list of communites using default options
+        run a list of communities using default options
         
         inputs:
             communities: a list of communities <list>
@@ -650,49 +768,6 @@ class Setup (object):
         
         os.makedirs(os.path.join(setup_path, "config"))
             
-    #~ def setup_community_configs (self, coms = None):
-        #~ """
-        #~ set up the conigureation files
-        
-        #~ inputs:
-            #~ coms: (optional) alterante of communites to setup should be a 
-                #~ subset of self.communities
-        
-        #~ post conditions:
-            #~ saves a configuration .yaml for each community/ projcet in coms or 
-        #~ self.communities
-        #~ """
-        #~ config_path = os.path.join(self.model_root, self.tag, 'config')
-        #~ if coms is None:
-            #~ coms = self.communities
-        
-        #~ for c in coms:
-            #~ config = {'community':{'name': c,
-                                   #~ 'model financial': True,},
-                        #~ }
-            #~ comments = {'community':{'name': 'name of community/project',
-                                     #~ 'model financial': 'Model Finances?',},
-               
-                        #~ }
-            #~ north_slope = ["Barrow", "Nuiqsut"] 
-            #~ if c.split('+')[0] in north_slope or c.split('_')[0] in north_slope:
-                #~ config['community']['natural gas price'] = 3
-                #~ config['community']['natural gas used'] = True
-                #~ comments['community']['natural gas price'] = 'LNG price $/gal'
-                #~ comments['community']['natural gas used'] = \
-                                                        #~ 'LNG used in community'
-            
-            #~ config_file = os.path.join(config_path, 
-                                #~ c.replace(' ','_') + '_config.yaml')
-            #~ header = 'community data for ' + c 
-            #~ write_config_file(config_file, config, comments, 
-                                            #~ s_order = ['community',],
-                                            #~ i_orders = {'community':['name',
-                                                        #~ 'model financial',
-                                                        #~ 'natural gas used',
-                                                        #~ 'natural gas price']},
-                                            #~ header = header)
-            
     def setup_community_list (self):
         """
         create the community list file from the repo
@@ -707,119 +782,6 @@ class Setup (object):
                                                     '__community_list.csv')
         src_path = os.path.join(self.data_dir, 'community_list.csv')
         shutil.copy(src_path, config_path)
-        
-    #~ def setup_goals (self):
-        #~ """
-        #~ create the community list file from the repo
-        
-        #~ preconditions:
-            #~ see invariants, community_list.csv sould exist in data repo
-            
-        #~ postcondition:
-            #~ '__community_list.csv' saved in config directory
-        #~ """
-        #~ config_path = os.path.join(self.model_root, self.tag, 'input_files', 
-                                                    #~ '__goals_community.csv')
-        #~ src_path = os.path.join(self.data_repo, 'goals_community.csv')
-        #~ shutil.copy(src_path, config_path)
-        
-        #~ config_path = os.path.join(self.model_root, self.tag, 'input_files', 
-                                                    #~ '__goals_regional.csv')
-        #~ src_path = os.path.join(self.data_repo, 'goals_regional.csv')
-        #~ shutil.copy(src_path, config_path)
-        
-    #~ def setup_construction_multipliers (self):
-        #~ """
-        #~ create the construction multipliers file from the repo
-        
-        #~ preconditions:
-            #~ see invariants, construction multipliers.yaml sould exist in 
-        #~ data repo
-            
-        #~ postcondition:
-            #~ '__construction multipliers.yaml' saved in config directory
-        #~ """
-        #~ config_path = os.path.join(self.model_root, self.tag, 'config', 
-                                              #~ '__regional_multipliers.yaml')
-        #~ src_path = os.path.join(self.data_repo, 'regional_multipliers.yaml')
-        #~ shutil.copy(src_path, config_path)
-
-    #~ def setup_global_config (self):
-        #~ """
-        #~ setup global config
-        
-        #~ preconditions:
-            #~ see invariants
-            
-        #~ postcondition:
-            #~ default '__global_config.yaml' saved in config directory
-        #~ """
-        #~ config_path = os.path.join(self.model_root, self.tag, 'config', 
-                                                    #~ "__global_config.yaml")
-        #~ with open(config_path, 'w') as def_file:
-            #~ def_file.write(yaml.dump(defaults.build_setup_defaults(comp_lib),
-                                                #~ default_flow_style = False))
-            
-    #~ def setup_input_files (self):
-        #~ """
-        #~ setup the input files, preprocessing the data
-        
-        #~ preconditions:
-            #~ see invariants
-            
-        #~ postconditons:
-            #~ sets up input files, and metadata
-            
-        #~ output:
-            #~ returns the list of ids
-        #~ """
-        #~ input_path = os.path.join(self.model_root,self.tag,"input_files")
-        
-        #~ ids = self.preprocess_input_files(input_path)
-        #~ self.move_input_files_diagnostics(input_path)
-        #~ self.write_input_files_metadata(input_path)
-        #~ self.archive_input_files_raw_data (input_path)
-        #~ return ids
-        
-    #~ def preprocess_input_files (self, input_path):
-        #~ """
-        #~ preprocess input files
-        
-        #~ inputs:
-            #~ input_path: path to preprocess the data into <string>
-            
-        #~ preconditions:
-            #~ see invatiants
-            
-        #~ outputs:
-            #~ returns ids of preprocessed communities/projects including interies
-        #~ """
-        #~ all_ids = []
-        #~ for c in self.communities:
-            #~ it_batch = {}
-            #~ ids = preprocess(self.data_repo, input_path, c, dev = True)
-            #~ all_ids += ids
-            
-        #~ return all_ids
-            
-    #~ def move_input_files_diagnostics (self, input_path):
-        #~ """
-        #~ move the input file diagnostics to a '__diagnostic_files' sub directory
-        
-        #~ inputs:
-            #~ input_path: path to preprocess the data into <string>
-        
-        #~ postconditions:
-            #~ move the input file diagnostics
-        #~ """
-        #~ diag_path = os.path.join(input_path, '__diagnostic_files')
-        #~ try:
-            #~ os.makedirs(diag_path)
-        #~ except OSError:
-            #~ pass
-        #~ for diagf in [f for f in os.listdir(input_path) if '.csv' in f] : 
-            #~ os.rename(os.path.join(input_path,diagf),
-                        #~ os.path.join(diag_path,diagf))
           
     def write_preprocessor_metadata (self, save_path):
         """ 
@@ -874,7 +836,7 @@ class Setup (object):
         
         self.communities = [c for c in data['Community'].values]
         
-    def setup (self, force = False, ng_coms = []):
+    def setup (self, force = False, ng_coms = [], make_globals = False):
         """
         run the setup functionality
         
@@ -909,8 +871,14 @@ class Setup (object):
             else:
                 preprocessor.run(show=True)
             
-            preprocessor.save_config(f_path)
-            
+            if  make_globals:
+                keys_to_split = KEYS_FOR_GLOBAL
+                preprocessor.save_config(f_path, keys_to_split)
+                f_name = os.path.join(f_path, '__global_config.yaml')
+                if not os.path.exists(f_name):
+                    preprocessor.save_global_congfig(f_name, keys_to_split)
+            else:
+                preprocessor.save_config(f_path)
             ## the intertie, if it exists
             try:
                 preprocessor = Preprocessor(community,
@@ -920,7 +888,11 @@ class Setup (object):
                 self.diagnostics.add_note('Preprocessing ' + community,
                     '---------')
                 preprocessor.run(show=True)
-                preprocessor.save_config(f_path)
+                if  make_globals:
+                    keys_to_split = KEYS_FOR_GLOBAL
+                    preprocessor.save_config(f_path, keys_to_split)
+                else:
+                    preprocessor.save_config(f_path)
             except PreprocessorError:
                 pass
         
@@ -953,10 +925,18 @@ def script_validator (script_file):
     except KeyError:
         raise StandardError, "No root provided for model structure"
     
-    #~ gcfg = script['global']['global config']
-    #~ if not os.path.isfile(gcfg) and \
-           #~ not os.path.split(gcfg)[1].split('.')[1] in extns:
-        #~ raise StandardError, "golbal config not a yaml file"
+    try:
+        gcfg = script['global']['global config']
+        if not os.path.isfile(gcfg) and \
+            not os.path.split(gcfg)[1].split('.')[1] in extns:
+            raise StandardError, "golbal config not a yaml file"
+    except KeyError:
+        script['global']['global config'] = None
+        
+    if script['global']['global config'] is None:
+        gc = os.path.join(root, 'config', '__global_config.yaml')
+        if os.path.isfile(gc):
+            script['global']['global config'] = gc 
         
     try:
         res_tag = script['global']['results tag']
@@ -1008,7 +988,7 @@ def script_validator (script_file):
     if len(errors) != 0:
         errs = '\n'.join(errors)
         raise StandardError, errs
-    
+    #~ print script
     return script
         
     

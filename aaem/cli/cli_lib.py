@@ -188,7 +188,7 @@ def compare_high_level (results1, results2):
             print ""
             
         to_compare = set(f1.index) & set(f2.index)
-        print "\tfinding differences in available communites:"
+        print "\tfinding differences in available communities:"
         for c in sorted (to_compare):
             try:
                 if (f1.ix[c] != f2.ix[c]).any():

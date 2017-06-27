@@ -211,17 +211,20 @@ class Preprocessor (object):
         ## caclulate 'electric non-fuel prices'
         if not source == 'none':
             efficiency = self.data['community']['diesel generation efficiency']
+            #~ print efficiency
             percent_diesel = \
                 self.data['community']['utility info']['generation diesel']\
                 .fillna(0)\
                 /self.data['community']['utility info']['net generation']
+            #~ print self.data['community']['utility info'][['generation diesel', 'net generation']]
             percent_diesel = float(percent_diesel.iloc[-1])
-        
+            #~ print percent_diesel
+            #~ print self.data['community']['diesel prices'].iloc[0]
             adder = percent_diesel * \
                 self.data['community']['diesel prices'] / efficiency
             adder = adder.fillna(0)
             
-            
+            #~ print self.data['community']['electric non-fuel price'] 
             self.data['community']['electric non-fuel prices'] = \
                 self.data['community']['electric non-fuel price'] + adder
           
@@ -264,41 +267,112 @@ class Preprocessor (object):
             self.data['community']['natural gas price'] = 3.0
             self.data['community']['natural gas used'] = True
             
-    def save_config (self, out_dir):
+    def save_config (self, out_dir, keys_to_split = {}):
         """Save the configuration yaml file
         
         parameters
         ----------
         out_dir: path
             path to directory to save the config in 
+        keys_to_split: dict of lists
+            sections and thier keys to split
         """
         if len(self.projects) == 0:
-            self.save_single(out_dir)
+            self.save_single(out_dir, keys_to_split )
         else:
-            self.save_projects(out_dir)
+            self.save_projects(out_dir, keys_to_split )
             
-    def save_projects (self, out_dir):
-        """
+    def save_projects (self, out_dir, keys_to_split  ={}):
+        """Save the configuration yaml file for each project
+        
+        parameters
+        ----------
+        out_dir: path
+            path to directory to save the config in 
+        keys_to_split: dict of lists
+            sections and thier keys to split
         """
         original_tag = self.data['community']['file id']
-        self.save_single(out_dir)
+        self.save_single(out_dir, keys_to_split )
         my_copy = copy.deepcopy(self.data)
         for project in self.projects:
             self.data['community']['file id'] = original_tag + '+' + project
             #~ print self.projects[project]
             self.data = merge_configs(self.data, self.projects[project])
-            self.save_single(out_dir)
+            self.save_single(out_dir, keys_to_split)
         
         self.data = my_copy
         #~ self.data['community']['file id'] = original_tag
         
-    def save_single (self, out_dir):
+    def split_config(self, keys):
+        """split confing into to, usefull for creating global config
+        
+        parameters
+        ----------
+        keys: dict of lists
+            sections and thier keys to split
+        """
+        with_keys = {}
+        without_keys = {}
+        
+        
+        for section in keys:
+            with_keys[section] = {}
+            for item in keys[section]:
+                with_keys[section][item] = self.data[section][item]
+        
+        for section in self.data:
+            without_keys[section] = {}
+            
+            try:
+                community_keys = \
+                    set(self.data[section].keys()) ^ set(keys[section])
+            except KeyError:
+                community_keys = self.data[section].keys()
+            for item in community_keys:
+                without_keys[section][item] = self.data[section][item]
+                
+                
+        return with_keys, without_keys
+        
+    def save_global_congfig(self, f_name, keys_to_split={}):
+        """Save the global configuration yaml file
+        
+        parameters
+        ----------
+        f_name: path
+            path to save file with
+        keys_to_split: dict of lists
+            sections and thier keys to split
+        """
+        gc, data = self.split_config(keys_to_split)
+        
+        s_order = ['community'] + comp_order
+        i_order = {'community': base_order}
+        comments = {}
+        for comp in comp_lib:
+            module = self.import_component(comp_lib[comp])
+            i_order[comp] = module.config.order
+            comments[comp] = module.config.comments
+
+        save_config(f_name,
+            gc,
+            comments = comments,
+            s_order = s_order,
+            i_orders = i_order,
+            header = ''
+        )
+        
+        
+    def save_single (self, out_dir, keys_to_split={}):
         """Save the configuration yaml file
         
         parameters
         ----------
         out_dir: path
             path to directory to save the config in 
+        keys_to_split: dict of lists
+            sections and thier keys to split
         """
         community = self.data['community']['file id']\
             .replace(' ', '_').replace("'", '')
@@ -313,9 +387,11 @@ class Preprocessor (object):
             i_order[comp] = module.config.order
             comments[comp] = module.config.comments
         
+        gc, data = self.split_config(keys_to_split)
+        
         out_path = os.path.join(out_dir, community+'.yaml')
         save_config(out_path,
-            self.data,
+            data,
             comments = comments,
             s_order = s_order,
             i_orders = i_order,
@@ -422,11 +498,11 @@ class Preprocessor (object):
         ## is community a parent
         if community in data.index: 
             plant = data.ix[community]['Plant Intertied']
-            other_communites = data.ix[community]['Other Community on Intertie']
-            if plant.lower()  == 'yes' and other_communites != "''":
+            other_communities = data.ix[community]['Other Community on Intertie']
+            if plant.lower()  == 'yes' and other_communities != "''":
                 status = "parent"
             else: 
-                # if 'Plant Intertied' not yes or no communites listed
+                # if 'Plant Intertied' not yes or no communities listed
                 # in interite, community is not part of intertie
                 status = "not in intertie"
         ## is it a child
@@ -578,11 +654,14 @@ class Preprocessor (object):
         
         ids = self.GNIS_ids
         
-        if not self.process_intertie:
-            if self.intertie_status == 'child':
-                ids = [ids[1]]
-            else:
-                ids = [ids[0]]
+        get_it_ids = kwargs['get_it_ids'] if 'get_it_ids' in kwargs else False
+        
+        if not get_it_ids:
+            if not self.process_intertie:
+                if self.intertie_status == 'child':
+                    ids = [ids[1]]
+                else:
+                    ids = [ids[0]]
             
             
         if 'population_ids_to_use' in kwargs:
@@ -657,14 +736,13 @@ class Preprocessor (object):
             #~ print ids
             if not self.process_intertie:
                 ## parent community or only community 
-                if self.intertie_status in ['parent', 'not in intertie']:
+                if self.intertie_status in ['not in intertie']:
                     ids = [self.communities[0], self.aliases[0]]
-                else:
-                    ## name and ailias of first child (community of interest)
-                    ids = [self.communities[1], self.aliases[1]]
+                #~ else:
+                    #~ ## name and ailias of first child (community of interest)
+                    #~ ids = [self.communities[1], self.aliases[1]]
         ## cleanup ids
         ids = [i for i in ids if i != ""]
-        
         ## Klukwan fix - see not at top of function
         if 'Klukwan' in ids:
             ids += ["Chilkat Valley"]   
@@ -678,7 +756,7 @@ class Preprocessor (object):
         
         # filter out 'Purchased Power' from child communities as they
         # buy it from the parent so its counted there
-        if self.process_intertie:
+        if self.intertie_status in ['parent', 'child'] :
             children = self.communities[1:] +  self.aliases[1:]
             for child in children:
                 try: 
@@ -712,7 +790,8 @@ class Preprocessor (object):
             "government_kwh_sold",
             "unbilled_kwh", "fuel_cost"
         ]]
-        
+        coms = list(set(data.index))
+        #~ print len(data)
         ## get last year with full data
         last_year = data["year"].max()
         while len(data[data["year"] == last_year])%12 != 0:
@@ -723,10 +802,35 @@ class Preprocessor (object):
             "residential_kwh_sold", "commercial_kwh_sold", 
             "community_kwh_sold", "government_kwh_sold", "unbilled_kwh"
         ]
-        elec_fuel_cost = (
-            data[data["year"] == last_year]['fuel_cost']/\
-            data[data["year"] == last_year][cols].sum(axis = 1)
-        ).mean()
+        
+        elec_fuel_cost = 0
+        res_nonPCE_price = 0
+        total_sold = data[data["year"] == last_year][cols].sum(axis = 1).mean()
+        
+        #~ print (data[data["year"] == last_year]['fuel_cost']/\
+                #~ data[data["year"] == last_year][cols].sum(axis = 1)).mean()
+        
+        for com in  coms:
+            #~ print data[data["year"] == last_year].ix[com]['fuel_cost']
+            #~ print data[data["year"] == last_year].ix[com][cols].sum(axis = 1)
+            
+            com_elec_fuel_cost = (
+                data[data["year"] == last_year].ix[com]['fuel_cost'].fillna(0)/\
+                data[data["year"] == last_year].ix[com][cols].sum(axis = 1)
+            ).mean()
+            weight = \
+                data[data["year"] == last_year].\
+                ix[com][cols].sum(axis = 1).mean()/\
+                total_sold
+            elec_fuel_cost += (com_elec_fuel_cost * weight)
+            
+            res_pce = \
+                data[data["year"] == last_year].ix[com]\
+                ["residential_rate"].mean()
+        
+            res_nonPCE_price += (res_pce * weight)
+        
+        #~ print elec_fuel_cost
         
         if np.isnan(elec_fuel_cost):
             elec_fuel_cost = 0.0
@@ -735,6 +839,8 @@ class Preprocessor (object):
                 
         res_nonPCE_price = data[data["year"] == \
                                 last_year]["residential_rate"].mean()
+        
+                                
         elec_nonFuel_cost = res_nonPCE_price - elec_fuel_cost
         
         self.diagnostics.add_note("Community: Electric Prices(PCE)",
@@ -754,8 +860,8 @@ class Preprocessor (object):
         """
         ## get ids
         ids = self.communities + self.aliases
-        if not self.process_intertie:
-            ids = [self.communities[0], self.aliases[0]]
+        #~ if not self.process_intertie:
+            #~ ids = [self.communities[0], self.aliases[0]]
         ids = [i for i in ids if i != ""]
         
         ## TODO: weird
@@ -878,7 +984,10 @@ class Preprocessor (object):
             other_type_2 = None
         else: 
             other_type_2, count = Counter(other_sources_2).most_common(1)[0]
-            other_type_2 = other_type_2.lower()
+            try:
+                other_type_2 = other_type_2.lower()
+            except AttributeError:
+                other_type_2 = ''
             self.diagnostics.add_note("Community: generation(PCE)",
                 "Other energy type no. 2 is being set as " + other_type_2 +\
                 " as it occured most as the type for other generatio no. 2 (" +
@@ -892,7 +1001,7 @@ class Preprocessor (object):
                     "povided type is not 'diesel', 'natural gas', "
                     "'wind', or 'solar'.")
                 )
-          
+        #~ print purchase_type, other_type_1, other_type_2 
         ## reindex by year
         data = data.set_index('year')
         data_by_year = []
@@ -929,9 +1038,10 @@ class Preprocessor (object):
             years_data['generation natural gas'] = 0
             years_data['generation biomass'] = 0
             
-            
+            #~ print years_data
             ## add generation from purchases
             if not purchase_type is None:
+                #~ print years_data["kwh_purchased"]
                 years_data['generation ' + purchase_type ] += \
                     years_data["kwh_purchased"]
             
@@ -970,7 +1080,7 @@ class Preprocessor (object):
                 years_data['generation'] = years_data['generation'] + phc
             else:
                 years_data['net generation'] = years_data['generation'] - phc
-                
+            #~ print years_data['generation diesel'], years_data['net generation']
             # other values
             years_data['fuel used'] = years_data['fuel_used_gal']
             years_data['line loss'] = \
@@ -1591,7 +1701,7 @@ class Preprocessor (object):
         return premium 
         
     def load_election_divisions (self, **kwargs):
-        """load the data for a communites election districts
+        """load the data for a communities election districts
         
         Returns
         -------

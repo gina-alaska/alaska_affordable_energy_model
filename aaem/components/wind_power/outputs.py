@@ -17,7 +17,7 @@ from datetime import datetime
 
 ## component summary
 def component_summary (results, res_dir):
-    """Creates the regional and communites summary for the component in provided 
+    """Creates the regional and communities summary for the component in provided 
     directory
     
     Parameters
