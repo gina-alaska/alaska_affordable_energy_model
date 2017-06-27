@@ -1,20 +1,20 @@
 """
-Water Wastewater Configuration 
+Water Wastewater Configuration
 ------------------------------
-    
+
     Contains Water Wastewater configuration info for community
     data yaml file, and other set-up requirements
-    
+
     **Unique Configuration keys**
-    
+
         'audit cost'
         'average refit cost'
         'data'
         'electricity refit reduction'
         'heating fuel refit reduction'
         'heat recovery multiplier'
-        'heating cost precent'
-    
+        'heating cost percent'
+
 """
 COMPONENT_NAME = 'Water and Wastewater Efficiency'
 IMPORT = "IMPORT"
@@ -35,14 +35,14 @@ order = [
 
 structure = {
     'Water and Wastewater Efficiency': {
-        'enabled': bool, 
+        'enabled': bool,
         'start year': int,
-        'lifetime': int, 
+        'lifetime': int,
         'audit cost': float,
-        'average refit cost': float, 
+        'average refit cost': float,
         'electricity refit reduction': float,
         'heating fuel refit reduction': float,
-        'heat recovery multiplier': float, 
+        'heat recovery multiplier': float,
         'heating cost percent': float,
         'data': dict
     }
@@ -57,15 +57,15 @@ comments = {
     'audit cost': 'price <float> (ex. 10000)',
     'average refit cost': 'cost/per person <float>',
     'data': '',
-    'electricity refit reduction': 
-        'precent <float> percent saved by preforming electricity refit',
-    'heating fuel refit reduction': 
-         'precent <float> percent saved by heating fuel refit',
+    'electricity refit reduction':
+        'percent <float> percent saved by preforming electricity refit',
+    'heating fuel refit reduction':
+         'percent <float> percent saved by heating fuel refit',
     'heat recovery multiplier': ''
     }
-    
+
 ## list of prerequisites for module
 prereq_comps = []
 
-## List of raw data files required for  preproecssing 
+## List of raw data files required for  preproecssing
 raw_data_files = []
