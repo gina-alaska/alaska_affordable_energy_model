@@ -1,10 +1,10 @@
 """
-Transmission Configuration 
+Transmission Configuration
 --------------------------
-    
+
     Contains Transmission configuration info for community
     data yaml file, and other set-up requirements
-    
+
 """
 from aaem.components import definitions
 from aaem.community_data import CommunityData
@@ -18,12 +18,12 @@ order = [
     'enabled',
     'lifetime',
     'start year',
-    
+
     'transmission loss per mile',
     'nearest community with lower price',
     'distance to community',
     'maximum savings',
-    
+
     'percent o&m',
     'heat recovery o&m' ,
     'est. intertie cost per mile',
@@ -36,7 +36,7 @@ structure = {
         'enabled': bool,
         'lifetime': int,
         'start year': int,
-        
+
         'transmission loss per mile': float,
         'nearest community with lower price': str,
         'distance to community': float,
@@ -45,7 +45,7 @@ structure = {
         'percent o&m': float,
         'heat recovery o&m' : float,
         'est. intertie cost per mile': {
-            'road needed': float, 
+            'road needed': float,
             'road not needed': float
         },
         'diesel generator o&m': float,
@@ -56,16 +56,16 @@ comments = {
     'enabled': definitions.ENABLED,
     'lifetime': definitions.LIFETIME,
     'start year': definitions.START_YEAR_WITH_TYPE,
-    
+
     'transmission loss per mile': '[float] percent of energy lost per mile',
     'nearest community with lower price':  '[str] name of community to connect to',
-    'distance to community':  '[float] distance(mi) from community to connect to',
+    'distance to community':  '[float] distance from community to connect to [mile]',
     'maximum savings': '[float] max possible savings',
 
     'percent o&m': '[float] percent of capital costs to use as maintenance costs',
     'heat recovery o&m' : '[float] operation and maintenance costs for heat recovery [$/year]',
     'est. intertie cost per mile': '[dict] cost per mile of transmission line [$/mile]',
-    'diesel generator o&m': 
+    'diesel generator o&m':
         '[dict] cost(value) to maintain diesel generator per kw upper limit (key) with else key',
 }
 
@@ -73,18 +73,18 @@ comments = {
 def load_other_community(community_data,
     community_config, global_config, scalers):
     """load info for other community
-    
+
     Parameters
     ---------
         community_data
         community_config
         global_config
         scalers
-        
+
     Attributes
     ----------
     new_intertie_data : CommunityData
-        community data for community to connect to. this attribute 
+        community data for community to connect to. this attribute
     is added to the main communities community data
     """
     community_data.new_intertie_data = None
@@ -121,7 +121,7 @@ def load_other_community(community_data,
     #~ print path
     path += '.yaml'
     community_data.new_intertie_data = CommunityData(
-        path, 
+        path,
         global_config,
         community_data.diagnostics,
         scalers
@@ -130,4 +130,4 @@ def load_other_community(community_data,
 
 plugins = [load_other_community]
 ## list of prerequisites for module
-prereq_comps = [] 
+prereq_comps = []
