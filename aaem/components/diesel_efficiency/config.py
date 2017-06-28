@@ -1,17 +1,17 @@
 """
-Diesel Efficiency Configuration 
+Diesel Efficiency Configuration
 -------------------------------
-    
-    Contains configuration info for community data yaml file, and 
+
+    Contains configuration info for community data yaml file, and
      other set-up requirements
-    
+
     **Unique Configuration keys**
-    
-        'efficiency improvments' : 
-        
+
+        'efficiency improvements' :
+
         'o&m costs': operation and maintainence cost per yer
-    
-    
+
+
 """
 from aaem.components import definitions
 
@@ -21,27 +21,27 @@ UNKNOWN = "UNKNOWN"
 
 order = [
     'enabled',
-    'lifetime', 
+    'lifetime',
     'start year',
-    'efficiency improvment',
+    'efficiency improvement',
     'o&m costs'
 ]
 
 structure = {
     'Diesel Efficiency' : {
         'enabled': bool,
-        'lifetime': int, 
+        'lifetime': int,
         'start year': int,
-        'efficiency improvment': float,
+        'efficiency improvement': float,
         'o&m costs': dict
     }
 }
 
 comments = {
-    'enabled': definitions.ENABLED,  
+    'enabled': definitions.ENABLED,
     'lifetime': definitions.LIFETIME,
     'start year': definitions.START_YEAR_WITH_TYPE,
-    'efficiency improvment': '[float] percent efficiecny improvment',
+    'efficiency improvement': '[float] percent efficiecny improvement',
     'o&m costs': '[dict] costs(values) for upper limit kW capacities(keys) with a key else for other values'
 
 }
@@ -51,4 +51,3 @@ comments = {
 
 ## list of prerequisites for module
 prereq_comps = [] ## FILL in if needed
-
