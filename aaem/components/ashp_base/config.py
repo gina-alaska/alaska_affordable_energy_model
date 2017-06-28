@@ -56,12 +56,14 @@ comments = {
     'enabled': definitions.ENABLED,  
     'lifetime': definitions.LIFETIME,
     'start year': definitions.START_YEAR_WITH_TYPE,
-    'btu/hrs': '[float]',
-    'cost per btu/hrs': '[float]',
-    'o&m per year':'[float]',
+    'btu/hrs': '[float] [btu/hrs]',
+    'cost per btu/hrs': '[float] cost per btu/hrs [$/(btu/hrs)]',
+    'o&m per year':'[float] operations and maintenance costs per year [$/year]',
     
-    'data': '[DataFrame]',
-    'perfromance data': '[dict]'
+    'data':
+        "[DataFrame] Yearly climate data including 'Peak Month % of total', 'Capacity Factor', 'Minimum Temp', Avg. Temp(monthly), and % heating load (monthly)",
+    'perfromance data': 
+        "[dict] contains lists of equal length for keys 'Temperature', 'COP' (Cofficient of performance), and 'Percent of Total Capacity'"
 }
 
 ## list of prerequisites for module
