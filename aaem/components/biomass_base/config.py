@@ -54,7 +54,7 @@ structure = {
 comments = {
     'enabled': definitions.ENABLED, # 
     'lifetime': definitions.START_YEAR_WITH_TYPE, # number years <int>
-    'start year': definitions.LIMETIME, # start year <int>
+    'start year': definitions.LIFETIME, # start year <int>
     
     'cost per btu/hrs': '[float] cost per btu/hrs',
     'o&m per year': '[float] operation and maintenence cost per year [$/year]',

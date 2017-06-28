@@ -1826,7 +1826,7 @@ class Preprocessor (object):
         return {
             'community': {
                 'heat recovery operational': hr_operational,
-                'switchgear suatable for renewables': switchgear_status,
+                'switchgear suitable for renewables': switchgear_status,
                 'total capacity': total_capacity,
                 'number diesel generators': total,
                 'largest generator': largest,

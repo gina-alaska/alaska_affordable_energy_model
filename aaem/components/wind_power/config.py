@@ -91,7 +91,7 @@ comments = {
     'proposed capacity': '[float, str] Proposed wind generation capacity form known project [kW], or UNKNOWN',
     'generation capital cost': '[float, str] Capital costs for generation infastructure [$], or UNKNOWN',
     'operational costs': '[float, str] Operational costs for generation infastructure [$], or UNKNOWN',
-    'proposed generation': '[float, str] Proposed yearly wind generation from known project [kWh], or UNKNOWN',',
+    'proposed generation': '[float, str] Proposed yearly wind generation from known project [kWh], or UNKNOWN',
     'distance to resource': '[float] Distance to proposed wind infastructure [ft], or UNKNOWN',
     'transmission capital cost': '[float, str] Capital costs for transmission infastructure [$], or UNKNOWN',
 

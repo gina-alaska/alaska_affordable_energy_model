@@ -432,7 +432,7 @@ class WindPower(AnnualSavings):
             cost per kW used to determine capital costs  ($/kW)
         """
         powerhouse_control_cost = 0
-        if not self.cd['switchgear suatable for renewables']:
+        if not self.cd['switchgear suitable for renewables']:
             powerhouse_control_cost = self.cd['switchgear cost']
 
         #~ road_needed = self.comp_specs['road needed for transmission line']
