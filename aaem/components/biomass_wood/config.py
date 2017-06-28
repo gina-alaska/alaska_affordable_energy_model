@@ -4,24 +4,6 @@ Biomass Pellet configuration
     
     Contains biomass pellet configuration info for 
     community data yaml file, and other set-up requirements
-    
-    **Unique Configuration keys**
-    
-        hours of storage for peak :
-        
-        percent at max output :
-        
-        cordwood system efficiency :
-        
-        hours operation per cord :
-        
-        operation cost per hour :
-        
-        energy density :
-        
-        boiler assumed output :
-        
-        cost per btu/hr :
 """
 import aaem.components.biomass_base as bmb
 from copy import deepcopy
@@ -61,12 +43,12 @@ structure[COMPONENT_NAME].update(
 comments = deepcopy(bmb.comments)
 comments.update(    
     {
-        "hours of storage for peak" : '[float]',
-        "percent at max output" : '[float]',
-        "cordwood system efficiency": '[float]',
-        "hours operation per cord": '[float]',
-        "operation cost per hour": '[float]',
-        "boiler assumed output": '[float]'
+        "hours of storage for peak" : '[float] ',
+        "percent at max output" : '[float] percent of time at max output',
+        "cordwood system efficiency": '[float] efficiency cordwood boiler',
+        "hours operation per cord": '[float] hours each cord burns for [hours]',
+        "operation cost per hour": '[float] cost to operate cordwood boiler [$/hour]',
+        "boiler assumed output": '[float] assumed output of boiler [btu/hrs]'
     }
 ) 
 
