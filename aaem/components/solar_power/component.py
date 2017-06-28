@@ -15,16 +15,16 @@ import aaem.constants as constants
 from config import COMPONENT_NAME, UNKNOWN
 
 class SolarPower (AnnualSavings):
-    """Solar Power of the Alaska Affordable Eenergy Model
+    """Solar Power of the Alaska Affordable Energy Model
 
     Parameters
     ----------
-    commnity_data : CommunityData
-        CommintyData Object for a community
+    community_data : CommunityData
+        CommunityData Object for a community
     forecast : Forecast
-        forcast for a community 
+        forecast for a community 
     diagnostics : diagnostics, optional
-        diagnostics for tracking error/warining messeges
+        diagnostics for tracking error/warning messages
     prerequisites : dictionary of components, optional
         prerequisite component data this component has no prerequisites 
         leave empty
@@ -32,10 +32,10 @@ class SolarPower (AnnualSavings):
     Attributes
     ----------
     diagnostics : diagnostics
-        for tracking error/warining messeges
+        for tracking error/warning messages
         initial value: diag or new diagnostics object
     forecast : forecast
-        community forcast for estimating future values
+        community forecast for estimating future values
         initial value: forecast
     cd : dictionary
         general data for a community.
@@ -47,7 +47,7 @@ class SolarPower (AnnualSavings):
     See also
     --------
     aaem.community_data : 
-        community data module, see information on CommintyData Object
+        community data module, see information on CommunityData Object
     aaem.forecast : 
         forecast module, see information on Forecast Object
     aaem.diagnostics :
@@ -60,12 +60,12 @@ class SolarPower (AnnualSavings):
         
         Parameters
         ----------
-        commnity_data : CommunityData
-            CommintyData Object for a community
+        community_data : CommunityData
+            CommunityData Object for a community
         forecast : Forecast
-            forcast for a community 
+            forecast for a community 
         diagnostics : diagnostics, optional
-            diagnostics for tracking error/warining messeges
+            diagnostics for tracking error/warning messages
         prerequisites : dictionary of components, optional
             prerequisite component data
 
@@ -84,7 +84,7 @@ class SolarPower (AnnualSavings):
             self.comp_specs["lifetime"]
         )
                         
-        ### ADD other intiatzation stuff
+        ### ADD other initialization stuff
         
     
     def run (self, scalers = {'capital costs':1.0}):
@@ -96,7 +96,7 @@ class SolarPower (AnnualSavings):
         
         Parameters
         ----------
-        scalers: dictionay of valid scalers, optional
+        scalers: dictionary of valid scalers, optional
             Scalers to adjust normal run variables. 
             See note on accepted  scalers
         
@@ -137,7 +137,7 @@ class SolarPower (AnnualSavings):
         if self.average_load < self.comp_specs['average load limit'] or \
            not self.proposed_load > 0:
             self.diagnostics.add_note(self.component_name, 
-            "model did not meet minimum generation requirments")
+            "model did not meet minimum generation requirements")
             self.was_run = False
             #~ print self.proposed_load, self.average_load, self.comp_specs['average load limit']
             if self.average_load < self.comp_specs['average load limit']:
@@ -176,12 +176,12 @@ class SolarPower (AnnualSavings):
             
             
     def calc_average_load (self):
-        """Caclulate the Average Diesel load of the current system
+        """Calculate the Average Diesel load of the current system
         
         Attributes
         ----------
         average_load : float 
-            average disel load of current system
+            average diesel load of current system
         """
         #~ self.generation = self.forecast.get_generation(self.start_year)
         #~ self.generation = \
@@ -192,14 +192,14 @@ class SolarPower (AnnualSavings):
         #~ print self.average_load
         
     def calc_proposed_generation (self):
-        """Calulate the proposed generation for Solar Power.
+        """Calculate the proposed generation for Solar Power.
         
         Attributes
         ----------
         Proposed Load: float
-             Proposed sloar power load (kW)
+             Proposed solar power load (kW)
         generation_proposed : float
-            Proposed sloar power generatiod (kWh/yr)
+            Proposed solar power generation (kWh/yr)
         """
         self.proposed_load = self.average_load * \
             (self.comp_specs['percent generation to offset'] / 100.0)
@@ -229,7 +229,7 @@ class SolarPower (AnnualSavings):
         self.generation_fuel_used = self.generation_proposed/gen_eff
         
     def calc_fuel_displaced (self):
-        """Calculate fuel displaced py solar power.
+        """Calculate fuel displaced by solar power.
         
         Attributes
         ----------
@@ -243,12 +243,12 @@ class SolarPower (AnnualSavings):
             self.fuel_displaced = self.generation_proposed * 0
         
     def calc_maintenance_cost (self):
-        """Calculate Maintenace costs.
+        """Calculate Maintenance costs.
         
         Attributes
         ----------
         maintenance_cost : float
-            maintenance cost as a percentage of the captial costs
+            maintenance cost as a percentage of the capital costs
         """
         self.maintenance_cost = self.capital_costs * \
             (self.comp_specs['percent o&m']/100.0)
@@ -261,15 +261,15 @@ class SolarPower (AnnualSavings):
         Attributes
         ----------
         capital_costs : float
-             total cost of improvments ($), calculated from transmission and
-             generagion costs
+             total cost of improvements ($), calculated from transmission and
+             generation costs
         """
         component_cost = self.comp_specs['cost']
         if str(component_cost) == 'UNKNOWN':
             component_cost = self.proposed_load * self.comp_specs['cost per kW']
             
         powerhouse_cost = 0
-        if not self.cd['switchgear suatable for renewables'] and \
+        if not self.cd['switchgear suitable for renewables'] and \
             self.comp_specs['switch gear needed for solar']:
             powerhouse_cost = self.cd['switchgear cost']
             
@@ -290,7 +290,7 @@ class SolarPower (AnnualSavings):
         self.proposed_generation_cost = self.maintenance_cost
         
         price = self.diesel_prices
-        # fuel cost + maintance cost
+        # fuel cost + maintenance cost
         self.baseline_generation_cost = (self.generation_fuel_used * price)# +\
                 #~ (self.generation_proposed * self.comp_specs['o&m cost per kWh'])
         
@@ -302,7 +302,7 @@ class SolarPower (AnnualSavings):
         #~ print self.annual_electric_savings
         
         
-    # Make this do sruff. Remember the different fuel type prices if using
+    # Make this do stuff. Remember the different fuel type prices if using
     def calc_annual_heating_savings (self):
         """Calculate annual heating savings created by the project.
             
@@ -356,7 +356,7 @@ class SolarPower (AnnualSavings):
             #~ fname = fname.replace(" ","_")
         
             #~ fd = open(fname, 'w')
-            #~ fd.write("Wind Power minimum requirments not met\n")
+            #~ fd.write("Wind Power minimum requirements not met\n")
             #~ fd.close()
             return
         

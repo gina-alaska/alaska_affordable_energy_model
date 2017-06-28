@@ -21,8 +21,8 @@ def component_summary (results, res_dir):
     
     Parameters
     ----------
-    results : dictionay
-        results from the model, dictionay with each community or project 
+    results : dictionary
+        results from the model, dictionary with each community or project 
         as key
     res_dir :  path
         location to save file
@@ -36,8 +36,8 @@ def communities_summary (coms, res_dir):
     
     Parameters
     ----------
-    coms : dictionay
-        results from the model, dictionay with each community or project 
+    coms : dictionary
+        results from the model, dictionary with each community or project 
         as key
     res_dir :  path
         location to save file
@@ -161,7 +161,7 @@ def communities_summary (coms, res_dir):
             ' Change in heating oil consumption that would be caused by improvements\n'
         '# Proposed Solar Reduction in Utility Diesel Consumed per year: '
             'Reduction in generation diesel from proposed solar system.\n'
-        '# Diesel Denerator Efficiency: '+ definitions.GEN_EFF + ' \n'
+        '# Diesel Generator Efficiency: '+ definitions.GEN_EFF + ' \n'
         '# Diesel Price - year 1 [$\gal]: ' + definitions.PRICE_DIESEL + '\n'
         '# Break Even Diesel Price [$/gal]: ' + definitions.BREAK_EVEN_COST_DIESEL + '\n'
         '# Levelized Cost Of Energy [$/kWh]:' + definitions.LCOE + '\n'
@@ -179,14 +179,14 @@ def create_regional_summary (results):
     
     Parameters
     ----------
-    results : dictionay
-        results from the model, dictionay with each community or project 
+    results : dictionary
+        results from the model, dictionary with each community or project 
         as key
             
     Returns
     -------
     DataFrame 
-        containg regional results
+        containing regional results
     
     """
     #~ print "start"
@@ -256,7 +256,7 @@ def save_regional_summary (summary, res_dir):
     
     Parameters
     ----------
-    summary : Dataframe
+    summary : DataFrame
         compiled regional results
     res_dir :  path
         location to save file

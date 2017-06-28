@@ -2,24 +2,8 @@
 Solar Power Configuration
 -------------------------
 
-    Contains Solar Power configuration info for community
+    Contains solar power configuration info for community
     data yaml file, and other set-up requirements
-
-    **Unique Configuration keys**
-
-        'average load limit': (KW) lower limit on the current average load for
-            running this component
-        'data'
-        'cost'
-        'cost per kW'
-        'road needed'
-        'road needed for transmission line'
-        'transmission line distance'
-        'percent o&m'
-        'percent generation to offset'
-        'switch gear needed for solar'
-        'percent solar degradation'
-        'o&m cost per kWh'
 
 """
 from aaem.components import definitions
@@ -79,13 +63,13 @@ comments = {
     'lifetime': definitions.LIFETIME,
 
     'average load limit' :
-        ('[float] minimum aaverage disel load (kW)in community required before'
+        ('[float] minimum average diesel load (kW) in community required before'
          ' solar power is considered'),
     'percent generation to offset': '[float] percent of diesel load to offset',
     'percent solar degradation':
         '[float] annual decline in solar effectiveness',
 
-    'output per 10kW solar PV': '[float] output from solar pannel',
+    'output per 10kW solar PV': '[float] output from solar panel',
     #~ 'road needed': '[bool]',
     #~ 'road needed for transmission line': '[bool]',
     #~ 'transmission line distance': '[float] distance of road needed  in miles',
