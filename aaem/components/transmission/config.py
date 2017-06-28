@@ -62,11 +62,11 @@ comments = {
     'distance to community':  '[float] distance(mi) from community to connect to',
     'maximum savings': '[float] max possible savings',
 
-    'percent o&m': '[float] percent of captial costs to use as maintenence costs',
-    'heat recovery o&m' : '[float] operation and maintence costs for heat recovery [$/year]',
+    'percent o&m': '[float] percent of capital costs to use as maintenance costs',
+    'heat recovery o&m' : '[float] operation and maintenance costs for heat recovery [$/year]',
     'est. intertie cost per mile': '[dict] cost per mile of transmission line [$/mile]',
     'diesel generator o&m': 
-        '[dict] cost(value) to maintain disel generator per kw upper limit (key) with else key',
+        '[dict] cost(value) to maintain diesel generator per kw upper limit (key) with else key',
 }
 
 
@@ -74,7 +74,7 @@ def load_other_community(community_data,
     community_config, global_config, scalers):
     """load info for other community
     
-    Prameters
+    Parameters
     ---------
         community_data
         community_config
@@ -83,11 +83,11 @@ def load_other_community(community_data,
         
     Attributes
     ----------
-    new_intetie_data : CommunityData
-        community data for community to connect to. this attibute 
+    new_intertie_data : CommunityData
+        community data for community to connect to. this attribute 
     is added to the main communities community data
     """
-    community_data.new_intetie_data = None
+    community_data.new_intertie_data = None
 
     com = community_data.get_item(
         'Transmission and Interties',
@@ -101,7 +101,7 @@ def load_other_community(community_data,
     if type(intertie) is list and com in intertie:
         community_data.diagnostics.add_warning(
             'Transmission',
-            'Commuity is already intertied to ' + com +\
+            'Community is already intertied to ' + com +\
                 ' setting nearest community to none'
         )
         community_data.set_item(
@@ -120,7 +120,7 @@ def load_other_community(community_data,
         path += '_intertie'
     #~ print path
     path += '.yaml'
-    community_data.new_intetie_data = CommunityData(
+    community_data.new_intertie_data = CommunityData(
         path, 
         global_config,
         community_data.diagnostics,

@@ -383,7 +383,7 @@
 - residential efficiency: changed data keys
 - moved some common values in component configs to community section of config
 - intertie projects for electricity are now sorted to into the intertie
-- electric projects are only run for interties/ not intetied communities
+- electric projects are only run for interties/ not intertied communities
 - heating projects not run on interties
 - wind power: start date is calculated from phase
 
