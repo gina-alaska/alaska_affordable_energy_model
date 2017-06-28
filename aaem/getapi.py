@@ -8,6 +8,7 @@ tools for geting data from Alaska Energy Data Gateway API
 import urllib2
 import ssl
 import json
+import time
 from pandas import DataFrame
 
 
@@ -31,20 +32,30 @@ def get_api_data(name, show = True):
     
     """
     data = []
+    read_tries = 5
     context = ssl._create_unverified_context()
     # "https://akenergygateway.alaska.edu/api/models/pcedata/?format=api"
     url = URL_RT + name + '/?format=json'
     
     
     while True:
-        content = urllib2.urlopen(url, context=context).read()
-        temp = json.loads(content)
-        data += temp['results']
-        url = temp['next']
-        if show:
-            print url
-        if url is None:
-            break
+        try:
+            content = urllib2.urlopen(url, context=context).read()
+            temp = json.loads(content)
+            data += temp['results']
+            url = temp['next']
+            if show:
+                print url
+            if url is None:
+                break
+        except:
+            read_tries -= 1
+            if read_tries == 0:
+                print "Too many timeouts from data API!"
+                raise
+
+            time.sleep(20)
+            print "API timeout, waiting for retry...."
     
     return DataFrame(data)
     
