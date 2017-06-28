@@ -85,6 +85,8 @@ class GetDataCommand(pycommand.CommandBase):
         for f in files:
             shutil.copy2(os.path.join(repo,f),out)
         
+        
+        self.id_data = self.get_id_data()
         self.getpce_data(out)
         self.geteia_data(out)
 
@@ -115,24 +117,45 @@ class GetDataCommand(pycommand.CommandBase):
         
         self.metadata[name] = 'api - ' + str(datetime.now()) 
         
+    def get_id_data (self):
+        data = get_api_data('community')
+        #~ data = data.set_index('id')
+        return data
+        
     def geteia_data(self, out):
         name = 'eia_sales.csv'
         data = get_api_data('eia_861_retail_sales')
         
+        data['Community'] = ''
+        
         order = [
-            u'id', u'year', u'utility', u'residential_revenues',
-            u'residential_customers', u'commercial_revenues', u'commercial_sales', u'commercial_customers',
-            u'industrial_revenues', u'indestrial_customers', u'total_revenue',
-            u'total_sales', u'total_customers',
+            u'year', u'utility', 'Community',
+            u'residential_revenues', u'residential_sales', u'residential_customers',
+            u'commercial_revenues', u'commercial_sales', u'commercial_customers',
+            u'industrial_revenues', u'industrial_sales', u'industrial_customers',
+            u'total_revenue', u'total_sales', u'total_customers',
             ]
         col_names = [
-            'id', 'year', 'utility', 'Residential Thousand Dollars', 'Residential Megwatthours',
-            'Residential Count', 'Commercial Thousand dollars', 'Commercial Megwatthours', 'Commercial Count',
-            'Industrial Thousand Dollars', 'Industrial Megwatthours', 'Industrial Count', 'Total Thousand Dollars',
-            'Total Megawatthours', 'Total CustomerCount'
+            'Data Year', 'Utility Number', 'Community', 
+            'Residential Thousand Dollars', 'Residential Megwatthours', 'Residential Count',
+            'Commercial Thousand dollars', 'Commercial Megwatthours','Commercial Count',
+            'Industrial Thousand Dollars', 'Industrial Megwatthours', 'Industrial Count',
+            'Total Thousand Dollars', 'Total Megawatthours', 'Total CustomerCount'
             ]
-
-        data[order].to_csv(os.path.join(out,name),index = col_names)
+        
+        
+        ### LOOP FOR REPLACING IDS
+        #~ for cid in sorted(list(data['id'].values)):
+            #~ data['id'].replace(
+                #~ [cid],
+                #~ [self.id_data.ix[cid]['name']],
+                #~ inplace=True
+            #~ )
+            
+                
+        data = data[order]
+        data.columns = col_names
+        data.to_csv(os.path.join(out,name),index = False)
         
         self.metadata[name] = 'api - ' + str(datetime.now()) 
         
