@@ -12,6 +12,8 @@ Biomass Base Configuration
         data: data on biomass related items
         
 """
+from aaem.components import definitions
+
 COMPONENT_NAME = "biomass base"
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
@@ -50,19 +52,18 @@ structure = {
 }
 
 comments = {
-    'enabled': '[bool]', # 
-    'lifetime': '[int]', # number years <int>
-    'start year': '[int]', # start year <int>
+    'enabled': definitions.ENABLED, # 
+    'lifetime': definitions.START_YEAR_WITH_TYPE, # number years <int>
+    'start year': definitions.LIMETIME, # start year <int>
     
-    'cost per btu/hrs': '[float]',
-    'o&m per year': '[float]',
+    'cost per btu/hrs': '[float] cost per btu/hrs',
+    'o&m per year': '[float] operation and maintenence cost per year [$/year]',
     
-    'sufficient biomass': 
-        '[bool]',
-    'peak month % of total': '[float]',
-    'capacity factor': '[float]',
+    'sufficient biomass': '[bool] indicates if there is sufficient biomass to heat community',
+    'peak month % of total': '[float] percent of yearly energy output for month with highest consumption',
+    'capacity factor': '[float] ',
     
-    'energy density': '[float]',
+    'energy density': '[float] energy density of biomass fuel',
 }
                 
 ## list of prerequisites for module
