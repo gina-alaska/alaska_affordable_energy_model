@@ -13,6 +13,8 @@ Diesel Efficiency Configuration
     
     
 """
+from aaem.components import definitions
+
 COMPONENT_NAME = "Diesel Efficiency"
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
@@ -36,11 +38,11 @@ structure = {
 }
 
 comments = {
-    'enabled': '[bool]',
-    'lifetime': '[int]', 
-    'start year': '[int]',
-    'efficiency improvment': '[float]',
-    'o&m costs': '[dict]'
+    'enabled': definitions.ENABLED,  
+    'lifetime': definitions.LIFETIME,
+    'start year': definitions.START_YEAR_WITH_TYPE,
+    'efficiency improvment': '[float] percent efficiecny improvment',
+    'o&m costs': '[dict] costs(values) for upper limit kW capacities(keys) with a key else for other values'
 
 }
 
