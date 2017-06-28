@@ -5,15 +5,6 @@ Transmission Configuration
     Contains Transmission configuration info for community
     data yaml file, and other set-up requirements
     
-    **Unique Configuration keys**
-    
-        'transmission loss per mile'
-        'nearest community'
-        'heat recovery o&m' 
-        'est. intertie cost per mile'
-        'percent o&m'
-        'diesel generator o&m'
-    
 """
 from aaem.components import definitions
 from aaem.community_data import CommunityData
@@ -67,22 +58,34 @@ comments = {
     'start year': definitions.START_YEAR_WITH_TYPE,
     
     'transmission loss per mile': '[float] percent of energy lost per mile',
-    'nearest community with lower price': 
-        '[str] name of community to connect to',
-    'distance to community': 
-        '[float] distance(mi) from community to connect to',
+    'nearest community with lower price':  '[str] name of community to connect to',
+    'distance to community':  '[float] distance(mi) from community to connect to',
     'maximum savings': '[float] max possible savings',
 
-    'percent o&m': '[float]',
-    'heat recovery o&m' : '[float]',
-    'est. intertie cost per mile': '[dict]',
-    'diesel generator o&m': '[dict]',
+    'percent o&m': '[float] percent of captial costs to use as maintenence costs',
+    'heat recovery o&m' : '[float] operation and maintence costs for heat recovery [$/year]',
+    'est. intertie cost per mile': '[dict] cost per mile of transmission line [$/mile]',
+    'diesel generator o&m': 
+        '[dict] cost(value) to maintain disel generator per kw upper limit (key) with else key',
 }
 
 
 def load_other_community(community_data,
     community_config, global_config, scalers):
-    """
+    """load info for other community
+    
+    Prameters
+    ---------
+        community_data
+        community_config
+        global_config
+        scalers
+        
+    Attributes
+    ----------
+    new_intetie_data : CommunityData
+        community data for community to connect to. this attibute 
+    is added to the main communities community data
     """
     community_data.new_intetie_data = None
 
