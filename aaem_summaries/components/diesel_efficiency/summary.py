@@ -12,7 +12,7 @@ import aaem_summaries.web_lib as wl
 
 COMPONENT_NAME = "Diesel Efficiency"
 DESCRIPTION = """
-    This component calculates the potential change in diesel fuel used for electricity generation from the replacement of community powerhouses.
+    This component calculates the potential cost savings through changes in the amount of diesel fuel used for electricity generation from the replacement of community powerhouses.
 """
 
 def generate_web_summary (web_object, community):

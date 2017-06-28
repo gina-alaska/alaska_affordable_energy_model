@@ -14,7 +14,7 @@ import aaem_summaries.web_lib as wl
 COMPONENT_NAME = "Residential ASHP"
 
 DESCRIPTION = """
-    This component calculates the potential change in heating oil usage from the installation of new air source heat pumps in residential buildings. 
+    This component calculates the potential change in heating oil usage from the installation of new air source heat pumps in all residential buildings. 
 """
 
 def generate_web_summary (web_object, community):

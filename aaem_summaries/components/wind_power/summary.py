@@ -14,7 +14,7 @@ import numpy as np
 
 COMPONENT_NAME = "Wind Power"
 DESCRIPTION = """
-    This component calculates the potential change in diesel fuel used for electricity generation from the installation of new wind power infrastructure. 
+    This component calculates the potential cost savings from changes in the amount of diesel fuel used for electricity generation from the installation of new wind power infrastructure. 
 """
 
 def generate_web_summary (web_object, community):

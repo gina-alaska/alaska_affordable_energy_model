@@ -15,7 +15,7 @@ import numpy as np
 
 COMPONENT_NAME = 'Water and Wastewater Efficiency'
 DESCRIPTION = """
-    This component calculates the potential change in electricity and heating fuel usage from water/wastewater efficiency improvements.
+    This component calculates the potential cost savings from changes in electricity and heating fuel usage from water/wastewater efficiency improvements.
 """
 
 def generate_web_summary (web_object, community):

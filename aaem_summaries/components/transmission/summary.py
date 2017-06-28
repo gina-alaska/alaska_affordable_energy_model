@@ -14,7 +14,7 @@ from pandas import DataFrame
 
 COMPONENT_NAME = "Transmission and Interties"
 DESCRIPTION = """
-    This component calculates the potential change in diesel fuel used for electricity generation from connecting communities via transmission lines.
+    This component calculates the potential cost savings through changes in the amount of diesel fuel used for electricity generation from connecting communities via transmission lines.
 """
 
 def generate_web_summary (web_object, community):

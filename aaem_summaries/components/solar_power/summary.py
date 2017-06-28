@@ -12,7 +12,7 @@ import aaem_summaries.web_lib as wl
 
 COMPONENT_NAME = "Solar Power"
 DESCRIPTION = """
-    This component calculates the potential change in diesel fuel used for electricity generation from the installation of new solar panel infrastructure.
+    This component calculates the potential cost savings through changes in the amount of diesel fuel used for electricity generation from the installation of new solar panel infrastructure.
 """
 
 def generate_web_summary (web_object, community):
