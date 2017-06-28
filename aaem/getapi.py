@@ -54,8 +54,8 @@ def get_api_data(name, show = True):
                 print "Too many timeouts from data API!"
                 raise
 
-            time.sleep(20)
             print "API timeout, waiting for retry...."
-    
+            time.sleep(20)
+
     return DataFrame(data)
     
