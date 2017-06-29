@@ -83,17 +83,31 @@ def make_costs_table (community, comp, projects, base_cost, directory):
                                         tolist()],
                                  ['Year', 'savings']).T.set_index('Year')
         net_benefit.index = net_benefit.index.astype(int)
-        net_benefit['base'] = costs_table['Base Cost']
+        #~ net_benefit['base'] = costs_table['Base Cost']
         
-        last_yr = net_benefit['base'][~net_benefit['base'].isnull()].index[-1]
-        net_benefit['base'][net_benefit['base'].index > last_yr] =\
-            net_benefit['base'].ix[last_yr]
+        try:
+            if not (net_benefit.index == costs_table.index).all():
+                raise ValueError
+        except ValueError:
+            new_index = range(
+                min(min(net_benefit.index),min( costs_table.index)),
+                max(max(net_benefit.index),max( costs_table.index))+1
+            )
+        
+            costs_table =  costs_table.reindex(new_index, method='ffill')
+    
+        costs_table[name] = \
+                costs_table['Base Cost'] - net_benefit['savings']
+        
+        #~ last_yr = net_benefit['base'][~net_benefit['base'].isnull()].index[-1]
+        #~ net_benefit['base'][net_benefit['base'].index > last_yr] =\
+            #~ net_benefit['base'].ix[last_yr]
 
-        net_benefit[name] = net_benefit['base'] - net_benefit['savings']
-        net_benefit[costs_table.columns] = costs_table
-        costs_table = net_benefit[
-            [c for c in net_benefit.columns if c not in ['base','savings']]
-        ]
+        #~ net_benefit[name] = net_benefit['base'] - net_benefit['savings']
+        #~ net_benefit[costs_table.columns] = costs_table
+        #~ costs_table = net_benefit[
+            #~ [c for c in net_benefit.columns if c not in ['base','savings']]
+        #~ ]
         
      
         names.append(name)
@@ -109,8 +123,8 @@ def make_costs_table (community, comp, projects, base_cost, directory):
         pass
     
     costs_table['year'] = costs_table.index
-    last_yr = costs_table['Base case cost'][~costs_table['Base case cost'].isnull()].index[-1]
-    costs_table['Base case cost'][costs_table['Base case cost'].index > last_yr] = costs_table['Base case cost'].ix[last_yr]
+    #~ last_yr = costs_table['Base case cost'][~costs_table['Base case cost'].isnull()].index[-1]
+    #~ costs_table['Base case cost'][costs_table['Base case cost'].index > last_yr] = costs_table['Base case cost'].ix[last_yr]
     
         
         
@@ -148,6 +162,7 @@ def make_consumption_table (community, comp, projects, base_con,
         returns plotting_table, a table that can be used to make a Google chart
     """
     cons_table = DataFrame(base_con)
+    
     cons_table['year'] = cons_table.index
     names = []
     for p in projects:
@@ -164,6 +179,7 @@ def make_consumption_table (community, comp, projects, base_con,
         name = name.replace("'",'')
         reduction = DataFrame([range(project.start_year,
                                 project.actual_end_year+1)],['Year']).T
+        
                                 
         s_c = "reduction['savings'] = project." + savings_attribute
         try:
@@ -172,19 +188,27 @@ def make_consumption_table (community, comp, projects, base_con,
             s_c += '[:project.actual_project_life]'
             exec(s_c)
         
+        
+        
         reduction = reduction.set_index('Year')
         reduction.index = reduction.index.astype(int)
-        reduction['base'] = cons_table['Base Consumption']
         
-        last_yr = reduction['base'][~reduction['base'].isnull()].index[-1]
-        reduction['base'][reduction['base'].index > last_yr] =\
-            reduction['base'].ix[last_yr]
+        try:
+            if not (reduction.index == cons_table.index).all():
+                raise ValueError
+        except ValueError:
+            new_index = range(
+                min(min(reduction.index),min(cons_table.index)),
+                max(max(reduction.index),max(cons_table.index))+1
+            )
+            cons_table = cons_table.reindex(new_index, method='ffill')
+        
+        
+        cons_table[name] = \
+                    cons_table['Base Consumption'] - reduction['savings']
+        
+        
 
-        reduction[name] = reduction['base'] - reduction['savings']
-        reduction[cons_table.columns] = cons_table
-        cons_table = reduction[
-            [c for c in reduction.columns if c not in ['base','savings']]
-        ]
         
         cons_table[name][cons_table[name] < 0] = 0
         names.append(name)
@@ -199,9 +223,6 @@ def make_consumption_table (community, comp, projects, base_con,
         pass
     
     cons_table['year'] = cons_table.index
-    last_yr = cons_table['Base case diesel consumed'][~cons_table['Base case diesel consumed'].isnull()].index[-1]
-    cons_table['Base case diesel consumed'][cons_table['Base case diesel consumed'].index > last_yr] = cons_table['Base case diesel consumed'].ix[last_yr]
-    
     cons_table.to_csv(os.path.join(directory,community.replace("'",""),'csv', fname),index=False)
     #~ ## make list from of table
 
