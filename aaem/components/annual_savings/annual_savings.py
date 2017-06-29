@@ -242,16 +242,16 @@ class AnnualSavings (object):
     def get_electricity_prices (self):
         """
         """
-        self.cd["electric non-fuel prices"].index = \
-            self.cd["electric non-fuel prices"].index.astype(int)
-        self.cd["electric non-fuel prices"] = \
-            self.cd["electric non-fuel prices"].astype(float)
-        prices = self.cd["electric non-fuel prices"]
+        self.cd["electric prices"].index = \
+            self.cd["electric prices"].index.astype(int)
+        self.cd["electric prices"] = \
+            self.cd["electric prices"].astype(float)
+        prices = self.cd["electric prices"]
         self.electricity_prices = prices.ix[self.start_year:]
 
-        self.cd["electric non-fuel prices"].index = self.cd["electric non-fuel prices"].index.astype(int)
-        self.cd["electric non-fuel prices"] = self.cd["electric non-fuel prices"].astype(float)
-        self.electricity_prices = self.cd["electric non-fuel prices"].ix[self.start_year:]
+        self.cd["electric prices"].index = self.cd["electric prices"].index.astype(int)
+        self.cd["electric prices"] = self.cd["electric prices"].astype(float)
+        self.electricity_prices = self.cd["electric prices"].ix[self.start_year:]
         self.electricity_prices.columns = ['prices']
         start, end  = self.start_year, self.end_year
 

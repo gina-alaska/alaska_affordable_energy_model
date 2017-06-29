@@ -37,7 +37,7 @@ base_order = [
     
     'diesel prices',
     'heating fuel prices',
-    'electric non-fuel prices',
+    'electric prices',
     
     'residential non-PCE electric price',
     'electric non-fuel price',
@@ -111,7 +111,7 @@ base_structure = {
         
         'diesel prices': DataFrame,
         'heating fuel prices': DataFrame,
-        'electric non-fuel prices': DataFrame,
+        'electric prices': DataFrame,
         
         'residential non-PCE electric price': float,
         'electric non-fuel price': float,
@@ -195,7 +195,7 @@ base_comments = {
         
         'diesel prices': '[DataFrame] diesel price forecast',
         'heating fuel prices': '[DataFrame] known heating fuel prices',
-        'electric non-fuel prices': '[DataFrame] electric price forecast',
+        'electric prices': '[DataFrame] electric price forecast',
         
         'electric non-fuel price':
             '[float] non fuel electric price for the community [$/kWh]',
@@ -205,7 +205,7 @@ base_comments = {
         'natural gas price': 
             '[float] natural gas price for the community [$/mcf]',
         
-        'untility info': '[DataFrame] historic info on communities utility',
+        'utility info': '[DataFrame] historic info on communities utility',
         'percent diesel generation': 
             '[float] percent generation from diesel in a community',
         'line losses': '[float] percent line loss from transmission',
@@ -251,6 +251,9 @@ base_comments = {
         'heating oil efficiency': '[float] heating oil efficiency',
             
         'cpi multipliers': '[list] cpi multipliers',
+        
+        'model heating fuel': '[bool] indicates that heating related portions of AAEM should be run', 
+        'model as intertie': '[bool] indicates that community should be run as the parent community of intertie'
     }
 
 }

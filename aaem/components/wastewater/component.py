@@ -127,7 +127,7 @@ class WaterWastewaterSystems (AnnualSavings):
         baseline_generation_cost : np.array
             current cost of generation ($/year)
         """
-        kWh_cost = self.cd["electric non-fuel prices"].\
+        kWh_cost = self.cd["electric prices"].\
                                             ix[self.start_year:self.end_year]
         kWh_cost = kWh_cost.T.values[0]
         self.elec_price = kWh_cost
@@ -142,7 +142,7 @@ class WaterWastewaterSystems (AnnualSavings):
         proposed_generation_cost : np.array
             current cost of generation ($/year)
         """
-        kWh_cost = self.cd["electric non-fuel prices"].\
+        kWh_cost = self.cd["electric prices"].\
                                             ix[self.start_year:self.end_year]
         kWh_cost = kWh_cost.T.values[0]
         # kWh/yr*$/kWh

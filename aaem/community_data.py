@@ -9,6 +9,8 @@ import os.path
 import numpy as np
 from importlib import import_module
 
+from aaem.defaults import base_order
+
 
 from defaults import base_structure, base_comments
 from diagnostics import Diagnostics
@@ -150,10 +152,10 @@ class CommunityData (object):
         convert = self.data['community']['diesel prices']
         convert.index = [int(y) for y in convert.index]
         convert.index.name = 'year'
-        convert = self.data['community']['electric non-fuel prices']
+        convert = self.data['community']['electric prices']
         convert.index = [int(y) for y in convert.index]
         convert.index.name = 'year'
-        # modify diesel prices and electric non-fuel prices
+        # modify diesel prices and electric prices
         self.apply_scalers(scalers)
 
     
@@ -175,7 +177,7 @@ class CommunityData (object):
         if scalers['diesel price'] != 1 or scalers['diesel price adder'] != 1:
             self.diagnostics.add_note(
                 'Community Data', 
-                'Adjusting disel and electric non-fuel prices'
+                'Adjusting disel and electric prices'
             )
         else:
             return
@@ -192,7 +194,7 @@ class CommunityData (object):
             float(self.data['community']['diesel generation efficiency'])
         adder = percent_diesel * \
             self.data['community']['diesel prices'] / efficiency
-        self.data['community']['electric non-fuel prices'] = \
+        self.data['community']['electric prices'] = \
             float(self.data['community']['electric non-fuel price']) + adder
     
     def check_auto_disable_conditions  (self):
@@ -225,7 +227,7 @@ class CommunityData (object):
             community: elec non-fuel cost: is a floating point dollar value
             community: diesel prices: is a diesel projections object. 
         post:
-            community: electric non-fuel prices: is a data frame of dollar 
+            community: electric prices: is a data frame of dollar 
                        values indexed by year
         """
         # TODO: 1 is 100% need to change to a calculation
@@ -326,7 +328,7 @@ class CommunityData (object):
         self.data[section][key] = data
         
     
-        
+ 
 
         
     def save (self, fname):
@@ -357,7 +359,22 @@ class CommunityData (object):
             #~ comments[comp] = cfg.yaml_comments
             
         #~ section_order = config.non_component_config_sections + comp_order
-        save_config(fname,copy,  {})
+
+        
+        s_order = ['community'] + comp_order
+        i_order = {'community': base_order}
+        comments = base_comments
+        for comp in comp_lib:
+            module = import_module('aaem.components.' + comp_lib[comp])
+            i_order[comp] = module.config.order
+            comments[comp] = module.config.comments
+        
+        save_config(fname,copy, 
+            comments = comments,
+            s_order = s_order,
+            i_orders = i_order,
+            header = 'confiuration used to generate these results'
+        )
         del copy
         #~ self.data = copy
         #~ return comment + text

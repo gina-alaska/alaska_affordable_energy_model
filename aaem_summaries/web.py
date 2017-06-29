@@ -397,17 +397,24 @@ class WebSummary(object):
         try:
             fuel_year = hf_prices.index[-1]
             HF_c = float(hf_prices.ix[fuel_year])
-            HF_c = '${:,.2f}/gallon'.format(HF_c)
+            if not np.isnan(HF_c):
+                HF_c = '${:,.2f}/gallon'.format(HF_c)
+            else:
+                HF_c = "unknown"
+        
         except IndexError:
             fuel_year = ''
-            HF_c= "unknown"
+            HF_c = "unknown"
         
         try:
             diesel_c_year = utility_data[['diesel price']].index[-1]
             diesel_c = float(
                 utility_data[['diesel price']].ix[diesel_c_year]
             )
-            diesel_c = '${:,.2f}/gallon'.format(diesel_c)
+            if not np.isnan(diesel_c):
+                diesel_c = '${:,.2f}/gallon'.format(diesel_c)
+            else:
+                diesel_c = "unknown"
         except IndexError:
             diesel_c_year = ''
             diesel_c = "unknown"
@@ -417,7 +424,10 @@ class WebSummary(object):
             elec_price = float(
                 utility_data[['residential rate']].ix[elec_price_year]
             )
-            elec_c = '${:,.2f}/kWh'.format(elec_price)
+            if not np.isnan(elec_price):
+                elec_c = '${:,.2f}/kWh'.format(elec_price)
+            else:
+                elec_c = "unknown"
         except IndexError:
             elec_c = "unknown"
             elec_price_year = ''
@@ -746,7 +756,7 @@ class WebSummary(object):
         ## Electric price chart
         elec_price = \
             res['community data'].get_item('community',
-            'electric non-fuel prices')
+            'electric prices')
         elec_price['year'] = elec_price.index
         elec_price.columns = ['price','year']
 
