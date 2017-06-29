@@ -471,7 +471,7 @@ def electric_price_summary (coms, res_dir):
             base_cost = float(coms[c]['community data'].get_item("community",
                                             "electric non-fuel price"))
             prices = deepcopy(coms[c]['community data'].get_item("community",
-                                            "electric non-fuel prices"))
+                                            "electric prices"))
             name = c
             if name == 'Barrow':
                 name = 'Utqiagvik (Barrow)'

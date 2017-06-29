@@ -22,7 +22,7 @@ from aaem.components import comp_lib, comp_order
 import aaem.yaml_dataframe as yd
 import aaem.constants as constants
 from aaem.config_IO import save_config
-from aaem.defaults import base_order
+from aaem.defaults import base_order, base_comments
 
 GENERATION_AVG = .03
 
@@ -208,7 +208,7 @@ class Preprocessor (object):
         self.data = merge_configs(self.data,
             self.load_measured_heating_fuel_prices())
             
-        ## caclulate 'electric non-fuel prices'
+        ## caclulate 'electric prices'
         if not source == 'none':
             efficiency = self.data['community']['diesel generation efficiency']
             #~ print efficiency
@@ -225,19 +225,19 @@ class Preprocessor (object):
             adder = adder.fillna(0)
             
             #~ print self.data['community']['electric non-fuel price'] 
-            self.data['community']['electric non-fuel prices'] = \
+            self.data['community']['electric prices'] = \
                 self.data['community']['electric non-fuel price'] + adder
           
         else:
             percent_diesel = 0
-            self.data['community']['electric non-fuel prices'] = \
+            self.data['community']['electric prices'] = \
                 self.data['community']['electric non-fuel price'] + \
                 (self.data['community']['diesel prices'] * percent_diesel)
             
         if self.data['community']["region"] == "North Slope":
             N_slope_price = .15
-            self.data['community']['electric non-fuel prices'] = \
-                (self.data['community']['electric non-fuel prices'] * 0) +\
+            self.data['community']['electric prices'] = \
+                (self.data['community']['electric prices'] * 0) +\
                  N_slope_price
         
         self.data = merge_configs(self.data,
@@ -381,7 +381,7 @@ class Preprocessor (object):
             
         s_order = ['community'] + comp_order
         i_order = {'community': base_order}
-        comments = {}
+        comments = base_comments
         for comp in comp_lib:
             module = self.import_component(comp_lib[comp])
             i_order[comp] = module.config.order
@@ -535,7 +535,7 @@ class Preprocessor (object):
         ## community is parent
         if community in data.index: 
             intertie = [community] +\
-                list(data.ix[community].drop('Plant Intertied'))
+                list(set(data.ix[community].drop('Plant Intertied')))
             intertie = [c for c in intertie  if c != "''"]
         ## community is child
         else:
@@ -543,7 +543,7 @@ class Preprocessor (object):
             parent = children.index[0]
             children = children.drop('Plant Intertied', axis = 1)
             children = list(children.values.flatten())
-            children = [ community ] + [ c for c in children if c != community]
+            children = [ community ] + list(set([ c for c in children if c != community]))
             intertie = [ parent ] + [c for c in children  if c != "''"]
         return intertie
             
@@ -796,7 +796,7 @@ class Preprocessor (object):
         #~ print len(data)
         ## get last year with full data
         last_year = data["year"].max()
-        while len(data[data["year"] == last_year])%12 != 0:
+        while len(data[data["year"] == last_year].ix[coms[0]])%12 != 0:
             last_year -= 1
         
         ## get last years electric fuel cost
@@ -807,8 +807,8 @@ class Preprocessor (object):
         
         elec_fuel_cost = 0
         res_nonPCE_price = 0
-        total_sold = data[data["year"] == last_year][cols].sum(axis = 1).mean()
-        
+        total_sold = data[data["year"] == last_year][cols].sum(axis = 1).sum()
+        w_t = 0
         for com in  coms:
             
             com_elec_fuel_cost = (
@@ -817,17 +817,16 @@ class Preprocessor (object):
             ).mean()
             weight = \
                 data[data["year"] == last_year].\
-                ix[com][cols].sum(axis = 1).mean()/\
+                ix[com][cols].sum(axis = 1).sum()/\
                 total_sold
             elec_fuel_cost += (com_elec_fuel_cost * weight)
             
             res_pce = \
                 data[data["year"] == last_year].ix[com]\
                 ["residential_rate"].mean()
-        
+            #~ print weight
             res_nonPCE_price += (res_pce * weight)
-        
-        #~ print elec_fuel_cost
+            w_t+=weight
         
         if np.isnan(elec_fuel_cost):
             elec_fuel_cost = 0.0
@@ -1028,13 +1027,15 @@ class Preprocessor (object):
             #~ print rate_data
             for com in  coms:
                 #~ print rate_data[
-                weight = rate_data[rate_data['community'] == com][sales_cols].sum().sum()/total_sold
+                weight = \
+                    rate_data[rate_data['community'] == com][sales_cols]\
+                .sum().sum()/total_sold
                 
                 res_pce = \
                     rate_data[rate_data['community'] == com]\
                     ["residential_rate"].mean()
                 res_rate += (res_pce * weight)
-                
+            #~ print 'cons', year, res_rate 
             years_data['residential rate'] = res_rate
                 
             years_data["diesel price"] = data.ix[year]["fuel_price"].mean()
@@ -2028,7 +2029,7 @@ class Preprocessor (object):
         
         
         data = merge_configs(electric_prices, fuel_prices)
-        data['community']['electric non-fuel prices'] = electric_non_fuel_prices
+        data['community']['electric prices'] = electric_non_fuel_prices
         return data
         
     def load_renewable_capacities (self, **kwargs):
