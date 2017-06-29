@@ -27,7 +27,7 @@ class AaemCommand(pycommand.CommandBase):
         '  list         List communities in a model run\n'
         '  compare      compare the results of 2 model runs\n'
         '  refresh      refresh the data in the model\n'
-        '  summaries         create web summaries\n'
+        '  summaries    create web summaries\n'
         '  get-data     create data needed for the model\n'
     )
 
@@ -42,7 +42,7 @@ class AaemCommand(pycommand.CommandBase):
         'summaries': HtmlCommand,
         'get-data': GetDataCommand,
         }
-        
+
     optionList = (
             ('warn', ('w', False, "show all warnings")),
             ('time',('t', False,
@@ -52,18 +52,18 @@ class AaemCommand(pycommand.CommandBase):
     )
 
     def run(self):
-        # ignore warings in cli
+        # ignore warnings in cli
         if not self.flags.warn:
             warnings.filterwarnings("ignore")
-            
+
         try:
             cmd = super(AaemCommand, self).run()
         except pycommand.CommandExit as e:
             return e.err
-        
-        
+
+
         #~ cmd.registerParentFlag('name', SetupCommand.flags.name)
-        
+
         if cmd.error:
             print('aaem {cmd}: {error}'
                   .format(cmd=self.args[0], error=cmd.error))

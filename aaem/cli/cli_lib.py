@@ -45,8 +45,8 @@ def compare_indepth (results1, results2, coms):
         print ""
         print "Results 2: " + com2
         print ""
-        # a ^ b set semmetric difference a not in b union b not in a
-        # a - b set diffrence. a not in b 
+        # a ^ b set symmetric difference a not in b union b not in a
+        # a - b set difference. a not in b 
         print "Test 1: testing for different files"
         print ""
         
@@ -136,14 +136,14 @@ def compare_high_level (results1, results2):
     files2 = set([f for f in list_files(results2) \
                 if os.path.isfile(os.path.join(results2,f))])
     
-    print "compating all communities (log files)"
+    print "comparing all communities (log files)"
     
     print "Results 1: " + results1
     print ""
     print "Results 2: " + results2
     print ""
-    # a ^ b set semmetric difference a not in b union b not in a
-    # a - b set diffrence. a not in b 
+    # a ^ b set symmetric difference a not in b union b not in a
+    # a - b set difference. a not in b 
     print "Test 1: testing for different files"
     print ""
     
@@ -199,7 +199,7 @@ def compare_high_level (results1, results2):
                      
                     #~ print concat([f1.ix[c],f2.ix[c]],axis=1).T[k]
                 #~ else:
-                    #~ print "all differents"
+                    #~ print "all differences"
             except ValueError:
                 print "\t\tdifferences found in " + c
              
@@ -209,7 +209,7 @@ def get_regional_coms (region, base):
     
     input:
         region: a region <str>
-        com_list: Pathe to the model version directory being run
+        com_list: Path to the model version directory being run
         
     output:
         return a sorted list of projects and communities <list>
@@ -255,11 +255,11 @@ def get_config_coms (base):
     
 def print_error_message (msg, use = None):
     """
-    print an errom message to the console
+    print an error message to the console
     
     input:
         msg: the message <string>
-        use: (optional) the useage string for the command <string>
+        use: (optional) the usage string for the command <string>
         
     output:
         none

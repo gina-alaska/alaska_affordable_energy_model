@@ -1,11 +1,11 @@
 """
-run_command.py
+copy_command.py
 
-    A commad for the cli to copy a model run
+    A command for the cli to copy a model run
 """
 import pycommand
 import shutil
-import os.path 
+import os.path
 
 class CopyCommand(pycommand.CommandBase):
     """
@@ -13,17 +13,17 @@ class CopyCommand(pycommand.CommandBase):
     """
     usagestr = 'usage: copy [options] source destination'
     description = 'set up a new model run based off an old one'
-    
+
     optionList = (
-            ('force',('f', False, "force overwrite of existing directorys")),
-                
+            ('force',('f', False, "force overwrite of existing directories")),
+
                  )
     description = ('Set up a new model run based off an old one\n\n'
                    'options: \n'
                    "  " + str([o[0] + ': ' + o[1][2] + '. Use: --' +\
                    o[0] + ' (-'+o[1][0]+') ' +  (o[1][1] if o[1][1] else "")  +\
                    '' for o in optionList]).replace('[','').\
-                   replace(']','').replace(',','\n ') 
+                   replace(']','').replace(',','\n ')
             )
 
     def run(self):
@@ -36,7 +36,7 @@ class CopyCommand(pycommand.CommandBase):
             msg =  "COPY ERROR: source must exist"
             cli_lib.print_error_message(msg, CopyCommand.usagestr)
             return 0
-    
+
         if self.args:
             try:
                 dest = os.path.abspath(self.args[1])
@@ -44,23 +44,23 @@ class CopyCommand(pycommand.CommandBase):
                 msg = "COPY ERROR: destination needed"
                 cli_lib.print_error_message(msg, CopyCommand.usagestr)
                 return 0
-                
+
         force = True
         if self.flags.force is None:
             force = False
-        
+
         if os.path.exists(dest) and not force:
             msg = "COPY ERROR: " + dest + \
                             " exists. Use force flag (-f) to overwrite"
             cli_lib.print_error_message(msg, CopyCommand.usagestr)
             return
-        
+
         try:
             shutil.rmtree(dest)
         except OSError:
             pass
-            
+
         print "Copying ..."
-        
+
         for sd in ['config', 'input_files']:
             shutil.copytree(os.path.join(source, sd), os.path.join(dest, sd))

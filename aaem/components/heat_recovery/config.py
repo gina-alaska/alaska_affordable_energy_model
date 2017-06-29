@@ -1,10 +1,10 @@
 """
-Heat Recovery Configuration 
+Heat Recovery Configuration
 ---------------------------
-    
-    Contains Heat Recovery configuration info for community data yaml file, and 
-     other set-up requirements
-    
+
+    Contains heat recovery configuration info for community data yaml file, and
+      other set-up requirements
+
 """
 from aaem.components import definitions
 
@@ -15,11 +15,9 @@ UNKNOWN = "UNKNOWN"
 
 order = [
     'enabled',
-    'lifetime', # number years <int>
-    'start year', # start year <int>
-    
+    'lifetime',
+    'start year',
     'est. current annual heating fuel gallons displaced',
-    
     'estimate pipe distance',
     'estimate pipe cost/ft',
     'estimate buildings to heat',
@@ -27,7 +25,6 @@ order = [
     'percent heat recovered',
     'estimate cost/building',
     'o&m per year',
-    
     'name',
     'phase',
     'project type',
@@ -45,11 +42,9 @@ order = [
 structure = {
     'Heat Recovery' : {
         'enabled': bool,
-        'lifetime': int, 
-        'start year': int, 
-        
+        'lifetime': int,
+        'start year': int,
         'est. current annual heating fuel gallons displaced': [float, str],
-        
         'estimate pipe distance': float,
         'estimate pipe cost/ft': float,
         'estimate buildings to heat': int,
@@ -57,9 +52,7 @@ structure = {
         'percent heat recovered': float,
         'estimate cost/building': float,
         'o&m per year': float,
-        
         'name': str,
-      
         'phase': str,
         'project type': str,
         'capital costs': [float, str],
@@ -70,9 +63,8 @@ structure = {
         'proposed gallons diesel offset': [float, str],
         'link': str,
         'notes': str,
-        
         'identified as priority': str
-        
+
     }
 }
 
@@ -80,33 +72,28 @@ comments = {
     'enabled': definitions.ENABLED,
     'lifetime': definitions.LIFETIME,
     'start year': definitions.START_YEAR_WITH_TYPE,
-    
     'est. current annual heating fuel gallons displaced': '[float, str]',
-    
-    'estimate pipe distance': 
-        '[float] esitmated pipe distince in feet if "total feet piping needed" is unknown [ft]',
+    'estimate pipe distance':
+        '[float] estimated pipe distance in feet if "total feet piping needed" is unknown [ft]',
     'estimate pipe cost/ft': '[float] estimated cost per foot of piping needed [$/ft]',
-    'estimate buildings to heat': '[int] estimated number of builings if "number buildings" is unknown',
+    'estimate buildings to heat': '[int] estimated number of buildings if "number buildings" is unknown',
     'heating conversion efficiency': '[float] efficiency of heat recovery',
-    'percent heat recovered': '[float] percent of heat recoverable',
-    'estimate cost/building': '[float] estimate cost building [$/building]',
-    'o&m per year': '[float] operation and maintence cost per year [$/year]' ,
-    
-    'name': '[str] name of project',
+    'percent heat recovered': '[float] percent of heat recoverable [%]',
+    'estimate cost/building': '[float] estimate cost per building [$/building]',
+    'o&m per year': '[float] operation and maintenance cost per year [$/year]' ,
+    'name': definitions.NAME,
     'buildings': '[list] list of buildings',
-    'phase': '[str]',
+    'phase': definitions.PHASE_WITH_TYPE,
     'project type': '[str] project type: New/Repair/Extension',
-    'capital costs': '[float] captial costs for project [$]',
+    'capital costs': '[float] capital costs for project [$]',
     'number buildings': '[float] known number of buildings',
-    'total feet piping needed': '[float] distance of feet required [ft]',
+    'total feet piping needed': '[float] total feet of piping required [ft]',
     'proposed maximum btu/hr': '[float] proposed maximum output of boiler [btu/hr]',
     'proposed gallons diesel offset': '[float] proposed gallons of diesel to offset [gallons]',
     'link': '[str]',
-    'notes': '[str]',
-    'identified as priority': '[str] is projcet identified as priority (yes/no)',
+    'notes': definitions.NOTES,
+    'identified as priority': '[str] is project identified as priority (yes/no)',
 }
-
-
 
 ## list of prerequisites for module
 prereq_comps = []

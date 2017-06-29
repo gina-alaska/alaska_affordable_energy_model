@@ -1,7 +1,7 @@
 """
 setup_command.py
 
-    A commad for the cli to setup the model
+    A command for the cli to setup the model
 """
 import pycommand
 import os.path

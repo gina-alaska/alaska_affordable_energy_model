@@ -1,10 +1,10 @@
 """
-run_command.py
+get_data_command.py
 
-    A command for the cli to run the model
+    A command for the cli to pull in data from the Alaska Energy Data Gateway.
 """
 import pycommand
-#~ from default_cases import __DEV_COMS_RUN__ as __DEV_COMS__ 
+#~ from default_cases import __DEV_COMS_RUN__ as __DEV_COMS__
 import os
 import shutil
 #~ import sys
@@ -27,9 +27,9 @@ class GetDataCommand(pycommand.CommandBase):
                    "  " + str([o[0] + ': ' + o[1][2] + '. Use: --' +\
                    o[0] + ' (-'+o[1][0]+') ' +  (o[1][1] if o[1][1] else "")  +\
                    '' for o in optionList]).replace('[','').\
-                   replace(']','').replace(',','\n') 
+                   replace(']','').replace(',','\n')
                 )
-                
+
     def run(self):
         """
         run the command
@@ -40,27 +40,27 @@ class GetDataCommand(pycommand.CommandBase):
                     " path to output")
             cli_lib.print_error_message(msg, GetDataCommand.usagestr)
             return 0
-            
+
         if self.args and os.path.exists(self.args[0]):
             repo = os.path.abspath(self.args[0])
             print repo
         else:
             msg = "GET-DATA ERROR: path to the repo must exist"
             cli_lib.print_error_message(msg, GetDataCommand.usagestr)
-            return 0 
-        
-        
+            return 0
+
+
         out = os.path.abspath(self.args[1])
         #~ else:
             #~ msg = "GET-DATA ERROR: needs an output directory"
             #~ cli_lib.print_error_message(msg, GetDataCommand.usagestr)
-            #~ return 0    
+            #~ return 0
         print out
-        
+
         force = True
         if self.flags.force is None:
             force = False
-            
+
         if os.path.exists(out) and force:
             shutil.rmtree(out)
         elif not os.path.exists(out):
@@ -69,26 +69,26 @@ class GetDataCommand(pycommand.CommandBase):
             msg =  "RUN ERROR: " + out + \
                             " exists. Use force flag (-f) to overwrite"
             cli_lib.print_error_message(msg, GetDataCommand.usagestr)
-            return 0 
-        
+            return 0
+
         os.makedirs(out)
-        
+
         with open(os.path.join(repo,'VERSION'),'r') as v:
             version = v.read().strip()
-        
+
         formats = ['csv', 'yaml']
         files = [f for f in os.listdir(repo) if f.split('.')[-1] in formats]
         metadata = {f: 'repo - '+ version for f in files}
         from pprint import pprint
         #~ pprint(metadata)
-        
-        
+
+
         for f in files:
             shutil.copy2(os.path.join(repo,f),out)
-        
+
         name = 'power-cost-equalization-pce-data.csv'
         data = get_api_data('pcedata')
-        
+
         order = [
             u'pce_id', u'community_names', u'year', u'month',
             u'residential_rate', u'pce_rate', u'effective_rate', u'fuel_price',
@@ -101,16 +101,13 @@ class GetDataCommand(pycommand.CommandBase):
             u'government_kwh_sold', u'unbilled_kwh',
             ]
         data[order].to_csv(os.path.join(out,name),index = False)
-        
-        metadata[name] = 'api - ' + str(datetime.now()) 
-        
-        
+
+        metadata[name] = 'api - ' + str(datetime.now())
+
+
         with open(os.path.join(out, '__metadata.yaml'),'w') as meta:
             meta.write(yaml.dump(metadata, default_flow_style=False))
-        
-        
+
+
         with open(os.path.join(out,'VERSION'),'w') as v:
             v.write('generated from command')
-        
-       
-        
