@@ -807,12 +807,7 @@ class Preprocessor (object):
         res_nonPCE_price = 0
         total_sold = data[data["year"] == last_year][cols].sum(axis = 1).mean()
         
-        #~ print (data[data["year"] == last_year]['fuel_cost']/\
-                #~ data[data["year"] == last_year][cols].sum(axis = 1)).mean()
-        
         for com in  coms:
-            #~ print data[data["year"] == last_year].ix[com]['fuel_cost']
-            #~ print data[data["year"] == last_year].ix[com][cols].sum(axis = 1)
             
             com_elec_fuel_cost = (
                 data[data["year"] == last_year].ix[com]['fuel_cost'].fillna(0)/\
@@ -927,7 +922,7 @@ class Preprocessor (object):
             "commercial_kwh_sold", "community_kwh_sold", "government_kwh_sold",
             "unbilled_kwh", "residential_rate", "fuel_price"
         ]]
-        
+        coms = list(set(data.index))
         ## check purchased power
         purchased_power_lib = self.load_purchased_power_lib()
         if len (purchased_power_lib) == 0 :
@@ -1003,7 +998,9 @@ class Preprocessor (object):
                 )
         #~ print purchase_type, other_type_1, other_type_2 
         ## reindex by year
+        data['community'] = data.index
         data = data.set_index('year')
+    
         data_by_year = []
         ## merge each year 
         for year in data.index.unique():
@@ -1017,8 +1014,27 @@ class Preprocessor (object):
             years_data['year'] = year
             years_data = years_data.fillna(0)
             
-            years_data['residential rate'] = \
-                data.ix[year]['residential_rate'].mean()
+            
+            res_rate = 0
+            sales_cols = [
+                "residential_kwh_sold", "commercial_kwh_sold", 
+                "community_kwh_sold", "government_kwh_sold", "unbilled_kwh"
+            ]
+            total_sold = years_data[sales_cols].sum()
+        
+            rate_data = data.ix[year]
+            #~ print rate_data
+            for com in  coms:
+                #~ print rate_data[
+                weight = rate_data[rate_data['community'] == com][sales_cols].sum().sum()/total_sold
+                
+                res_pce = \
+                    rate_data[rate_data['community'] == com]\
+                    ["residential_rate"].mean()
+                res_rate += (res_pce * weight)
+                
+            years_data['residential rate'] = res_rate
+                
             years_data["diesel price"] = data.ix[year]["fuel_price"].mean()
                 
             years_data["kwh purchased"] = years_data["kwh_purchased"]
