@@ -55,7 +55,7 @@ def communities_summary (coms, res_dir):
             
             ashp = coms[c][COMPONENT_NAME]
             
-            kw_exess = ashp.monthly_value_table['kWh consumed'].max()/\
+            kw_excess = ashp.monthly_value_table['kWh consumed'].max()/\
                                 (24 * 31)
             try:
                 peak_monthly_btu_hr_hh = ashp.peak_monthly_btu_hr_hh
@@ -99,7 +99,7 @@ def communities_summary (coms, res_dir):
                  peak_monthly_btu_hr_hh,
                  price,
                  ashp.electric_consumption,
-                 kw_exess,
+                 kw_excess,
                  ashp.heating_oil_saved,
                  ashp.electric_heat_energy_reduction,
                  diesel_price,

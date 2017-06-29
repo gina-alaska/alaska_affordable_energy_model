@@ -153,7 +153,7 @@ class WindPower(AnnualSavings):
         # else skip
 
             self.calc_transmission_losses()
-            self.calc_exess_energy()
+            self.calc_excess_energy()
             self.calc_net_generation_wind()
             self.calc_electric_diesel_reduction()
             self.calc_diesel_equiv_captured()
@@ -279,7 +279,7 @@ class WindPower(AnnualSavings):
             (self.cd['line losses'] / 100.0)
         #~ print 'self.transmission_losses',self.transmission_losses
 
-    def calc_exess_energy (self):
+    def calc_excess_energy (self):
         """Calculate the excess energy.
 
         Attributes
@@ -288,10 +288,10 @@ class WindPower(AnnualSavings):
             excess energy(kWh/year)
         """
         #~ print sorted(self.cd.keys())
-        self.exess_energy = \
+        self.excess_energy = \
             (self.generation_wind_proposed - self.transmission_losses) * \
             (self.cd['percent excess energy'] / 100.0)
-        #~ print 'self.exess_energy',self.exess_energy
+        #~ print 'self.excess_energy',self.excess_energy
 
     def calc_net_generation_wind (self):
         """Calculate the proposed net generation.
@@ -303,7 +303,7 @@ class WindPower(AnnualSavings):
         """
         self.net_generation_wind = self.generation_wind_proposed  - \
                                     self.transmission_losses  -\
-                                    self.exess_energy
+                                    self.excess_energy
         #~ print 'self.net_generation_wind',self.net_generation_wind
 
     def calc_electric_diesel_reduction (self):
@@ -331,23 +331,23 @@ class WindPower(AnnualSavings):
             Gal/year
         """
         if self.generation_wind_proposed == 0:
-            exess_percent = 0
+            excess_percent = 0
         else:
-            exess_percent = self.exess_energy / self.generation_wind_proposed
-        exess_captured_percent = exess_percent * \
+            excess_percent = self.excess_energy / self.generation_wind_proposed
+        excess_captured_percent = excess_percent * \
             (self.cd['percent excess energy capturable'] / 100.0)
         if self.comp_specs['secondary load']:
-            net_exess_energy = exess_captured_percent * \
+            net_excess_energy = excess_captured_percent * \
                                 self.generation_wind_proposed
         else:
-            net_exess_energy = 0
+            net_excess_energy = 0
 
         #~ conversion = 0.99/0.138/0.8/293
         conversion = self.cd['efficiency electric boiler']/ \
                      (1/constants.mmbtu_to_gal_HF)/ \
                      self.cd['efficiency heating oil boiler']/\
                      (constants.mmbtu_to_kWh)
-        self.diesel_equiv_captured = net_exess_energy * conversion
+        self.diesel_equiv_captured = net_excess_energy * conversion
 
         #~ print 'self.diesel_equiv_captured ',self.diesel_equiv_captured
 

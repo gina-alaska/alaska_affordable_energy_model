@@ -56,7 +56,7 @@ def communities_summary (coms, res_dir):
             ashp = coms[c][COMPONENT_NAME]
             
             
-            kw_exess = ashp.monthly_value_table['kWh consumed'].max()/\
+            kw_excess = ashp.monthly_value_table['kWh consumed'].max()/\
                                 (24 * 31)
             try:
                 tcr = ashp.total_cap_required
@@ -99,7 +99,7 @@ def communities_summary (coms, res_dir):
                  tcr,
                  price,
                  ashp.electric_consumption,
-                 kw_exess,
+                 kw_excess,
                  ashp.heating_oil_saved,
                  diesel_price,
                  hf_price,
