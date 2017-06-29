@@ -610,6 +610,8 @@ class Preprocessor (object):
                 'assumed percent non-residential sqft heat displacement': 30,
                 'heating oil efficiency': 0.75, # % as decimal <float>
                 
+                'cpi multipliers': self.load_cpi(),
+                
             },
         }
         
@@ -2122,6 +2124,17 @@ class Preprocessor (object):
         
         return data[r]
         
+    def load_cpi (self, **kwargs):
+        """Load cip
         
+        Retruns 
+        -------
+        list of floats
+            list cpi multiplies per year where the first year is the start 
+        year of a project
+        """
+        datafile = os.path.join(self.data_dir, "cpi.csv")
+        data = read_csv(datafile, comment = '#', index_col = 0)
         
+        return data.values.T[0].tolist()
         

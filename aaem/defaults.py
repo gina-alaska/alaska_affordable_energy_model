@@ -76,7 +76,9 @@ base_order = [
     'diesel generator sizing',
     
     'assumed percent non-residential sqft heat displacement',
-    'heating oil efficiency'
+    'heating oil efficiency',
+    
+    'cpi multipliers'
 ]
 
 base_structure = {
@@ -148,7 +150,9 @@ base_structure = {
         'diesel generator sizing': str,
         
         'assumed percent non-residential sqft heat displacement': float,
-        'heating oil efficiency': float
+        'heating oil efficiency': float,
+        
+        'cpi multipliers': [list],
     }
 
 }
@@ -244,7 +248,9 @@ base_comments = {
         
         'assumed percent non-residential sqft heat displacement':
             '[float] percent of square feet heated assumed to be of set by new heating fuel source',
-        'heating oil efficiency': '[float] heating oil efficiency'
+        'heating oil efficiency': '[float] heating oil efficiency',
+            
+        'cpi multipliers': '[list] cpi multipliers',
     }
 
 }
