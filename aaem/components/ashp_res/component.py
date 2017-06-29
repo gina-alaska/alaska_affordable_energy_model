@@ -118,12 +118,12 @@ class ASHPResidential (ashp_base.ASHPBase):
         res = comps['Residential Energy Efficiency']
         self.pre_ashp_heating_oil_used =  res.init_HF
         self.pre_ashp_heating_electricty_used = res.init_kWh
-        self.num_houses = res.opportunity_HH
-        self.percent_heated_oil = res.comp_specs['data']["Fuel Oil"]
-        self.percent_heated_elec = res.comp_specs['data']["Electricity"]
+        self.num_houses = res.init_HH
+        self.percent_heated_oil = res.comp_specs['data']["Fuel Oil"]/100.0
+        self.percent_heated_elec = res.comp_specs['data']["Electricity"]/100.0
         
-        self.baseline_consumption = res.baseline_total_energy_consumption
-        self.kWh_per_hh = res.avg_kWh_consumption_per_HH
+        #~ self.baseline_consumption = res.baseline_total_energy_consumption
+        #~ self.kWh_per_hh = res.avg_kWh_consumption_per_HH
         #~ print self.pre_ashp_heating_oil_used
         #~ print self.num_houses
 
@@ -259,24 +259,12 @@ class ASHPResidential (ashp_base.ASHPBase):
                         / constants.mmbtu_to_kWh *1e6/ constants.hours_per_year
 
         average_btu_per_hr =  heating_oil + electric_heat
-        #~ print  ((self.pre_ashp_heating_oil_used)* self.cd["heating oil efficiency"]) / constants.mmbtu_to_gal_HF + (self.pre_ashp_heating_electricty_used)/constants.mmbtu_to_kWh
-        #~ self.pre_ashp_heating_oil_used - self.pre_ashp_heating_electricty_used
-        #~ average_btu_per_hr = ((self.pre_ashp_heating_oil_used/self.num_houses/self.percent_heated_oil)*\
-            #~ self.cd["heating oil efficiency"]) / constants.mmbtu_to_gal_HF *1e6/ \
-                        #~ constants.hours_per_year
-        #~ gallons = ((self.baseline_consumption - (self.kWh_per_hh/constants.mmbtu_to_kWh*self.num_houses))/self.num_houses) * constants.mmbtu_to_gal_HF
-        #~ average_btu_per_hr = (gallons * self.cd["heating oil efficiency"])/ \
-                        #~ constants.mmbtu_to_gal_HF *1e6/ \
-                        #~ constants.hours_per_year
-        #~ average_btu_per_hr = (self.pre_ashp_heating_oil_used/self.num_houses)/\
-                        #~ constants.mmbtu_to_gal_HF *1e6/ \
-                        #~ constants.hours_per_year
-        print average_btu_per_hr
+
+        #~ print average_btu_per_hr
         peak_monthly_btu_hr_hh = \
             float(float(self.comp_specs['data'].ix['Peak Month % of total']) *\
-            average_btu_per_hr * 12 )#/ \
-            #~ (self.percent_heated_oil+self.percent_heated_elec))
-        print peak_monthly_btu_hr_hh 
+            average_btu_per_hr * 12 / (self.percent_heated_oil+self.percent_heated_elec))
+        #~ print peak_monthly_btu_hr_hh 
         self.peak_monthly_btu_hr_hh = peak_monthly_btu_hr_hh
 
 

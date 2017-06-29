@@ -282,7 +282,7 @@ class ResidentialBuildings(AnnualSavings):
             rd["BEES Total Consumption (MMBtu)"] + \
             rd["Pre-Retrofit Avg Area (SF)"] * \
             rd["Pre-Retrofit Avg EUI (MMBtu/sf)"] * self.opportunity_HH
-        self.baseline_total_energy_consumption = total
+        #~ self.baseline_total_energy_consumption = total
         HH = self.init_HH
 
         percent_accounted = 0
