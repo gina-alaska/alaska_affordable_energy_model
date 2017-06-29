@@ -1101,8 +1101,12 @@ class Preprocessor (object):
             #~ print years_data['generation diesel'], years_data['net generation']
             # other values
             years_data['fuel used'] = years_data['fuel_used_gal']
-            years_data['line loss'] = \
-                1.0 - years_data['consumption']/years_data['net generation']
+           
+            try:
+                years_data['line loss'] = \
+                    1.0 - years_data['consumption']/years_data['net generation']
+            except ZeroDivisionError:
+                years_data['line loss'] = np.nan
             
             ### diesel efficiency
             try:
