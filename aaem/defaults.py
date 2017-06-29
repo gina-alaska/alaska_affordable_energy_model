@@ -205,7 +205,7 @@ base_comments = {
         'natural gas price': 
             '[float] natural gas price for the community [$/mcf]',
         
-        'untility info': '[DataFrame] historic info on communities utility',
+        'utility info': '[DataFrame] historic info on communities utility',
         'percent diesel generation': 
             '[float] percent generation from diesel in a community',
         'line losses': '[float] percent line loss from transmission',
@@ -251,6 +251,9 @@ base_comments = {
         'heating oil efficiency': '[float] heating oil efficiency',
             
         'cpi multipliers': '[list] cpi multipliers',
+        
+        'model heating fuel': '[bool] indicates that heating related portions of AAEM should be run', 
+        'model as intertie': '[bool] indicates that community should be run as the parent community of intertie'
     }
 
 }

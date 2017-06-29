@@ -9,6 +9,8 @@ import os.path
 import numpy as np
 from importlib import import_module
 
+from aaem.defaults import base_order
+
 
 from defaults import base_structure, base_comments
 from diagnostics import Diagnostics
@@ -326,7 +328,7 @@ class CommunityData (object):
         self.data[section][key] = data
         
     
-        
+ 
 
         
     def save (self, fname):
@@ -357,7 +359,22 @@ class CommunityData (object):
             #~ comments[comp] = cfg.yaml_comments
             
         #~ section_order = config.non_component_config_sections + comp_order
-        save_config(fname,copy,  {})
+
+        
+        s_order = ['community'] + comp_order
+        i_order = {'community': base_order}
+        comments = base_comments
+        for comp in comp_lib:
+            module = import_module('aaem.components.' + comp_lib[comp])
+            i_order[comp] = module.config.order
+            comments[comp] = module.config.comments
+        
+        save_config(fname,copy, 
+            comments = comments,
+            s_order = s_order,
+            i_orders = i_order,
+            header = 'confiuration used to generate these results'
+        )
         del copy
         #~ self.data = copy
         #~ return comment + text

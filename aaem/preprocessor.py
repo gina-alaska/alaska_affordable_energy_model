@@ -22,7 +22,7 @@ from aaem.components import comp_lib, comp_order
 import aaem.yaml_dataframe as yd
 import aaem.constants as constants
 from aaem.config_IO import save_config
-from aaem.defaults import base_order
+from aaem.defaults import base_order, base_comments
 
 GENERATION_AVG = .03
 
@@ -381,7 +381,7 @@ class Preprocessor (object):
             
         s_order = ['community'] + comp_order
         i_order = {'community': base_order}
-        comments = {}
+        comments = base_comments
         for comp in comp_lib:
             module = self.import_component(comp_lib[comp])
             i_order[comp] = module.config.order
