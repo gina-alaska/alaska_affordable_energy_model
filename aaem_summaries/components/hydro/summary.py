@@ -79,11 +79,8 @@ def generate_web_summary (web_object, community):
     fix_index = base_cost[base_cost.isnull()].index
     base_cost.ix[fix_index] = generation[fix_index]/eff * diesel_price.iloc[-1]
     #~ print base_cost
-
     table1 = wl.make_costs_table(community, COMPONENT_NAME, projects, base_cost,
                               web_object.directory)
-
-
 
     ## get generation fuel used (modeled)
     base_con = generation/eff
