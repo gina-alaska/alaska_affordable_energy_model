@@ -1829,7 +1829,7 @@ class Preprocessor (object):
         """
         data = self.load_diesel_powerhouse_data()
         
-        hr_operational = data['Waste Heat Recovery Opperational'].values[0]
+        hr_operational = data['Waste Heat Recovery Operational'].values[0]
         hr_operational = True if hr_operational.lower() == 'yes' else False
         switchgear_status = data['Switchgear Suitable'].values[0]
         switchgear_status = True if  switchgear_status.lower() == 'yes' \

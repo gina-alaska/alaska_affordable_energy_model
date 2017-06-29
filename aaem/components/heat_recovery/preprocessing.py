@@ -21,7 +21,7 @@ def preprocess (preprocessor, **kwargs):
     
     Parameters
     ----------
-    preprocessor: preprocessor.Proprocessor
+    preprocessor: preprocessor.Preprocessor
         a preprocessor object
         
     Returns
@@ -177,7 +177,7 @@ def preprocess (preprocessor, **kwargs):
         #~ expected_years_to_operation = UNKNOWN
         if phase == "0":
             preprocessor.diagnostics.add_note(
-                'Heat Recovert', 
+                'Heat Recovery', 
                 'phase "0" corrected to Reconnaissance'
             )
             phase = "Reconnaissance"

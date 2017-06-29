@@ -1,7 +1,7 @@
 """
 help_command.py
 
-    A commad for the cli to provide help on the cli's commands
+    A command for the cli to provide help on the cli's commands
 """
 import pycommand
 import aaem.cli
@@ -23,8 +23,8 @@ class HelpCommand(pycommand.CommandBase):
             print aaem.cli.AaemCommand.commands[self.args[0]].description
             return 0
         elif self.args:
-            msg = ("command: [" + self.args[0] + "] not recongnized.\n"
-            "  avaliable commands: " + str(aaem.cli.AaemCommand.commands.keys()) 
+            msg = ("command: [" + self.args[0] + "] not recognized.\n"
+            "  available commands: " + str(aaem.cli.AaemCommand.commands.keys()) 
                     )
             cli_lib.print_error_message (msg)
         else:

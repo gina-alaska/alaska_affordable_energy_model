@@ -734,7 +734,7 @@
 
 ### changed
 - disel generato efficiency is now validated in community data
-- caclulation of propsed offset for wind where hydro is present
+- caclulation of proposed offset for wind where hydro is present
 - default starting date for RE projects is 2020
 
 ### fixed
