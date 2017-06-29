@@ -100,7 +100,7 @@ class Forecast (object):
         #~ pre:
             #~ 'fc_electricity_used' should contain the kWh used for each key type
         #~ post:
-            #~ self.electricty_totals is a array of yearly values of total kWh used
+            #~ self.electricity_totals is a array of yearly values of total kWh used
         #~ """
         #~ kWh = self.fc_specs["electricity"]
         #~ print kWh

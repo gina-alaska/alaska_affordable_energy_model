@@ -17,16 +17,23 @@ from config import COMPONENT_NAME, UNKNOWN
 import aaem.components.ashp_base as ashp_base
 
 class ASHPResidential (ashp_base.ASHPBase):
-    """Non-Residential ASHP of the Alaska Affordable Eenergy Model
+    """Residential ASHP component of the Alaska Affordable Energy Model:
+    This module estimate the potential reduction in heating fuel use from
+     installation of Air Source Heat Pumps in residential buildings.
+     Reduction in fuel used is based on coefficient of power in hypothetical
+     ASHP system and heat energy produced per year. Savings result from
+     differential heating fuel costs and ASHP operation costs. The costs
+     of the ASHP infrastructure projects are based on the number of homes
+     in the community and the cost of AHSP systems themselves.
 
     Parameters
     ----------
-    commnity_data : CommunityData
-        CommintyData Object for a community
+    community_data : CommunityData
+        CommunityData Object for a community
     forecast : Forecast
-        forcast for a community
+        forecast for a community
     diagnostics : diagnostics, optional
-        diagnostics for tracking error/warining messeges
+        diagnostics for tracking error/warning messages
     prerequisites : dictionary of components, optional
         'Non-residential Energy Efficiency' component is a required prerequisite
         for this component
@@ -34,10 +41,10 @@ class ASHPResidential (ashp_base.ASHPBase):
     Attributes
     ----------
     diagnostics : diagnostics
-        for tracking error/warining messeges
+        for tracking error/warning messages
         initial value: diag or new diagnostics object
     forecast : forecast
-        community forcast for estimating future values
+        community forecast for estimating future values
         initial value: forecast
     cd : dictionary
         general data for a community.
@@ -48,9 +55,9 @@ class ASHPResidential (ashp_base.ASHPBase):
 
     See also
     --------
-    aaem.community_data : 
-        community data module, see information on CommintyData Object
-    aaem.forecast : 
+    aaem.community_data :
+        community data module, see information on CommunityData Object
+    aaem.forecast :
         forecast module, see information on Forecast Object
     aaem.diagnostics :
         diagnostics module, see information on diagnostics Object
@@ -65,12 +72,12 @@ class ASHPResidential (ashp_base.ASHPBase):
 
         Parameters
         ----------
-        commnity_data : CommunityData
-            CommintyData Object for a community
+        community_data : CommunityData
+            CommunityData Object for a community
         forecast : Forecast
-            forcast for a community
+            forecast for a community
         diagnostics : diagnostics, optional
-            diagnostics for tracking error/warining messeges
+            diagnostics for tracking error/warning messages
         prerequisites : dictionary of components, optional
             prerequisite component data,
             'Non-residential Energy Efficiency' component
@@ -82,7 +89,7 @@ class ASHPResidential (ashp_base.ASHPBase):
 
         self.reason = "OK"
 
-        ### ADD other intiatzation stuff
+        ### ADD other initialization stuff
         self.ashp_sector_system = "residential"
 
     def load_prerequisite_variables (self, comps):
@@ -98,7 +105,7 @@ class ASHPResidential (ashp_base.ASHPBase):
         Attributes
         ----------
         res_sqft : float
-            Total square footage that may be refit of residental buildings,
+            Total square footage that may be refit of residential buildings,
             Will be set to 0 if a value cannot be found in
             'Residential Energy Efficiency' component
         avg_gal_per_sqft : float
@@ -117,11 +124,11 @@ class ASHPResidential (ashp_base.ASHPBase):
             return
         res = comps['Residential Energy Efficiency']
         self.pre_ashp_heating_oil_used =  res.init_HF
-        self.pre_ashp_heating_electricty_used = res.init_kWh
+        self.pre_ashp_heating_electricity_used = res.init_kWh
         self.num_houses = res.init_HH
         self.percent_heated_oil = res.comp_specs['data']["Fuel Oil"]/100.0
         self.percent_heated_elec = res.comp_specs['data']["Electricity"]/100.0
-        
+
         #~ self.baseline_consumption = res.baseline_total_energy_consumption
         #~ self.kWh_per_hh = res.avg_kWh_consumption_per_HH
         #~ print self.pre_ashp_heating_oil_used
@@ -130,14 +137,14 @@ class ASHPResidential (ashp_base.ASHPBase):
 
     def calc_heat_energy_produced_per_year (self):
         """Calculate the heat energy produced per year by ASHP system
-        (TODO: Double check defintion)
+        (TODO: Double check definition)
 
         Attributes
         ----------
         heat_displaced_sqft : float
             Building Square footage that will be heated by ASHP
         heat_energy_produced_per_year : float
-            Heat energe produced per year in BTU
+            Heat energy produced per year in BTU
         """
         self.heat_energy_produced_per_year = \
                         self.pre_ashp_heating_oil_used * \
@@ -155,7 +162,7 @@ class ASHPResidential (ashp_base.ASHPBase):
 
         """
         self.electric_heat_energy_reduction = \
-                        self.pre_ashp_heating_electricty_used/ self.average_cop
+                        self.pre_ashp_heating_electricity_used/ self.average_cop
 
     def calc_electric_heat_energy_savings (self):
         """calculate heat energy savings in $/year
@@ -181,7 +188,7 @@ class ASHPResidential (ashp_base.ASHPBase):
 
         Parameters
         ----------
-        scalers: dictionay of valid scalers, optional
+        scalers: dictionary of valid scalers, optional
             Scalers to adjust normal run variables.
             See note on accepted  scalers
 
@@ -207,7 +214,7 @@ class ASHPResidential (ashp_base.ASHPBase):
 
         if self.cd["model heating fuel"]:
             self.calc_heat_energy_produced_per_year()
-            self.calc_ashp_system_pramaters()
+            self.calc_ashp_system_parameters()
             self.calc_electric_heat_energy_reduction()
 
         if self.cd["model financial"]:
@@ -242,20 +249,20 @@ class ASHPResidential (ashp_base.ASHPBase):
             self.reason = "Financial modeling disabled for this community."
 
     def calc_capital_costs (self):
-        """Calculate or Load the project Captial Costs.
+        """Calculate or Load the project Capital Costs.
 
         Attributes
         ----------
         total_cap_required : float
             total ASHP capacity provided.
         capital_costs : float
-            caclulated or loaded captial costs for heat recovery
+            calculated or loaded capital costs for heat recovery
         """
         heating_oil = ((self.pre_ashp_heating_oil_used/self.num_houses)*\
                         self.cd["heating oil efficiency"]) / \
                         constants.mmbtu_to_gal_HF *1e6/ \
                         constants.hours_per_year
-        electric_heat = (self.pre_ashp_heating_electricty_used/self.num_houses)\
+        electric_heat = (self.pre_ashp_heating_electricity_used/self.num_houses)\
                         / constants.mmbtu_to_kWh *1e6/ constants.hours_per_year
 
         average_btu_per_hr =  heating_oil + electric_heat
@@ -264,7 +271,7 @@ class ASHPResidential (ashp_base.ASHPBase):
         peak_monthly_btu_hr_hh = \
             float(float(self.comp_specs['data'].ix['Peak Month % of total']) *\
             average_btu_per_hr * 12 / (self.percent_heated_oil+self.percent_heated_elec))
-        #~ print peak_monthly_btu_hr_hh 
+        #~ print peak_monthly_btu_hr_hh
         self.peak_monthly_btu_hr_hh = peak_monthly_btu_hr_hh
 
 
@@ -288,7 +295,7 @@ class ASHPResidential (ashp_base.ASHPBase):
         ratio = self.total_cap_required  / self.comp_specs["btu/hrs"]
         if ratio < 1:
             self.diagnostics.add_note(self.component_name,
-                "ratio of peak mothly btu/hr/hh to btu/hrs is 1 ")
+                "ratio of peak monthly btu/hr/hh to btu/hrs is 1 ")
             ratio = 1.0
 
         self.capital_costs = self.num_houses * \

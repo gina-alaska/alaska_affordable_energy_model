@@ -20,8 +20,8 @@ def component_summary (results, res_dir):
     
     Parameters
     ----------
-    results : dictionay
-        results from the model, dictionay with each community or project as key
+    results : dictionary
+        results from the model, dictionary with each community or project as key
         
     res_dir : path
         location to save file
@@ -35,8 +35,8 @@ def communities_summary (coms, res_dir):
     
     Parameters
     ----------
-    coms : dictionay
-        results from the model, dictionay with each community or project as key
+    coms : dictionary
+        results from the model, dictionary with each community or project as key
             
     res_dir : path
         location to save file
@@ -171,7 +171,7 @@ def communities_summary (coms, res_dir):
         '# '+ COMPONENT_NAME +' NPV Net benefit [$]: ' + definitions.NPV_NET_BENEFITS + '\n'
         '# '+ COMPONENT_NAME +' Internal Rate of Return: ' + definitions.IRR +'\n'
         '# '+ COMPONENT_NAME +' Benefit-cost ratio: ' + definitions.NPV_BC_RATIO +'\n'
-        '# Intertie: Interie community is part of \n'
+        '# Intertie: Intertie community is part of \n'
         '# notes: '+ definitions.NOTES +'\n'))
 
     
@@ -183,13 +183,13 @@ def create_regional_summary (results):
     
     Parameters
     ----------
-    results : dictionay
-        results from the model, dictionay with each community or project 
+    results : dictionary
+        results from the model, dictionary with each community or project 
         as key
             
     Returns
     -------
-        pandas DataFrame containg regional results
+        pandas DataFrame containing regional results
     
     """
     regions = {}
@@ -262,7 +262,7 @@ def save_regional_summary (summary, res_dir):
     
     Parameters
     ----------
-    summary : Dataframe
+    summary : DataFrame
         compiled regional results
     res_dir :  path
         location to save file

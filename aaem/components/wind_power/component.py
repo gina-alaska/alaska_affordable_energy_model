@@ -167,7 +167,7 @@ class WindPower(AnnualSavings):
 
                 # change these below
                 self.calc_capital_costs()
-                self.calc_maintainance_cost()
+                self.calc_maintenance_cost()
                 self.calc_annual_electric_savings()
                 self.calc_annual_heating_savings()
 
@@ -178,7 +178,7 @@ class WindPower(AnnualSavings):
                 self.calc_annual_net_benefit()
                 self.calc_npv(self.cd['discount rate'], self.cd["current year"])
                 #~ print self.benefit_cost_ratio
-                self.calc_levelized_costs(self.maintainance_cost)
+                self.calc_levelized_costs(self.maintenance_cost)
         else:
             #~ print "wind project not feasible"
             self.was_run = False
@@ -398,24 +398,24 @@ class WindPower(AnnualSavings):
         """
         return self.net_generation_wind
 
-    def calc_maintainance_cost (self):
+    def calc_maintenance_cost (self):
         """Calculate the maintenance costs.
 
         Attributes
         ----------
-        maintainance_costs : float
+        maintenance_costs : float
              total cost of improvements ($), calculated from transmission and
              generation costs
         """
 
         if str(self.comp_specs['operational costs']) \
                                                                 != 'UNKNOWN':
-            self.maintainance_cost = \
+            self.maintenance_cost = \
                 self.comp_specs['operational costs']
         else:
-            self.maintainance_cost = \
+            self.maintenance_cost = \
                 (self.comp_specs['percent o&m'] / 100.0) * self.capital_costs
-        #~ print 'self.maintainance_cost',self.maintainance_cost
+        #~ print 'self.maintenance_cost',self.maintenance_cost
 
 
 
@@ -504,7 +504,7 @@ class WindPower(AnnualSavings):
         self.base_generation_cost = self.electric_diesel_reduction * price
 
 
-        self.proposed_generation_cost = self.maintainance_cost
+        self.proposed_generation_cost = self.maintenance_cost
 
         self.annual_electric_savings = self.base_generation_cost - \
                             self.proposed_generation_cost

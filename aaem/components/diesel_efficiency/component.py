@@ -16,16 +16,20 @@ import aaem.constants as constants
 from config import COMPONENT_NAME, UNKNOWN
 
 class DieselEfficiency(AnnualSavings):
-    """Diesel Efficiency component of the Alaska Affordable Eenergy Model
+    """Diesel Efficiency component of the Alaska Affordable Energy Model:
+    This module estimates the potential reduction in diesel fuel use from
+    improvements to the efficiency of a community's diesel generation systems.
+    Financial savings are from an assumed decrease in diesel oil used in generation.
+    Costs of the improvements are based on the assumed capacity of the improved system.
 
     Parameters
     ----------
-    commnity_data : CommunityData
-        CommintyData Object for a community
+    community_data : CommunityData
+        CommunityData Object for a community
     forecast : Forecast
-        forcast for a community
+        forecast for a community
     diagnostics : diagnostics, optional
-        diagnostics for tracking error/warining messeges
+        diagnostics for tracking error/warning messages
     prerequisites : dictionary of components, optional
         prerequisite component data this component has no prerequisites
         leave empty
@@ -33,22 +37,22 @@ class DieselEfficiency(AnnualSavings):
     Attributes
     ----------
     diagnostics : diagnostics
-        for tracking error/warining messeges
+        for tracking error/warning messages
         initial value: diag or new diagnostics object
     forecast : forecast
-        community forcast for estimating future values
+        community forecast for estimating future values
         initial value: forecast
     cd : dictionary
         general data for a community.
         Initial value: 'community' section of community_data
     comp_specs : dictionary
         component specific data for a community.
-        Initial value: 'Disel Efficiency' section of community_data
+        Initial value: 'Diesel Efficiency' section of community_data
 
     See also
     --------
     aaem.community_data :
-        community data module, see information on CommintyData Object
+        community data module, see information on CommunityData Object
     aaem.forecast :
         forecast module, see information on Forecast Object
     aaem.diagnostics :
@@ -61,12 +65,12 @@ class DieselEfficiency(AnnualSavings):
 
         Parameters
         ----------
-        commnity_data : CommunityData
-            CommintyData Object for a community
+        community_data : CommunityData
+            CommunityData Object for a community
         forecast : Forecast
-            forcast for a community
+            forecast for a community
         diagnostics : diagnostics, optional
-            diagnostics for tracking error/warining messeges
+            diagnostics for tracking error/warning messages
         prerequisites : dictionary of components, optional
             prerequisite component data
 
@@ -98,7 +102,7 @@ class DieselEfficiency(AnnualSavings):
 
         Parameters
         ----------
-        scalers: dictionay of valid scalers, optional
+        scalers: dictionary of valid scalers, optional
             Scalers to adjust normal run variables.
             See note on accepted  scalers
 
@@ -170,7 +174,7 @@ class DieselEfficiency(AnnualSavings):
         generation: array
             array of diesel generation values per year (kWh/year)
         average_load: float
-            averge diesel generation load in first year of project (kW)
+            average diesel generation load in first year of project (kW)
 
         """
         self.generation = self.forecast.generation['generation diesel']\
@@ -187,7 +191,7 @@ class DieselEfficiency(AnnualSavings):
         Attributes
         ----------
         baseline_diesel_efficiency : float
-            the diesel generation efficiency before any imporvements
+            the diesel generation efficiency before any improvements
             are made (Gal/kWh) [
         baseline_generation_fuel_use : np.array
             fuel used per year before improvements (gal)
@@ -203,7 +207,7 @@ class DieselEfficiency(AnnualSavings):
         Attributes
         ----------
         proposed_diesel_efficiency : float
-            the diesel generation efficiency before any imporvements
+            the diesel generation efficiency before any improvements
             are made (Gal/kWh)
         proposed_generation_fuel_use : np.array
             fuel used per year after improvements (gal)

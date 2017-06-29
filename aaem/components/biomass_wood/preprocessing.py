@@ -19,7 +19,7 @@ def preprocess (preprocessor, **kwargs):
     
     Parameters
     ----------
-    preprocessor: preprocessor.Proprocessor
+    preprocessor: preprocessor.Preprocessor
         a preprocessor object
         
     Returns
