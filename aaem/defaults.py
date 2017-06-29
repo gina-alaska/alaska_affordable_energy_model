@@ -37,7 +37,7 @@ base_order = [
     
     'diesel prices',
     'heating fuel prices',
-    'electric non-fuel prices',
+    'electric prices',
     
     'residential non-PCE electric price',
     'electric non-fuel price',
@@ -111,7 +111,7 @@ base_structure = {
         
         'diesel prices': DataFrame,
         'heating fuel prices': DataFrame,
-        'electric non-fuel prices': DataFrame,
+        'electric prices': DataFrame,
         
         'residential non-PCE electric price': float,
         'electric non-fuel price': float,
@@ -195,7 +195,7 @@ base_comments = {
         
         'diesel prices': '[DataFrame] diesel price forecast',
         'heating fuel prices': '[DataFrame] known heating fuel prices',
-        'electric non-fuel prices': '[DataFrame] electric price forecast',
+        'electric prices': '[DataFrame] electric price forecast',
         
         'electric non-fuel price':
             '[float] non fuel electric price for the community [$/kWh]',

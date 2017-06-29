@@ -152,7 +152,7 @@ class CommunityData (object):
         convert = self.data['community']['diesel prices']
         convert.index = [int(y) for y in convert.index]
         convert.index.name = 'year'
-        convert = self.data['community']['electric non-fuel prices']
+        convert = self.data['community']['electric prices']
         convert.index = [int(y) for y in convert.index]
         convert.index.name = 'year'
         # modify diesel prices and electric non-fuel prices
@@ -194,7 +194,7 @@ class CommunityData (object):
             float(self.data['community']['diesel generation efficiency'])
         adder = percent_diesel * \
             self.data['community']['diesel prices'] / efficiency
-        self.data['community']['electric non-fuel prices'] = \
+        self.data['community']['electric prices'] = \
             float(self.data['community']['electric non-fuel price']) + adder
     
     def check_auto_disable_conditions  (self):

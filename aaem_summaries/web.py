@@ -746,7 +746,7 @@ class WebSummary(object):
         ## Electric price chart
         elec_price = \
             res['community data'].get_item('community',
-            'electric non-fuel prices')
+            'electric prices')
         elec_price['year'] = elec_price.index
         elec_price.columns = ['price','year']
 

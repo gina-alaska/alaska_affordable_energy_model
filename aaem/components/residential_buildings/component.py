@@ -87,7 +87,7 @@ class ResidentialBuildings(AnnualSavings):
 
         if self.cd["model electricity"]:
             self.elec_prices = community_data.get_item('community',
-                'electric non-fuel prices')
+                'electric prices')
         self.comp_specs = community_data.get_section(COMPONENT_NAME)
         self.component_name = COMPONENT_NAME
         self.forecast = forecast

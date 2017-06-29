@@ -208,7 +208,7 @@ class Preprocessor (object):
         self.data = merge_configs(self.data,
             self.load_measured_heating_fuel_prices())
             
-        ## caclulate 'electric non-fuel prices'
+        ## caclulate 'electric prices'
         if not source == 'none':
             efficiency = self.data['community']['diesel generation efficiency']
             #~ print efficiency
@@ -225,19 +225,19 @@ class Preprocessor (object):
             adder = adder.fillna(0)
             
             #~ print self.data['community']['electric non-fuel price'] 
-            self.data['community']['electric non-fuel prices'] = \
+            self.data['community']['electric prices'] = \
                 self.data['community']['electric non-fuel price'] + adder
           
         else:
             percent_diesel = 0
-            self.data['community']['electric non-fuel prices'] = \
+            self.data['community']['electric prices'] = \
                 self.data['community']['electric non-fuel price'] + \
                 (self.data['community']['diesel prices'] * percent_diesel)
             
         if self.data['community']["region"] == "North Slope":
             N_slope_price = .15
-            self.data['community']['electric non-fuel prices'] = \
-                (self.data['community']['electric non-fuel prices'] * 0) +\
+            self.data['community']['electric prices'] = \
+                (self.data['community']['electric prices'] * 0) +\
                  N_slope_price
         
         self.data = merge_configs(self.data,
@@ -535,7 +535,7 @@ class Preprocessor (object):
         ## community is parent
         if community in data.index: 
             intertie = [community] +\
-                list(data.ix[community].drop('Plant Intertied'))
+                list(set(data.ix[community].drop('Plant Intertied')))
             intertie = [c for c in intertie  if c != "''"]
         ## community is child
         else:
@@ -543,7 +543,7 @@ class Preprocessor (object):
             parent = children.index[0]
             children = children.drop('Plant Intertied', axis = 1)
             children = list(children.values.flatten())
-            children = [ community ] + [ c for c in children if c != community]
+            children = [ community ] + list(set([ c for c in children if c != community]))
             intertie = [ parent ] + [c for c in children  if c != "''"]
         return intertie
             
@@ -2029,7 +2029,7 @@ class Preprocessor (object):
         
         
         data = merge_configs(electric_prices, fuel_prices)
-        data['community']['electric non-fuel prices'] = electric_non_fuel_prices
+        data['community']['electric prices'] = electric_non_fuel_prices
         return data
         
     def load_renewable_capacities (self, **kwargs):
