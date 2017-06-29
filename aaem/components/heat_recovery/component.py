@@ -249,7 +249,7 @@ class HeatRecovery (AnnualSavings):
         return
         # else:
         #~ hr_opp = self.comp_specs['estimate data']\
-                    #~ ['Waste Heat Recovery Opperational']
+                    #~ ['Waste Heat Recovery Operational']
         #~ waste_heat_available = self.comp_specs['estimate data']\
                     #~ ['Add waste heat Avail']
 
@@ -337,7 +337,7 @@ class HeatRecovery (AnnualSavings):
             Savings gained by Heat Recovery improvements
         """
         self.annual_electric_savings = 0
-       price = (self.diesel_prices + self.cd['heating fuel premium'])
+        price = (self.diesel_prices + self.cd['heating fuel premium'])
 
         self.annual_heating_savings = self.proposed_heat_recovery * price + \
                                       self.comp_specs['o&m per year']
