@@ -155,7 +155,7 @@ class CommunityData (object):
         convert = self.data['community']['electric prices']
         convert.index = [int(y) for y in convert.index]
         convert.index.name = 'year'
-        # modify diesel prices and electric non-fuel prices
+        # modify diesel prices and electric prices
         self.apply_scalers(scalers)
 
     
@@ -177,7 +177,7 @@ class CommunityData (object):
         if scalers['diesel price'] != 1 or scalers['diesel price adder'] != 1:
             self.diagnostics.add_note(
                 'Community Data', 
-                'Adjusting disel and electric non-fuel prices'
+                'Adjusting disel and electric prices'
             )
         else:
             return
@@ -227,7 +227,7 @@ class CommunityData (object):
             community: elec non-fuel cost: is a floating point dollar value
             community: diesel prices: is a diesel projections object. 
         post:
-            community: electric non-fuel prices: is a data frame of dollar 
+            community: electric prices: is a data frame of dollar 
                        values indexed by year
         """
         # TODO: 1 is 100% need to change to a calculation
