@@ -1,7 +1,7 @@
 """
-run_command.py
+get_data_command.py
 
-    A command for the cli to run the model
+    A command for the cli to get data for the model
 """
 import pycommand
 #~ from default_cases import __DEV_COMS_RUN__ as __DEV_COMS__ 
@@ -16,7 +16,7 @@ from aaem.getapi import get_api_data
 
 class GetDataCommand(pycommand.CommandBase):
     """
-    run command class
+    get data command class
     """
     usagestr = ('usage: get-data path_to_data_repo path_to_output')
     optionList = (
@@ -95,7 +95,7 @@ class GetDataCommand(pycommand.CommandBase):
         
         
         with open(os.path.join(out,'VERSION'),'w') as v:
-            v.write('generated from command')
+            v.write('generated_from_command')
         
         
     def getpce_data(self, out):
@@ -122,7 +122,7 @@ class GetDataCommand(pycommand.CommandBase):
         #~ data = data.set_index('id')
         return data
         
-    def geteia_data(self, out):
+    def geteia_data(self, out): # possible future use
         name = 'eia_sales.csv'
         data = get_api_data('eia_861_retail_sales')
         
@@ -159,3 +159,40 @@ class GetDataCommand(pycommand.CommandBase):
         
         self.metadata[name] = 'api - ' + str(datetime.now()) 
         
+    # Get diesel powerhouse data
+    def getdph_data(self, out):
+        name = 'diesel_powerhouse_data.csv'
+        data = get_api_data('power_house')
+        
+        data['Community'] = ''
+
+        order = [
+            u'year', u'utility', 'Community',
+            u'residential_revenues', u'residential_sales', u'residential_customers',
+            u'commercial_revenues', u'commercial_sales', u'commercial_customers',
+            u'industrial_revenues', u'industrial_sales', u'industrial_customers',
+            u'total_revenue', u'total_sales', u'total_customers',
+            ]
+        col_names = [
+            'Data Year', 'Utility Number', 'Community', 
+            'Residential Thousand Dollars', 'Residential Megwatthours', 'Residential Count',
+            'Commercial Thousand dollars', 'Commercial Megwatthours','Commercial Count',
+            'Industrial Thousand Dollars', 'Industrial Megwatthours', 'Industrial Count',
+            'Total Thousand Dollars', 'Total Megawatthours', 'Total CustomerCount'
+            ]
+        
+        
+        ### LOOP FOR REPLACING IDS
+        #~ for cid in sorted(list(data['id'].values)):
+            #~ data['id'].replace(
+                #~ [cid],
+                #~ [self.id_data.ix[cid]['name']],
+                #~ inplace=True
+            #~ )
+            
+                
+        data = data[order]
+        data.columns = col_names
+        data.to_csv(os.path.join(out,name),index = False)
+        
+        self.metadata[name] = 'api - ' + str(datetime.now()) 
