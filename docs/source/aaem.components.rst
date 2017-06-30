@@ -21,7 +21,6 @@ Components
     aaem.components.non_residential
     aaem.components.residential_buildings
     aaem.components.solar_power
-    aaem.components.template_component
     aaem.components.transmission
     aaem.components.wastewater
     aaem.components.wind_power
