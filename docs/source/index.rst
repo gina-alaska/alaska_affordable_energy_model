@@ -15,7 +15,9 @@ See the `AEA Alaska Energy Inventory <http://akenergyinventory.org>`_ website fo
 
 This documentation is a *work in progress* : contributions, questions, and corrections are welcomed.
 
-The source for this website/the model documentation is managed in the same code repository as the model code under the `/docs <https://github.com/gina-alaska/alaska_affordable_energy_model/docs>`_ directory. The documentation is publicly hosted on http://model-docs.akenergyinventory.org.  The `Sphynx <http://www.sphinx-doc.org>`_ tool is used to manage and render the documentation which is written in `reStructuredText <http://www.sphinx-doc.org/en/1.5.1/rest.html>`_ markup.
+The source code used to generate this website is managed in the same code repository as the model code under the `docs <https://github.com/gina-alaska/alaska_affordable_energy_model/tree/master/docs>`_ directory. The documentation is publicly hosted on http://model-docs.akenergyinventory.org.  The `Sphinx <http://www.sphinx-doc.org>`_ tool is used to manage and render the documentation which is written in `reStructuredText <http://www.sphinx-doc.org/en/1.5.1/rest.html>`_ markup.
+
+For more information on the AAEM and its supporting data, contact: Neil McMahon, Planning Manager, Alaska Energy Authority, NMcMahon@aidea.org.  Model support questions can be addressed to: support+aaem@gina.alaska.edu
 
 **Contents:**
 
