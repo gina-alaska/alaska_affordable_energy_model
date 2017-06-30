@@ -19,7 +19,6 @@ Subpackages
     components.non_residential
     components.residential_buildings
     components.solar_power
-    components.template_component
     components.transmission
     components.wastewater
     components.wind_power
