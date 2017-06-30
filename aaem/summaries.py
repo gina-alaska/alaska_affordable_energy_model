@@ -494,7 +494,7 @@ def electric_price_summary (coms, res_dir):
     f_name = os.path.join(res_dir,
                 'electric_prices_summary.csv')
     #~ fd = open(f_name,'w')
-    #~ fd.write(("# list of the electricty prices forecasted\n"))
+    #~ fd.write(("# list of the electricity prices forecasted\n"))
     #~ fd.close()
     out.index = [i.replace('_',' ') for i in out.index]
     out = out.drop_duplicates()

@@ -20,8 +20,8 @@ def component_summary (results, res_dir):
     
     Parameters
     ----------
-    results : dictionay
-        results from the model, dictionay with each community or project as key
+    results : dictionary
+        results from the model, dictionary with each community or project as key
         
     res_dir : path
         location to save file
@@ -35,8 +35,8 @@ def communities_summary (coms, res_dir):
     
     Parameters
     ----------
-    coms : dictionay
-        results from the model, dictionay with each community or project as key
+    coms : dictionary
+        results from the model, dictionary with each community or project as key
             
     res_dir : path
         location to save file
@@ -110,7 +110,7 @@ def communities_summary (coms, res_dir):
             "Heating Fuel Price - year 1 [$/gal]",
             'Break Even Heating Fuel Price [$/gal]',
             'Levelized Cost Of Energy [$/MMBtu]',
-            'Bioimass pellet NPV benefits [$]',
+            'Biomass pellet NPV benefits [$]',
             'Biomass pellet NPV Costs [$]',
             'Biomass pellet NPV Net benefit [$]',
             'Biomass pellet Internal Rate of Return',
@@ -129,7 +129,7 @@ def communities_summary (coms, res_dir):
             '# Maximum Biomass Boiler Output [Btu/hr]:\n'
             '# Biomass Heat Displacement square footage [Sqft]: Non-residential area to heat with biomass\n'
             '# Proposed ' + biomass.biomass_type + ""
-                "Consumed [" + biomass.units +"]: Proposed biomas fuel consumed\n"
+                "Consumed [" + biomass.units +"]: Proposed biomass fuel consumed\n"
             '# Price [$/' + biomass.units + ']: Price of biomass fuel\n'
             "# Energy Density [Btu/" + biomass.units + "]: Energy Density of fuel\n"
             '# Displaced Heating Oil by Biomass [Gal]: Estimated heating fuel displace by biomass heating\n'
@@ -150,13 +150,13 @@ def create_regional_summary (results):
     
     Parameters
     ----------
-    results : dictionay
-        results from the model, dictionay with each community or project 
+    results : dictionary
+        results from the model, dictionary with each community or project 
         as key
             
     Returns
     -------
-        pandas DataFrame containg regional results
+        pandas DataFrame containing regional results
     
     """
     regions = {}
@@ -221,7 +221,7 @@ def save_regional_summary (summary, res_dir):
     
     Parameters
     ----------
-    summary : Dataframe
+    summary : DataFrame
         compiled regional results
     res_dir :  path
         location to save file

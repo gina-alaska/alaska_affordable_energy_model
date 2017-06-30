@@ -56,14 +56,14 @@ comments = {
     'lifetime': definitions.LIFETIME, # number years <int>
     'start year': definitions.START_YEAR_WITH_TYPE, # start year <int>
 
-    'cost per btu/hrs': '[float] cost per btu/hrs',
-    'o&m per year': '[float] operation and maintenence cost per year [$/year]',
+    'cost per btu/hrs': '[float] cost per btu/hrs [$]',
+    'o&m per year': '[float] operation and maintenance cost per year [$/year]',
 
     'sufficient biomass': '[bool] indicates if there is sufficient biomass to heat community',
-    'peak month % of total': '[float] percent of yearly energy output for month with highest consumption',
+    'peak month % of total': '[float] percent of yearly energy output for month with highest consumption [%]',
     'capacity factor': '[float] ',
 
-    'energy density': '[float] energy density of biomass fuel',
+    'energy density': '[float] energy density of biomass fuel [btu/(biomass unit)]',
 }
 
 ## list of prerequisites for module

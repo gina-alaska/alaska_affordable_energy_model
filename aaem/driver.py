@@ -160,7 +160,7 @@ class Driver (object):
             self.inputs_dir: is the default inputs directory
             self.config_dir: is the default confing directory
             self.global_config: is the default global config directory
-            self.comp_lib: is a dictionay of components
+            self.comp_lib: is a dictionary of components
             self.comp_order: list of the order of components to run
     """
     def __init__ (self, model_root):
@@ -181,7 +181,7 @@ class Driver (object):
             self.inputs_dir: is the default inputs directory
             self.config_dir: is the default confing directory
             self.global_config: is the default global config directory
-            self.comp_lib: is a dictionay of components
+            self.comp_lib: is a dictionary of components
             self.comp_order: list of the order of components to run
         """
         self.model_root = model_root

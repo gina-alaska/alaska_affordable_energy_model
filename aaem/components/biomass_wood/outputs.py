@@ -20,8 +20,8 @@ def component_summary (results, res_dir):
     
     Parameters
     ----------
-    results : dictionay
-        results from the model, dictionay with each community or project as key
+    results : dictionary
+        results from the model, dictionary with each community or project as key
         
     res_dir : path
         location to save file
@@ -35,8 +35,8 @@ def communities_summary (coms, res_dir):
     
     Parameters
     ----------
-    coms : dictionay
-        results from the model, dictionay with each community or project as key
+    coms : dictionary
+        results from the model, dictionary with each community or project as key
             
     res_dir : path
         location to save file
@@ -110,7 +110,7 @@ def communities_summary (coms, res_dir):
             "Heating Fuel Price - year 1 [$/gal]",
             'Break Even Heating Fuel Price [$/gal]',
             'Levelized Cost Of Energy [$/MMBtu]',
-            'Bioimass Cordwood NPV benefits [$]',
+            'Biomass Cordwood NPV benefits [$]',
             'Biomass Cordwood NPV Costs [$]',
             'Biomass Cordwood NPV Net benefit [$]',
             'Biomass Cordwood Internal Rate of Return',
@@ -151,13 +151,13 @@ def create_regional_summary (results):
     
     Parameters
     ----------
-    results : dictionay
-        results from the model, dictionay with each community or project 
+    results : dictionary
+        results from the model, dictionary with each community or project 
         as key
             
     Returns
     -------
-        pandas DataFrame containg regional results
+        pandas DataFrame containing regional results
     
     """
     regions = {}
@@ -224,7 +224,7 @@ def save_regional_summary (summary, res_dir):
     
     Parameters
     ----------
-    summary : Dataframe
+    summary : DataFrame
         compiled regional results
     res_dir :  path
         location to save file

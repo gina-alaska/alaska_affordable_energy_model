@@ -1,16 +1,10 @@
 """
-Air Sorce Heat Pump Non-residential Configuration 
+Air Source Heat Pump Non-residential Configuration
 -------------------------------------------------
-    
-    Contains Air Sorce Heat Pump Non-residential configuration info for 
+
+    Contains Air Source Heat Pump Non-residential configuration info for
     community data yaml file, and other set-up requirements
-    
-    **Unique Configuration keys**
-    
-        btu/hrs: btu/hrs
-        
-        cost per btu/hrs: cost of heating $/btu/hr
-        
+
 """
 import aaem.components.ashp_base as ashp_base
 from copy import deepcopy
@@ -19,7 +13,7 @@ COMPONENT_NAME = "Non-Residential ASHP"
 IMPORT = "IMPORT"
 UNKNOWN = "UNKNOWN"
 
-order = deepcopy(ashp_base.order) 
+order = deepcopy(ashp_base.order)
 
 ## List of yaml key/value pairs
 structure = deepcopy(ashp_base.structure)

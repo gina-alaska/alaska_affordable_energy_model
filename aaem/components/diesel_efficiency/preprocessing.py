@@ -5,7 +5,7 @@ Diesel Efficiency preprocessing
 preprocessing functions for Diesel Efficiency component
 
 """
-## List of raw data files required for wind power preproecssing
+## List of raw data files required for wind power preprocessing
 raw_data_files = ['project_development_timeframes.csv']
 
 def preprocess (preprocessor, **kwargs):
@@ -13,7 +13,7 @@ def preprocess (preprocessor, **kwargs):
 
     Parameters
     ----------
-    preprocessor: preprocessor.Proprocessor
+    preprocessor: preprocessor.Preprocessor
         a preprocessor object
 
     Returns

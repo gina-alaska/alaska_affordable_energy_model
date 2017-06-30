@@ -217,7 +217,7 @@ class CommunityData (object):
         pass
     
     
-    def modify_non_fuel_electricty_prices (self, N_slope_price = .15):
+    def modify_non_fuel_electricity_prices (self, N_slope_price = .15):
         """
         calculate the electricity price
         

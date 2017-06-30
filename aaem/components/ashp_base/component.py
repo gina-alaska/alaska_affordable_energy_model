@@ -16,27 +16,27 @@ import aaem.constants as constants
 from config import COMPONENT_NAME, UNKNOWN
 
 class ASHPBase (AnnualSavings):
-    """Base ASHP of the Alaska Affordable Eenergy Model. Base component
-    does noting on it's own.
+    """Air source heat pump base of the Alaska Affordable Energy Model: Base component
+    does nothing on it's own.
 
     Parameters
     ----------
-    commnity_data : CommunityData
-        CommintyData Object for a community
+    community_data : CommunityData
+        CommunityData Object for a community
     forecast : Forecast
-        forcast for a community
+        forecast for a community
     diagnostics : diagnostics, optional
-        diagnostics for tracking error/warining messeges
+        diagnostics for tracking error/warning messages
     prerequisites : dictionary of components, optional
         none required
 
     Attributes
     ----------
     diagnostics : diagnostics
-        for tracking error/warining messeges
+        for tracking error/warning messages
         initial value: diag or new diagnostics object
     forecast : forecast
-        community forcast for estimating future values
+        community forecast for estimating future values
         initial value: forecast
     cd : dictionary
         general data for a community.
@@ -48,7 +48,7 @@ class ASHPBase (AnnualSavings):
     See also
     --------
     aaem.community_data :
-        community data module, see information on CommintyData Object
+        community data module, see information on CommunityData Object
     aaem.forecast :
         forecast module, see information on Forecast Object
     aaem.diagnostics :
@@ -61,12 +61,12 @@ class ASHPBase (AnnualSavings):
 
         Parameters
         ----------
-        commnity_data : CommunityData
-            CommintyData Object for a community
+        community_data : CommunityData
+            CommunityData Object for a community
         forecast : Forecast
-            forcast for a community
+            forecast for a community
         diagnostics : diagnostics, optional
-            diagnostics for tracking error/warining messeges
+            diagnostics for tracking error/warning messages
         prerequisites : dictionary of components, optional
             prerequisite component data, None
 
@@ -89,7 +89,7 @@ class ASHPBase (AnnualSavings):
 
         self.ashp_sector_system = "N/a"
 
-        ### ADD other intiatzation stuff
+        ### ADD other initialization stuff
         self.load_prerequisite_variables(prerequisites)
         self.regional_multiplier = \
                 community_data.get_item('community',
@@ -114,8 +114,8 @@ class ASHPBase (AnnualSavings):
 
         Attributes
         ----------
-        monthly_value_table: dataframe
-            dataframe of monthly values related to ASHP systems
+        monthly_value_table: DataFrame
+            DataFrame of monthly values related to ASHP systems
         """
         #find m & b from performance data
         temp = self.comp_specs['performance data']['Temperature']
@@ -158,13 +158,13 @@ class ASHPBase (AnnualSavings):
 
     def calc_heat_energy_produced_per_year (self):
         """Calculate the heat energy produced per year by ASHP system
-        (TODO: Double check defintion) defined in child components
+        (TODO: Double check definition) defined in child components
         """
         #~ self.heat_energy_produced_per_year = None
         pass # depends on child to implement
 
     def calc_heat_energy_produced_per_month (self):
-        """calc the mmbtu consumbed per month
+        """calc the mmbtu consumed per month
 
         Attributes
         ----------
@@ -216,7 +216,7 @@ class ASHPBase (AnnualSavings):
         monthly_value_table['Heating Oil Consumed (gal)']
             adds kWh consumed per month to the monthly_value_table
         """
-        # per month if cop = 0 : consumprion mmbtu -> gal / eff
+        # per month if cop = 0 : consumption mmbtu -> gal / eff
         idx = self.monthly_value_table['COP'] == 0
 
         self.monthly_value_table["Heating Oil Consumed (gal)"] = 0
@@ -265,12 +265,12 @@ class ASHPBase (AnnualSavings):
             self.monthly_value_table['Heating Oil Saved (gal)'].sum()
 
     def calc_average_cop (self):
-        """Calculate average yearly cofficient of power(cop) of ASHP system
+        """Calculate average yearly coefficient of power(cop) of ASHP system
 
         Attributes
         ----------
         average_cop : float
-            average yearly cofficient of power(cop) of ASHP syste
+            average yearly coefficient of power(cop) of ASHP system
         """
         self.monthly_value_table['mmbtu/mon'].sum()
         consumed_Hoil =\
@@ -309,8 +309,8 @@ class ASHPBase (AnnualSavings):
                                        self.comp_specs["o&m per year"]
         self.proposed_ashp_operation_cost = cost.tolist()
 
-    def calc_ashp_system_pramaters (self):
-        """Calls each of the functions for caculating the ASHP
+    def calc_ashp_system_parameters (self):
+        """Calls each of the functions for calculating the ASHP
         operation parameters
         """
         self.calc_cop_per_month()
@@ -328,7 +328,7 @@ class ASHPBase (AnnualSavings):
 
         Parameters
         ----------
-        scalers: dictionay of valid scalers, optional
+        scalers: dictionary of valid scalers, optional
             Scalers to adjust normal run variables.
             See note on accepted  scalers
 
@@ -337,7 +337,7 @@ class ASHPBase (AnnualSavings):
             Accepted scalers: capital costs.
         """
         #~ self.calc_heat_energy_produced_per_year()
-        #~ self.calc_ashp_system_pramaters()
+        #~ self.calc_ashp_system_parameters()
         #~ self.calc_baseline_heating_oil_cost()
         #~ self.calc_proposed_ashp_operation_cost()
         #~ print self.monthly_value_table
@@ -373,7 +373,7 @@ class ASHPBase (AnnualSavings):
         self.annual_electric_savings = 0
 
 
-    # Make this do sruff. Remember the different fuel type prices if using
+    # Make this do stuff. Remember the different fuel type prices if using
     def calc_annual_heating_savings (self):
         """calculate heating savings per year
 
@@ -387,9 +387,9 @@ class ASHPBase (AnnualSavings):
 
     def get_fuel_total_saved (self):
         """Get total fuel saved
-        
+
         Returns
-        ------- 
+        -------
         float
             the total fuel saved in gallons
         """
@@ -399,9 +399,9 @@ class ASHPBase (AnnualSavings):
 
     def get_total_energy_produced (self):
         """Get total energy produced
-        
+
         Returns
-        ------- 
+        -------
         float
             the total energy produced
         """

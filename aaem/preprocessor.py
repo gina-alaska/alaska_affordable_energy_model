@@ -1991,7 +1991,7 @@ class Preprocessor (object):
 
 
     def helper_fuel_prices (self, ** kwargs):
-        """process fuel prices in to dictionay section
+        """process fuel prices in to dictionary section
 
         Returns
         -------
