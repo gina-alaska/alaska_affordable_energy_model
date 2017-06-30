@@ -12,6 +12,7 @@ Resources with more details on the Alaska Affordable Energy Model
 - [Alaska Energy Authority's Affordable Energy Strategy](http://www.akenergyauthority.org/Policy-Planning/AlaskaAffordableEnergyStrategy)
 - [Browse Model Run Results](http://model-results.akenergyinventory.org) - model version: 1.0.0 data version: 1.0.0
 - [Review the Model Documentation](http://model-docs.akenergyinventory.org)
+- [Alaska Energy Data Gateway](https://akenergygateway.alaska.edu/)
 
 
 ## Installing dependencies
@@ -57,10 +58,17 @@ Dependencies for the Alaska Affordable Energy Model can be installed using [pip]
 
     http://model-docs.akenergyinventory.org
 
-## Citations & Contributors
+## Citation
 
+We ask that you include the following citation in publications that make use of this model:
+    
+## Contributors
 
-
+Contributors to the AAEM include:
+  * Alaska Energy Authority: Neil McMahon
+  * UAF/GINA: Jessie Cherry, Jennifer Delamere, Rawser Spicer, Jason Grimes, Dayne Broderson, Will Fisher
+  * Alaska Energy Data Gateway: Brenden Hernandez
+  
 ## Contacts
   For more information on the AAEM and its supporting data, contact: Neil McMahon, Planning Manager, Alaska Energy Authority, NMcMahon@aidea.org
 
