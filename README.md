@@ -57,7 +57,7 @@ See the documentation for advanced instructions on installation and running: htt
 
 ## Citation
 
-We ask that you include the following citation in publications that make use of this model:
+If you would like to use AAEM data, model components, or results in your work, please contact [Neil McMahon](NMcMahon@aidea.org) for citation information.
     
 ## Contributors
 
