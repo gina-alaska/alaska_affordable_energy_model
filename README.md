@@ -64,7 +64,7 @@ We ask that you include the following citation in publications that make use of 
 Contributors to the AAEM include:
   * Alaska Energy Authority: Neil McMahon
   * UAF/GINA: Jessie Cherry, Jennifer Delamere, Rawser Spicer, Jason Grimes, Dayne Broderson, Will Fisher
-  * Alaska Energy Data Gateway: Brenden Hernandez
+  * Alaska Energy Data Gateway: Brenden Hernandez, Kyle Borash
   
 ## Contacts
   For more information on the AAEM and its supporting data, contact: Neil McMahon, Planning Manager, Alaska Energy Authority, NMcMahon@aidea.org
