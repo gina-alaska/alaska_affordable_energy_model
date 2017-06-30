@@ -9,6 +9,7 @@ The Alaska Affordable Energy Model (AAEM) is a model designed by the [Alaska Ene
 Disclaimer: The results presented in the model results are generated from available data on population, consumption, generation, and information on a technologies analyzed. For some communities this information may be incomplete. If you have, or know of a source of data that could help improve the model please contact The Alaska Energy Authority .
 
 Resources with more details on the Alaska Affordable Energy Model:
+- [AAEM Wiki](https://github.com/gina-alaska/alaska_affordable_energy_model/wiki)
 - [Alaska Energy Authority's Affordable Energy Strategy](http://www.akenergyauthority.org/Policy-Planning/AlaskaAffordableEnergyStrategy)
 - [Browse Model Run Results](http://model-results.akenergyinventory.org) - model version: 1.0.0 data version: 1.0.0
 - [Review the Model Documentation](http://model-docs.akenergyinventory.org)
@@ -20,43 +21,39 @@ Dependencies for the Alaska Affordable Energy Model can be installed using [pip]
 
     pip install --user -r requirements.txt
 
- [see more info on dependencies in the documentation](http://model-docs.akenergyinventory.org/software.html)
+See more info on dependencies in the [documentation](http://model-docs.akenergyinventory.org/software.html).
 
 ## Installation
 
-    see: https://github.com/gina-alaska/alaska_affordable_energy_model/wiki#setting-up-a-workstation-to-run-the-model
+See: https://github.com/gina-alaska/alaska_affordable_energy_model/wiki#setting-up-a-workstation-to-run-the-model
 
 ## Building the AAEM documentation
 
-    Building the documentation requires that Sphinx be installed.
+Building the documentation requires that Sphinx be installed.
 
     pip install Sphinx
 
-    To build the docs in the docs/build folder, from the root of the code repository:
+To build the docs in the docs/build folder, from the root of the code repository:
 
     sphinx-build  -b html ./docs/source/ docs/build/
 
-    or more generally:
+or more generally:
 
     sphinx-build  -b html <path to model docs/source> <path to build documentation>
 
-    Alternatively, online model documentation is available at: http://model-docs.akenergyinventory.org
+Alternatively, online model documentation is available at: http://model-docs.akenergyinventory.org
 
 ## Initial model setup
 
-    From the AAEM repository directory on your local system:
+From the AAEM repository directory on your local system:
 
     ./bin/aaem setup <path_to_model_results> <path_to_local_data>
 
-    where <path_to_model_results> is a directory that will be created for the model configuration and results, and
-
-    <path_to_local_data> is the path to your local Github data repository (cloned from https://github.com/gina-alaska/alaska_affordable_energy_model-data).
+where <path_to_model_results> is a directory that will be created for the model configuration and results, and <path_to_local_data> is the path to your local Github data repository (cloned from https://github.com/gina-alaska/alaska_affordable_energy_model-data).
 
 ## Running the model
 
-    See the documentation for advanced instructions on installation and running:
-
-    http://model-docs.akenergyinventory.org
+See the documentation for advanced instructions on installation and running: http://model-docs.akenergyinventory.org
 
 ## Citation
 
