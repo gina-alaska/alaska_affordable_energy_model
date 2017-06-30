@@ -106,7 +106,8 @@ class GetDataCommand(pycommand.CommandBase):
             
         try:
             self.getfps_data(out)
-        except:
+        except StandardError as e:
+            print e
             print 'Error retrieving fuel price survey. Using repo version'
 
         with open(os.path.join(out, '__metadata.yaml'),'w') as meta:
@@ -182,11 +183,11 @@ class GetDataCommand(pycommand.CommandBase):
     def getdph_data(self, out):
         name = 'diesel_powerhouse_data.csv'
         data = get_api_data('power_house')
-        
-        #~ data['Community'] = ''
+        data = data.set_index('community')
+        data['Community'] = ''
 
         order = [
-            'community', 'total_generators', 'total_capacity',
+            'Community', 'total_generators', 'total_capacity',
             'Largest generator (in kW)','Sizing',
             "control_switchgear", "waste_heat_recovery_operational",
             "add_waste_heat_available",
@@ -205,11 +206,8 @@ class GetDataCommand(pycommand.CommandBase):
         
         #~ ### LOOP FOR REPLACING IDS
         for cid in sorted(list(data['community'].values)):
-            data['community'].replace(
-                [cid],
-                [self.id_data.ix[cid]['name']],
-                inplace=True
-            )
+            data['Community'].ix[cid] = self.id_data.ix[cid]['name']
+                
         
         data['Sizing'] = 'unknown'
         data['Largest generator (in kW)'] = 'unknown'
@@ -227,19 +225,27 @@ class GetDataCommand(pycommand.CommandBase):
         name = 'fuel-price-survey-data.csv'
         data = get_api_data('ahfc_fuel_survey_data')
         
-        #~ data['Community'] = ''
+        data= data.set_index('community')
+        
+        data["community__name"] = ''
+        data["community__gnis_feature_id"] = ''
+        data["community__census_code"] = ''
 
         order = [
-            'community__name',
+            "community__name",
             'community__gnis_feature_id',
             'community__census_code',
-            'year','month',
-            'no_1_fuel_oil_price','no_2_fuel_oil_price',
-            'propane_price',
-            'birch_price','spruce_price','unspecified_wood_price'
+            "year",
+            "month",
+            "no_1_fuel_oil_price",
+            "no_2_fuel_oil_price",
+            "propane_price",
+            "birch_price",
+            "spruce_price",
+            "unspecified_wood_price"
             ]
         
-        order = [
+        col_names = [
             'community__name',
             'community__gnis_feature_id',
             'community__census_code',
@@ -250,19 +256,20 @@ class GetDataCommand(pycommand.CommandBase):
             ]
         
         ### LOOP FOR REPLACING IDS
-        #~ for cid in sorted(list(data['community__name'].values)):
-            #~ data['community__name'].replace(
-                #~ [cid],
-                #~ [self.id_data.ix[cid]['name']],
-                #~ inplace=True
-            #~ )
-        
+        #~ print data.index
+        for cid in sorted(set(data.index)):
+            #~ print data.ix[cid]
+            data['community_name'].ix[cid] = self.id_data.ix[cid]['name']
+            data['community__gnis_feature_id'] .ix[cid]= \
+                self.id_data.ix[cid]['gnis_feature_id']
+            data['community__census_code'].ix[cid] = self.id_data.ix[cid]['census_code']
+       
         data['Sizing'] = 'unknown'
         data['Largest generator (in kW)'] = 'unknown'
     
         data = data[order]
-        #~ data.columns = col_names
+        data.columns = col_names
         
-        
+        #~ print data
         data.to_csv(os.path.join(out,name),index = False)
         self.metadata[name] = 'api - ' + str(datetime.now()) 

@@ -36,7 +36,7 @@ def get_api_data(name, show = True):
     context = ssl._create_unverified_context()
     # "https://akenergygateway.alaska.edu/api/models/pcedata/?format=api"
     url = URL_RT + name + '/?format=json'
-    
+    print url
     
     while True:
         try:
