@@ -1,5 +1,29 @@
 #Change Log
 
+## [1.0.0]
+### adds
+- comments and descriptions of all configuration values
+- weighted average residential rates to utility data
+- cpi based around the year projcet starts
+- NPV based around the year projcet starts
+
+### changes
+- electric non-fuel prices config key was changed to electric prices
+- get-data command will try again if the api query fails
+- get-data will try to get fuel-price-survey-data and powerhouse-data
+- get-data will use the repo version if api query fails
+
+### upadtes
+- component descriptions
+
+### fixes
+- many typos
+- ashp residential pecentages are corrected
+- fixes weighted averages for PCE prices
+- water wastewater logic for estmiating fuel consumed
+- PCE data preprocessing of bad purchased from data
+- north slope electric prices on summaries
+
 ## [0.27.5]
 ### adds
 - cost per kWh attribute to wind power component

@@ -22,7 +22,7 @@ class GetDataCommand(pycommand.CommandBase):
     optionList = (
             ('force',('f', False, "force overwrite of existing directories")),
            )
-    description =('Construct data for model from github and api sources'
+    description =('Construct data for model from github and api sources, This command should be considered EXPERMENTAL'
                     'options: \n'
                    "  " + str([o[0] + ': ' + o[1][2] + '. Use: --' +\
                    o[0] + ' (-'+o[1][0]+') ' +  (o[1][1] if o[1][1] else "")  +\
@@ -35,6 +35,7 @@ class GetDataCommand(pycommand.CommandBase):
         run the command
         """
         # get arguments
+        print "WARNING: this command may not produce desired results"
         if len(self.args) != 2:
             msg = ("GET-DATA ERROR: provide path to the repo, and a"
                     " path to output")

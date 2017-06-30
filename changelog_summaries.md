@@ -1,5 +1,16 @@
 #Change Log
 
+## [1.0.0]
+### adds
+- links to regional summaries in goals sections
+- current fuel prices are shown on overview pages
+
+### fixes
+- length of data displayed in project/techology charts
+- clean up of wordign and typos
+- fixes various nans diplayed aroud summaries replacing them with Unknown or N/A
+
+
 ## [0.27.3]
 ### adds
 - pie chart for fuels for residential consumption on consumption page
