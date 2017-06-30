@@ -15,43 +15,51 @@ Resources with more details on the Alaska Affordable Energy Model
 
 
 ## Installing dependencies
-Dependencies for the Alask Affordable Energy Model can be installed using [pip](https://pypi.python.org/pypi/pip)
+Dependencies for the Alaska Affordable Energy Model can be installed using [pip](https://pypi.python.org/pypi/pip)
 
     pip install --user -r requirements.txt
-   
- [see more info on depencdies in the documnetation](http://model-docs.akenergyinventory.org/software.html)
- 
-## Installation 
+
+ [see more info on dependencies in the documentation](http://model-docs.akenergyinventory.org/software.html)
+
+## Installation
 
     see: https://github.com/gina-alaska/alaska_affordable_energy_model/wiki#setting-up-a-workstation-to-run-the-model
-    
+
 ## Building the documentation
 
-    the documentation requires that Sphinx be installed.
-    
+    Building the documentation requires that Sphinx be installed.
+
     pip install Sphinx
-    
-    To build the docs in the docs/build folder. From the root of the code repo:
+
+    To build the docs in the docs/build folder, from the root of the code repository:
 
     sphinx-build  -b html ./docs/source/ docs/build/
-    
+
     or more generally:
-    
+
     sphinx-build  -b html [path to docs/source/] [path to output folder]
 
-## Seting up the model for the first time
+## Setting up the model for the first time
 
-    use the program bin/aaem.
-    
-    from the alaska affordiable_energy-model_repo
-    
+    Use the program bin/aaem.
+
+    From the Alaska affordable_energy-model_repo
+
     ./bin/aaem <path to location to setup> <path to data repo>
-    
-    
-## Running the model 
 
-    see the documentaion for andvanced instructions on installation and running
-    
+
+## Running the model
+
+    See the documentation for advanced instructions on installation and running:
+
     http://model-docs.akenergyinventory.org
-    
-    
+
+
+## Citations
+
+## Contacts
+  For more information, contact:
+
+  Neil McMahon
+  Planning Manager, Alaska Energy Authority
+  NMcMahon@aidea.org

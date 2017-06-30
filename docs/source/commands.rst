@@ -1,14 +1,14 @@
 .. _CLI:
 
 ************
-CLI Commands
+Command Line Interface (CLI) Commands
 ************
-   
+
 
 General
 =======
 
-Here is a description of the Commands for the Alaska Affordable Energy Model (AAEM) Command Line Interface (CLI). The CLI can be accessed by calling aaem. 
+Here is a description of the Commands for the Alaska Affordable Energy Model (AAEM) Command Line Interface (CLI). The CLI can be accessed by calling aaem.
 
 .. code-block:: bash
 
@@ -21,13 +21,13 @@ General options:
  * warn (--warn, -w): show warnings
 
 The format of all all cli commands is. (optional info) <required info>
-	
+
 .. code-block:: bash
 
      aaem (general options) <command> (options) (arguments)
 
 For example, the run command:
-	
+
 .. code-block:: bash
 
      aaem -t run -f Adak_Example.yaml
@@ -36,15 +36,15 @@ For example, the run command:
 Setup
 =====
 
-The setup command can be used to quickly set up the structure needed to run the model and perform an initial model run using default settings. 
+The setup command can be used to quickly set up the structure needed to run the model and perform an initial model run using default settings.
 
 .. code-block:: bash
 
-     aaem setup <path to create model directory at> <path to AAEM data repo> 
+     aaem setup <path to create model directory at> <path to AAEM data repo>
 
 Options:
  * Dev (--dev, -d): use only the development communities
- * Force (--force, -f): force overwriting of existing directories  
+ * Force (--force, -f): force overwriting of existing directories
 
 Example, with dev flag:
 
@@ -54,20 +54,20 @@ Example, with dev flag:
 
 Refresh
 =======
-	
-regenerate(or generate) the model directory structure needed for running the model using the data in the data repo. Use a tag to name the output directory 
-	
+
+regenerate(or generate) the model directory structure needed for running the model using the data in the data repo. Use a tag to name the output directory
+
 .. code-block:: bash
 
-     aaem refresh <path to (create) model directory> <path to AAEM data repo> (tag) 
+     aaem refresh <path to (create) model directory> <path to AAEM data repo> (tag)
 
 Options:
  * Dev (--dev, -d): use only the development communities
- * Force (--force, -f): force overwriting of existing directories  
+ * Force (--force, -f): force overwriting of existing directories
  * Make Globals (--make_globals, -g): splits the configurations generated into a global file and community files
 
 Example, tagged:
-     
+
 .. code-block:: bash
 
      aaem refresh ./ ./alaska_affordable_energy_model-data model
@@ -82,14 +82,14 @@ The Get Data command creates a directory of data files that the AAEM preprocesso
      aaem get-data <path to AAEM data repo> <path to create new data directory at>
 
 Options:
- * Force (--force, -f): force overwriting of existing directories  
- 
+ * Force (--force, -f): force overwriting of existing directories
+
 Example:
 
 .. code-block:: bash
 
      aaem get-data ./alaska_affordable_energy_model-data ./my-new-AAEM-data
-     
+
 Run
 ===
 
@@ -98,22 +98,22 @@ The model may also be run from a script file see :ref:`scripts`.
 
 .. code-block:: bash
 
-     aaem run <path to model directory or script file> (list of communities) 
+     aaem run <path to model directory or script file> (list of communities)
 
 Options:
  * Dev (--dev, -d): use only the development communities
- * Force (--force, -f): force overwriting of existing directories  
- * Log (--log, -l): name/ path of a file to log the output from command to 
+ * Force (--force, -f): force overwriting of existing directories
+ * Log (--log, -l): name/ path of a file to log the output from command to
   * Use --log <log_file>
   * Example: --log OUTPUT.txt
- * Tag (--tag, -t): tag for results directory 
+ * Tag (--tag, -t): tag for results directory
   * use : -t <tag>
   * Ex: -t cool_example_results
  * Scalers (--scalers, -s): scalers to be used in running model
   * Available scalers:
    * diesel price
    * diesel price adder
-   * capital costs 
+   * capital costs
    * kWh consumption
   * Use: -s <scalar string>
  * Ex: -s '{capital costs:1.1, diesel price:10}'
@@ -147,9 +147,9 @@ Example, list of communities, force:
 
      aaem run -f ./model Adak Bethel 'Manley Hot Springs'
 
-	
+
 Example, script (see :ref:`scripts` for more details):
-		
+
 .. code-block:: bash
 
      aaem run script_file.yaml
@@ -158,7 +158,7 @@ Example, scalers:
 
 .. code-block:: bash
 
-     aaem run -s '{diesel price:10}' ./model 
+     aaem run -s '{diesel price:10}' ./model
 
 Summaries
 ========
@@ -171,8 +171,8 @@ Creates the html summaries for model results
 
 Options:
  * Alternate output path (--alt_out, -a): Alternate output path
- * Force (--force, -f): force overwriting of existing directories  
- 
+ * Force (--force, -f): force overwriting of existing directories
+
 Example:
 
 .. code-block:: bash
@@ -201,14 +201,14 @@ Example, for all:
      aaem compare ./model/results_A ./model/results_B
 
 Example, for Adak:
-    
+
 .. code-block:: bash
 
      aaem compare ./model/results_A ./model/results_B Adak
-    
+
 
 List
-==== 
+====
 
 List communities and projects that can be run
 
@@ -232,7 +232,7 @@ Copy model structure from one place to another
      aaem copy <source> <destination>
 
 Options:
- * Force (--force, -f): force overwriting of existing directories  
+ * Force (--force, -f): force overwriting of existing directories
 
 Example:
 
@@ -243,7 +243,7 @@ Example:
 Help
 ====
 
-Display help for a provided command, or list available commands 
+Display help for a provided command, or list available commands
 
 .. code-block:: bash
 
@@ -254,9 +254,3 @@ Example, with command :
 .. code-block:: bash
 
      aaem help run
-
-
-
-
-
-
