@@ -118,8 +118,8 @@ class ASHPBase (AnnualSavings):
             dataframe of monthly values related to ASHP systems
         """
         #find m & b from performance data
-        temp = self.comp_specs['perfromance data']['Temperature']
-        cop = self.comp_specs['perfromance data']['COP']
+        temp = self.comp_specs['performance data']['Temperature']
+        cop = self.comp_specs['performance data']['COP']
         m, b = np.polyfit(temp,cop,1)
         #~ print m, b
         # apply to months

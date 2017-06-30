@@ -7,7 +7,7 @@ Air Sorce Heat Pump Base Configuration
     
     **Unique Configuration keys**
     
-        perfromance data: data on ASHP prefromance in community
+        performance data: data on ASHP prefromance in community
         
         data: general data on stsyem
         
@@ -30,7 +30,7 @@ order = [
     'cost per btu/hrs',
     'o&m per year',
     'data',
-    'perfromance data'
+    'performance data'
 ]
 
 structure = {
@@ -43,7 +43,7 @@ structure = {
         'o&m per year': float,
         
         'data': DataFrame,
-        'perfromance data': {
+        'performance data': {
             'COP': list,
             'Temperature': list,
             'Percent of Total Capacity': list,
@@ -62,7 +62,7 @@ comments = {
     
     'data':
         "[DataFrame] Yearly climate data including 'Peak Month % of total', 'Capacity Factor', 'Minimum Temp', Avg. Temp(monthly), and % heating load (monthly)",
-    'perfromance data': 
+    'performance data': 
         "[dict] contains lists of equal length for keys 'Temperature', 'COP' (Cofficient of performance), and 'Percent of Total Capacity'"
 }
 

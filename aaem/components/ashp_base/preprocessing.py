@@ -44,7 +44,7 @@ def preprocess (preprocessor, **kwargs):
     climate_data.columns = ['value']
     climate_data.index.name = 'key'
     performance_data = read_csv(
-        os.path.join(preprocessor.data_dir,'ashp_perfromance_data.csv')
+        os.path.join(preprocessor.data_dir,'ashp_performance_data.csv')
     )
     return {
         comp_name: {
@@ -56,7 +56,7 @@ def preprocess (preprocessor, **kwargs):
             'o&m per year': 320,
             
             'data': climate_data,
-            'perfromance data': {
+            'performance data': {
                 'COP': performance_data['COP'].tolist(),
                 'Temperature': performance_data['Temperature'].tolist(),
                 'Percent of Total Capacity': 
