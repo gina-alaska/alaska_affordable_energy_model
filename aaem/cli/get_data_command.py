@@ -79,16 +79,34 @@ class GetDataCommand(pycommand.CommandBase):
         formats = ['csv', 'yaml']
         files = [f for f in os.listdir(repo) if f.split('.')[-1] in formats]
         self.metadata = {f: 'repo - '+ version for f in files}
-        from pprint import pprint
+        #~ from pprint import pprint
         #~ pprint(metadata)
 
         for f in files:
             shutil.copy2(os.path.join(repo,f),out)
         
+        try:
+            self.id_data = self.get_id_data()
+        except:
+            self.id_data = None
+            print 'Error retrieving community ID data. Using repo version'
         
-        self.id_data = self.get_id_data()
-        self.getpce_data(out)
-        self.geteia_data(out)
+        try:
+            self.getpce_data(out)
+        except:
+            print 'Error retrieving PCE data. Using repo version'
+
+        #~ self.geteia_data(out)# wont work api doesn't have proper forgien keys
+        
+        try:
+            self.getdph_data(out)
+        except:
+            print 'Error retrieving power house data. Using repo version'
+            
+        try:
+            self.getfps_data(out)
+        except:
+            print 'Error retrieving fuel price survey. Using repo version'
 
         with open(os.path.join(out, '__metadata.yaml'),'w') as meta:
             meta.write(yaml.dump(self.metadata, default_flow_style=False))
@@ -119,7 +137,7 @@ class GetDataCommand(pycommand.CommandBase):
         
     def get_id_data (self):
         data = get_api_data('community')
-        #~ data = data.set_index('id')
+        data = data.set_index('id')
         return data
         
     def geteia_data(self, out): # possible future use
@@ -164,35 +182,86 @@ class GetDataCommand(pycommand.CommandBase):
         name = 'diesel_powerhouse_data.csv'
         data = get_api_data('power_house')
         
-        data['Community'] = ''
+        #~ data['Community'] = ''
 
         order = [
-            u'year', u'utility', 'Community',
-            u'residential_revenues', u'residential_sales', u'residential_customers',
-            u'commercial_revenues', u'commercial_sales', u'commercial_customers',
-            u'industrial_revenues', u'industrial_sales', u'industrial_customers',
-            u'total_revenue', u'total_sales', u'total_customers',
+            'community', 'total_generators', 'total_capacity',
+            'Largest generator (in kW)','Sizing',
+            "control_switchgear", "waste_heat_recovery_operational",
+            "add_waste_heat_available",
+            "est_curret_annual_heating_fuel_displaced",
+            "est_potential_annual_heating_fuel_displaced"
             ]
         col_names = [
-            'Data Year', 'Utility Number', 'Community', 
-            'Residential Thousand Dollars', 'Residential Megwatthours', 'Residential Count',
-            'Commercial Thousand dollars', 'Commercial Megwatthours','Commercial Count',
-            'Industrial Thousand Dollars', 'Industrial Megwatthours', 'Industrial Count',
-            'Total Thousand Dollars', 'Total Megawatthours', 'Total CustomerCount'
+            'Community', 'Total Number of generators', 'Total Capacity (in kW)',
+            'Largest generator (in kW)','Sizing',
+            "Switchgear Suitable", "Waste Heat Recovery Opperational",
+            "Add waste heat Avail",
+            "Est. current annual heating fuel gallons displaced",
+            "Est. potential annual heating fuel gallons displaced"
             ]
         
         
+        #~ ### LOOP FOR REPLACING IDS
+        for cid in sorted(list(data['community'].values)):
+            data['community'].replace(
+                [cid],
+                [self.id_data.ix[cid]['name']],
+                inplace=True
+            )
+        
+        data['Sizing'] = 'unknown'
+        data['Largest generator (in kW)'] = 'unknown'
+    
+        data = data[order]
+        data.columns = col_names
+        
+        
+        data.to_csv(os.path.join(out,name),index = False)
+        self.metadata[name] = 'api - ' + str(datetime.now()) 
+        
+    def getfps_data(self, out):
+        """get fuel price survey data
+        """
+        name = 'fuel-price-survey-data.csv'
+        data = get_api_data('ahfc_fuel_survey_data')
+        
+        #~ data['Community'] = ''
+
+        order = [
+            'community__name',
+            'community__gnis_feature_id',
+            'community__census_code',
+            'year','month',
+            'no_1_fuel_oil_price','no_2_fuel_oil_price',
+            'propane_price',
+            'birch_price','spruce_price','unspecified_wood_price'
+            ]
+        
+        order = [
+            'community__name',
+            'community__gnis_feature_id',
+            'community__census_code',
+            'year','month',
+            'no_1_fuel_oil_price','no_2_fuel_oil_price',
+            'propane_price',
+            'birch_price','spruce_price','unspecified_wood_price'
+            ]
+        
         ### LOOP FOR REPLACING IDS
-        #~ for cid in sorted(list(data['id'].values)):
-            #~ data['id'].replace(
+        #~ for cid in sorted(list(data['community__name'].values)):
+            #~ data['community__name'].replace(
                 #~ [cid],
                 #~ [self.id_data.ix[cid]['name']],
                 #~ inplace=True
             #~ )
-            
-                
-        data = data[order]
-        data.columns = col_names
-        data.to_csv(os.path.join(out,name),index = False)
         
+        data['Sizing'] = 'unknown'
+        data['Largest generator (in kW)'] = 'unknown'
+    
+        data = data[order]
+        #~ data.columns = col_names
+        
+        
+        data.to_csv(os.path.join(out,name),index = False)
         self.metadata[name] = 'api - ' + str(datetime.now()) 
