@@ -25,7 +25,7 @@ Dependencies for the Alaska Affordable Energy Model can be installed using [pip]
 
     see: https://github.com/gina-alaska/alaska_affordable_energy_model/wiki#setting-up-a-workstation-to-run-the-model
 
-## Building the documentation
+## Building the AAEM documentation
 
     Building the documentation requires that Sphinx be installed.
 
@@ -37,16 +37,19 @@ Dependencies for the Alaska Affordable Energy Model can be installed using [pip]
 
     or more generally:
 
-    sphinx-build  -b html [path to docs/source/] [path to output folder]
+    sphinx-build  -b html <path to model docs/source> <path to build documentation>
 
-## Setting up the model for the first time
+    Alternatively, online model documentation is available at: http://model-docs.akenergyinventory.org
 
-    Use the program bin/aaem.
+## Initial model setup
 
-    From the Alaska affordable_energy-model_repo
+    From the AAEM repository directory on your local system:
 
-    ./bin/aaem <path to location to setup> <path to data repo>
+    ./bin/aaem setup <path_to_model_results> <path_to_local_data>
 
+    where <path_to_model_results> is a directory that will be created for the model configuration and results, and
+
+    <path_to_local_data> is the path to your local Github data repository (cloned from https://github.com/gina-alaska/alaska_affordable_energy_model-data).
 
 ## Running the model
 
@@ -54,18 +57,11 @@ Dependencies for the Alaska Affordable Energy Model can be installed using [pip]
 
     http://model-docs.akenergyinventory.org
 
+## Citations & Contributors
 
-## Citations
+
 
 ## Contacts
-  For more information on the AAEM and its supporting data, contact:
+  For more information on the AAEM and its supporting data, contact: Neil McMahon, Planning Manager, Alaska Energy Authority, NMcMahon@aidea.org
 
-  Neil McMahon
-
-  Planning Manager, Alaska Energy Authority
-
-  NMcMahon@aidea.org
-
-  Model support questions can be addressed to:
-
-  support+aaem@gina.alaska.edu
+  Model support questions can be addressed to: support+aaem@gina.alaska.edu
