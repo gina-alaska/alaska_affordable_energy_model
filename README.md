@@ -58,8 +58,14 @@ Dependencies for the Alaska Affordable Energy Model can be installed using [pip]
 ## Citations
 
 ## Contacts
-  For more information, contact:
+  For more information on the AAEM and its supporting data, contact:
 
   Neil McMahon
+
   Planning Manager, Alaska Energy Authority
+
   NMcMahon@aidea.org
+
+  Model support questions can be addressed to:
+
+  support+aaem@gina.alaska.edu
