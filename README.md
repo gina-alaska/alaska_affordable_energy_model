@@ -8,7 +8,7 @@ The Alaska Affordable Energy Model (AAEM) is a model designed by the [Alaska Ene
 
 Disclaimer: The results presented in the model results are generated from available data on population, consumption, generation, and information on a technologies analyzed. For some communities this information may be incomplete. If you have, or know of a source of data that could help improve the model please contact The Alaska Energy Authority .
 
-Resources with more details on the Alaska Affordable Energy Model
+Resources with more details on the Alaska Affordable Energy Model:
 - [Alaska Energy Authority's Affordable Energy Strategy](http://www.akenergyauthority.org/Policy-Planning/AlaskaAffordableEnergyStrategy)
 - [Browse Model Run Results](http://model-results.akenergyinventory.org) - model version: 1.0.0 data version: 1.0.0
 - [Review the Model Documentation](http://model-docs.akenergyinventory.org)
