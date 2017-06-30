@@ -16,8 +16,8 @@ import aaem.constants as constants
 from config import COMPONENT_NAME, UNKNOWN
 
 class CommunityBuildings (AnnualSavings):
-    """Non-residential Efficiency component of the Alaska Affordable Energy
-    Model. This module estimates potential improvements in heating and
+    """Non-residential efficiency component of the Alaska Affordable Energy Model:
+    This module estimates potential improvements in heating and
     electrical efficiency to non-residential buildings (commercial,
     education, health care, etc.). Consumption and savings are based on
     estimated square footage per building that may be retrofit and prices of
@@ -53,9 +53,9 @@ class CommunityBuildings (AnnualSavings):
 
     See also
     --------
-    aaem.community_data : 
+    aaem.community_data :
         community data module, see information on CommintyData Object
-    aaem.forecast : 
+    aaem.forecast :
         forecast module, see information on Forecast Object
     aaem.diagnostics :
         diagnostics module, see information on diagnostics Object

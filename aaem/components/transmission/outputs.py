@@ -20,8 +20,8 @@ def component_summary (results, res_dir):
     
     Parameters
     ----------
-    results : dictionay
-        results from the model, dictionay with each community or project 
+    results : dictionary
+        results from the model, dictionary with each community or project 
         as key
     res_dir :  path
         location to save file
@@ -35,8 +35,8 @@ def communities_summary (coms, res_dir):
     
     Parameters
     ----------
-    coms : dictionay
-        results from the model, dictionay with each community or project 
+    coms : dictionary
+        results from the model, dictionary with each community or project 
         as key
     res_dir :  path
         location to save file
@@ -130,7 +130,7 @@ def communities_summary (coms, res_dir):
                 
             
             try:
-                losses = it.annual_tranmission_loss
+                losses = it.annual_transmission_loss
             except AttributeError:
                 losses = np.nan
                 
@@ -232,11 +232,11 @@ def communities_summary (coms, res_dir):
         '# Loss of Recovered Heat from Genset in community to connect [gal]: \n'
         '# Heat Recovery Operational in community to connect: \n'
         '# Diesel Generator Efficiency in community to connect: Estimated '
-            'efficiency of diesel generator in community in killowatt-'
+            'efficiency of diesel generator in community in kilowatt-'
             'hours per gallon.\n'
         '# Diesel Generator Efficiency in community to connect to: Estimated '
             'efficiency of diesel generator in community connected to in '
-            'killowatt-hours per gallon.\n'
+            'kilowatt-hours per gallon.\n'
         '# Diesel Price - year 1 [$/gal] in community to connect: '
             'Diesel fuel price in the community during the first year of'
             ' project operation.\n'
@@ -244,7 +244,7 @@ def communities_summary (coms, res_dir):
             'Diesel fuel price in the community to connect to during the'
             ' first year of project operation.\n'
         '# Breakeven Diesel Price [$/gal]: ' + definitions.BREAK_EVEN_COST_DIESEL + '\n'
-        '# Annual Transmission loss percentage: Estimated transmission loss pecent.\n'
+        '# Annual Transmission loss percentage: Estimated transmission loss percent.\n'
         '# Levelized Cost Of Energy [$/kWh]:' + definitions.LCOE + '\n'
         '# Status Quo generation Cost (Year 1): Estimated cost of generation in community if nothing changes\n'
         '# Proposed generation cost (Year 1): Estimated cost of generation in community with improvements.\n'
@@ -264,14 +264,14 @@ def create_regional_summary (results):
     
     Parameters
     ----------
-    results : dictionay
-        results from the model, dictionay with each community or project 
+    results : dictionary
+        results from the model, dictionary with each community or project 
         as key
             
     Returns
     -------
     DataFrame 
-        containg regional results
+        containing regional results
     
     """
     #~ print "start"
@@ -339,7 +339,7 @@ def save_regional_summary (summary, res_dir):
     
     Parameters
     ----------
-    summary : Dataframe
+    summary : DataFrame
         compiled regional results
     res_dir :  path
         location to save file

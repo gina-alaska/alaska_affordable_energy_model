@@ -17,7 +17,7 @@ from config import COMPONENT_NAME, UNKNOWN
 
 
 class WaterWastewaterSystems (AnnualSavings):
-    """Water/wastewater systems of the Alaska Affordable Energy Model. This
+    """Wind power component of the Alaska Affordable Energy Model: This
     module estimates potential improvements in heating and electrical
     efficiency to water and wastewater systems. Consumption and savings are
     calculated based on system type, population, and heating degree days
@@ -53,9 +53,9 @@ class WaterWastewaterSystems (AnnualSavings):
 
     See also
     --------
-    aaem.community_data : 
+    aaem.community_data :
         community data module, see information on CommintyData Object
-    aaem.forecast : 
+    aaem.forecast :
         forecast module, see information on Forecast Object
 
     aaem.diagnostics :
@@ -127,7 +127,7 @@ class WaterWastewaterSystems (AnnualSavings):
         baseline_generation_cost : np.array
             current cost of generation ($/year)
         """
-        kWh_cost = self.cd["electric non-fuel prices"].\
+        kWh_cost = self.cd["electric prices"].\
                                             ix[self.start_year:self.end_year]
         kWh_cost = kWh_cost.T.values[0]
         self.elec_price = kWh_cost
@@ -142,7 +142,7 @@ class WaterWastewaterSystems (AnnualSavings):
         proposed_generation_cost : np.array
             current cost of generation ($/year)
         """
-        kWh_cost = self.cd["electric non-fuel prices"].\
+        kWh_cost = self.cd["electric prices"].\
                                             ix[self.start_year:self.end_year]
         kWh_cost = kWh_cost.T.values[0]
         # kWh/yr*$/kWh
@@ -228,13 +228,13 @@ class WaterWastewaterSystems (AnnualSavings):
         if len(tag) > 1 and tag[1] != 'water-wastewater':
             self.was_run = False
             self.reason = "Not a water/wastewater project."
-            return 
+            return
         #~ print self.comp_specs['data']['assumption type used']
         if self.comp_specs['data']['assumption type used'] == 'UNKNOWN':
             self.was_run = False
             self.reason = "Water/wastewater system type unknown."
             #~ print self.reason
-            return 
+            return
 
         if self.cd["model electricity"]:
             self.calc_baseline_kWh_consumption()
@@ -352,11 +352,11 @@ class WaterWastewaterSystems (AnnualSavings):
         """
         percent = 1 - (self.comp_specs['electricity refit reduction']/100.0)
         con = np.float64(self.comp_specs['data']['kWh/yr'])
-        retro_con = np.float64(self.comp_specs['data']['kWh/yr w/ retro']) 
+        retro_con = np.float64(self.comp_specs['data']['kWh/yr w/ retro'])
         if (not np.isnan(con) and not np.isnan(retro_con)) and \
                 (con != 0 and retro_con != 0):
             percent = retro_con/con
-            self.diagnostics.add_note(self.component_name, 
+            self.diagnostics.add_note(self.component_name,
                 'Using caclulated electric consumption percent '\
                 + str(percent * 100))
         consumption = self.baseline_kWh_consumption * percent
@@ -380,7 +380,7 @@ class WaterWastewaterSystems (AnnualSavings):
         if (not np.isnan(con) and not np.isnan(retro_con))\
             and (con != 0 and retro_con != 0):
             percent = retro_con / con
-            self.diagnostics.add_note(self.component_name, 
+            self.diagnostics.add_note(self.component_name,
                 'Using caclulated HF consumption percent ' + str(percent * 100))
         consumption = self.baseline_fuel_Hoil_consumption * percent
         self.proposed_fuel_Hoil_consumption = consumption

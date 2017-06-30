@@ -10,18 +10,18 @@ from aaem.components import comp_order
 
 def get_projects (web_object, community, comp, tag):
     """
-    get a communities projects for a provided copoonent
+    get a communities projects for a provided component
     
     inputs:
-        web_opject: an aaem.web.WebSummary object
+        web_object: an aaem.web.WebSummary object
         community: a community <string>
         comp: name of component <string>
         tag: tag used in results directory to indicate it is a project for the 
             provided component
             
     outputs:
-        returns: projects, a dictioanry of communities projects for the 
-        component, start_year: eariliest start year in projects. end_year,
+        returns: projects, a dictionary of communities projects for the 
+        component, start_year: earliest start year in projects. end_year,
         latest actual end year in projects
     """
     projects = {}
@@ -49,17 +49,17 @@ def make_costs_table (community, comp, projects, base_cost, directory):
     
     inputs:
         community: <string>
-        comp: componet name <string>
-        projects: dictioany of projects
-        base_cost: dataframe with base cost for all years needed as index
+        comp: component name <string>
+        projects: dictionary of projects
+        base_cost: DataFrame with base cost for all years needed as index
                     Base Cost
             2011    1200
             ...
             2015    1400
-        directory: directory where web outputs are beign saved
+        directory: directory where web outputs are begin saved
     
     outputs:    
-        returns plotting_table, a table that can be used to make a google chart
+        returns plotting_table, a table that can be used to make a Google chart
     """
     costs_table = DataFrame(base_cost)
     costs_table['year'] = costs_table.index
@@ -75,6 +75,7 @@ def make_costs_table (community, comp, projects, base_cost, directory):
             name = p.replace('+', ' ').replace('_',' ')
         if name is None:
             name = p
+        name = name.replace("'",'')
         net_benefit = DataFrame([range(project.start_year,
                                        project.actual_end_year+1),
                                  project.get_net_benefit()\
@@ -82,8 +83,33 @@ def make_costs_table (community, comp, projects, base_cost, directory):
                                         tolist()],
                                  ['Year', 'savings']).T.set_index('Year')
         net_benefit.index = net_benefit.index.astype(int)
+        #~ net_benefit['base'] = costs_table['Base Cost']
+        
+        try:
+            if not (net_benefit.index == costs_table.index).all():
+                raise ValueError
+        except ValueError:
+            new_index = range(
+                min(min(net_benefit.index),min( costs_table.index)),
+                max(max(net_benefit.index),max( costs_table.index))+1
+            )
+        
+            costs_table =  costs_table.reindex(new_index, method='ffill')
+    
         costs_table[name] = \
                 costs_table['Base Cost'] - net_benefit['savings']
+        
+        #~ last_yr = net_benefit['base'][~net_benefit['base'].isnull()].index[-1]
+        #~ net_benefit['base'][net_benefit['base'].index > last_yr] =\
+            #~ net_benefit['base'].ix[last_yr]
+
+        #~ net_benefit[name] = net_benefit['base'] - net_benefit['savings']
+        #~ net_benefit[costs_table.columns] = costs_table
+        #~ costs_table = net_benefit[
+            #~ [c for c in net_benefit.columns if c not in ['base','savings']]
+        #~ ]
+        
+     
         names.append(name)
     #~ print costs_table
     ## format table
@@ -95,6 +121,13 @@ def make_costs_table (community, comp, projects, base_cost, directory):
         os.makedirs(os.path.join(directory,community.replace("'",""),'csv'))
     except OSError:
         pass
+    
+    costs_table['year'] = costs_table.index
+    #~ last_yr = costs_table['Base case cost'][~costs_table['Base case cost'].isnull()].index[-1]
+    #~ costs_table['Base case cost'][costs_table['Base case cost'].index > last_yr] = costs_table['Base case cost'].ix[last_yr]
+    
+        
+        
     costs_table.to_csv(os.path.join(directory,community.replace("'",""),'csv', fname),
                         index=False)
     #~ ## make list from of table
@@ -114,21 +147,22 @@ def make_consumption_table (community, comp, projects, base_con,
     
     inputs:
         community: <string>
-        comp: componet name <string>
-        projects: dictioany of projects
-        base_con: dataframe with base cost for all years needed as index
+        comp: component name <string>
+        projects: dictionary of projects
+        base_con: DataFrame with base cost for all years needed as index
                     Base Consumption
             2011    1200
             ...
             2015    1400
-        directory: directory where web outputs are beign saved
+        directory: directory where web outputs are being saved
         savings_attribute: string representing the savings attribute/ function 
             in the current component
     
     outputs:    
-        returns plotting_table, a table that can be used to make a google chart
+        returns plotting_table, a table that can be used to make a Google chart
     """
     cons_table = DataFrame(base_con)
+    
     cons_table['year'] = cons_table.index
     names = []
     for p in projects:
@@ -142,8 +176,10 @@ def make_consumption_table (community, comp, projects, base_con,
             name = p.replace('+', ' ').replace('_',' ')
         if name is None:
             name = p
+        name = name.replace("'",'')
         reduction = DataFrame([range(project.start_year,
                                 project.actual_end_year+1)],['Year']).T
+        
                                 
         s_c = "reduction['savings'] = project." + savings_attribute
         try:
@@ -151,11 +187,29 @@ def make_consumption_table (community, comp, projects, base_con,
         except ValueError:
             s_c += '[:project.actual_project_life]'
             exec(s_c)
+        
+        
+        
         reduction = reduction.set_index('Year')
         reduction.index = reduction.index.astype(int)
+        
+        try:
+            if not (reduction.index == cons_table.index).all():
+                raise ValueError
+        except ValueError:
+            new_index = range(
+                min(min(reduction.index),min(cons_table.index)),
+                max(max(reduction.index),max(cons_table.index))+1
+            )
+            cons_table = cons_table.reindex(new_index, method='ffill')
+        
+        
         cons_table[name] = \
                     cons_table['Base Consumption'] - reduction['savings']
-                    
+        
+        
+
+        
         cons_table[name][cons_table[name] < 0] = 0
         names.append(name)
     ## format table
@@ -168,11 +222,10 @@ def make_consumption_table (community, comp, projects, base_con,
     except OSError:
         pass
     
-        
+    cons_table['year'] = cons_table.index
     cons_table.to_csv(os.path.join(directory,community.replace("'",""),'csv', fname),index=False)
     #~ ## make list from of table
-    
-    
+
     plotting_table = cons_table.round().values.tolist()
     
     header = []
@@ -183,14 +236,14 @@ def make_consumption_table (community, comp, projects, base_con,
 
 def correct_dates (start, s1, end, e1):
     """ 
-        takes start and end years from the modeled projcet and other prjects 
+        takes start and end years from the modeled project and other projects 
     and finds the start and end year to use
     
     inputs:
         start: modeled start year <int>
-        s1: pojects start year <int>
+        s1: projects start year <int>
         end: modeled end year <int>
-        e1: pojects end year <int>
+        e1: projects end year <int>
         
     outputs: 
         returns start_year, end_year
@@ -214,12 +267,12 @@ def correct_dates (start, s1, end, e1):
 
 def create_electric_system_summary (web_object, community ):
     """
-    creates a summary of the corrent electrical systems
+    creates a summary of the current electrical systems
     
     inputs:
         community_results the results for a given community
         
-    returns a list of items to use with the html template
+    returns a list of items to use with the HTML template
     """
     #~ community_results = web_object.results[community]
     #~ fc = community_results['forecast']

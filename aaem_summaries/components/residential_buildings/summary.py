@@ -14,7 +14,7 @@ from pandas import DataFrame
 
 COMPONENT_NAME = "Residential Energy Efficiency"
 DESCRIPTION = """
-    This component calculates the potential reduction in heating fuels by improving the efficiency of residential buildings
+    This component calculates the potential change in heating fuel usage from residential-building energy efficiency improvements.
 """
 
 def generate_web_summary (web_object, community):
@@ -37,7 +37,7 @@ def generate_web_summary (web_object, community):
     ## get the template
     template = web_object.component_html
 
-    ## get the component (the modelded one)
+    ## get the component (the modeled one)
 
     modeled = web_object.results[community][COMPONENT_NAME]
     start_year = modeled.start_year
@@ -69,7 +69,7 @@ def generate_web_summary (web_object, community):
     table1 = wl.make_costs_table(community, COMPONENT_NAME, projects, base_cost,
                               web_object.directory)
 
-    ## get generation fule used (modeled)
+    ## get generation fuel used (modeled)
     base_con = generation/eff
     base_con.name = 'Base Consumption'
     base_con = DataFrame(base_con)
@@ -153,7 +153,7 @@ def create_project_details_list (project):
 
     Parameters
     ----------
-    projcet: ResidentialBuildings
+    project: ResidentialBuildings
         A ResidentialBuildings object thats run function has been called
 
     Returns

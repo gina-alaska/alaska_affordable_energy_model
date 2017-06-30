@@ -1,7 +1,7 @@
 """
-run_command.py
+compare_command.py
 
-    A commad for the cli to compare runs
+    A command for the cli to compare model runs
 """
 import pycommand
 import os.path
@@ -30,13 +30,10 @@ class CompareCommand(pycommand.CommandBase):
             msg = "Compare Error: needs 2 existing runs"
             cli_lib.print_error_message(msg, CompareCommand.usagestr)
             return 0
-        
-        
+
+
         coms = self.args[2:]
         if len(coms) != 0 :
             cli_lib.compare_indepth(results1, results2, coms)
         else:
             cli_lib.compare_high_level(results1, results2)
-
-        
-

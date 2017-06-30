@@ -22,8 +22,8 @@ def component_summary (results, res_dir):
     
     Parameters
     ----------
-    results : dictionay
-        results from the model, dictionay with each community or project 
+    results : dictionary
+        results from the model, dictionary with each community or project 
         as key
     res_dir :  path
         location to save file
@@ -37,8 +37,8 @@ def communities_summary (coms, res_dir):
     
     Parameters
     ----------
-    coms : dictionay
-        results from the model, dictionay with each community or project 
+    coms : dictionary
+        results from the model, dictionary with each community or project 
         as key
     res_dir :  path
         location to save file
@@ -206,14 +206,14 @@ def create_regional_summary (results):
     
     Parameters
     ----------
-    results : dictionay
-        results from the model, dictionay with each community or project 
+    results : dictionary
+        results from the model, dictionary with each community or project 
         as key
             
     Returns
     -------
     DataFrame 
-        containg regional results
+        containing regional results
     
     """
     #~ print "start"
@@ -280,7 +280,7 @@ def save_regional_summary (summary, res_dir):
     
     Parameters
     ----------
-    summary : Dataframe
+    summary : DataFrame
         compiled regional results
     res_dir :  path
         location to save file

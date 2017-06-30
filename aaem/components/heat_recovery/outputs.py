@@ -20,8 +20,8 @@ def component_summary (results, res_dir):
     
     Parameters
     ----------
-    results : dictionay
-        results from the model, dictionay with each community or project 
+    results : dictionary
+        results from the model, dictionary with each community or project 
         as key
     res_dir :  path
         location to save file
@@ -35,8 +35,8 @@ def communities_summary (coms, res_dir):
     
     Parameters
     ----------
-    coms : dictionay
-        results from the model, dictionay with each community or project 
+    coms : dictionary
+        results from the model, dictionary with each community or project 
         as key
     res_dir :  path
         location to save file
@@ -59,7 +59,7 @@ def communities_summary (coms, res_dir):
             diesel_price = float(comp.diesel_prices[0].round(2))
             hfp = comp.cd['heating fuel premium']
             
-            propsed_hr = comp.proposed_heat_recovery
+            proposed_hr = comp.proposed_heat_recovery
             #~ eff = comp.cd["diesel generation efficiency"]
             
             try:
@@ -75,7 +75,7 @@ def communities_summary (coms, res_dir):
             l = [name,  
                  
                  
-                 propsed_hr,
+                 proposed_hr,
                  diesel_price,
                  hfp,
                  diesel_price + hfp,
@@ -99,7 +99,7 @@ def communities_summary (coms, res_dir):
         
             'Proposed Heat Recovery [gallons]',
             'Diesel price - year 1 [$/gal]',
-            'Heating Fuel Premimum [$/gal]',
+            'Heating Fuel Premium [$/gal]',
             'Heating Fuel Price - year 1 [$/gal]',
             'Break Even Heating Fuel Price [$/gal]',
             'Levelized Cost of Energy [$/MMBtu]',
@@ -119,7 +119,7 @@ def communities_summary (coms, res_dir):
             '# Community: ' + definitions.COMMUNITY + '\n'
             '# Proposed Heat Recovery [gallons]: Proposed gallons of diesel saved \n'
             '# Diesel price - year 1 [$/gal]: ' + definitions.PRICE_DIESEL + '\n' 
-            '# Heating Fuel Premimum [$/gal]: ' + definitions.PREMIUM + '\n'
+            '# Heating Fuel Premium [$/gal]: ' + definitions.PREMIUM + '\n'
             '# Heating Fuel Price - year 1 [$/gal]: ' + definitions.PRICE_HF + '\n'
             '# Break Even Heating Fuel Price [$/gal]: ' + definitions.BREAK_EVEN_COST_HF + '\n'
             '# Levelized Cost Of Energy [$/kWh]:' + definitions.LCOE + '\n'
@@ -138,13 +138,13 @@ def create_regional_summary (results):
     
     Parameters
     ----------
-    results : dictionay
-        results from the model, dictionay with each community or project 
+    results : dictionary
+        results from the model, dictionary with each community or project 
         as key
             
     Returns
     -------
-        pandas DataFrame containg regional results
+        pandas DataFrame containing regional results
     
     """
     regions = {}
@@ -217,7 +217,7 @@ def save_regional_summary (summary, res_dir):
     
     Parameters
     ----------
-    summary : Dataframe
+    summary : DataFrame
         compiled regional results
     res_dir :  path
         location to save file

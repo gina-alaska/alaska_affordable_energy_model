@@ -383,7 +383,7 @@
 - residential efficiency: changed data keys
 - moved some common values in component configs to community section of config
 - intertie projects for electricity are now sorted to into the intertie
-- electric projects are only run for interties/ not intetied communities
+- electric projects are only run for interties/ not intertied communities
 - heating projects not run on interties
 - wind power: start date is calculated from phase
 
@@ -734,7 +734,7 @@
 
 ### changed
 - disel generato efficiency is now validated in community data
-- caclulation of propsed offset for wind where hydro is present
+- caclulation of proposed offset for wind where hydro is present
 - default starting date for RE projects is 2020
 
 ### fixed

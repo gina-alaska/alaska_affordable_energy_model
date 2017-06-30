@@ -119,8 +119,11 @@ class ASHPResidential (ashp_base.ASHPBase):
         self.pre_ashp_heating_oil_used =  res.init_HF
         self.pre_ashp_heating_electricty_used = res.init_kWh
         self.num_houses = res.init_HH
-        self.percent_heated_oil = res.comp_specs['data']["Fuel Oil"]
-        self.percent_heated_elec = res.comp_specs['data']["Electricity"]
+        self.percent_heated_oil = res.comp_specs['data']["Fuel Oil"]/100.0
+        self.percent_heated_elec = res.comp_specs['data']["Electricity"]/100.0
+        
+        #~ self.baseline_consumption = res.baseline_total_energy_consumption
+        #~ self.kWh_per_hh = res.avg_kWh_consumption_per_HH
         #~ print self.pre_ashp_heating_oil_used
         #~ print self.num_houses
 
@@ -257,20 +260,20 @@ class ASHPResidential (ashp_base.ASHPBase):
 
         average_btu_per_hr =  heating_oil + electric_heat
 
+        #~ print average_btu_per_hr
         peak_monthly_btu_hr_hh = \
             float(float(self.comp_specs['data'].ix['Peak Month % of total']) *\
-            average_btu_per_hr * 12 / \
-            (self.percent_heated_oil+self.percent_heated_elec))
-
+            average_btu_per_hr * 12 / (self.percent_heated_oil+self.percent_heated_elec))
+        #~ print peak_monthly_btu_hr_hh 
         self.peak_monthly_btu_hr_hh = peak_monthly_btu_hr_hh
 
 
         min_tem = float(self.comp_specs['data']
                                 .ix['Minimum Temp'].astype(float))
 
-        temps = self.comp_specs['perfromance data']['Temperature']
+        temps = self.comp_specs['performance data']['Temperature']
 
-        percent = self.comp_specs['perfromance data']\
+        percent = self.comp_specs['performance data']\
                                     ['Percent of Total Capacity']
 
         percent_of_total_cap = min(percent)

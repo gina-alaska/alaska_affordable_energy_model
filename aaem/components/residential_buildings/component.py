@@ -87,7 +87,7 @@ class ResidentialBuildings(AnnualSavings):
 
         if self.cd["model electricity"]:
             self.elec_prices = community_data.get_item('community',
-                'electric non-fuel prices')
+                'electric prices')
         self.comp_specs = community_data.get_section(COMPONENT_NAME)
         self.component_name = COMPONENT_NAME
         self.forecast = forecast
@@ -282,6 +282,7 @@ class ResidentialBuildings(AnnualSavings):
             rd["BEES Total Consumption (MMBtu)"] + \
             rd["Pre-Retrofit Avg Area (SF)"] * \
             rd["Pre-Retrofit Avg EUI (MMBtu/sf)"] * self.opportunity_HH
+        #~ self.baseline_total_energy_consumption = total
         HH = self.init_HH
 
         percent_accounted = 0
@@ -516,13 +517,13 @@ class ResidentialBuildings(AnnualSavings):
         baseline_kWh_cost : np.array
             baseline cost of electricity per year
         """
-        self.cd["electric non-fuel prices"].index = \
-            self.cd["electric non-fuel prices"].index.astype(int)
+        self.cd["electric prices"].index = \
+            self.cd["electric prices"].index.astype(int)
 
         #~ kWh_cost = kWh_cost.T.values[0]
         # kWh/yr*$/kWh
         #~ print len(self.baseline_kWh_consumption)
-        kWh_cost = self.cd["electric non-fuel prices"]\
+        kWh_cost = self.cd["electric prices"]\
             .ix[self.start_year:self.end_year].T.values[0]
         #~ print len(kWh_cost)
         self.baseline_kWh_cost = self.baseline_kWh_consumption * kWh_cost
@@ -604,7 +605,7 @@ class ResidentialBuildings(AnnualSavings):
         proposed_kWh_cost: np.array
             proposed electricity cost
         """
-        kWh_cost = self.cd["electric non-fuel prices"].\
+        kWh_cost = self.cd["electric prices"].\
                                             ix[self.start_year:self.end_year]
         kWh_cost = kWh_cost.T.values[0]
         # kWh/yr*$/kWh
@@ -702,7 +703,7 @@ class ResidentialBuildings(AnnualSavings):
         if self.cd["model financial"]:
             HF_price = (self.diesel_prices + self.cd['heating fuel premium'])
             wood_price = self.cd['cordwood price']
-            elec_price = self.cd["electric non-fuel prices"]\
+            elec_price = self.cd["electric prices"]\
                 .ix[self.start_year:self.end_year].T.values[0]
             LP_price = self.cd['propane price']
             gas_price = self.cd['natural gas price']

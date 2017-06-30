@@ -1,7 +1,7 @@
 """
-run_command.py
+list_command.py
 
-    A commad for the cli to list communities
+    A command for the cli to list communities
 """
 import pycommand
 import os.path
@@ -26,7 +26,7 @@ class ListCommand(pycommand.CommandBase):
             msg = "LIST ERROR: needs a existing run"
             cli_lib.print_error_message(msg, ListCommand.usagestr)
             return 0
-        
+
 
         config = os.path.join(base,"config")
         gc = '__global_config.yaml'

@@ -7,7 +7,7 @@ Air Sorce Heat Pump Base Configuration
     
     **Unique Configuration keys**
     
-        perfromance data: data on ASHP prefromance in community
+        performance data: data on ASHP prefromance in community
         
         data: general data on stsyem
         
@@ -30,7 +30,7 @@ order = [
     'cost per btu/hrs',
     'o&m per year',
     'data',
-    'perfromance data'
+    'performance data'
 ]
 
 structure = {
@@ -43,7 +43,7 @@ structure = {
         'o&m per year': float,
         
         'data': DataFrame,
-        'perfromance data': {
+        'performance data': {
             'COP': list,
             'Temperature': list,
             'Percent of Total Capacity': list,
@@ -56,12 +56,14 @@ comments = {
     'enabled': definitions.ENABLED,  
     'lifetime': definitions.LIFETIME,
     'start year': definitions.START_YEAR_WITH_TYPE,
-    'btu/hrs': '[float]',
-    'cost per btu/hrs': '[float]',
-    'o&m per year':'[float]',
+    'btu/hrs': '[float] [btu/hrs]',
+    'cost per btu/hrs': '[float] cost per btu/hrs [$/(btu/hrs)]',
+    'o&m per year':'[float] operations and maintenance costs per year [$/year]',
     
-    'data': '[DataFrame]',
-    'perfromance data': '[dict]'
+    'data':
+        "[DataFrame] Yearly climate data including 'Peak Month % of total', 'Capacity Factor', 'Minimum Temp', Avg. Temp(monthly), and % heating load (monthly)",
+    'performance data': 
+        "[dict] contains lists of equal length for keys 'Temperature', 'COP' (Cofficient of performance), and 'Percent of Total Capacity'"
 }
 
 ## list of prerequisites for module

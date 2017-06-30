@@ -31,3 +31,8 @@ PREMIUM = "Extra cost of heating fuel above utility diesel"
 ENABLED = '[bool] Indicates if the component should be run'
 LIFETIME = '[int] lifetime of the loan for the project'
 START_YEAR_WITH_TYPE = '[int] Operation start year for the project'
+
+NAME = '[str] Project name'
+SOURCE = '[str] Link of description for project data source'
+NOTES_WITH_TYPE = '[str] Notes on project data'
+PHASE_WITH_TYPE = '[str] Current phase of the project'

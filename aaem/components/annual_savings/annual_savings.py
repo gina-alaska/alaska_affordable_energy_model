@@ -50,8 +50,8 @@ class AnnualSavings (object):
         self.capital_costs *= cost_scaler
         cost_per_year = -np.pmt(rate, self.actual_project_life,
                                     self.capital_costs)
-        #~ cpi= self.forecast.cpi.ix[self.start_year:self.end_year].T.values[0]
-        self.annual_costs = cost_per_year * np.ones(self.actual_project_life)
+        cpi= self.forecast.cpi[:self.actual_project_life]
+        self.annual_costs = cost_per_year * cpi# np.ones(self.actual_project_life)
 
 
     def calc_annual_net_benefit (self):
@@ -83,7 +83,7 @@ class AnnualSavings (object):
 
 
         # number of arrays as zero ($ value) until project start
-        yts = np.zeros((self.start_year - current_year)+1)
+        yts = []#np.zeros((self.start_year - current_year)+1)
 
         self.benefit_npv = np.npv(rate,
                            np.append(yts, self.annual_total_savings[:end]))
@@ -242,16 +242,16 @@ class AnnualSavings (object):
     def get_electricity_prices (self):
         """
         """
-        self.cd["electric non-fuel prices"].index = \
-            self.cd["electric non-fuel prices"].index.astype(int)
-        self.cd["electric non-fuel prices"] = \
-            self.cd["electric non-fuel prices"].astype(float)
-        prices = self.cd["electric non-fuel prices"]
+        self.cd["electric prices"].index = \
+            self.cd["electric prices"].index.astype(int)
+        self.cd["electric prices"] = \
+            self.cd["electric prices"].astype(float)
+        prices = self.cd["electric prices"]
         self.electricity_prices = prices.ix[self.start_year:]
 
-        self.cd["electric non-fuel prices"].index = self.cd["electric non-fuel prices"].index.astype(int)
-        self.cd["electric non-fuel prices"] = self.cd["electric non-fuel prices"].astype(float)
-        self.electricity_prices = self.cd["electric non-fuel prices"].ix[self.start_year:]
+        self.cd["electric prices"].index = self.cd["electric prices"].index.astype(int)
+        self.cd["electric prices"] = self.cd["electric prices"].astype(float)
+        self.electricity_prices = self.cd["electric prices"].ix[self.start_year:]
         self.electricity_prices.columns = ['prices']
         start, end  = self.start_year, self.end_year
 

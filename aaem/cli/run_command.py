@@ -23,13 +23,13 @@ class RunCommand(pycommand.CommandBase):
             ('dev', ('d', False, "use only development communities")),
             ('log', ('l', "<log_file>", "name/path of file to log outputs to")),
             #~ ('plot',('p', '<directory>', 
-                        #~ "run the ploting functionality and save in directory")),
+                        #~ "run the plotting functionality and save in directory")),
             ('force',('f', False, "force overwrite of existing directories")),
             ('tag',('t', '<tag>', "tag for results directory")),
             ('scalers', ('s', '<scalers>',
-                                    'dictioanry of scalers as a string')),
+                                    'dictionary of scalers as a string')),
             ('global_config', ('g', '<global_configuration_file>', 
-                ('A configuration yaml file containing varaiables to apply'
+                ('A configuration yaml file containing variables to apply'
                 ' all communities being run'))),
            )
     description =('Run model for given communities. (default = all communities)'
@@ -72,7 +72,7 @@ class RunCommand(pycommand.CommandBase):
                 cli_lib.print_error_message('SCRIPT ERROR:\n' + str(e))
                 return 0
             
-            ## check exitsing results
+            ## check existing results
             res_dir = 'results'
             if script['global']['results tag']:
                 res_dir += '_' + script['global']['results tag']
@@ -120,7 +120,7 @@ class RunCommand(pycommand.CommandBase):
             # run regular
             # Get communities to run
             if self.flags.dev:
-                # Developmet coms
+                # Development coms
                 coms = __DEV_COMS__
             elif len(self.args[1:]) != 0:
                 # listed coms
@@ -264,7 +264,7 @@ class RunCommand(pycommand.CommandBase):
                             os.path.join(base, rd, 'Utqiagvik_Barrow','component_outputs',
                                 f_name.replace('Barrow','Utqiagvik_Barrow')))
             except StandardError as e:
-                # no need to do any thing if 'Barrow','Utqiagvik' not nessary
+                # no need to do any thing if 'Barrow','Utqiagvik' not necessary
                 #~ print e
                 pass
             run_driver.save_metadata(tag)

@@ -224,8 +224,8 @@ class ASHPNonResidential (ashp_base.ASHPBase):
         """
         min_tem = float(self.comp_specs['data']\
                                 .ix['Minimum Temp'].astype(float))
-        temps = self.comp_specs['perfromance data']['Temperature']
-        percent = self.comp_specs['perfromance data']\
+        temps = self.comp_specs['performance data']['Temperature']
+        percent = self.comp_specs['performance data']\
                                     ['Percent of Total Capacity']
         percent_of_total_cap = min(percent)
         if min_tem > min(temps):

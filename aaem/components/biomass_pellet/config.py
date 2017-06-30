@@ -46,8 +46,8 @@ structure[COMPONENT_NAME].update(
 comments = deepcopy(bmb.comments)
 comments.update(    
     {
-        "pellet efficiency": '[float]',
-        "default pellet price": '[float]'
+        "pellet efficiency": '[float] efficienct of pellet boiler',
+        "default pellet price": '[float] default price for pellets [$/ton]'
     }
 ) 
 
